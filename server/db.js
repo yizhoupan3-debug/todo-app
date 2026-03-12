@@ -80,6 +80,32 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_pomodoro_date ON pomodoro_sessions(date);
   CREATE INDEX IF NOT EXISTS idx_pomodoro_assignee ON pomodoro_sessions(assignee);
+
+  CREATE TABLE IF NOT EXISTS coin_accounts (
+    assignee TEXT PRIMARY KEY CHECK(assignee IN ('潘潘','蒲蒲')),
+    balance INTEGER NOT NULL DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS coin_transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    assignee TEXT NOT NULL CHECK(assignee IN ('潘潘','蒲蒲')),
+    amount INTEGER NOT NULL,
+    reason TEXT NOT NULL,
+    detail TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_coin_tx_assignee ON coin_transactions(assignee);
+
+  CREATE TABLE IF NOT EXISTS trees (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    assignee TEXT NOT NULL CHECK(assignee IN ('潘潘','蒲蒲')),
+    tree_type TEXT NOT NULL,
+    planted_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    status TEXT NOT NULL DEFAULT 'growing' CHECK(status IN ('growing','grown')),
+    position_x REAL NOT NULL DEFAULT 0,
+    position_y REAL NOT NULL DEFAULT 0
+  );
+  CREATE INDEX IF NOT EXISTS idx_trees_assignee ON trees(assignee);
 `);
 
 // Seed default categories if empty
@@ -105,6 +131,13 @@ if (catCount.count === 0) {
     }
   });
   insertMany(defaultCategories);
+}
+
+// Seed coin accounts if empty
+const coinCount = db.prepare('SELECT COUNT(*) as count FROM coin_accounts').get();
+if (coinCount.count === 0) {
+  db.prepare("INSERT INTO coin_accounts (assignee, balance) VALUES ('潘潘', 0)").run();
+  db.prepare("INSERT INTO coin_accounts (assignee, balance) VALUES ('蒲蒲', 0)").run();
 }
 
 module.exports = db;

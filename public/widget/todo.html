@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>今日待办</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+SC:wght@300;400;500;600&display=swap"
         rel="stylesheet">
     <style>
         * {
@@ -35,12 +36,13 @@
         html,
         body {
             height: 100%;
-            font-family: 'Noto Sans SC', system-ui, sans-serif;
+            font-family: 'Inter', 'Noto Sans SC', system-ui, sans-serif;
             background: transparent;
             color: var(--text);
             -webkit-font-smoothing: antialiased;
             user-select: none;
             overflow: hidden;
+            font-variant-numeric: tabular-nums;
         }
 
         .widget {
@@ -114,10 +116,12 @@
             background: rgba(129, 140, 248, 0.15);
             border-color: var(--accent);
             color: var(--accent2);
+            box-shadow: 0 2px 8px rgba(129, 140, 248, 0.15);
         }
 
         .person-pill:hover {
-            background: rgba(129, 140, 248, 0.1)
+            background: rgba(129, 140, 248, 0.1);
+            transform: translateY(-1px);
         }
 
         /* Task list */
@@ -144,13 +148,27 @@
             gap: 10px;
             padding: 10px 12px;
             border-radius: 10px;
-            transition: background 0.15s;
+            transition: background 0.2s, transform 0.15s;
             cursor: default;
             position: relative;
+            animation: itemSlideIn 0.3s ease-out both;
+        }
+
+        @keyframes itemSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .task-item:hover {
-            background: var(--card-hover)
+            background: var(--card-hover);
+            transform: translateX(2px);
         }
 
         .task-item.done {
@@ -208,6 +226,21 @@
         .task-item.done .task-check {
             border-color: var(--done);
             background: var(--done);
+            animation: checkPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes checkPop {
+            0% {
+                transform: scale(0.8);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .task-item.done .task-check::after {
@@ -295,6 +328,7 @@
             background: linear-gradient(90deg, var(--accent), var(--done));
             border-radius: 2px;
             transition: width 0.4s ease;
+            box-shadow: 0 0 6px rgba(129, 140, 248, 0.3);
         }
     </style>
 </head>

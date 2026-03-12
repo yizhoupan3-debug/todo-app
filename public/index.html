@@ -14,7 +14,8 @@
   <link rel="apple-touch-icon" href="/img/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -55,6 +56,10 @@
       <button class="nav-btn" id="nav-stats">
         <span class="nav-icon">📊</span>
         <span>统计</span>
+      </button>
+      <button class="nav-btn" data-view="garden" id="nav-garden">
+        <span class="nav-icon">🌳</span>
+        <span>花园</span>
       </button>
     </nav>
 
@@ -131,6 +136,9 @@
           <button class="date-nav-btn today-btn" id="btn-today">今天</button>
         </div>
       </div>
+      <button class="header-coin-btn" id="header-coin-btn" title="喵喵币">
+        🪙 <span id="header-coins">0</span>
+      </button>
       <button class="header-icon-btn" id="btn-ambient" title="环境音">
         🔊 <span class="ambient-badge"></span>
       </button>
@@ -315,6 +323,9 @@
         </div>
       </div>
     </section>
+
+    <!-- Garden View -->
+    <section class="view-container hidden" id="view-garden"></section>
 
     <!-- Stats View -->
     <section class="view-container hidden" id="view-stats">
@@ -717,6 +728,7 @@
   <script src="/js/views/monthly.js"></script>
   <script src="/js/views/checkin.js"></script>
   <script src="/js/views/stats.js"></script>
+  <script src="/js/views/garden.js"></script>
   <script src="/js/components/task-modal.js"></script>
   <script src="/js/components/ics-import.js"></script>
   <script src="/js/components/pomodoro.js"></script>

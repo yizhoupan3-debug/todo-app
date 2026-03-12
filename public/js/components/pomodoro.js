@@ -160,6 +160,11 @@ const Pomodoro = {
                 });
             } catch (e) { /* silent */ }
             App.showToast('🎉 专注时间结束！开始休息', 'success');
+            // Earn coins
+            GardenView.earnFromPomodoro(
+                (this.currentTask && this.currentTask.assignee) || '潘潘',
+                this.focusMin
+            );
             this.startRest();
         } else if (this.phase === 'rest') {
             this.playNotification();

@@ -111,4 +111,29 @@ const API = {
     addPomodoroSession(data) {
         return this.request('/stats/pomodoro', { method: 'POST', body: data });
     },
+
+    // Garden & Coins
+    getCoins(assignee) {
+        return this.request(`/garden/coins/${encodeURIComponent(assignee)}`);
+    },
+
+    earnCoins(data) {
+        return this.request('/garden/coins/earn', { method: 'POST', body: data });
+    },
+
+    getCoinHistory(assignee, limit = 20) {
+        return this.request(`/garden/coins/history/${encodeURIComponent(assignee)}?limit=${limit}`);
+    },
+
+    getShop(assignee) {
+        return this.request(`/garden/shop/${encodeURIComponent(assignee)}`);
+    },
+
+    plantTree(data) {
+        return this.request('/garden/plant', { method: 'POST', body: data });
+    },
+
+    getGardenTrees(assignee) {
+        return this.request(`/garden/trees/${encodeURIComponent(assignee)}`);
+    },
 };

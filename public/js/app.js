@@ -22,6 +22,7 @@ const App = {
         MonthlyView.init();
         CheckinView.init();
         StatsView.init();
+        GardenView.init();
         TaskModal.init();
         ICSImport.init();
         Pomodoro.init();
@@ -64,6 +65,17 @@ const App = {
 
         // Checkin from sidebar
         document.getElementById('nav-checkin').addEventListener('click', () => CheckinView.open());
+
+        // Garden from sidebar
+        document.getElementById('nav-garden').addEventListener('click', () => this.switchView('garden'));
+
+        // Header coin button
+        document.getElementById('header-coin-btn')?.addEventListener('click', () => this.switchView('garden'));
+
+        // Load initial coin balance
+        API.getCoins('潘潘').then(d => {
+            document.getElementById('header-coins').textContent = d.balance;
+        }).catch(() => { });
 
         // Mobile pomodoro
         const mobilePomodoro = document.getElementById('mobile-pomodoro');
@@ -113,6 +125,14 @@ const App = {
 
         // Show daily view by default
         this.switchView('daily');
+
+        // Header scroll shadow
+        document.querySelectorAll('.view-container').forEach(vc => {
+            vc.addEventListener('scroll', () => {
+                const header = document.getElementById('main-header');
+                header.classList.toggle('scrolled', vc.scrollTop > 8);
+            });
+        });
     },
 
     // ===== Theme =====
@@ -214,6 +234,7 @@ const App = {
         document.getElementById('view-monthly').classList.toggle('hidden', view !== 'monthly');
         document.getElementById('view-checkin').classList.toggle('hidden', view !== 'checkin');
         document.getElementById('view-stats').classList.toggle('hidden', view !== 'stats');
+        document.getElementById('view-garden').classList.toggle('hidden', view !== 'garden');
 
         // Show/hide today button
         document.getElementById('btn-today').classList.toggle('hidden', false);
@@ -223,6 +244,8 @@ const App = {
             DailyView.setDate(DailyView.currentDate);
         } else if (view === 'stats') {
             StatsView.load();
+        } else if (view === 'garden') {
+            GardenView.open();
         } else {
             MonthlyView.syncLocalAssignee();
             MonthlyView.setMonth(MonthlyView.currentYear, MonthlyView.currentMonth);
