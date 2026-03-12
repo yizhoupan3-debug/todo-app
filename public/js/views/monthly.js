@@ -184,6 +184,12 @@ const MonthlyView = {
                 }
             });
         });
+
+        // Auto-scroll to today's row
+        const todayCell = grid.querySelector('.today-gold');
+        if (todayCell) {
+            setTimeout(() => todayCell.scrollIntoView({ block: 'center', behavior: 'smooth' }), 100);
+        }
     },
 
     escapeHtml(str) {
