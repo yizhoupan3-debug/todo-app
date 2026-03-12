@@ -1,12 +1,10 @@
-/* ===== DESIGN TOKENS (Light — Warm Ivory) ===== */
+/* ===== DESIGN TOKENS — Light Surfaces + Default Accent (Indigo) ===== */
 :root {
-  /* Primary palette */
+  /* Default accent — Indigo */
   --primary: #6366f1;
   --primary-light: #818cf8;
   --primary-dark: #4f46e5;
   --primary-glow: rgba(99, 102, 241, 0.18);
-
-  /* Accent */
   --accent: #f472b6;
   --accent-light: #f9a8d4;
 
@@ -24,7 +22,7 @@
   --panpan: #6366f1;
   --pupu: #ec4899;
 
-  /* Surfaces — warm ivory instead of cold grey */
+  /* Surfaces — Light */
   --bg: #f5f3f0;
   --bg-secondary: #eae7e2;
   --card-bg: rgba(255, 255, 255, 0.85);
@@ -37,14 +35,14 @@
   --border-strong: rgba(0, 0, 0, 0.12);
   --glass-blur: blur(20px) saturate(1.4);
 
-  /* Text */
+  /* Text — Light */
   --text: #1a1a2e;
   --text-secondary: #5c5c72;
   --text-tertiary: #9292a8;
   --text-on-primary: #ffffff;
   --text-muted: #b0b0c0;
 
-  /* Shadows — warm-tinted */
+  /* Shadows — Light */
   --shadow-sm: 0 1px 3px rgba(100, 80, 60, 0.06);
   --shadow-md: 0 4px 16px rgba(100, 80, 60, 0.08);
   --shadow-lg: 0 8px 32px rgba(100, 80, 60, 0.12);
@@ -65,12 +63,8 @@
   --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* ===== DARK — Midnight Indigo ===== */
-[data-theme="dark"] {
-  --primary: #818cf8;
-  --primary-light: #a5b4fc;
-  --primary-dark: #6366f1;
-  --primary-glow: rgba(129, 140, 248, 0.15);
+/* ===== DARK MODE — Surfaces Only ===== */
+[data-mode="dark"] {
   --bg: #0b0d18;
   --bg-secondary: #13152a;
   --card-bg: rgba(25, 28, 53, 0.85);
@@ -79,177 +73,90 @@
   --header-bg: rgba(11, 13, 24, 0.88);
   --modal-bg: rgba(25, 28, 53, 0.92);
   --overlay-bg: rgba(0, 0, 0, 0.7);
-  --border: rgba(130, 140, 255, 0.06);
-  --border-strong: rgba(130, 140, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
   --glass-blur: blur(24px) saturate(1.3);
   --text: #e8eafc;
   --text-secondary: #8b8fb0;
   --text-tertiary: #5c5f80;
+  --text-muted: #4a4d6a;
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 40px rgba(80, 60, 180, 0.15), 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.45);
 }
 
-/* ===== SAKURA — Soft Rosé ===== */
+/* ===== 8 ACCENT THEMES — Colors Only (work in both light & dark) ===== */
+
+/* 1. Indigo — default in :root, no override needed */
+
+/* 2. Sakura — Rose Pink */
 [data-theme="sakura"] {
   --primary: #d63384;
   --primary-light: #e87aad;
   --primary-dark: #ad1a68;
-  --primary-glow: rgba(214, 51, 132, 0.15);
+  --primary-glow: rgba(214, 51, 132, 0.18);
   --accent: #9b59b6;
   --accent-light: #bb8fd9;
-  --bg: #fcf4f8;
-  --bg-secondary: #f9e8f0;
-  --card-bg: rgba(255, 250, 252, 0.88);
-  --card-hover: #fff0f6;
-  --sidebar-bg: rgba(255, 248, 252, 0.75);
-  --header-bg: rgba(252, 244, 248, 0.85);
-  --modal-bg: rgba(255, 250, 252, 0.93);
-  --overlay-bg: rgba(30, 5, 18, 0.35);
-  --border: rgba(214, 51, 132, 0.07);
-  --border-strong: rgba(214, 51, 132, 0.14);
-  --glass-blur: blur(20px) saturate(1.5);
-  --text: #3d0f2a;
-  --text-secondary: #8c4a6e;
-  --text-tertiary: #b88a9f;
-  --shadow-sm: 0 1px 4px rgba(180, 40, 100, 0.06);
-  --shadow-md: 0 4px 16px rgba(180, 40, 100, 0.08);
-  --shadow-lg: 0 8px 32px rgba(180, 40, 100, 0.12);
 }
 
-/* ===== OCEAN — Deep Abyss ===== */
+/* 3. Ocean — Cyan */
 [data-theme="ocean"] {
   --primary: #06b6d4;
   --primary-light: #67e8f9;
   --primary-dark: #0891b2;
-  --primary-glow: rgba(6, 182, 212, 0.15);
+  --primary-glow: rgba(6, 182, 212, 0.18);
   --accent: #8b5cf6;
   --accent-light: #a78bfa;
-  --bg: #07111f;
-  --bg-secondary: #0d1e35;
-  --card-bg: rgba(17, 40, 64, 0.8);
-  --card-hover: #163250;
-  --sidebar-bg: rgba(9, 20, 38, 0.88);
-  --header-bg: rgba(7, 17, 31, 0.9);
-  --modal-bg: rgba(17, 40, 64, 0.92);
-  --overlay-bg: rgba(0, 5, 15, 0.7);
-  --border: rgba(6, 182, 212, 0.08);
-  --border-strong: rgba(6, 182, 212, 0.15);
-  --glass-blur: blur(24px) saturate(1.3);
-  --text: #daf1f7;
-  --text-secondary: #6bc4d8;
-  --text-tertiary: #3a8da0;
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px rgba(0, 10, 30, 0.45);
-  --shadow-lg: 0 8px 40px rgba(6, 182, 212, 0.08), 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
-/* ===== FOREST — Dark Botanical ===== */
+/* 4. Forest — Emerald */
 [data-theme="forest"] {
   --primary: #22c55e;
   --primary-light: #6ee7a0;
   --primary-dark: #16a34a;
-  --primary-glow: rgba(34, 197, 94, 0.14);
+  --primary-glow: rgba(34, 197, 94, 0.18);
   --accent: #eab308;
   --accent-light: #fde047;
-  --bg: #0a1510;
-  --bg-secondary: #122418;
-  --card-bg: rgba(22, 46, 30, 0.8);
-  --card-hover: #1c3a26;
-  --sidebar-bg: rgba(12, 24, 16, 0.88);
-  --header-bg: rgba(10, 21, 16, 0.9);
-  --modal-bg: rgba(22, 46, 30, 0.92);
-  --overlay-bg: rgba(0, 5, 2, 0.7);
-  --border: rgba(34, 197, 94, 0.08);
-  --border-strong: rgba(34, 197, 94, 0.15);
-  --glass-blur: blur(24px) saturate(1.3);
-  --text: #d4f5df;
-  --text-secondary: #72c48c;
-  --text-tertiary: #408a58;
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 16px rgba(0, 10, 5, 0.4);
-  --shadow-lg: 0 8px 40px rgba(34, 197, 94, 0.06), 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-/* ===== SUNSET — Warm Ember ===== */
+/* 5. Sunset — Orange */
 [data-theme="sunset"] {
   --primary: #f97316;
   --primary-light: #fdba74;
   --primary-dark: #ea580c;
-  --primary-glow: rgba(249, 115, 22, 0.15);
+  --primary-glow: rgba(249, 115, 22, 0.18);
   --accent: #f43f5e;
   --accent-light: #fb7185;
-  --bg: #120d08;
-  --bg-secondary: #1f1610;
-  --card-bg: #291e14;
-  --card-hover: #33261a;
-  --sidebar-bg: rgba(18, 13, 8, 0.88);
-  --header-bg: rgba(18, 13, 8, 0.9);
-  --modal-bg: #291e14;
-  --overlay-bg: rgba(5, 2, 0, 0.7);
-  --border: rgba(249, 115, 22, 0.08);
-  --border-strong: rgba(249, 115, 22, 0.15);
-  --glass-blur: blur(24px) saturate(1.3);
-  --text: #faecd4;
-  --text-secondary: #d4a574;
-  --text-tertiary: #9e7248;
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 16px rgba(20, 10, 0, 0.4);
-  --shadow-lg: 0 8px 40px rgba(249, 115, 22, 0.06), 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
-/* ===== LAVENDER — Dreamy Purple Mist ===== */
+/* 6. Lavender — Purple */
 [data-theme="lavender"] {
   --primary: #8b5cf6;
   --primary-light: #a78bfa;
   --primary-dark: #7c3aed;
-  --primary-glow: rgba(139, 92, 246, 0.15);
+  --primary-glow: rgba(139, 92, 246, 0.18);
   --accent: #ec4899;
   --accent-light: #f472b6;
-  --bg: #f3f0ff;
-  --bg-secondary: #ece5ff;
-  --card-bg: rgba(252, 250, 255, 0.88);
-  --card-hover: #f5f0ff;
-  --sidebar-bg: rgba(248, 245, 255, 0.75);
-  --header-bg: rgba(243, 240, 255, 0.85);
-  --modal-bg: rgba(252, 250, 255, 0.93);
-  --overlay-bg: rgba(20, 10, 40, 0.35);
-  --border: rgba(139, 92, 246, 0.08);
-  --border-strong: rgba(139, 92, 246, 0.15);
-  --glass-blur: blur(20px) saturate(1.5);
-  --text: #1e103d;
-  --text-secondary: #6b5b8a;
-  --text-tertiary: #a094b8;
-  --shadow-sm: 0 1px 4px rgba(100, 60, 180, 0.06);
-  --shadow-md: 0 4px 16px rgba(100, 60, 180, 0.08);
-  --shadow-lg: 0 8px 32px rgba(100, 60, 180, 0.12);
 }
 
-/* ===== MOCHA — Rich Coffee Warmth ===== */
+/* 7. Mocha — Warm Brown */
 [data-theme="mocha"] {
   --primary: #d4a574;
   --primary-light: #e8c9a8;
   --primary-dark: #b8825a;
-  --primary-glow: rgba(212, 165, 116, 0.15);
+  --primary-glow: rgba(212, 165, 116, 0.18);
   --accent: #e57373;
   --accent-light: #ef9a9a;
-  --bg: #1a1210;
-  --bg-secondary: #2a1f1a;
-  --card-bg: rgba(50, 38, 30, 0.85);
-  --card-hover: #3d2e24;
-  --sidebar-bg: rgba(26, 18, 16, 0.9);
-  --header-bg: rgba(26, 18, 16, 0.92);
-  --modal-bg: rgba(50, 38, 30, 0.93);
-  --overlay-bg: rgba(10, 5, 2, 0.7);
-  --border: rgba(212, 165, 116, 0.1);
-  --border-strong: rgba(212, 165, 116, 0.18);
-  --glass-blur: blur(24px) saturate(1.2);
-  --text: #f0e4d8;
-  --text-secondary: #c4a88e;
-  --text-tertiary: #8a7260;
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 4px 16px rgba(15, 8, 2, 0.4);
-  --shadow-lg: 0 8px 40px rgba(212, 165, 116, 0.06), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* 8. Rose Gold — Soft Metallic Pink */
+[data-theme="rosegold"] {
+  --primary: #e8a0bf;
+  --primary-light: #f0c4d8;
+  --primary-dark: #c97da0;
+  --primary-glow: rgba(232, 160, 191, 0.18);
+  --accent: #b8860b;
+  --accent-light: #daa520;
 }
 
 /* ===== SETTINGS PANEL ===== */
@@ -350,36 +257,65 @@
   box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--text);
 }
 
-.theme-swatch[data-theme="light"] {
-  background: linear-gradient(135deg, #f5f3f0, #6366f1);
-}
-
-.theme-swatch[data-theme="dark"] {
-  background: linear-gradient(135deg, #0b0d18, #818cf8);
+.theme-swatch[data-theme="indigo"] {
+  background: linear-gradient(135deg, #818cf8, #4f46e5);
 }
 
 .theme-swatch[data-theme="sakura"] {
-  background: linear-gradient(135deg, #fcf4f8, #d63384);
+  background: linear-gradient(135deg, #f9a8d4, #d63384);
 }
 
 .theme-swatch[data-theme="ocean"] {
-  background: linear-gradient(135deg, #07111f, #06b6d4);
+  background: linear-gradient(135deg, #67e8f9, #0891b2);
 }
 
 .theme-swatch[data-theme="forest"] {
-  background: linear-gradient(135deg, #0a1510, #22c55e);
+  background: linear-gradient(135deg, #6ee7a0, #16a34a);
 }
 
 .theme-swatch[data-theme="sunset"] {
-  background: linear-gradient(135deg, #120d08, #f97316);
+  background: linear-gradient(135deg, #fdba74, #ea580c);
 }
 
 .theme-swatch[data-theme="lavender"] {
-  background: linear-gradient(135deg, #f3f0ff, #8b5cf6);
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
 }
 
 .theme-swatch[data-theme="mocha"] {
-  background: linear-gradient(135deg, #1a1210, #d4a574);
+  background: linear-gradient(135deg, #e8c9a8, #b8825a);
+}
+
+.theme-swatch[data-theme="rosegold"] {
+  background: linear-gradient(135deg, #f0c4d8, #c97da0);
+}
+
+/* Mode toggle button */
+.mode-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-secondary);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all var(--transition);
+  width: 100%;
+  justify-content: center;
+}
+
+.mode-toggle-btn:hover {
+  background: var(--primary-glow);
+  border-color: var(--primary);
+}
+
+.mode-toggle-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
 }
 
 /* Platform toggle */
@@ -4586,131 +4522,165 @@ form {
   padding: 0 20px 12px;
 }
 
-/* Garden canvas */
-.garden-canvas {
-  position: relative;
-  margin: 0 20px;
+/* ═══ Island Grid System ═══ */
+.island-container {
+  padding: 0 20px;
+  margin: 8px 0;
+}
+
+.island-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
   border-radius: var(--radius-lg);
-  background: linear-gradient(180deg,
-      transparent 0%,
-      rgba(34, 197, 94, 0.05) 60%,
-      rgba(34, 197, 94, 0.12) 100%);
+  background: linear-gradient(180deg, rgba(34, 139, 34, 0.05) 0%, rgba(34, 139, 34, 0.12) 100%);
   border: 1px solid var(--border);
-  min-height: 320px;
+  padding: 10px;
+}
+
+/* ─── Plot base ─── */
+.island-plot {
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
   overflow: hidden;
 }
 
-.garden-canvas::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 30% 70%, rgba(34, 197, 94, 0.06) 0%, transparent 60%),
-    radial-gradient(circle at 70% 40%, rgba(168, 85, 247, 0.04) 0%, transparent 50%);
-  pointer-events: none;
+/* ─── Wasteland ─── */
+.island-plot.wasteland {
+  background: linear-gradient(135deg, rgba(121, 85, 72, 0.15), rgba(121, 85, 72, 0.25));
+  border: 1px dashed rgba(121, 85, 72, 0.4);
 }
 
-.garden-ground {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 30%;
-  background: linear-gradient(180deg,
-      transparent,
-      rgba(101, 163, 13, 0.08) 30%,
-      rgba(101, 163, 13, 0.15));
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+.island-plot.wasteland:hover {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, rgba(121, 85, 72, 0.2), rgba(121, 85, 72, 0.35));
+  transform: scale(1.03);
 }
 
-/* Empty garden */
-.garden-empty {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-
-.garden-empty-icon {
-  font-size: 3rem;
-  margin-bottom: 12px;
-  animation: emptyBounce 2s ease-in-out infinite;
-}
-
-.garden-empty-text {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 4px;
-}
-
-.garden-empty-sub {
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-}
-
-/* Planted trees */
-.garden-tree {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  transition: transform 0.3s ease;
-  cursor: default;
-}
-
-.garden-tree:hover {
-  transform: translate(-50%, -50%) scale(1.2);
-  z-index: 10;
-}
-
-/* Tree images in garden — 4 growth stages */
-.garden-tree-img {
+.plot-obstacle {
+  width: 52px;
+  height: 52px;
   object-fit: contain;
-  display: block;
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.25));
-  transition: all 0.5s ease;
-}
-
-.garden-tree:hover .garden-tree-img {
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 8px rgba(34, 197, 94, 0.4));
-  transform: scale(1.15);
-}
-
-/* Stage: seed — just planted, tiny */
-.garden-tree.stage-seed .garden-tree-img {
-  width: 28px;
-  height: 35px;
   opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.island-plot.wasteland:hover .plot-obstacle {
+  opacity: 1;
+}
+
+.plot-clear-cost {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.island-plot.wasteland:hover .plot-clear-cost {
+  opacity: 1;
+}
+
+/* ─── Cleared ─── */
+.island-plot.cleared {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.06), rgba(34, 197, 94, 0.12));
+  border: 1px dashed rgba(34, 197, 94, 0.2);
+}
+
+.island-plot.cleared.plantable {
+  border-color: var(--primary);
+  animation: readyPulse 1.5s ease-in-out infinite;
+}
+
+.island-plot.cleared.plantable:hover {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.25));
+  transform: scale(1.05);
+}
+
+.plot-empty-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  opacity: 0.4;
+}
+
+.plot-plant-hint {
+  font-size: 1.4rem;
+  animation: sproutBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes readyPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+  }
+}
+
+/* ─── Planted ─── */
+.island-plot.planted {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(34, 197, 94, 0.16));
+  border: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.island-plot.planted:hover {
+  transform: scale(1.05);
+  z-index: 5;
+}
+
+.plot-tree-img {
+  object-fit: contain;
+  transition: all 0.5s ease;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.island-plot.planted:hover .plot-tree-img {
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 6px rgba(34, 197, 94, 0.3));
+}
+
+/* Growth stages on plot */
+.island-plot.stage-seed .plot-tree-img {
+  width: 28px;
+  height: 28px;
   animation: seedPulse 3s ease-in-out infinite;
 }
 
-/* Stage: sprout — small */
-.garden-tree.stage-sprout .garden-tree-img {
-  width: 48px;
-  height: 60px;
+.island-plot.stage-sprout .plot-tree-img {
+  width: 40px;
+  height: 40px;
   animation: sproutBounce 2.5s ease-in-out infinite;
 }
 
-/* Stage: growing — medium, sway */
-.garden-tree.stage-growing .garden-tree-img {
-  width: 72px;
-  height: 90px;
+.island-plot.stage-growing .plot-tree-img {
+  width: 56px;
+  height: 56px;
   animation: treeSway 4s ease-in-out infinite;
 }
 
-/* Stage: mature — full size, golden glow */
-.garden-tree.stage-mature .garden-tree-img {
-  width: 96px;
-  height: 120px;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25)) drop-shadow(0 0 12px rgba(255, 193, 7, 0.3));
+.island-plot.stage-mature .plot-tree-img {
+  width: 68px;
+  height: 68px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 10px rgba(255, 193, 7, 0.25));
 }
 
-/* Growth progress bar under each tree */
+/* Growth bar */
 .tree-growth-bar {
-  width: 40px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.15);
+  width: 36px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 2px;
-  margin: 4px auto 0;
+  margin-top: 2px;
   overflow: hidden;
 }
 
@@ -4764,35 +4734,79 @@ form {
   }
 }
 
-.garden-tree-icon {
-  font-size: 2rem;
-  display: block;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-  transition: filter 0.3s;
+/* ─── Planting Toolbar ─── */
+.planting-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: var(--radius-md);
+  margin: 8px 20px;
+  border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
-.garden-tree:hover .garden-tree-icon {
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 6px rgba(34, 197, 94, 0.3));
+.planting-toolbar span {
+  font-size: 14px;
+  color: var(--text-secondary);
 }
 
-.garden-tree.growing .garden-tree-icon {
-  animation: treeGrow 2s ease infinite alternate;
+.planting-toolbar strong {
+  color: var(--text);
 }
 
-.garden-tree.grown .garden-tree-icon {
-  font-size: 2.5rem;
+.btn-cancel-plant {
+  margin-left: auto;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 12px;
 }
 
-@keyframes treeGrow {
-  from {
-    transform: scale(0.85);
-    opacity: 0.8;
-  }
+.btn-cancel-plant:hover {
+  border-color: #ef5350;
+  color: #ef5350;
+}
 
-  to {
-    transform: scale(1.05);
-    opacity: 1;
-  }
+/* ─── Shop: 4-stage preview ─── */
+.shop-stages-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin-bottom: 8px;
+  padding: 6px 4px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--radius-sm);
+}
+
+.stage-thumb {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  transition: opacity 0.3s;
+}
+
+.stage-thumb.active {
+  opacity: 1;
+}
+
+.stage-thumb img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.stage-arrow {
+  font-size: 10px;
+  color: var(--text-secondary);
+  opacity: 0.4;
 }
 
 /* Garden stats */
@@ -4952,6 +4966,157 @@ form {
   font-size: 10px;
   color: var(--text-secondary);
   margin-bottom: 8px;
+}
+
+.shop-card-price {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-top: 4px;
+}
+
+.shop-card {
+  cursor: pointer;
+}
+
+/* Tree Detail Modal */
+.tree-detail-modal {
+  max-width: 460px;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.modal-x-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 2;
+  transition: background 0.2s;
+}
+
+.modal-x-btn:hover {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.tree-detail-hero {
+  text-align: center;
+  padding: 32px 24px 16px;
+  background: linear-gradient(180deg, rgba(var(--primary-rgb, 232, 167, 80), 0.12), transparent);
+}
+
+.tree-detail-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+}
+
+.tree-detail-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--text);
+}
+
+.tree-detail-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.tree-detail-stages {
+  padding: 16px 24px;
+}
+
+.tree-detail-stages h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 14px;
+  color: var(--text);
+}
+
+.tree-stages-timeline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.stage-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stage-item img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 6px;
+  transition: transform 0.2s;
+}
+
+.stage-item:hover img {
+  transform: scale(1.08);
+}
+
+.stage-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.stage-time {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.stage-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-bottom: 20px;
+}
+
+.stage-line {
+  width: 16px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.15);
+  margin-bottom: 2px;
+}
+
+.tree-detail-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tree-detail-cost {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.tree-detail-footer .shop-buy-btn {
+  padding: 8px 24px;
+  font-size: 14px;
 }
 
 .shop-buy-btn {

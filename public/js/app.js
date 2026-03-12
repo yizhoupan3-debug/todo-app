@@ -145,12 +145,14 @@ const App = {
     },
 
     // ===== Theme =====
-    themes: ['light', 'dark', 'sakura', 'ocean', 'forest', 'sunset'],
-    themeLabels: { light: '☀️ 亮色', dark: '🌙 暗色', sakura: '🌸 樱花', ocean: '🌊 深海', forest: '🌿 森林', sunset: '🌅 日落' },
+    themes: ['indigo', 'sakura', 'ocean', 'forest', 'sunset', 'lavender', 'mocha', 'rosegold'],
 
     initTheme() {
-        const saved = localStorage.getItem('panpu-theme') || 'light';
-        this.applyTheme(saved);
+        // Load saved mode and accent theme
+        const savedMode = localStorage.getItem('panpu-mode') || 'light';
+        const savedTheme = localStorage.getItem('panpu-theme') || 'indigo';
+        this.applyMode(savedMode);
+        this.applyTheme(savedTheme);
 
         // Settings panel toggle
         const settingsBtn = document.getElementById('btn-settings');
@@ -158,6 +160,8 @@ const App = {
         settingsBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             settingsPanel.classList.toggle('hidden');
+            // Refresh Lucide icons for settings panel
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         });
         // Close on outside click
         document.addEventListener('click', (e) => {
@@ -166,7 +170,13 @@ const App = {
             }
         });
 
-        // Theme swatch clicks
+        // Mode toggle (light/dark)
+        document.getElementById('mode-toggle').addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-mode');
+            this.applyMode(current === 'dark' ? 'light' : 'dark');
+        });
+
+        // Accent theme swatch clicks
         document.querySelectorAll('.theme-swatch').forEach(swatch => {
             swatch.addEventListener('click', () => {
                 this.applyTheme(swatch.dataset.theme);
@@ -187,27 +197,33 @@ const App = {
             });
         });
 
-        // Mobile: cycle through themes
+        // Mobile: tap toggles mode, long press cycles accent
         const mobileTheme = document.getElementById('mobile-theme-toggle');
         if (mobileTheme) {
             mobileTheme.addEventListener('click', () => {
-                const current = document.documentElement.getAttribute('data-theme');
-                const idx = this.themes.indexOf(current);
-                const next = this.themes[(idx + 1) % this.themes.length];
-                this.applyTheme(next);
+                const current = document.documentElement.getAttribute('data-mode');
+                this.applyMode(current === 'dark' ? 'light' : 'dark');
             });
+        }
+    },
+
+    applyMode(mode) {
+        document.documentElement.setAttribute('data-mode', mode);
+        localStorage.setItem('panpu-mode', mode);
+        // Update mode toggle UI
+        const label = document.getElementById('mode-label');
+        const toggleBtn = document.getElementById('mode-toggle');
+        if (label) label.textContent = mode === 'dark' ? '暗色模式' : '亮色模式';
+        if (toggleBtn) {
+            const icon = toggleBtn.querySelector('i');
+            if (icon) icon.setAttribute('data-lucide', mode === 'dark' ? 'moon' : 'sun');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
     },
 
     applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
         localStorage.setItem('panpu-theme', theme);
-        this.updateThemeUI(theme);
-    },
-
-    updateThemeUI(theme) {
-        const themeLabel = document.getElementById('theme-label');
-        if (themeLabel) themeLabel.textContent = this.themeLabels[theme] || '主题';
         document.querySelectorAll('.theme-swatch').forEach(s =>
             s.classList.toggle('active', s.dataset.theme === theme));
     },

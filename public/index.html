@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" data-mode="light" data-theme="indigo">
 
 <head>
   <meta charset="UTF-8">
@@ -82,16 +82,23 @@
 
         <!-- Theme -->
         <div class="settings-section">
-          <div class="settings-section-title"><i data-lucide="palette" class="lucide-inline"></i> 主题色</div>
+          <div class="settings-section-title"><i data-lucide="palette" class="lucide-inline"></i> 主题</div>
+          <button class="mode-toggle-btn" id="mode-toggle">
+            <i data-lucide="sun"></i>
+            <span id="mode-label">亮色模式</span>
+          </button>
+          <div style="margin-top:10px">
+            <div class="settings-section-title" style="font-size:0.78rem;margin-bottom:6px">强调色</div>
+          </div>
           <div class="settings-theme-row" id="theme-picker">
-            <div class="theme-swatch active" data-theme="light" title="亮色"></div>
-            <div class="theme-swatch" data-theme="dark" title="暗色"></div>
+            <div class="theme-swatch active" data-theme="indigo" title="靛蓝"></div>
             <div class="theme-swatch" data-theme="sakura" title="樱花"></div>
             <div class="theme-swatch" data-theme="ocean" title="深海"></div>
             <div class="theme-swatch" data-theme="forest" title="森林"></div>
             <div class="theme-swatch" data-theme="sunset" title="日落"></div>
             <div class="theme-swatch" data-theme="lavender" title="薰衣草"></div>
             <div class="theme-swatch" data-theme="mocha" title="摩卡"></div>
+            <div class="theme-swatch" data-theme="rosegold" title="玫瑰金"></div>
           </div>
         </div>
 

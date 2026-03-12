@@ -346,26 +346,79 @@ const GardenView = {
             <div class="shop-full-grid">
                 ${this.catalog.map(item => `
                     <div class="shop-card ${this.shopBalance >= item.cost ? '' : 'locked'}" data-type="${item.type}" data-cost="${item.cost}">
-                        <div class="shop-stages-preview">
-                            <div class="stage-thumb" title="种子"><img src="${item.stages.seed}" alt="种子"></div>
-                            <div class="stage-arrow">→</div>
-                            <div class="stage-thumb" title="发芽"><img src="${item.stages.sprout}" alt="发芽"></div>
-                            <div class="stage-arrow">→</div>
-                            <div class="stage-thumb" title="成长"><img src="${item.stages.growing}" alt="成长"></div>
-                            <div class="stage-arrow">→</div>
-                            <div class="stage-thumb active" title="成熟"><img src="${item.stages.mature}" alt="成熟"></div>
-                        </div>
+                        <img class="shop-card-img" src="${item.stages.mature}" alt="${item.name}">
                         <div class="shop-card-name">${item.name}</div>
-                        <div class="shop-card-desc">${item.desc}</div>
-                        <button class="shop-buy-btn" ${this.shopBalance < item.cost && item.cost > 0 ? 'disabled' : ''}>
-                            ${item.cost === 0 ? '🌱 去种植' : `🪙 ${item.cost}`}
-                        </button>
+                        <div class="shop-card-price">${item.cost === 0 ? '免费' : `🪙 ${item.cost}`}</div>
                     </div>
                 `).join('')}
             </div>
         `;
 
         this.bindShopEvents();
+    },
+
+    showTreeDetail(treeType) {
+        const item = this.catalog.find(c => c.type === treeType);
+        if (!item) return;
+        const canBuy = this.shopBalance >= item.cost;
+        const stageLabels = ['种子', '发芽', '成长', '成熟'];
+        const stageKeys = ['seed', 'sprout', 'growing', 'mature'];
+        const stageTimes = ['0分钟', '25分钟', '75分钟', '150分钟'];
+
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.innerHTML = `
+            <div class="modal-box tree-detail-modal">
+                <button class="modal-x-btn" id="tree-detail-close">✕</button>
+                <div class="tree-detail-hero">
+                    <img class="tree-detail-img" src="${item.stages.mature}" alt="${item.name}">
+                    <h3 class="tree-detail-name">${item.name}</h3>
+                    <p class="tree-detail-desc">${item.desc}</p>
+                </div>
+                <div class="tree-detail-stages">
+                    <h4>🌱 成长阶段</h4>
+                    <div class="tree-stages-timeline">
+                        ${stageKeys.map((key, i) => `
+                            <div class="stage-item">
+                                <img src="${item.stages[key]}" alt="${stageLabels[i]}">
+                                <span class="stage-label">${stageLabels[i]}</span>
+                                <span class="stage-time">${stageTimes[i]}</span>
+                            </div>
+                            ${i < 3 ? '<div class="stage-connector"><div class="stage-line"></div><span>▸</span></div>' : ''}
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="tree-detail-footer">
+                    <div class="tree-detail-cost">${item.cost === 0 ? '免费' : `🪙 ${item.cost} 喵喵币`}</div>
+                    <button class="shop-buy-btn ${canBuy ? '' : 'disabled'}" id="tree-detail-buy" ${canBuy ? '' : 'disabled'}>
+                        ${item.cost === 0 ? '🌱 去种植' : canBuy ? '🛒 购买并种植' : '🔒 喵喵币不足'}
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('active'));
+
+        overlay.querySelector('#tree-detail-close').addEventListener('click', () => {
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.remove(), 200);
+        });
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) {
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.remove(), 200);
+            }
+        });
+        const buyBtn = overlay.querySelector('#tree-detail-buy');
+        if (buyBtn && !buyBtn.disabled) {
+            buyBtn.addEventListener('click', () => {
+                overlay.remove();
+                this.selectedTree = treeType;
+                this.assignee = this.shopAssignee;
+                App.switchView('garden');
+                App.showToast('👆 点击空地种植', 'info');
+            });
+        }
     },
 
     bindShopEvents() {
@@ -377,18 +430,10 @@ const GardenView = {
             });
         });
 
-        // Buy buttons → select tree for planting, switch to garden
-        document.querySelectorAll('.shop-buy-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const card = btn.closest('.shop-card');
-                const type = card.dataset.type;
-                const cost = parseInt(card.dataset.cost);
-
-                // Set this tree as selected, sync assignee, switch to garden
-                this.selectedTree = type;
-                this.assignee = this.shopAssignee;
-                App.switchView('garden');
-                App.showToast('👆 点击空地种植', 'info');
+        // Clicking card opens detail modal
+        document.querySelectorAll('#view-shop .shop-card').forEach(card => {
+            card.addEventListener('click', () => {
+                this.showTreeDetail(card.dataset.type);
             });
         });
     },
