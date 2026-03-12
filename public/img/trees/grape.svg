@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <ellipse cx="50" cy="112" rx="22" ry="7" fill="#5D4037" opacity="0.25"/>
+  <!-- Vine trunk -->
+  <path d="M50 110 Q45 90 42 65 Q40 50 44 35" stroke="#6D4C41" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M44 45 Q50 38 58 42 Q64 50 60 60" stroke="#795548" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Leaves -->
+  <path d="M35 58 Q25 48 28 36 Q32 42 35 58Z" fill="#4CAF50"/>
+  <path d="M35 58 Q22 55 18 42 Q26 48 35 58Z" fill="#66BB6A"/>
+  <path d="M60 50 Q70 38 68 28 Q64 36 60 50Z" fill="#4CAF50"/>
+  <path d="M60 50 Q74 42 76 32 Q70 40 60 50Z" fill="#66BB6A"/>
+  <path d="M48 72 Q38 65 32 54 Q40 62 48 72Z" fill="#81C784"/>
+  <!-- Grape clusters -->
+  <g transform="translate(55, 68)">
+    <circle cx="0" cy="0" r="4" fill="#7B1FA2"/>
+    <circle cx="7" cy="2" r="4" fill="#9C27B0"/>
+    <circle cx="3.5" cy="6" r="4" fill="#8E24AA"/>
+    <circle cx="-4" cy="3" r="3.5" fill="#6A1B9A"/>
+    <circle cx="10" cy="6" r="3.5" fill="#AB47BC"/>
+    <circle cx="0" cy="9" r="3.5" fill="#7B1FA2"/>
+    <circle cx="6" cy="10" r="3" fill="#9C27B0"/>
+    <circle cx="3" cy="13" r="3" fill="#8E24AA"/>
+  </g>
+  <!-- Small cluster -->
+  <g transform="translate(32, 82)">
+    <circle cx="0" cy="0" r="3.5" fill="#7B1FA2"/>
+    <circle cx="6" cy="2" r="3.5" fill="#9C27B0"/>
+    <circle cx="3" cy="5" r="3" fill="#8E24AA"/>
+    <circle cx="-2" cy="4" r="3" fill="#6A1B9A"/>
+    <circle cx="1" cy="8" r="2.5" fill="#7B1FA2"/>
+  </g>
+  <!-- Tendrils -->
+  <path d="M44 35 Q42 28 46 24 Q50 28 48 32" stroke="#8BC34A" stroke-width="1" fill="none"/>
+  <path d="M60 42 Q64 36 62 30 Q58 34 60 38" stroke="#8BC34A" stroke-width="1" fill="none"/>
+</svg>

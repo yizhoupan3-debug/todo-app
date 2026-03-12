@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <ellipse cx="50" cy="112" rx="22" ry="7" fill="#5D4037" opacity="0.25"/>
+  <!-- Rice stalks -->
+  <path d="M38 110 Q36 85 38 50" stroke="#8BC34A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M50 110 Q50 82 52 48" stroke="#7CB342" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M62 110 Q64 85 62 50" stroke="#9CCC65" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Rice ears (drooping) -->
+  <path d="M38 50 Q30 42 22 46" stroke="#CDDC39" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="24" cy="46" r="2" fill="#FDD835"/>
+  <circle cx="28" cy="44" r="1.8" fill="#FDD835"/>
+  <circle cx="32" cy="43" r="1.6" fill="#FFEB3B"/>
+  <circle cx="26" cy="49" r="1.5" fill="#FDD835"/>
+  
+  <path d="M52 48 Q48 38 40 36" stroke="#CDDC39" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="42" cy="36" r="2" fill="#FDD835"/>
+  <circle cx="46" cy="36" r="1.8" fill="#FDD835"/>
+  <circle cx="44" cy="39" r="1.6" fill="#FFEB3B"/>
+  <circle cx="40" cy="39" r="1.5" fill="#FDD835"/>
+
+  <path d="M62 50 Q68 40 76 42" stroke="#CDDC39" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="74" cy="42" r="2" fill="#FDD835"/>
+  <circle cx="70" cy="40" r="1.8" fill="#FDD835"/>
+  <circle cx="66" cy="42" r="1.6" fill="#FFEB3B"/>
+  <circle cx="72" cy="45" r="1.5" fill="#FDD835"/>
+
+  <!-- Leaves -->
+  <ellipse cx="30" cy="75" rx="10" ry="3" fill="#8BC34A" transform="rotate(-20 30 75)"/>
+  <ellipse cx="58" cy="70" rx="9" ry="2.5" fill="#7CB342" transform="rotate(15 58 70)"/>
+  <ellipse cx="70" cy="80" rx="8" ry="2.5" fill="#9CCC65" transform="rotate(25 70 80)"/>
+</svg>

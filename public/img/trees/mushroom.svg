@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <ellipse cx="50" cy="112" rx="22" ry="7" fill="#5D4037" opacity="0.25"/>
+  <!-- Stem -->
+  <path d="M46 110 Q44 95 44 80 Q44 75 50 74 Q56 75 56 80 Q56 95 54 110Z" fill="#F5F5DC"/>
+  <path d="M48 110 Q47 95 47 82 Q47 76 50 75 Q50 82 50 95 Q50 102 52 110Z" fill="#EDE8D5"/>
+  <!-- Cap -->
+  <ellipse cx="50" cy="68" rx="26" ry="16" fill="#E53935"/>
+  <ellipse cx="50" cy="68" rx="22" ry="13" fill="#EF5350"/>
+  <!-- Spots -->
+  <circle cx="38" cy="64" r="4" fill="#FFEBEE" opacity="0.9"/>
+  <circle cx="54" cy="58" r="3.5" fill="#FFEBEE" opacity="0.9"/>
+  <circle cx="62" cy="66" r="3" fill="#FFEBEE" opacity="0.85"/>
+  <circle cx="44" cy="72" r="2.5" fill="#FFEBEE" opacity="0.8"/>
+  <circle cx="58" cy="74" r="2" fill="#FFEBEE" opacity="0.75"/>
+  <!-- Cap underside -->
+  <path d="M28 72 Q50 82 72 72" stroke="#C62828" stroke-width="1.5" fill="none" opacity="0.4"/>
+</svg>

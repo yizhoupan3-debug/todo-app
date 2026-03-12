@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <ellipse cx="50" cy="110" rx="16" ry="5" fill="#5D4037" opacity="0.2"/>
+  <path d="M50 108 Q50 92 50 76" stroke="#558B2F" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <ellipse cx="42" cy="95" rx="6" ry="3" fill="#689F38" transform="rotate(-15 42 95)"/>
+  <!-- Small chrysanthemum bud -->
+  <g transform="translate(50, 62)">
+    <ellipse cx="0" cy="-7" rx="2" ry="7" fill="#FFC107" transform="rotate(0 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="2" ry="7" fill="#FFD54F" transform="rotate(36 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="2" ry="7" fill="#FFC107" transform="rotate(72 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="2" ry="7" fill="#FFD54F" transform="rotate(108 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="2" ry="7" fill="#FFC107" transform="rotate(144 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="2" ry="7" fill="#FFD54F" transform="rotate(180 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="2" ry="7" fill="#FFC107" transform="rotate(216 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="2" ry="7" fill="#FFD54F" transform="rotate(252 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="2" ry="7" fill="#FFC107" transform="rotate(288 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="2" ry="7" fill="#FFD54F" transform="rotate(324 0 0)"/>
+    <circle cx="0" cy="0" r="3" fill="#FF8F00"/>
+  </g>
+</svg>

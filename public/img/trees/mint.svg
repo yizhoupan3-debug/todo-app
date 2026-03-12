@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <ellipse cx="50" cy="112" rx="22" ry="7" fill="#5D4037" opacity="0.25"/>
+  <!-- Stems -->
+  <path d="M50 110 Q48 90 46 70" stroke="#2E7D32" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M46 100 Q36 95 28 88" stroke="#2E7D32" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M52 95 Q60 90 68 84" stroke="#2E7D32" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Leaves - mint has rounded paired leaves -->
+  <ellipse cx="46" cy="70" rx="8" ry="6" fill="#66BB6A"/>
+  <ellipse cx="46" cy="70" rx="6" ry="4" fill="#81C784"/>
+  <ellipse cx="38" cy="60" rx="7" ry="5" fill="#4CAF50"/>
+  <ellipse cx="56" cy="62" rx="7" ry="5" fill="#66BB6A"/>
+  <ellipse cx="30" cy="52" rx="6" ry="4.5" fill="#81C784"/>
+  <ellipse cx="62" cy="55" rx="6" ry="4" fill="#4CAF50"/>
+  <ellipse cx="28" cy="88" rx="8" ry="6" fill="#66BB6A"/>
+  <ellipse cx="68" cy="84" rx="7" ry="5" fill="#81C784"/>
+  <!-- Tiny flower -->
+  <circle cx="34" cy="46" r="3" fill="#CE93D8"/>
+  <circle cx="34" cy="46" r="1.5" fill="#E1BEE7"/>
+</svg>

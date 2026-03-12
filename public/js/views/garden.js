@@ -15,16 +15,36 @@ const GardenView = {
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/sprout_growing.svg', mature: '/img/trees/sprout.svg' }
         },
         {
+            type: 'rice', icon: '🌾', name: '稻穗', cost: 5, desc: '粒粒皆辛苦',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/rice_growing.svg', mature: '/img/trees/rice.svg' }
+        },
+        {
             type: 'sunflower', icon: '🌻', name: '向日葵', cost: 10, desc: '追逐阳光',
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/sunflower_growing.svg', mature: '/img/trees/sunflower.svg' }
+        },
+        {
+            type: 'mushroom', icon: '🍄', name: '蘑菇', cost: 15, desc: '雨后精灵',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/mushroom_growing.svg', mature: '/img/trees/mushroom.svg' }
         },
         {
             type: 'tulip', icon: '🌷', name: '郁金香', cost: 20, desc: '优雅绽放',
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/tulip_growing.svg', mature: '/img/trees/tulip.svg' }
         },
         {
+            type: 'hibiscus', icon: '🌺', name: '芙蓉花', cost: 25, desc: '热情似火',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/hibiscus_growing.svg', mature: '/img/trees/hibiscus.svg' }
+        },
+        {
             type: 'sakura', icon: '🌸', name: '樱花树', cost: 30, desc: '浪漫满开',
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/sakura_growing.svg', mature: '/img/trees/sakura.svg' }
+        },
+        {
+            type: 'chrysanthemum', icon: '💐', name: '菊花', cost: 35, desc: '傲霜斗雪',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/chrysanthemum_growing.svg', mature: '/img/trees/chrysanthemum.svg' }
+        },
+        {
+            type: 'bamboo', icon: '🎋', name: '竹子', cost: 45, desc: '节节高升',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/bamboo_growing.svg', mature: '/img/trees/bamboo.svg' }
         },
         {
             type: 'pine', icon: '🌲', name: '松树', cost: 50, desc: '四季常青',
@@ -33,6 +53,14 @@ const GardenView = {
         {
             type: 'oak', icon: '🌳', name: '落叶树', cost: 50, desc: '枝繁叶茂',
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/oak_growing.svg', mature: '/img/trees/oak.svg' }
+        },
+        {
+            type: 'mint', icon: '🌿', name: '薄荷', cost: 60, desc: '清凉一夏',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/mint_growing.svg', mature: '/img/trees/mint.svg' }
+        },
+        {
+            type: 'lotus', icon: '🪷', name: '莲花', cost: 70, desc: '出淤泥不染',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/lotus_growing.svg', mature: '/img/trees/lotus.svg' }
         },
         {
             type: 'palm', icon: '🌴', name: '棕榈树', cost: 80, desc: '热带风情',
@@ -49,6 +77,10 @@ const GardenView = {
         {
             type: 'rose', icon: '🌹', name: '玫瑰', cost: 100, desc: '爱的承诺',
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/rose_growing.svg', mature: '/img/trees/rose.svg' }
+        },
+        {
+            type: 'grape', icon: '🍇', name: '葡萄藤', cost: 120, desc: '硕果累累',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/grape_growing.svg', mature: '/img/trees/grape.svg' }
         },
         {
             type: 'clover', icon: '🍀', name: '四叶草', cost: 150, desc: '幸运降临',
@@ -128,16 +160,16 @@ const GardenView = {
             <div class="island-hud">
                 <div class="island-hud-left">
                     <div class="garden-balance">
-                    <img src="/img/cat-coin.svg" alt="喵喵币" class="cat-coin-icon">
+                    <img src="/img/cat-coin.png" alt="喵喵币" class="cat-coin-icon">
                     <strong>${this.balance}</strong> 喵喵币
                 </div>
                 </div>
                 <div class="island-hud-center">
                     <button class="filter-pill ${this.assignee === '潘潘' ? 'active' : ''}" data-person="潘潘">
-                        <img src="/img/icons/潘潘.png" alt="" style="width:16px;height:16px;border-radius:50%"> 潘潘
+                        <img src="/img/panpan.png" alt="" style="width:16px;height:16px;border-radius:50%"> 潘潘
                     </button>
                     <button class="filter-pill ${this.assignee === '蒲蒲' ? 'active' : ''}" data-person="蒲蒲">
-                        <img src="/img/icons/蒲蒲.png" alt="" style="width:16px;height:16px;border-radius:50%"> 蒲蒲
+                        <img src="/img/pupu.png" alt="" style="width:16px;height:16px;border-radius:50%"> 蒲蒲
                     </button>
                 </div>
                 <div class="island-hud-right">
@@ -528,10 +560,10 @@ const GardenView = {
                 </div>
                 <div class="filter-pills">
                     <button class="filter-pill ${this.shopAssignee === '潘潘' ? 'active' : ''}" data-person="潘潘">
-                        <img src="/img/icons/潘潘.png" alt="" style="width:18px;height:18px;border-radius:50%"> 潘潘
+                        <img src="/img/panpan.png" alt="" style="width:18px;height:18px;border-radius:50%"> 潘潘
                     </button>
                     <button class="filter-pill ${this.shopAssignee === '蒲蒲' ? 'active' : ''}" data-person="蒲蒲">
-                        <img src="/img/icons/蒲蒲.png" alt="" style="width:18px;height:18px;border-radius:50%"> 蒲蒲
+                        <img src="/img/pupu.png" alt="" style="width:18px;height:18px;border-radius:50%"> 蒲蒲
                     </button>
                 </div>
             </div>

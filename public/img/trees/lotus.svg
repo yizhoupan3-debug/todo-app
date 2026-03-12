@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <ellipse cx="50" cy="112" rx="26" ry="8" fill="#5D4037" opacity="0.2"/>
+  <!-- Water -->
+  <ellipse cx="50" cy="108" rx="28" ry="10" fill="#4FC3F7" opacity="0.4"/>
+  <ellipse cx="50" cy="108" rx="24" ry="8" fill="#29B6F6" opacity="0.3"/>
+  <!-- Lily pads -->
+  <ellipse cx="30" cy="105" rx="12" ry="6" fill="#4CAF50"/>
+  <path d="M30 105 L30 99" stroke="#2E7D32" stroke-width="1" fill="none"/>
+  <ellipse cx="68" cy="102" rx="10" ry="5" fill="#66BB6A"/>
+  <ellipse cx="50" cy="100" rx="14" ry="6" fill="#388E3C"/>
+  <!-- Lotus stem -->
+  <path d="M50 95 Q48 78 46 58" stroke="#558B2F" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Lotus flower -->
+  <g transform="translate(46, 38)">
+    <ellipse cx="0" cy="-10" rx="5" ry="12" fill="#F48FB1" transform="rotate(0 0 0)"/>
+    <ellipse cx="0" cy="-10" rx="5" ry="12" fill="#F06292" transform="rotate(36 0 0)"/>
+    <ellipse cx="0" cy="-10" rx="5" ry="12" fill="#EC407A" transform="rotate(72 0 0)"/>
+    <ellipse cx="0" cy="-10" rx="5" ry="12" fill="#F48FB1" transform="rotate(108 0 0)"/>
+    <ellipse cx="0" cy="-10" rx="5" ry="12" fill="#F06292" transform="rotate(144 0 0)"/>
+    <ellipse cx="0" cy="-10" rx="5" ry="12" fill="#EC407A" transform="rotate(180 0 0)"/>
+    <ellipse cx="0" cy="-10" rx="5" ry="12" fill="#F48FB1" transform="rotate(216 0 0)"/>
+    <ellipse cx="0" cy="-10" rx="5" ry="12" fill="#F06292" transform="rotate(252 0 0)"/>
+    <ellipse cx="0" cy="-10" rx="5" ry="12" fill="#EC407A" transform="rotate(288 0 0)"/>
+    <ellipse cx="0" cy="-10" rx="5" ry="12" fill="#F48FB1" transform="rotate(324 0 0)"/>
+    <!-- Inner petals -->
+    <ellipse cx="0" cy="-6" rx="3" ry="7" fill="#FCE4EC" transform="rotate(18 0 0)"/>
+    <ellipse cx="0" cy="-6" rx="3" ry="7" fill="#FCE4EC" transform="rotate(90 0 0)"/>
+    <ellipse cx="0" cy="-6" rx="3" ry="7" fill="#FCE4EC" transform="rotate(162 0 0)"/>
+    <ellipse cx="0" cy="-6" rx="3" ry="7" fill="#FCE4EC" transform="rotate(234 0 0)"/>
+    <ellipse cx="0" cy="-6" rx="3" ry="7" fill="#FCE4EC" transform="rotate(306 0 0)"/>
+    <!-- Seed pod -->
+    <circle cx="0" cy="0" r="5" fill="#FFEB3B"/>
+    <circle cx="-2" cy="-1" r="1" fill="#FBC02D"/>
+    <circle cx="2" cy="-1" r="1" fill="#FBC02D"/>
+    <circle cx="0" cy="2" r="1" fill="#FBC02D"/>
+  </g>
+</svg>
