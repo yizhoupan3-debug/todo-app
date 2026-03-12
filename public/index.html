@@ -286,7 +286,7 @@
 
         <!-- Overview Cards -->
         <div class="stats-overview">
-          <div class="stats-card overview">
+          <div class="stats-card overview" data-section="section-task-chart">
             <div class="stats-card-icon">✅</div>
             <div class="stats-card-body">
               <div class="stats-card-value" id="stat-total-tasks">0</div>
@@ -294,21 +294,22 @@
             </div>
             <div class="stats-card-sub">日均 <span id="stat-avg-tasks">0</span></div>
           </div>
-          <div class="stats-card overview">
+          <div class="stats-card overview" data-section="section-water-chart">
             <div class="stats-card-icon">💧</div>
             <div class="stats-card-body">
               <div class="stats-card-value" id="stat-total-water">0L</div>
               <div class="stats-card-label">喝水总量</div>
             </div>
+            <div class="stats-card-sub">日均 <span id="stat-avg-water">0ml</span></div>
           </div>
-          <div class="stats-card overview">
+          <div class="stats-card overview" data-section="section-wakeup-grid">
             <div class="stats-card-icon">⏰</div>
             <div class="stats-card-body">
               <div class="stats-card-value" id="stat-wakeup-days">0/7</div>
               <div class="stats-card-label">起床打卡</div>
             </div>
           </div>
-          <div class="stats-card overview">
+          <div class="stats-card overview" data-section="section-pomo-card">
             <div class="stats-card-icon">🍅</div>
             <div class="stats-card-body">
               <div class="stats-card-value" id="stat-pomo-minutes">0</div>
@@ -319,25 +320,25 @@
         </div>
 
         <!-- Task Completion Chart -->
-        <div class="stats-section">
+        <div class="stats-section" id="section-task-chart">
           <h3 class="stats-section-title">📋 任务完成趋势</h3>
           <div class="stats-chart-container" id="stats-task-chart"></div>
         </div>
 
         <!-- Water Intake Chart -->
-        <div class="stats-section">
+        <div class="stats-section" id="section-water-chart">
           <h3 class="stats-section-title">💧 喝水趋势</h3>
           <div class="stats-chart-container water-chart" id="stats-water-chart"></div>
         </div>
 
         <!-- Wakeup Heatmap -->
-        <div class="stats-section">
+        <div class="stats-section" id="section-wakeup-grid">
           <h3 class="stats-section-title">⏰ 起床打卡记录</h3>
           <div class="stats-heatmap" id="stats-wakeup-grid"></div>
         </div>
 
         <!-- Pomodoro Summary -->
-        <div class="stats-section">
+        <div class="stats-section" id="section-pomo-card">
           <h3 class="stats-section-title">🍅 番茄钟专注</h3>
           <div class="stats-pomo-card">
             <div class="stats-pomo-ring-wrap">

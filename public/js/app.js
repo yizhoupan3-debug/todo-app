@@ -221,6 +221,7 @@ const App = {
             touchStartX = e.touches[0].clientX;
         }, { passive: true });
         mainContent.addEventListener('touchend', (e) => {
+            if (this.currentView !== 'daily' && this.currentView !== 'monthly') return;
             const diff = e.changedTouches[0].clientX - touchStartX;
             if (Math.abs(diff) > 80) {
                 if (this.currentView === 'daily') {

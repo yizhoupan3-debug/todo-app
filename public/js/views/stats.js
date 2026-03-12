@@ -26,6 +26,17 @@ const StatsView = {
                 this.load();
             });
         });
+
+        // Card click → scroll to section
+        document.querySelectorAll('.stats-card.overview').forEach(card => {
+            card.addEventListener('click', () => {
+                const target = card.dataset.section;
+                if (target) {
+                    const el = document.getElementById(target);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
     },
 
     open() {
@@ -79,6 +90,7 @@ const StatsView = {
         document.getElementById('stat-total-tasks').textContent = totalTasks;
         document.getElementById('stat-avg-tasks').textContent = (totalTasks / rangeDays).toFixed(1);
         document.getElementById('stat-total-water').textContent = (totalWater / 1000).toFixed(1) + 'L';
+        document.getElementById('stat-avg-water').textContent = Math.round(totalWater / rangeDays) + 'ml';
         document.getElementById('stat-wakeup-days').textContent = `${wakeupDays}/${rangeDays}`;
         document.getElementById('stat-pomo-minutes').textContent = totalPomoMinutes;
         document.getElementById('stat-pomo-rounds').textContent = totalPomoRounds;

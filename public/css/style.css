@@ -2912,6 +2912,7 @@ form {
   transition: all var(--transition);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .stats-card.overview::before {
