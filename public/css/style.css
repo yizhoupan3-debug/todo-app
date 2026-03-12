@@ -772,6 +772,105 @@ textarea:focus {
   display: none !important;
 }
 
+/* ===== LUCIDE ICONS ===== */
+.nav-icon svg,
+.nav-icon i svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.8;
+  color: currentColor;
+}
+
+.lucide-inline,
+.lucide-inline svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+  display: inline-flex;
+  vertical-align: -3px;
+  color: currentColor;
+}
+
+.stats-card-icon svg,
+.stats-card-icon i svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.6;
+  color: currentColor;
+}
+
+.modal-close svg,
+.modal-close i svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+.date-nav-btn svg,
+.date-nav-btn i svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
+}
+
+.menu-toggle svg,
+.menu-toggle i svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 2;
+}
+
+.header-icon-btn svg,
+.header-icon-btn i svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 1.8;
+}
+
+.ambient-panel-close svg,
+.ambient-panel-close i svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+.widget-install-icon svg,
+.widget-install-icon i svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.6;
+  color: var(--primary);
+}
+
+.love-heart svg,
+.love-heart i svg {
+  width: 16px;
+  height: 16px;
+  stroke-width: 0;
+  fill: #ff6b8a;
+  color: #ff6b8a;
+}
+
+.settings-section-title .lucide-inline svg {
+  color: var(--primary);
+}
+
+/* Bottom nav icon size */
+.bottom-nav-btn .nav-icon svg,
+.bottom-nav-btn .nav-icon i svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.6;
+}
+
+/* Stats section title icons */
+.stats-section-title .lucide-inline svg {
+  width: 18px;
+  height: 18px;
+  vertical-align: -3px;
+  color: var(--primary);
+}
+
 /* ===== SIDEBAR ===== */
 .sidebar {
   width: var(--sidebar-width);
@@ -1162,10 +1261,12 @@ textarea:focus {
 @keyframes viewFadeIn {
   from {
     opacity: 0;
+    transform: translateY(8px);
   }
 
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -1426,7 +1527,7 @@ textarea:focus {
 
 .task-card.done {
   opacity: 0.75;
-  transition: opacity var(--transition);
+  transition: opacity var(--transition), transform var(--transition);
 }
 
 .task-card.done:hover {

@@ -135,19 +135,33 @@ const DailyView = {
         container.querySelectorAll('.task-checkbox').forEach(cb => {
             cb.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const taskId = parseInt(cb.closest('.task-card').dataset.taskId);
+                const card = cb.closest('.task-card');
+                const taskId = parseInt(card.dataset.taskId);
                 const task = this.tasks.find(t => t.id === taskId);
                 if (!task) return;
 
                 const nextStatus = task.status === 'done' ? 'todo' : 'done';
+
+                // Optimistic UI: instantly update visual state
+                task.status = nextStatus;
+                card.classList.toggle('done', nextStatus === 'done');
+                cb.classList.toggle('checked', nextStatus === 'done');
+                card.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+                card.style.opacity = '0.6';
+                card.style.transform = 'scale(0.97)';
+
                 try {
                     const updated = await API.updateTask(taskId, { status: nextStatus });
                     App.socket.emit('task:updated', updated);
+                    // Full re-render to move card to correct column
                     this.loadTasks();
                     if (nextStatus === 'done') {
                         App.showToast('✅ 任务完成！', 'success');
                     }
                 } catch (err) {
+                    // Rollback optimistic update
+                    task.status = nextStatus === 'done' ? 'todo' : 'done';
+                    this.render();
                     App.showToast('更新失败', 'error');
                 }
             });

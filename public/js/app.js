@@ -12,7 +12,7 @@ const App = {
         this.socket = io();
         const debouncedRefresh = () => {
             clearTimeout(this._refreshTimer);
-            this._refreshTimer = setTimeout(() => this.refreshCurrentView(), 300);
+            this._refreshTimer = setTimeout(() => this.refreshCurrentView(), 150);
         };
         this.socket.on('task:created', debouncedRefresh);
         this.socket.on('task:updated', debouncedRefresh);
@@ -31,6 +31,9 @@ const App = {
         TaskModal.init();
         ICSImport.init();
         Pomodoro.init();
+
+        // Initialize Lucide icons
+        if (typeof lucide !== 'undefined') lucide.createIcons();
 
         // Theme
         this.initTheme();
@@ -81,9 +84,7 @@ const App = {
         document.getElementById('header-coin-btn')?.addEventListener('click', () => this.switchView('garden'));
 
         // Load initial coin balance
-        API.getCoins('潘潘').then(d => {
-            document.getElementById('header-coins').textContent = d.balance;
-        }).catch(() => { });
+        this._refreshHeaderCoins();
 
         // Mobile pomodoro
         const mobilePomodoro = document.getElementById('mobile-pomodoro');
@@ -245,13 +246,20 @@ const App = {
         const mobileCheckin = document.getElementById('mobile-checkin');
         if (mobileCheckin) mobileCheckin.classList.toggle('active', view === 'checkin');
 
-        // Show/hide view containers
-        document.getElementById('view-daily').classList.toggle('hidden', view !== 'daily');
-        document.getElementById('view-monthly').classList.toggle('hidden', view !== 'monthly');
-        document.getElementById('view-checkin').classList.toggle('hidden', view !== 'checkin');
-        document.getElementById('view-stats').classList.toggle('hidden', view !== 'stats');
-        document.getElementById('view-garden').classList.toggle('hidden', view !== 'garden');
-        document.getElementById('view-shop').classList.toggle('hidden', view !== 'shop');
+        // Show/hide view containers + trigger transition animation
+        const viewIds = ['view-daily', 'view-monthly', 'view-checkin', 'view-stats', 'view-garden', 'view-shop'];
+        const viewMap = { daily: 'view-daily', monthly: 'view-monthly', checkin: 'view-checkin', stats: 'view-stats', garden: 'view-garden', shop: 'view-shop' };
+        for (const vid of viewIds) {
+            const el = document.getElementById(vid);
+            const isTarget = vid === viewMap[view];
+            el.classList.toggle('hidden', !isTarget);
+            if (isTarget) {
+                // Re-trigger fade-in animation
+                el.style.animation = 'none';
+                el.offsetHeight; // force reflow
+                el.style.animation = 'viewFadeIn 0.25s ease-out';
+            }
+        }
 
         // Show/hide date navigation (only for daily/monthly)
         const showDateNav = (view === 'daily' || view === 'monthly');

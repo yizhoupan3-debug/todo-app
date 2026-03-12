@@ -9,18 +9,18 @@ const GardenView = {
 
     // Tree catalog (frontend-defined)
     catalog: [
-        { type: 'sprout', icon: '🌱', name: '小草', cost: 0, desc: '万物起始' },
-        { type: 'sunflower', icon: '🌻', name: '向日葵', cost: 10, desc: '追逐阳光' },
-        { type: 'tulip', icon: '🌷', name: '郁金香', cost: 20, desc: '优雅绽放' },
-        { type: 'sakura', icon: '🌸', name: '樱花树', cost: 30, desc: '浪漫满开' },
-        { type: 'pine', icon: '🌲', name: '松树', cost: 50, desc: '四季常青' },
-        { type: 'oak', icon: '🌳', name: '落叶树', cost: 50, desc: '枝繁叶茂' },
-        { type: 'palm', icon: '🌴', name: '棕榈树', cost: 80, desc: '热带风情' },
-        { type: 'christmas', icon: '🎄', name: '圣诞树', cost: 80, desc: '节日快乐' },
-        { type: 'cactus', icon: '🌵', name: '仙人掌', cost: 100, desc: '沙漠之花' },
-        { type: 'rose', icon: '🌹', name: '玫瑰', cost: 100, desc: '爱的承诺' },
-        { type: 'clover', icon: '🍀', name: '四叶草', cost: 150, desc: '幸运降临' },
-        { type: 'lavender', icon: '🪻', name: '彩虹花', cost: 200, desc: '传说之花' },
+        { type: 'sprout', icon: '🌱', img: '/img/trees/sprout.svg', name: '小草', cost: 0, desc: '万物起始' },
+        { type: 'sunflower', icon: '🌻', img: '/img/trees/sunflower.svg', name: '向日葵', cost: 10, desc: '追逐阳光' },
+        { type: 'tulip', icon: '🌷', img: '/img/trees/tulip.svg', name: '郁金香', cost: 20, desc: '优雅绽放' },
+        { type: 'sakura', icon: '🌸', img: '/img/trees/sakura.svg', name: '樱花树', cost: 30, desc: '浪漫满开' },
+        { type: 'pine', icon: '🌲', img: '/img/trees/pine.svg', name: '松树', cost: 50, desc: '四季常青' },
+        { type: 'oak', icon: '🌳', img: '/img/trees/oak.svg', name: '落叶树', cost: 50, desc: '枝繁叶茂' },
+        { type: 'palm', icon: '🌴', img: '/img/trees/palm.svg', name: '棕榈树', cost: 80, desc: '热带风情' },
+        { type: 'christmas', icon: '🎄', img: '/img/trees/christmas.svg', name: '圣诞树', cost: 80, desc: '节日快乐' },
+        { type: 'cactus', icon: '🌵', img: '/img/trees/cactus.svg', name: '仙人掌', cost: 100, desc: '沙漠之花' },
+        { type: 'rose', icon: '🌹', img: '/img/trees/rose.svg', name: '玫瑰', cost: 100, desc: '爱的承诺' },
+        { type: 'clover', icon: '🍀', img: '/img/trees/clover.svg', name: '四叶草', cost: 150, desc: '幸运降临' },
+        { type: 'lavender', icon: '🪻', img: '/img/trees/lavender.svg', name: '彩虹花', cost: 200, desc: '传说之花' },
     ],
 
     init() { },
@@ -111,7 +111,7 @@ const GardenView = {
     renderTrees() {
         return this.trees.map((tree, i) => {
             const catItem = this.catalog.find(c => c.type === tree.tree_type);
-            const icon = catItem ? catItem.icon : '🌱';
+            const icon = catItem ? catItem.img : '/img/trees/sprout.svg';
             const x = tree.position_x || (10 + (i % 8) * 11);
             const y = tree.position_y || (20 + Math.floor(i / 8) * 15);
             const age = Date.now() - new Date(tree.planted_at).getTime();
@@ -185,7 +185,7 @@ const GardenView = {
             <div class="shop-full-grid">
                 ${this.catalog.map(item => `
                     <div class="shop-card ${this.shopBalance >= item.cost ? '' : 'locked'}" data-type="${item.type}" data-cost="${item.cost}">
-                        <div class="shop-card-icon">${item.icon}</div>
+                        <img class="shop-card-img" src="${item.img}" alt="${item.name}">
                         <div class="shop-card-name">${item.name}</div>
                         <div class="shop-card-desc">${item.desc}</div>
                         <button class="shop-buy-btn" ${this.shopBalance < item.cost && item.cost > 0 ? 'disabled' : ''}>

@@ -18,6 +18,7 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
 <body>
@@ -28,7 +29,7 @@
     </div>
 
     <div class="love-counter" id="love-counter">
-      <span class="love-heart">💕</span>
+      <span class="love-heart"><i data-lucide="heart" class="lucide-inline"></i></span>
       <span class="love-text">在一起</span>
       <span class="love-days" id="love-days">0</span>
       <span class="love-text">天</span>
@@ -38,11 +39,11 @@
 
     <nav class="sidebar-nav">
       <button class="nav-btn active" data-view="daily" id="nav-daily">
-        <span class="nav-icon">📅</span>
+        <span class="nav-icon"><i data-lucide="calendar-days"></i></span>
         <span>每日</span>
       </button>
       <button class="nav-btn" data-view="monthly" id="nav-monthly">
-        <span class="nav-icon">🗓️</span>
+        <span class="nav-icon"><i data-lucide="calendar-range"></i></span>
         <span>每月</span>
       </button>
       <button class="nav-btn" id="nav-pomodoro">
@@ -50,38 +51,38 @@
         <span>番茄钟</span>
       </button>
       <button class="nav-btn" id="nav-checkin">
-        <span class="nav-icon">✅</span>
+        <span class="nav-icon"><i data-lucide="circle-check-big"></i></span>
         <span>打卡</span>
       </button>
       <button class="nav-btn" id="nav-stats">
-        <span class="nav-icon">📊</span>
+        <span class="nav-icon"><i data-lucide="bar-chart-3"></i></span>
         <span>统计</span>
       </button>
       <button class="nav-btn" data-view="garden" id="nav-garden">
-        <span class="nav-icon">🌳</span>
+        <span class="nav-icon"><i data-lucide="trees"></i></span>
         <span>花园</span>
       </button>
       <button class="nav-btn" data-view="shop" id="nav-shop">
-        <span class="nav-icon">🛒</span>
+        <span class="nav-icon"><i data-lucide="store"></i></span>
         <span>商城</span>
       </button>
     </nav>
 
     <div class="sidebar-footer">
       <button class="action-btn" id="btn-settings">
-        <span>⚙️</span> 设置
+        <span><i data-lucide="settings" class="lucide-inline"></i></span> 设置
       </button>
 
       <div class="settings-panel hidden" id="settings-panel">
         <!-- ICS Import -->
         <div class="settings-section">
-          <div class="settings-section-title">📥 导入</div>
+          <div class="settings-section-title"><i data-lucide="download" class="lucide-inline"></i> 导入</div>
           <button class="settings-action-btn" id="btn-import-ics">导入 ICS 日历</button>
         </div>
 
         <!-- Theme -->
         <div class="settings-section">
-          <div class="settings-section-title">🎨 主题色</div>
+          <div class="settings-section-title"><i data-lucide="palette" class="lucide-inline"></i> 主题色</div>
           <div class="settings-theme-row" id="theme-picker">
             <div class="theme-swatch active" data-theme="light" title="亮色"></div>
             <div class="theme-swatch" data-theme="dark" title="暗色"></div>
@@ -94,7 +95,7 @@
 
         <!-- Widgets -->
         <div class="settings-section">
-          <div class="settings-section-title">🖥️ 桌面小组件</div>
+          <div class="settings-section-title"><i data-lucide="monitor" class="lucide-inline"></i> 桌面小组件</div>
           <div class="settings-platform-row">
             <button class="platform-btn active" data-platform="mac" id="platform-mac">🍎 Mac</button>
             <button class="platform-btn" data-platform="win" id="platform-win">🪟 Win</button>
@@ -102,7 +103,7 @@
           <div class="widget-install-list">
             <div class="widget-install-item" data-widget="todo">
               <div class="widget-install-info">
-                <span class="widget-install-icon">📋</span>
+                <span class="widget-install-icon"><i data-lucide="clipboard-list"></i></span>
                 <div>
                   <div class="widget-install-name">今日待办</div>
                   <div class="widget-install-desc">紧凑任务列表</div>
@@ -112,7 +113,7 @@
             </div>
             <div class="widget-install-item" data-widget="calendar">
               <div class="widget-install-info">
-                <span class="widget-install-icon">📅</span>
+                <span class="widget-install-icon"><i data-lucide="calendar-days"></i></span>
                 <div>
                   <div class="widget-install-name">月历视图</div>
                   <div class="widget-install-desc">日历 + 任务详情</div>
@@ -130,21 +131,21 @@
   <main class="main-content" id="main-content">
     <!-- Header Bar -->
     <header class="main-header" id="main-header">
-      <button class="menu-toggle" id="btn-menu">☰</button>
+      <button class="menu-toggle" id="btn-menu"><i data-lucide="menu"></i></button>
       <div class="header-center">
         <h2 id="header-title">今日任务</h2>
         <div class="date-nav" id="date-nav">
-          <button class="date-nav-btn" id="btn-prev">‹</button>
+          <button class="date-nav-btn" id="btn-prev"><i data-lucide="chevron-left"></i></button>
           <span class="date-display" id="date-display"></span>
-          <button class="date-nav-btn" id="btn-next">›</button>
+          <button class="date-nav-btn" id="btn-next"><i data-lucide="chevron-right"></i></button>
           <button class="date-nav-btn today-btn" id="btn-today">今天</button>
         </div>
       </div>
       <button class="header-coin-btn" id="header-coin-btn" title="喵喵币">
-        🪙 <span id="header-coins">0</span>
+        <i data-lucide="coins" class="lucide-inline"></i> <span id="header-coins">0</span>
       </button>
       <button class="header-icon-btn" id="btn-ambient" title="环境音">
-        🔊 <span class="ambient-badge"></span>
+        <i data-lucide="volume-2"></i> <span class="ambient-badge"></span>
       </button>
       <button class="add-btn" id="btn-add-task">
         <span>+</span>
@@ -154,8 +155,8 @@
     <!-- Ambient Sound Panel -->
     <div class="ambient-panel hidden" id="ambient-panel">
       <div class="ambient-panel-header">
-        <h3>🎵 环境音</h3>
-        <button class="ambient-panel-close" id="ambient-close">×</button>
+        <h3><i data-lucide="music" class="lucide-inline"></i> 环境音</h3>
+        <button class="ambient-panel-close" id="ambient-close"><i data-lucide="x"></i></button>
       </div>
       <div id="ambient-grid"></div>
     </div>
@@ -355,7 +356,7 @@
         <!-- Overview Cards -->
         <div class="stats-overview">
           <div class="stats-card overview" data-section="section-task-chart">
-            <div class="stats-card-icon">✅</div>
+            <div class="stats-card-icon"><i data-lucide="check-circle-2"></i></div>
             <div class="stats-card-body">
               <div class="stats-card-value" id="stat-total-tasks">0</div>
               <div class="stats-card-label">完成任务</div>
@@ -363,7 +364,7 @@
             <div class="stats-card-sub">日均 <span id="stat-avg-tasks">0</span></div>
           </div>
           <div class="stats-card overview" data-section="section-water-chart">
-            <div class="stats-card-icon">💧</div>
+            <div class="stats-card-icon"><i data-lucide="droplets"></i></div>
             <div class="stats-card-body">
               <div class="stats-card-value" id="stat-total-water">0L</div>
               <div class="stats-card-label">喝水总量</div>
@@ -371,14 +372,14 @@
             <div class="stats-card-sub">日均 <span id="stat-avg-water">0ml</span></div>
           </div>
           <div class="stats-card overview" data-section="section-wakeup-grid">
-            <div class="stats-card-icon">⏰</div>
+            <div class="stats-card-icon"><i data-lucide="alarm-clock"></i></div>
             <div class="stats-card-body">
               <div class="stats-card-value" id="stat-wakeup-days">0/7</div>
               <div class="stats-card-label">起床打卡</div>
             </div>
           </div>
           <div class="stats-card overview" data-section="section-pomo-card">
-            <div class="stats-card-icon">🍅</div>
+            <div class="stats-card-icon"><i data-lucide="timer"></i></div>
             <div class="stats-card-body">
               <div class="stats-card-value" id="stat-pomo-minutes">0</div>
               <div class="stats-card-label">专注分钟</div>
@@ -389,25 +390,25 @@
 
         <!-- Task Completion Chart -->
         <div class="stats-section" id="section-task-chart">
-          <h3 class="stats-section-title">📋 任务完成趋势</h3>
+          <h3 class="stats-section-title"><i data-lucide="clipboard-list" class="lucide-inline"></i> 任务完成趋势</h3>
           <div class="stats-chart-container" id="stats-task-chart"></div>
         </div>
 
         <!-- Water Intake Chart -->
         <div class="stats-section" id="section-water-chart">
-          <h3 class="stats-section-title">💧 喝水趋势</h3>
+          <h3 class="stats-section-title"><i data-lucide="droplets" class="lucide-inline"></i> 喝水趋势</h3>
           <div class="stats-chart-container water-chart" id="stats-water-chart"></div>
         </div>
 
         <!-- Wakeup Heatmap -->
         <div class="stats-section" id="section-wakeup-grid">
-          <h3 class="stats-section-title">⏰ 起床打卡记录</h3>
+          <h3 class="stats-section-title"><i data-lucide="alarm-clock" class="lucide-inline"></i> 起床打卡记录</h3>
           <div class="stats-heatmap" id="stats-wakeup-grid"></div>
         </div>
 
         <!-- Pomodoro Summary -->
         <div class="stats-section" id="section-pomo-card">
-          <h3 class="stats-section-title">🍅 番茄钟专注</h3>
+          <h3 class="stats-section-title"><i data-lucide="timer" class="lucide-inline"></i> 番茄钟专注</h3>
           <div class="stats-pomo-card">
             <div class="stats-pomo-ring-wrap">
               <svg class="stats-pomo-svg" viewBox="0 0 120 120">
@@ -433,26 +434,26 @@
   <!-- Bottom Nav (Mobile) -->
   <nav class="bottom-nav" id="bottom-nav">
     <button class="bottom-nav-btn active" data-view="daily">
-      <span class="nav-icon">📅</span>
+      <span class="nav-icon"><i data-lucide="calendar-days"></i></span>
       <span>每日</span>
     </button>
     <button class="bottom-nav-btn" data-view="monthly">
-      <span class="nav-icon">🗓️</span>
+      <span class="nav-icon"><i data-lucide="calendar-range"></i></span>
       <span>每月</span>
     </button>
     <button class="bottom-nav-btn add-fab" id="fab-add">
-      <span class="nav-icon">➕</span>
+      <span class="nav-icon"><i data-lucide="plus"></i></span>
     </button>
     <button class="bottom-nav-btn" id="mobile-pomodoro">
       <span class="nav-icon"><img class="nav-icon-img" src="/img/pomodoro.png" alt=""></span>
       <span>番茄钟</span>
     </button>
     <button class="bottom-nav-btn" id="mobile-checkin">
-      <span class="nav-icon">✅</span>
+      <span class="nav-icon"><i data-lucide="circle-check-big"></i></span>
       <span>打卡</span>
     </button>
     <button class="bottom-nav-btn" id="mobile-stats">
-      <span class="nav-icon">📊</span>
+      <span class="nav-icon"><i data-lucide="bar-chart-3"></i></span>
       <span>统计</span>
     </button>
     <button class="bottom-nav-btn" id="mobile-theme-toggle">
@@ -466,7 +467,7 @@
     <div class="modal" id="task-modal">
       <div class="modal-header">
         <h3 id="modal-title">新建任务</h3>
-        <button class="modal-close" id="modal-close">×</button>
+        <button class="modal-close" id="modal-close"><i data-lucide="x"></i></button>
       </div>
       <form id="task-form">
         <input type="hidden" id="task-id">
