@@ -114,88 +114,166 @@ const GardenView = {
         const plantedCount = this.plots.filter(p => p.status === 'planted').length;
         const typesCollected = new Set(this.plots.filter(p => p.tree_type).map(p => p.tree_type)).size;
 
+        // Plot positions on island (% of island-land area)
+        const PP = [
+            [22, 18], [36, 14], [50, 12], [64, 16], [78, 20],
+            [16, 32], [30, 28], [44, 26], [58, 28], [72, 32], [86, 34],
+            [12, 46], [26, 42], [40, 40], [54, 42], [68, 44], [82, 48],
+            [18, 58], [32, 56], [46, 54], [60, 56], [74, 60],
+            [28, 70], [48, 68], [62, 72],
+        ];
+
         el.innerHTML = `
-            <div class="garden-header">
-                <div class="garden-balance">
-                    <img src="/img/icons/潘潘.png" alt="" style="width:28px;height:28px;border-radius:50%;margin-right:6px">
+            <!-- Floating HUD -->
+            <div class="island-hud">
+                <div class="island-hud-left">
+                    <div class="garden-balance">
+                    <img src="/img/cat-coin.svg" alt="喵喵币" class="cat-coin-icon">
                     <strong>${this.balance}</strong> 喵喵币
                 </div>
-                <div class="filter-pills">
+                </div>
+                <div class="island-hud-center">
                     <button class="filter-pill ${this.assignee === '潘潘' ? 'active' : ''}" data-person="潘潘">
-                        <img src="/img/icons/潘潘.png" alt="" style="width:18px;height:18px;border-radius:50%"> 潘潘
+                        <img src="/img/icons/潘潘.png" alt="" style="width:16px;height:16px;border-radius:50%"> 潘潘
                     </button>
                     <button class="filter-pill ${this.assignee === '蒲蒲' ? 'active' : ''}" data-person="蒲蒲">
-                        <img src="/img/icons/蒲蒲.png" alt="" style="width:18px;height:18px;border-radius:50%"> 蒲蒲
+                        <img src="/img/icons/蒲蒲.png" alt="" style="width:16px;height:16px;border-radius:50%"> 蒲蒲
                     </button>
                 </div>
-                <button class="btn-history" id="garden-history-btn">📊 记录</button>
-            </div>
-            <div class="island-container">
-                <div class="island-grid">
-                    ${this.renderGrid()}
+                <div class="island-hud-right">
+                    <button class="hud-btn" id="garden-history-btn" title="记录">📊</button>
                 </div>
             </div>
+
+            <!-- Draggable island world -->
+            <div class="island-viewport" id="island-viewport">
+                <div class="island-world" id="island-world">
+                    <!-- Animated ocean waves -->
+                    <div class="ocean-wave w1"></div>
+                    <div class="ocean-wave w2"></div>
+                    <div class="ocean-wave w3"></div>
+
+                    <!-- Island shape -->
+                    <svg class="island-shape" viewBox="0 0 1000 750">
+                        <defs>
+                            <filter id="ishadow"><feDropShadow dx="0" dy="6" stdDeviation="16" flood-color="rgba(0,0,0,0.35)"/></filter>
+                            <radialGradient id="sandG" cx="50%" cy="50%"><stop offset="0%" stop-color="#D4C07A"/><stop offset="100%" stop-color="#BDA862"/></radialGradient>
+                            <radialGradient id="grassG" cx="50%" cy="40%"><stop offset="0%" stop-color="#5EA03B"/><stop offset="60%" stop-color="#4A8830"/><stop offset="100%" stop-color="#3D7228"/></radialGradient>
+                        </defs>
+                        <path d="M80,80 C200,20 400,0 600,10 800,20 950,100 970,200 990,350 980,500 920,600 840,700 650,740 500,730 300,720 120,680 50,580 10,500 0,350 20,220 30,140 50,100 80,80Z" fill="url(#sandG)" filter="url(#ishadow)"/>
+                        <path d="M120,120 C250,60 420,45 580,50 760,60 890,130 910,230 930,360 920,470 870,560 790,650 620,690 480,680 310,670 160,640 100,550 60,480 50,340 65,240 75,170 90,140 120,120Z" fill="url(#grassG)"/>
+                        <path d="M300,350 Q400,320 500,340 Q600,360 700,340" stroke="#8B7355" stroke-width="8" fill="none" opacity="0.25" stroke-linecap="round"/>
+                        <path d="M480,200 Q500,300 490,400 Q480,500 500,600" stroke="#8B7355" stroke-width="6" fill="none" opacity="0.18" stroke-linecap="round"/>
+                    </svg>
+
+                    <!-- Island land (positions relative to this) -->
+                    <div class="island-land" id="island-land">
+                        <!-- Hut -->
+                        <div class="island-hut" style="left:42%;top:2%">
+                            <div class="hut-body">
+                                <div class="hut-roof"></div>
+                                <div class="hut-wall"></div>
+                                <div class="hut-door"></div>
+                            </div>
+                            <div class="hut-label">🏠 小屋</div>
+                        </div>
+
+                        <!-- Wild trees (decorative, not interactive) -->
+                        <img class="deco-tree" src="/img/trees/palm.svg" style="left:2%;top:8%;width:48px;opacity:.6;filter:brightness(.8)saturate(.7)">
+                        <img class="deco-tree" src="/img/trees/palm.svg" style="left:90%;top:12%;width:44px;opacity:.55;filter:brightness(.75)saturate(.65)">
+                        <img class="deco-tree" src="/img/trees/oak.svg"  style="left:92%;top:48%;width:40px;opacity:.5;filter:brightness(.8)saturate(.6)">
+                        <img class="deco-tree" src="/img/trees/pine.svg" style="left:4%;top:65%;width:38px;opacity:.55;filter:brightness(.78)saturate(.65)">
+                        <img class="deco-tree" src="/img/trees/palm.svg" style="left:88%;top:68%;width:46px;opacity:.5;filter:brightness(.75)saturate(.6)">
+                        <img class="deco-tree" src="/img/trees/pine.svg" style="left:50%;top:82%;width:36px;opacity:.45;filter:brightness(.8)saturate(.6)">
+                        <img class="deco-tree" src="/img/trees/oak.svg"  style="left:80%;top:80%;width:34px;opacity:.45;filter:brightness(.78)saturate(.55)">
+
+                        <!-- Beach palms -->
+                        <img class="deco-tree beach-palm" src="/img/trees/palm.svg" style="left:-3%;top:28%;width:56px;opacity:.8">
+                        <img class="deco-tree beach-palm" src="/img/trees/palm.svg" style="left:95%;top:24%;width:52px;opacity:.75">
+                        <img class="deco-tree beach-palm" src="/img/trees/palm.svg" style="left:32%;top:88%;width:48px;opacity:.7">
+                        <img class="deco-tree beach-palm" src="/img/trees/palm.svg" style="left:70%;top:86%;width:52px;opacity:.75">
+
+                        <!-- Rocks -->
+                        <div class="deco-rock" style="left:8%;top:88%">🪨</div>
+                        <div class="deco-rock" style="left:86%;top:84%">🪨</div>
+                        <div class="deco-rock" style="left:93%;top:40%;font-size:16px">🪨</div>
+
+                        <!-- Interactive Plots -->
+                        ${this.plots.map((plot, i) => {
+            const p = PP[i] || [50, 50];
+            return this.renderIslandPlot(plot, p[0], p[1]);
+        }).join('')}
+                    </div>
+                </div>
+            </div>
+
             ${this.selectedTree ? this.renderPlantingToolbar() : ''}
-            <div class="garden-stats">
-                <div class="garden-stat"><div class="garden-stat-num">${plantedCount}</div><div>已种植物</div></div>
-                <div class="garden-stat"><div class="garden-stat-num">${typesCollected}</div><div>种类收集</div></div>
-                <div class="garden-stat"><div class="garden-stat-num">${clearedCount}</div><div>已开垦</div></div>
+
+            <div class="island-stats-bar">
+                <span>🌱 ${plantedCount} 种植</span>
+                <span>📦 ${typesCollected} 种类</span>
+                <span>⛏️ ${clearedCount} 开垦</span>
             </div>
         `;
 
         this.bindGardenEvents();
+        this.initDrag();
     },
 
-    renderGrid() {
-        return this.plots.map(plot => {
-            if (plot.status === 'wasteland') {
-                return this.renderWastelandPlot(plot);
-            } else if (plot.status === 'cleared') {
-                return this.renderClearedPlot(plot);
-            } else {
-                return this.renderPlantedPlot(plot);
-            }
-        }).join('');
-    },
-
-    renderWastelandPlot(plot) {
-        const obs = this.obstacleMap[plot.obstacle_type] || this.obstacleMap.rock;
-        return `
-            <div class="island-plot wasteland" data-plot-id="${plot.id}" title="${obs.name} · 开荒 ${obs.cost}🪙">
-                <img class="plot-obstacle" src="${obs.img}" alt="${obs.name}">
-                <div class="plot-clear-cost">⛏️ ${obs.cost}</div>
-            </div>
-        `;
-    },
-
-    renderClearedPlot(plot) {
-        const isSelected = this.selectedTree;
-        return `
-            <div class="island-plot cleared ${isSelected ? 'plantable' : ''}" data-plot-id="${plot.id}" title="空地 · ${isSelected ? '点击种植' : '在商城选树'}">
-                ${isSelected ? '<div class="plot-plant-hint">🌱</div>' : '<div class="plot-empty-hint">空</div>'}
-            </div>
-        `;
-    },
-
-    renderPlantedPlot(plot) {
+    renderIslandPlot(plot, x, y) {
+        if (plot.status === 'wasteland') {
+            const obs = this.obstacleMap[plot.obstacle_type] || this.obstacleMap.rock;
+            return `<div class="iplot wasteland" data-plot-id="${plot.id}" style="left:${x}%;top:${y}%" title="${obs.name} · 开荒 ${obs.cost} 喵喵币">
+                <img src="${obs.img}" alt="${obs.name}" class="iplot-img"><span class="iplot-cost">⛏️${obs.cost}</span></div>`;
+        }
+        if (plot.status === 'cleared') {
+            const sel = this.selectedTree;
+            return `<div class="iplot cleared ${sel ? 'plantable' : ''}" data-plot-id="${plot.id}" style="left:${x}%;top:${y}%" title="空地">
+                <div class="iplot-empty">${sel ? '🌱' : ''}</div></div>`;
+        }
         const catItem = this.catalog.find(c => c.type === plot.tree_type);
         const gm = plot.growth_minutes || 0;
         const stage = this.getGrowthStage(gm);
-        const label = this.getGrowthLabel(gm);
         const pct = Math.min(100, Math.round(gm / 150 * 100));
+        let imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.svg';
+        return `<div class="iplot planted stage-${stage}" data-plot-id="${plot.id}" style="left:${x}%;top:${y}%" title="${catItem?.name || plot.tree_type} · ${this.getGrowthLabel(gm)}">
+            <img src="${imgSrc}" alt="" class="iplot-img"><div class="iplot-bar"><div class="iplot-bar-fill" style="width:${pct}%"></div></div></div>`;
+    },
 
-        let imgSrc = '/img/trees/seed.svg';
-        if (catItem && catItem.stages) {
-            imgSrc = catItem.stages[stage] || catItem.stages.mature;
-        }
+    initDrag() {
+        const vp = document.getElementById('island-viewport');
+        const world = document.getElementById('island-world');
+        if (!vp || !world) return;
+        let drag = false, sx, sy, sl, st;
 
-        return `
-            <div class="island-plot planted stage-${stage}" data-plot-id="${plot.id}"
-                 title="${catItem ? catItem.name : plot.tree_type} · ${label} (${gm}分钟)">
-                <img class="plot-tree-img" src="${imgSrc}" alt="${catItem ? catItem.name : ''}">
-                <div class="tree-growth-bar"><div class="tree-growth-fill" style="width:${pct}%"></div></div>
-            </div>
-        `;
+        // Center island
+        requestAnimationFrame(() => {
+            vp.scrollLeft = (world.offsetWidth - vp.offsetWidth) / 2;
+            vp.scrollTop = (world.offsetHeight - vp.offsetHeight) / 2.5;
+        });
+
+        vp.addEventListener('mousedown', e => {
+            if (e.target.closest('.iplot,.island-hut')) return;
+            drag = true; sx = e.pageX; sy = e.pageY; sl = vp.scrollLeft; st = vp.scrollTop;
+            vp.style.cursor = 'grabbing';
+        });
+        document.addEventListener('mousemove', e => {
+            if (!drag) return; e.preventDefault();
+            vp.scrollLeft = sl - (e.pageX - sx);
+            vp.scrollTop = st - (e.pageY - sy);
+        });
+        document.addEventListener('mouseup', () => { drag = false; if (vp) vp.style.cursor = 'grab'; });
+
+        vp.addEventListener('touchstart', e => {
+            if (e.target.closest('.iplot,.island-hut') || e.touches.length !== 1) return;
+            drag = true; sx = e.touches[0].pageX; sy = e.touches[0].pageY; sl = vp.scrollLeft; st = vp.scrollTop;
+        }, { passive: true });
+        vp.addEventListener('touchmove', e => {
+            if (!drag || e.touches.length !== 1) return;
+            vp.scrollLeft = sl - (e.touches[0].pageX - sx);
+            vp.scrollTop = st - (e.touches[0].pageY - sy);
+        }, { passive: true });
+        vp.addEventListener('touchend', () => { drag = false; });
     },
 
     renderPlantingToolbar() {
@@ -231,7 +309,7 @@ const GardenView = {
         });
 
         // Plot clicks
-        document.querySelectorAll('.island-plot').forEach(plotEl => {
+        document.querySelectorAll('.iplot').forEach(plotEl => {
             plotEl.addEventListener('click', async () => {
                 const plotId = parseInt(plotEl.dataset.plotId);
                 const plot = this.plots.find(p => p.id === plotId);
@@ -249,16 +327,16 @@ const GardenView = {
     async clearPlot(plotId, obstacleType) {
         const obs = this.obstacleMap[obstacleType] || this.obstacleMap.rock;
         if (this.balance < obs.cost) {
-            App.showToast(`喵喵币不足！需要 ${obs.cost}🪙`, 'error');
+            App.showToast(`喵喵币不足！需要 ${obs.cost} 喵喵币`, 'error');
             return;
         }
-        if (!confirm(`开荒: 清除${obs.name}，花费 ${obs.cost}🪙？`)) return;
+        if (!confirm(`开荒: 清除${obs.name}，花费 ${obs.cost} 喵喵币？`)) return;
 
         try {
             const result = await API.clearPlot({ assignee: this.assignee, plot_id: plotId });
             this.balance = result.balance;
             this.updateHeaderCoins();
-            App.showToast(`⛏️ 开荒成功！-${result.cost}🪙`, 'success');
+            App.showToast(`⛏️ 开荒成功！-${result.cost} 喵喵币`, 'success');
             await this.open();
         } catch (e) {
             App.showToast(e.message || '开荒失败', 'error');
@@ -269,7 +347,7 @@ const GardenView = {
         const item = this.catalog.find(c => c.type === this.selectedTree);
         if (!item) return;
         if (this.balance < item.cost) {
-            App.showToast(`喵喵币不足！需要 ${item.cost}🪙`, 'error');
+            App.showToast(`喵喵币不足！需要 ${item.cost} 喵喵币`, 'error');
             return;
         }
 
@@ -331,7 +409,7 @@ const GardenView = {
         el.innerHTML = `
             <div class="shop-view-header">
                 <div class="garden-balance">
-                    <img src="/img/icons/${this.shopAssignee}.png" alt="" style="width:28px;height:28px;border-radius:50%;margin-right:6px">
+                    <img src="/img/cat-coin.svg" alt="喵喵币" class="cat-coin-icon">
                     <strong>${this.shopBalance}</strong> 喵喵币
                 </div>
                 <div class="filter-pills">
@@ -348,7 +426,7 @@ const GardenView = {
                     <div class="shop-card ${this.shopBalance >= item.cost ? '' : 'locked'}" data-type="${item.type}" data-cost="${item.cost}">
                         <img class="shop-card-img" src="${item.stages.mature}" alt="${item.name}">
                         <div class="shop-card-name">${item.name}</div>
-                        <div class="shop-card-price">${item.cost === 0 ? '免费' : `🪙 ${item.cost}`}</div>
+                        <div class="shop-card-price">${item.cost === 0 ? '免费' : `<img src="/img/cat-coin.svg" class="cat-coin-icon" style="width:16px;height:16px"> ${item.cost}`}</div>
                     </div>
                 `).join('')}
             </div>
@@ -389,7 +467,7 @@ const GardenView = {
                     </div>
                 </div>
                 <div class="tree-detail-footer">
-                    <div class="tree-detail-cost">${item.cost === 0 ? '免费' : `🪙 ${item.cost} 喵喵币`}</div>
+                    <div class="tree-detail-cost">${item.cost === 0 ? '免费' : `<img src="/img/cat-coin.svg" class="cat-coin-icon" style="width:20px;height:20px"> ${item.cost} 喵喵币`}</div>
                     <button class="shop-buy-btn ${canBuy ? '' : 'disabled'}" id="tree-detail-buy" ${canBuy ? '' : 'disabled'}>
                         ${item.cost === 0 ? '🌱 去种植' : canBuy ? '🛒 购买并种植' : '🔒 喵喵币不足'}
                     </button>
@@ -466,12 +544,12 @@ const GardenView = {
                     const catItem = this.catalog.find(c => c.type === growResult.tree.tree_type);
                     const name = catItem ? catItem.name : '植物';
                     const label = this.getGrowthLabel(growResult.tree.growth_minutes);
-                    App.showToast(`+${amount} 🪙 · ${name} 成长了！(${label})`, 'success');
+                    App.showToast(`+${amount} 喵喵币 · ${name} 成长了！(${label})`, 'success');
                 } else {
-                    App.showToast(`+${amount} 🪙 喵喵币！`, 'success');
+                    App.showToast(`+${amount} 喵喵币！`, 'success');
                 }
             } catch (e) {
-                App.showToast(`+${amount} 🪙 喵喵币！`, 'success');
+                App.showToast(`+${amount} 喵喵币！`, 'success');
             }
         } catch (e) { /* silent */ }
     },
@@ -488,7 +566,7 @@ const GardenView = {
             if (assignee === this.assignee) this.balance = result.balance;
             if (assignee === this.shopAssignee) this.shopBalance = result.balance;
             this.updateHeaderCoins();
-            App.showToast(`+${amount} 🪙 喵喵币！`, 'success');
+            App.showToast(`+${amount} 喵喵币！`, 'success');
         } catch (e) { /* silent */ }
     },
 };

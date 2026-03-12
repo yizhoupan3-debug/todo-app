@@ -4615,7 +4615,7 @@ form {
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .header-coin-btn:hover {
@@ -4623,9 +4623,45 @@ form {
   color: var(--primary);
 }
 
+.header-coin-btn:hover .cat-coin-icon {
+  animation: coinBounce 0.5s ease;
+}
+
 .header-coin-btn #header-coins {
   color: var(--primary);
   font-weight: 700;
+}
+
+/* Cat coin icon */
+.cat-coin-icon {
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+  filter: drop-shadow(0 1px 2px rgba(218, 165, 32, 0.4));
+  transition: transform 0.3s ease;
+}
+
+.cat-coin-icon.large {
+  width: 28px;
+  height: 28px;
+}
+
+@keyframes coinBounce {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+
+  30% {
+    transform: scale(1.3) rotate(-10deg);
+  }
+
+  60% {
+    transform: scale(0.95) rotate(5deg);
+  }
+
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
 }
 
 /* Garden header */
@@ -4700,19 +4736,432 @@ form {
 }
 
 /* ═══ Island Grid System ═══ */
-.island-container {
-  padding: 0 20px;
-  margin: 8px 0;
+/* ═══════════════════════════════════
+   ISLAND WORLD - Boom Beach Style
+   ═══════════════════════════════════ */
+
+/* Floating HUD */
+.island-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  position: relative;
+  z-index: 20;
 }
 
-.island-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 6px;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, rgba(34, 139, 34, 0.05) 0%, rgba(34, 139, 34, 0.12) 100%);
-  border: 1px solid var(--border);
-  padding: 10px;
+.island-hud-left,
+.island-hud-center,
+.island-hud-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.hud-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Viewport */
+.island-viewport {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 160px);
+  overflow: auto;
+  cursor: grab;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.island-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+/* World */
+.island-world {
+  position: relative;
+  width: 1400px;
+  height: 1000px;
+  user-select: none;
+  background:
+    radial-gradient(ellipse at 30% 80%, rgba(0, 90, 140, 0.3) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 20%, rgba(0, 150, 180, 0.2) 0%, transparent 50%),
+    linear-gradient(180deg, #0B6A8A 0%, #0A5575 30%, #0E4966 60%, #0A3D55 100%);
+}
+
+/* Ocean Waves */
+.ocean-wave {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.ocean-wave.w1 {
+  width: 1200px;
+  height: 800px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  animation: waveX 8s ease-in-out infinite;
+}
+
+.ocean-wave.w2 {
+  width: 1300px;
+  height: 880px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  animation: waveX 8s ease-in-out 2.5s infinite;
+}
+
+.ocean-wave.w3 {
+  width: 1100px;
+  height: 750px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  animation: waveX 8s ease-in-out 5s infinite;
+}
+
+@keyframes waveX {
+  0% {
+    transform: translate(-50%, -50%) scale(0.92);
+    opacity: 0.6;
+  }
+
+  50% {
+    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 0.15;
+  }
+
+  100% {
+    transform: translate(-50%, -50%) scale(0.92);
+    opacity: 0.6;
+  }
+}
+
+/* Island SVG */
+.island-shape {
+  position: absolute;
+  width: 900px;
+  height: 680px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Island Land */
+.island-land {
+  position: absolute;
+  width: 720px;
+  height: 500px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -52%);
+}
+
+/* Decorations */
+.deco-tree {
+  position: absolute;
+  pointer-events: none;
+  height: auto;
+}
+
+.deco-rock {
+  position: absolute;
+  font-size: 22px;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Hut */
+.island-hut {
+  position: absolute;
+  z-index: 10;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.island-hut:hover {
+  transform: scale(1.05);
+}
+
+.hut-body {
+  position: relative;
+  width: 70px;
+}
+
+.hut-roof {
+  width: 0;
+  height: 0;
+  border-left: 40px solid transparent;
+  border-right: 40px solid transparent;
+  border-bottom: 30px solid #A0522D;
+  margin: 0 auto;
+}
+
+.hut-wall {
+  width: 55px;
+  height: 35px;
+  background: linear-gradient(180deg, #DEB887, #D2B48C);
+  margin: 0 auto;
+  border-radius: 0 0 4px 4px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.hut-door {
+  width: 14px;
+  height: 22px;
+  background: #5D3A1A;
+  border-radius: 7px 7px 0 0;
+  margin: -22px auto 0;
+  position: relative;
+}
+
+.hut-door::after {
+  content: '';
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #FFD700;
+  position: absolute;
+  right: 3px;
+  top: 10px;
+}
+
+.hut-label {
+  font-size: 11px;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+/* Interactive Plots */
+.iplot {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  border-radius: 12px;
+}
+
+.iplot:hover {
+  transform: translate(-50%, -50%) scale(1.12);
+  z-index: 15;
+}
+
+.iplot.wasteland {
+  background: rgba(121, 85, 72, 0.25);
+  border: 1.5px dashed rgba(121, 85, 72, 0.5);
+}
+
+.iplot.wasteland:hover {
+  background: rgba(121, 85, 72, 0.4);
+  border-color: var(--primary);
+}
+
+.iplot-img {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: all 0.3s;
+}
+
+.iplot.wasteland .iplot-img {
+  opacity: 0.7;
+}
+
+.iplot.wasteland:hover .iplot-img {
+  opacity: 1;
+}
+
+.iplot-cost {
+  font-size: 9px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-top: 2px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.iplot.wasteland:hover .iplot-cost {
+  opacity: 1;
+}
+
+.iplot.cleared {
+  background: rgba(34, 197, 94, 0.08);
+  border: 1.5px dashed rgba(34, 197, 94, 0.25);
+}
+
+.iplot.cleared.plantable {
+  border-color: var(--primary);
+  animation: readyPulse 1.5s ease-in-out infinite;
+}
+
+.iplot.cleared.plantable:hover {
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.iplot-empty {
+  font-size: 18px;
+  opacity: 0.5;
+}
+
+@keyframes readyPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.3);
+  }
+
+  50% {
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.1);
+  }
+}
+
+.iplot.planted:hover .iplot-img {
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 8px rgba(34, 197, 94, 0.3));
+}
+
+.iplot.stage-seed .iplot-img {
+  width: 24px;
+  height: 24px;
+  animation: seedPulse 3s ease-in-out infinite;
+}
+
+.iplot.stage-sprout .iplot-img {
+  width: 32px;
+  height: 32px;
+  animation: sproutBounce 2.5s ease-in-out infinite;
+}
+
+.iplot.stage-growing .iplot-img {
+  width: 44px;
+  height: 44px;
+  animation: treeSway 4s ease-in-out infinite;
+}
+
+.iplot.stage-mature .iplot-img {
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 10px rgba(255, 193, 7, 0.2));
+}
+
+.iplot-bar {
+  width: 30px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  margin-top: 2px;
+  overflow: hidden;
+}
+
+.iplot-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #66BB6A, #FFC107);
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+
+@keyframes seedPulse {
+
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes sproutBounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes treeSway {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(1.5deg);
+  }
+
+  75% {
+    transform: rotate(-1.5deg);
+  }
+}
+
+/* Stats bar */
+.island-stats-bar {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  position: relative;
+  z-index: 20;
+}
+
+/* Planting Toolbar */
+.planting-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background: rgba(34, 197, 94, 0.15);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-md);
+  margin: 0 16px;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  position: relative;
+  z-index: 20;
 }
 
 /* ─── Plot base ─── */

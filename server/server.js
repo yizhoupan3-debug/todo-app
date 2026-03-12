@@ -3,6 +3,8 @@ const http = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
 
+const compression = require('compression');
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -10,9 +12,14 @@ const io = new Server(server, {
 });
 
 // Middleware
+app.use(compression()); // Gzip all responses
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, '..', 'public'), {
+    maxAge: '1d',          // Cache static assets for 1 day
+    etag: true,            // Enable ETag for cache validation
+    lastModified: true
+}));
 
 // API Routes
 const tasksRouter = require('./routes/tasks');
