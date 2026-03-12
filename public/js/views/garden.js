@@ -108,19 +108,32 @@ const GardenView = {
         this.bindGardenEvents();
     },
 
+    // Growth stages based on minutes
+    // Stage 0: seed     (0 min)   — tiny, just planted
+    // Stage 1: sprout   (25 min)  — small
+    // Stage 2: growing  (75 min)  — medium, swaying
+    // Stage 3: mature   (150 min) — full size, glow
+    getGrowthStage(minutes) {
+        if (minutes >= 150) return { stage: 'mature', label: '成熟', pct: 100 };
+        if (minutes >= 75) return { stage: 'growing', label: '成长中', pct: Math.round(minutes / 150 * 100) };
+        if (minutes >= 25) return { stage: 'sprout', label: '发芽', pct: Math.round(minutes / 150 * 100) };
+        return { stage: 'seed', label: '种子', pct: Math.round(minutes / 150 * 100) };
+    },
+
     renderTrees() {
         return this.trees.map((tree, i) => {
             const catItem = this.catalog.find(c => c.type === tree.tree_type);
             const icon = catItem ? catItem.img : '/img/trees/sprout.svg';
             const x = tree.position_x || (10 + (i % 8) * 11);
             const y = tree.position_y || (20 + Math.floor(i / 8) * 15);
-            const age = Date.now() - new Date(tree.planted_at).getTime();
-            const grown = age > 3600000;
+            const gm = tree.growth_minutes || 0;
+            const { stage, label, pct } = this.getGrowthStage(gm);
             return `
-                <div class="garden-tree ${grown ? 'grown' : 'growing'}"
+                <div class="garden-tree stage-${stage}"
                      style="left:${x}%;top:${y}%"
-                     title="${catItem ? catItem.name : tree.tree_type}">
+                     title="${catItem ? catItem.name : tree.tree_type} · ${label} (${gm}分钟)">
                     <img class="garden-tree-img" src="${icon}" alt="${catItem ? catItem.name : ''}">
+                    <div class="tree-growth-bar"><div class="tree-growth-fill" style="width:${pct}%"></div></div>
                 </div>
             `;
         }).join('');
@@ -287,6 +300,7 @@ const GardenView = {
         if (focusMinutes >= 60) amount = 30;
         else if (focusMinutes >= 45) amount = 20;
         try {
+            // Earn coins
             const result = await API.earnCoins({
                 assignee,
                 amount,
@@ -296,7 +310,21 @@ const GardenView = {
             if (assignee === this.assignee) this.balance = result.balance;
             if (assignee === this.shopAssignee) this.shopBalance = result.balance;
             this.updateHeaderCoins();
-            App.showToast(`+${amount} 🪙 喵喵币！`, 'success');
+
+            // Also grow the latest tree
+            try {
+                const growResult = await API.growTree({ assignee, minutes: focusMinutes });
+                if (growResult.tree) {
+                    const catItem = this.catalog.find(c => c.type === growResult.tree.tree_type);
+                    const name = catItem ? catItem.name : '植物';
+                    const { label } = this.getGrowthStage(growResult.tree.growth_minutes);
+                    App.showToast(`+${amount} 🪙 · ${name} 成长了！(${label})`, 'success');
+                } else {
+                    App.showToast(`+${amount} 🪙 喵喵币！`, 'success');
+                }
+            } catch (e) {
+                App.showToast(`+${amount} 🪙 喵喵币！`, 'success');
+            }
         } catch (e) { /* silent */ }
     },
 

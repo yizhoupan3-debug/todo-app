@@ -4579,28 +4579,106 @@ form {
   z-index: 10;
 }
 
-/* Tree images in garden */
+/* Tree images in garden — 4 growth stages */
 .garden-tree-img {
-  width: 64px;
-  height: 80px;
   object-fit: contain;
   display: block;
   filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.25));
-  transition: filter 0.3s, transform 0.3s;
+  transition: all 0.5s ease;
 }
 
 .garden-tree:hover .garden-tree-img {
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 6px rgba(34, 197, 94, 0.3));
-  transform: scale(1.1);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3)) drop-shadow(0 0 8px rgba(34, 197, 94, 0.4));
+  transform: scale(1.15);
 }
 
-.garden-tree.growing .garden-tree-img {
-  animation: treeGrow 2s ease infinite alternate;
+/* Stage: seed — just planted, tiny */
+.garden-tree.stage-seed .garden-tree-img {
+  width: 28px;
+  height: 35px;
+  opacity: 0.7;
+  animation: seedPulse 3s ease-in-out infinite;
 }
 
-.garden-tree.grown .garden-tree-img {
-  width: 80px;
-  height: 100px;
+/* Stage: sprout — small */
+.garden-tree.stage-sprout .garden-tree-img {
+  width: 48px;
+  height: 60px;
+  animation: sproutBounce 2.5s ease-in-out infinite;
+}
+
+/* Stage: growing — medium, sway */
+.garden-tree.stage-growing .garden-tree-img {
+  width: 72px;
+  height: 90px;
+  animation: treeSway 4s ease-in-out infinite;
+}
+
+/* Stage: mature — full size, golden glow */
+.garden-tree.stage-mature .garden-tree-img {
+  width: 96px;
+  height: 120px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25)) drop-shadow(0 0 12px rgba(255, 193, 7, 0.3));
+}
+
+/* Growth progress bar under each tree */
+.tree-growth-bar {
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  margin: 4px auto 0;
+  overflow: hidden;
+}
+
+.tree-growth-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #66BB6A, #FFC107);
+  border-radius: 2px;
+  transition: width 1s ease;
+}
+
+/* Growth animations */
+@keyframes seedPulse {
+
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+
+  50% {
+    opacity: 0.85;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes sproutBounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes treeSway {
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(1.5deg);
+  }
+
+  75% {
+    transform: rotate(-1.5deg);
+  }
 }
 
 .garden-tree-icon {
