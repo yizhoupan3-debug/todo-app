@@ -1,9 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="108" rx="28" ry="10" fill="#5D4037" opacity="0.3"/>
-  <rect x="46" y="70" width="8" height="38" rx="3" fill="#8D6E63"/>
-  <ellipse cx="38" cy="62" rx="16" ry="20" fill="#66BB6A" transform="rotate(-15 38 62)"/>
-  <ellipse cx="62" cy="58" rx="14" ry="18" fill="#81C784" transform="rotate(15 62 58)"/>
-  <ellipse cx="50" cy="50" rx="10" ry="14" fill="#A5D6A7" transform="rotate(5 50 50)"/>
-  <path d="M42 68 Q38 72 36 68" stroke="#4CAF50" stroke-width="1" fill="none"/>
-  <path d="M58 64 Q62 68 64 64" stroke="#4CAF50" stroke-width="1" fill="none"/>
+  <defs>
+    <radialGradient id="lG" cx="40%" cy="35%">
+      <stop offset="0%" stop-color="#C5E1A5"/>
+      <stop offset="50%" stop-color="#81C784"/>
+      <stop offset="100%" stop-color="#4CAF50"/>
+    </radialGradient>
+    <linearGradient id="tG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6D4C41"/>
+      <stop offset="50%" stop-color="#A1887F"/>
+      <stop offset="100%" stop-color="#6D4C41"/>
+    </linearGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+  </defs>
+  <ellipse cx="50" cy="112" rx="30" ry="9" fill="#3E2723" opacity="0.18" filter="url(#sh)"/>
+  <!-- Trunk -->
+  <rect x="45" y="68" width="10" height="42" rx="4" fill="url(#tG)"/>
+  <rect x="47" y="70" width="3" height="38" rx="1.5" fill="#BCAAA4" opacity="0.15"/>
+  <!-- Foliage -->
+  <ellipse cx="38" cy="60" rx="17" ry="22" fill="url(#lG)" transform="rotate(-12 38 60)"/>
+  <ellipse cx="62" cy="56" rx="15" ry="20" fill="#66BB6A" transform="rotate(12 62 56)"/>
+  <ellipse cx="50" cy="48" rx="12" ry="16" fill="#A5D6A7" transform="rotate(5 50 48)"/>
+  <!-- Highlights -->
+  <ellipse cx="34" cy="50" rx="6" ry="8" fill="#C8E6C9" opacity="0.35" transform="rotate(-10 34 50)"/>
+  <ellipse cx="56" cy="44" rx="5" ry="7" fill="#E8F5E9" opacity="0.25" transform="rotate(10 56 44)"/>
+  <!-- Veins / texture -->
+  <path d="M42 68 Q38 72 34 67" stroke="#388E3C" stroke-width="0.8" fill="none" opacity="0.4"/>
+  <path d="M58 62 Q62 66 65 62" stroke="#388E3C" stroke-width="0.8" fill="none" opacity="0.4"/>
+  <circle cx="40" cy="55" r="1.5" fill="#E8F5E9" opacity="0.3"/>
+  <circle cx="55" cy="50" r="1.2" fill="#E8F5E9" opacity="0.25"/>
 </svg>

@@ -41,7 +41,10 @@ const TaskModal = {
             const select = document.getElementById('task-category');
             select.innerHTML = '<option value="">无分类</option>';
             for (const cat of this.categories) {
-                select.innerHTML += `<option value="${cat.id}">${cat.icon} ${cat.name}</option>`;
+                const opt = document.createElement('option');
+                opt.value = cat.id;
+                opt.textContent = `${cat.icon || ''} ${cat.name}`;
+                select.appendChild(opt);
             }
         } catch (err) {
             console.error('Failed to load categories:', err);

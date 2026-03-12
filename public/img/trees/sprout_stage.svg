@@ -1,13 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <!-- Ground -->
-  <ellipse cx="50" cy="100" rx="25" ry="10" fill="#5D4037" opacity="0.3"/>
-  <ellipse cx="50" cy="96" rx="18" ry="7" fill="#795548"/>
+  <defs>
+    <radialGradient id="soilG" cx="50%" cy="40%">
+      <stop offset="0%" stop-color="#8D6E63"/>
+      <stop offset="100%" stop-color="#5D4037"/>
+    </radialGradient>
+    <linearGradient id="stemG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#558B2F"/>
+      <stop offset="50%" stop-color="#7CB342"/>
+      <stop offset="100%" stop-color="#558B2F"/>
+    </linearGradient>
+    <radialGradient id="leafG1" cx="40%" cy="30%">
+      <stop offset="0%" stop-color="#AED581"/>
+      <stop offset="100%" stop-color="#689F38"/>
+    </radialGradient>
+    <radialGradient id="leafG2" cx="40%" cy="30%">
+      <stop offset="0%" stop-color="#C5E1A5"/>
+      <stop offset="100%" stop-color="#8BC34A"/>
+    </radialGradient>
+    <filter id="ss"><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>
+  <ellipse cx="50" cy="100" rx="26" ry="10" fill="#3E2723" opacity="0.18" filter="url(#ss)"/>
+  <ellipse cx="50" cy="96" rx="20" ry="8" fill="url(#soilG)"/>
+  <ellipse cx="50" cy="94" rx="16" ry="5" fill="#A1887F" opacity="0.25"/>
   <!-- Stem -->
-  <path d="M50 96 Q49 78 50 65" stroke="#66BB6A" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <!-- Two tiny leaves -->
-  <ellipse cx="43" cy="72" rx="8" ry="4" fill="#81C784" transform="rotate(-30 43 72)"/>
-  <ellipse cx="57" cy="68" rx="8" ry="4" fill="#A5D6A7" transform="rotate(30 57 68)"/>
+  <path d="M50 96 Q49 80 50 66" stroke="url(#stemG)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- Leaves -->
+  <ellipse cx="42" cy="72" rx="9" ry="5" fill="url(#leafG1)" transform="rotate(-30 42 72)"/>
+  <ellipse cx="58" cy="68" rx="9" ry="5" fill="url(#leafG2)" transform="rotate(30 58 68)"/>
   <!-- Leaf veins -->
-  <path d="M43 72 L38 70" stroke="#4CAF50" stroke-width="0.8" fill="none"/>
-  <path d="M57 68 L62 66" stroke="#4CAF50" stroke-width="0.8" fill="none"/>
+  <path d="M46 72 L38 70" stroke="#558B2F" stroke-width="0.6" fill="none" opacity="0.5"/>
+  <path d="M54 68 L62 66" stroke="#689F38" stroke-width="0.6" fill="none" opacity="0.5"/>
+  <!-- Highlights -->
+  <ellipse cx="40" cy="70" rx="3" ry="1.5" fill="#fff" opacity="0.2" transform="rotate(-30 40 70)"/>
+  <ellipse cx="60" cy="66" rx="3" ry="1.5" fill="#fff" opacity="0.15" transform="rotate(30 60 66)"/>
 </svg>
