@@ -85,9 +85,32 @@
   --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.45);
 }
 
-/* ===== 8 ACCENT THEMES — Colors Only (work in both light & dark) ===== */
+/* ===== 8 ACCENT THEMES — Colors + Surface Tints ===== */
 
-/* 1. Indigo — default in :root, no override needed */
+/* 1. Indigo — default in :root, light tints below */
+[data-mode="light"][data-theme="indigo"],
+[data-mode="light"]:not([data-theme]) {
+  --bg: #f3f2fa;
+  --bg-secondary: #e8e6f5;
+  --card-bg: rgba(255, 255, 255, 0.88);
+  --sidebar-bg: rgba(248, 247, 255, 0.75);
+  --header-bg: rgba(243, 242, 250, 0.85);
+  --border: rgba(99, 102, 241, 0.06);
+  --border-strong: rgba(99, 102, 241, 0.12);
+  --shadow-lg: 0 8px 32px rgba(99, 102, 241, 0.10);
+}
+
+[data-mode="dark"][data-theme="indigo"],
+[data-mode="dark"]:not([data-theme]) {
+  --bg: #0b0d1e;
+  --bg-secondary: #131530;
+  --card-bg: rgba(22, 25, 55, 0.88);
+  --sidebar-bg: rgba(14, 16, 38, 0.88);
+  --header-bg: rgba(11, 13, 30, 0.9);
+  --border: rgba(99, 102, 241, 0.08);
+  --border-strong: rgba(99, 102, 241, 0.15);
+  --shadow-lg: 0 8px 40px rgba(99, 102, 241, 0.08), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
 
 /* 2. Sakura — Rose Pink */
 [data-theme="sakura"] {
@@ -97,6 +120,28 @@
   --primary-glow: rgba(214, 51, 132, 0.18);
   --accent: #9b59b6;
   --accent-light: #bb8fd9;
+}
+
+[data-mode="light"][data-theme="sakura"] {
+  --bg: #fcf4f8;
+  --bg-secondary: #f9e8f0;
+  --card-bg: rgba(255, 250, 252, 0.88);
+  --sidebar-bg: rgba(255, 248, 252, 0.75);
+  --header-bg: rgba(252, 244, 248, 0.85);
+  --border: rgba(214, 51, 132, 0.06);
+  --border-strong: rgba(214, 51, 132, 0.12);
+  --shadow-lg: 0 8px 32px rgba(214, 51, 132, 0.10);
+}
+
+[data-mode="dark"][data-theme="sakura"] {
+  --bg: #180a12;
+  --bg-secondary: #281420;
+  --card-bg: rgba(45, 20, 32, 0.88);
+  --sidebar-bg: rgba(24, 10, 18, 0.88);
+  --header-bg: rgba(20, 8, 15, 0.9);
+  --border: rgba(214, 51, 132, 0.08);
+  --border-strong: rgba(214, 51, 132, 0.15);
+  --shadow-lg: 0 8px 40px rgba(214, 51, 132, 0.08), 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 /* 3. Ocean — Cyan */
@@ -109,6 +154,28 @@
   --accent-light: #a78bfa;
 }
 
+[data-mode="light"][data-theme="ocean"] {
+  --bg: #f0f9fb;
+  --bg-secondary: #e2f4f8;
+  --card-bg: rgba(250, 254, 255, 0.88);
+  --sidebar-bg: rgba(245, 252, 255, 0.75);
+  --header-bg: rgba(240, 249, 251, 0.85);
+  --border: rgba(6, 182, 212, 0.06);
+  --border-strong: rgba(6, 182, 212, 0.12);
+  --shadow-lg: 0 8px 32px rgba(6, 182, 212, 0.10);
+}
+
+[data-mode="dark"][data-theme="ocean"] {
+  --bg: #07111f;
+  --bg-secondary: #0d1e35;
+  --card-bg: rgba(14, 35, 55, 0.88);
+  --sidebar-bg: rgba(9, 20, 38, 0.88);
+  --header-bg: rgba(7, 17, 31, 0.9);
+  --border: rgba(6, 182, 212, 0.08);
+  --border-strong: rgba(6, 182, 212, 0.15);
+  --shadow-lg: 0 8px 40px rgba(6, 182, 212, 0.08), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
 /* 4. Forest — Emerald */
 [data-theme="forest"] {
   --primary: #22c55e;
@@ -117,6 +184,28 @@
   --primary-glow: rgba(34, 197, 94, 0.18);
   --accent: #eab308;
   --accent-light: #fde047;
+}
+
+[data-mode="light"][data-theme="forest"] {
+  --bg: #f2f9f4;
+  --bg-secondary: #e4f5e8;
+  --card-bg: rgba(252, 255, 253, 0.88);
+  --sidebar-bg: rgba(248, 255, 250, 0.75);
+  --header-bg: rgba(242, 249, 244, 0.85);
+  --border: rgba(34, 197, 94, 0.06);
+  --border-strong: rgba(34, 197, 94, 0.12);
+  --shadow-lg: 0 8px 32px rgba(34, 197, 94, 0.10);
+}
+
+[data-mode="dark"][data-theme="forest"] {
+  --bg: #0a1510;
+  --bg-secondary: #122418;
+  --card-bg: rgba(18, 40, 26, 0.88);
+  --sidebar-bg: rgba(12, 24, 16, 0.88);
+  --header-bg: rgba(10, 21, 16, 0.9);
+  --border: rgba(34, 197, 94, 0.08);
+  --border-strong: rgba(34, 197, 94, 0.15);
+  --shadow-lg: 0 8px 40px rgba(34, 197, 94, 0.06), 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 /* 5. Sunset — Orange */
@@ -129,6 +218,28 @@
   --accent-light: #fb7185;
 }
 
+[data-mode="light"][data-theme="sunset"] {
+  --bg: #fdf6f0;
+  --bg-secondary: #fbeee2;
+  --card-bg: rgba(255, 253, 250, 0.88);
+  --sidebar-bg: rgba(255, 250, 245, 0.75);
+  --header-bg: rgba(253, 246, 240, 0.85);
+  --border: rgba(249, 115, 22, 0.06);
+  --border-strong: rgba(249, 115, 22, 0.12);
+  --shadow-lg: 0 8px 32px rgba(249, 115, 22, 0.10);
+}
+
+[data-mode="dark"][data-theme="sunset"] {
+  --bg: #150e08;
+  --bg-secondary: #221810;
+  --card-bg: rgba(42, 30, 18, 0.88);
+  --sidebar-bg: rgba(20, 14, 8, 0.88);
+  --header-bg: rgba(18, 12, 6, 0.9);
+  --border: rgba(249, 115, 22, 0.08);
+  --border-strong: rgba(249, 115, 22, 0.15);
+  --shadow-lg: 0 8px 40px rgba(249, 115, 22, 0.06), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
 /* 6. Lavender — Purple */
 [data-theme="lavender"] {
   --primary: #8b5cf6;
@@ -137,6 +248,28 @@
   --primary-glow: rgba(139, 92, 246, 0.18);
   --accent: #ec4899;
   --accent-light: #f472b6;
+}
+
+[data-mode="light"][data-theme="lavender"] {
+  --bg: #f5f0ff;
+  --bg-secondary: #ece5ff;
+  --card-bg: rgba(252, 250, 255, 0.88);
+  --sidebar-bg: rgba(248, 245, 255, 0.75);
+  --header-bg: rgba(245, 240, 255, 0.85);
+  --border: rgba(139, 92, 246, 0.06);
+  --border-strong: rgba(139, 92, 246, 0.12);
+  --shadow-lg: 0 8px 32px rgba(139, 92, 246, 0.10);
+}
+
+[data-mode="dark"][data-theme="lavender"] {
+  --bg: #100a1e;
+  --bg-secondary: #1a1232;
+  --card-bg: rgba(30, 20, 55, 0.88);
+  --sidebar-bg: rgba(16, 10, 30, 0.88);
+  --header-bg: rgba(14, 8, 26, 0.9);
+  --border: rgba(139, 92, 246, 0.08);
+  --border-strong: rgba(139, 92, 246, 0.15);
+  --shadow-lg: 0 8px 40px rgba(139, 92, 246, 0.08), 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 /* 7. Mocha — Warm Brown */
@@ -149,6 +282,28 @@
   --accent-light: #ef9a9a;
 }
 
+[data-mode="light"][data-theme="mocha"] {
+  --bg: #faf6f2;
+  --bg-secondary: #f4ede4;
+  --card-bg: rgba(255, 253, 250, 0.88);
+  --sidebar-bg: rgba(255, 250, 245, 0.75);
+  --header-bg: rgba(250, 246, 242, 0.85);
+  --border: rgba(212, 165, 116, 0.08);
+  --border-strong: rgba(212, 165, 116, 0.14);
+  --shadow-lg: 0 8px 32px rgba(212, 165, 116, 0.10);
+}
+
+[data-mode="dark"][data-theme="mocha"] {
+  --bg: #1a1210;
+  --bg-secondary: #2a1f1a;
+  --card-bg: rgba(45, 35, 28, 0.88);
+  --sidebar-bg: rgba(26, 18, 16, 0.88);
+  --header-bg: rgba(22, 15, 12, 0.9);
+  --border: rgba(212, 165, 116, 0.08);
+  --border-strong: rgba(212, 165, 116, 0.15);
+  --shadow-lg: 0 8px 40px rgba(212, 165, 116, 0.06), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
 /* 8. Rose Gold — Soft Metallic Pink */
 [data-theme="rosegold"] {
   --primary: #e8a0bf;
@@ -159,12 +314,34 @@
   --accent-light: #daa520;
 }
 
+[data-mode="light"][data-theme="rosegold"] {
+  --bg: #fdf5f8;
+  --bg-secondary: #fbedf2;
+  --card-bg: rgba(255, 252, 254, 0.88);
+  --sidebar-bg: rgba(255, 248, 252, 0.75);
+  --header-bg: rgba(253, 245, 248, 0.85);
+  --border: rgba(232, 160, 191, 0.08);
+  --border-strong: rgba(232, 160, 191, 0.14);
+  --shadow-lg: 0 8px 32px rgba(232, 160, 191, 0.10);
+}
+
+[data-mode="dark"][data-theme="rosegold"] {
+  --bg: #18101a;
+  --bg-secondary: #281a28;
+  --card-bg: rgba(42, 28, 40, 0.88);
+  --sidebar-bg: rgba(24, 16, 26, 0.88);
+  --header-bg: rgba(20, 12, 22, 0.9);
+  --border: rgba(232, 160, 191, 0.08);
+  --border-strong: rgba(232, 160, 191, 0.15);
+  --shadow-lg: 0 8px 40px rgba(232, 160, 191, 0.06), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
 /* ===== SETTINGS PANEL ===== */
 .settings-panel {
   position: absolute;
   bottom: 56px;
   left: 8px;
-  right: 8px;
+  width: 280px;
   background: var(--card-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
