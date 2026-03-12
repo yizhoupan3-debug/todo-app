@@ -131,10 +131,22 @@
           <button class="date-nav-btn today-btn" id="btn-today">今天</button>
         </div>
       </div>
+      <button class="header-icon-btn" id="btn-ambient" title="环境音">
+        🔊 <span class="ambient-badge"></span>
+      </button>
       <button class="add-btn" id="btn-add-task">
         <span>+</span>
       </button>
     </header>
+
+    <!-- Ambient Sound Panel -->
+    <div class="ambient-panel hidden" id="ambient-panel">
+      <div class="ambient-panel-header">
+        <h3>🎵 环境音</h3>
+        <button class="ambient-panel-close" id="ambient-close">×</button>
+      </div>
+      <div id="ambient-grid"></div>
+    </div>
 
     <!-- Daily View -->
     <section class="view-container" id="view-daily">
@@ -594,6 +606,10 @@
               <button class="time-pick-btn" data-min="15">15</button>
             </div>
           </div>
+          <div class="form-group">
+            <label>🎵 环境音</label>
+            <div id="pomodoro-sounds"></div>
+          </div>
           <button class="btn btn-primary pomodoro-start-btn" id="pomodoro-start">开始专注</button>
         </div>
         <!-- Timer Screen -->
@@ -624,6 +640,37 @@
     </div>
   </div>
 
+  <!-- Widget Instruction Modal -->
+  <div class="modal-overlay hidden" id="widget-modal-overlay">
+    <div class="modal" id="widget-modal">
+      <div class="modal-header">
+        <h3 id="widget-modal-title">🖥️ 安装桌面小组件</h3>
+        <button class="modal-close" id="widget-modal-close">×</button>
+      </div>
+      <div class="widget-modal-content">
+        <div class="widget-steps">
+          <div class="widget-step">
+            <span class="widget-step-num">1</span>
+            <span class="widget-step-text" id="widget-step1-text">打开终端 (Terminal)</span>
+          </div>
+          <div class="widget-step">
+            <span class="widget-step-num">2</span>
+            <span>复制下面的命令</span>
+          </div>
+          <div class="widget-step">
+            <span class="widget-step-num">3</span>
+            <span>粘贴到终端中按回车运行</span>
+          </div>
+        </div>
+        <div class="widget-cmd-box">
+          <code class="widget-cmd-code" id="widget-cmd-code"></code>
+          <button class="widget-copy-btn" id="widget-copy-btn">📋 复制</button>
+        </div>
+        <div class="widget-tip" id="widget-tip"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notifications -->
   <div class="toast-container" id="toast-container"></div>
 
@@ -636,6 +683,7 @@
   <script src="/js/components/task-modal.js"></script>
   <script src="/js/components/ics-import.js"></script>
   <script src="/js/components/pomodoro.js"></script>
+  <script src="/js/ambient.js"></script>
   <script src="/js/app.js"></script>
 </body>
 

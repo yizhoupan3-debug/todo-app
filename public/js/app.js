@@ -44,6 +44,21 @@ const App = {
 
         document.getElementById('btn-import-ics').addEventListener('click', () => ICSImport.open());
 
+        // Ambient sound panel
+        const ambientBtn = document.getElementById('btn-ambient');
+        const ambientPanel = document.getElementById('ambient-panel');
+        ambientBtn.addEventListener('click', () => {
+            ambientPanel.classList.toggle('hidden');
+            if (!ambientPanel.classList.contains('hidden')) {
+                AmbientSound.buildSoundGrid('ambient-grid');
+            }
+        });
+        document.getElementById('ambient-close').addEventListener('click', () => {
+            ambientPanel.classList.add('hidden');
+        });
+        // Also build grid in pomodoro setup
+        AmbientSound.buildSoundGrid('pomodoro-sounds');
+
         // Pomodoro from sidebar
         document.getElementById('nav-pomodoro').addEventListener('click', () => Pomodoro.open());
 
@@ -86,6 +101,7 @@ const App = {
             if (e.key === 'Escape') {
                 if (TaskModal.isOpen) TaskModal.close();
                 document.getElementById('ics-modal-overlay').classList.add('hidden');
+                document.getElementById('widget-modal-overlay').classList.add('hidden');
                 this.closeSidebar();
             }
             if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !TaskModal.isOpen &&
@@ -307,7 +323,7 @@ const App = {
 // Start the app
 document.addEventListener('DOMContentLoaded', () => App.init());
 
-// Widget installer — generates downloadable launcher scripts
+// Widget installer — shows instruction modal with copyable command
 function installWidget(widgetType) {
     const platform = document.querySelector('.platform-btn.active')?.dataset.platform || 'mac';
     const baseUrl = location.origin;
@@ -318,58 +334,53 @@ function installWidget(widgetType) {
     const name = names[widgetType] || widgetType;
     const size = sizes[widgetType] || '600,500';
 
-    let content, filename, mimeType;
+    let cmd, step1Text, tipText;
 
     if (platform === 'mac') {
-        filename = `峡谷讨伐日记_${name}.command`;
-        mimeType = 'application/x-sh';
-        content = `#!/bin/bash
-# 峡谷讨伐日记 — ${name} 桌面小组件
-# 双击运行此文件即可打开小组件
-
-WIDGET_URL="${widgetUrl}"
-SIZE="${size}"
-
-# 尝试用 Chrome 打开
-if [ -d "/Applications/Google Chrome.app" ]; then
-    open -na "Google Chrome" --args --app="$WIDGET_URL" --window-size=$SIZE
-elif [ -d "/Applications/Microsoft Edge.app" ]; then
-    open -na "Microsoft Edge" --args --app="$WIDGET_URL" --window-size=$SIZE
-else
-    open "$WIDGET_URL"
-fi
-`;
+        step1Text = '打开「终端」应用 (按 ⌘+空格 搜索 Terminal)';
+        cmd = `/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome --app="${widgetUrl}" --window-size=${size}`;
+        tipText = '💡 如果没有 Chrome，也可以直接在浏览器打开这个地址就行啦';
     } else {
-        filename = `峡谷讨伐日记_${name}.bat`;
-        mimeType = 'application/x-bat';
-        content = `@echo off
-REM 峡谷讨伐日记 — ${name} 桌面小组件
-REM 双击运行此文件即可打开小组件
-
-set WIDGET_URL=${widgetUrl}
-set SIZE=${size}
-
-REM 尝试用 Chrome 打开
-if exist "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" (
-    start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --app="%WIDGET_URL%" --window-size=%SIZE%
-) else if exist "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe" (
-    start "" "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe" --app="%WIDGET_URL%" --window-size=%SIZE%
-) else if exist "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" (
-    start "" "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" --app="%WIDGET_URL%" --window-size=%SIZE%
-) else (
-    start "" "%WIDGET_URL%"
-)
-`;
+        step1Text = '打开「命令提示符」或「PowerShell」(按 Win+R 输入 cmd)';
+        cmd = `start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --app="${widgetUrl}" --window-size=${size}`;
+        tipText = '💡 如果 Chrome 安装位置不同，请修改路径；也可以直接在浏览器打开地址';
     }
 
-    // Trigger download
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
+    // Populate modal
+    document.getElementById('widget-modal-title').textContent = `🖥️ 安装「${name}」小组件`;
+    document.getElementById('widget-step1-text').textContent = step1Text;
+    document.getElementById('widget-cmd-code').textContent = cmd;
+    document.getElementById('widget-tip').textContent = tipText;
 
-    App.showToast(`已下载 ${filename}，双击即可使用 ✨`, 'success');
+    // Show modal
+    const overlay = document.getElementById('widget-modal-overlay');
+    overlay.classList.remove('hidden');
+
+    // Copy button
+    const copyBtn = document.getElementById('widget-copy-btn');
+    copyBtn.textContent = '📋 复制';
+    copyBtn.onclick = () => {
+        navigator.clipboard.writeText(cmd).then(() => {
+            copyBtn.textContent = '✅ 已复制!';
+            App.showToast('命令已复制到剪贴板 ✨', 'success');
+            setTimeout(() => { copyBtn.textContent = '📋 复制'; }, 2000);
+        }).catch(() => {
+            // Fallback for older browsers
+            const ta = document.createElement('textarea');
+            ta.value = cmd;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            copyBtn.textContent = '✅ 已复制!';
+            App.showToast('命令已复制到剪贴板 ✨', 'success');
+            setTimeout(() => { copyBtn.textContent = '📋 复制'; }, 2000);
+        });
+    };
+
+    // Close
+    document.getElementById('widget-modal-close').onclick = () => overlay.classList.add('hidden');
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.add('hidden');
+    });
 }
