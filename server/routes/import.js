@@ -4,7 +4,10 @@ const { parseICS } = require('../services/ics-parser');
 const db = require('../db');
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2MB max
+});
 
 // POST /api/import/ics — upload and parse ICS file
 router.post('/ics', upload.single('file'), (req, res) => {

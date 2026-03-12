@@ -27,7 +27,8 @@ const DailyView = {
                 App.showToast('没有已完成的任务', 'info');
                 return;
             }
-            if (!confirm(`确定要清除 ${doneCount} 个已完成的任务吗？`)) return;
+            const scope = App.currentAssignee === 'all' ? '（潘潘和蒲蒲的所有）' : `（${App.currentAssignee}的）`;
+            if (!confirm(`确定要清除 ${doneCount} 个${scope}已完成的任务吗？`)) return;
             try {
                 const dateStr = this.formatDate(this.currentDate);
                 const result = await API.clearDoneTasks(dateStr, App.currentAssignee);
@@ -94,8 +95,11 @@ const DailyView = {
         this.renderColumn('list-todo', groups.todo, 'todo');
         this.renderColumn('list-done', groups.done, 'done');
 
-        // Refresh Lucide icons for dynamically rendered task cards
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+        // Refresh Lucide icons only within rendered task cards
+        if (typeof lucide !== 'undefined') {
+            const scope = document.getElementById('view-daily');
+            if (scope) lucide.createIcons({ attrs: {}, node: scope });
+        }
     },
 
     renderColumn(containerId, tasks, status) {
@@ -227,7 +231,7 @@ const DailyView = {
     escapeHtml(str) {
         const div = document.createElement('div');
         div.textContent = str;
-        return div.innerHTML;
+        return Utils.escapeHtml(str);
     },
 
     refresh() {

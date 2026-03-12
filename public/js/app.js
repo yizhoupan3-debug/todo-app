@@ -160,8 +160,10 @@ const App = {
         settingsBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             settingsPanel.classList.toggle('hidden');
-            // Refresh Lucide icons for settings panel
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+            // Refresh Lucide icons for settings panel only
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons({ attrs: {}, node: settingsPanel });
+            }
         });
         // Close on outside click
         document.addEventListener('click', (e) => {
@@ -217,7 +219,9 @@ const App = {
         if (toggleBtn) {
             const icon = toggleBtn.querySelector('i');
             if (icon) icon.setAttribute('data-lucide', mode === 'dark' ? 'moon' : 'sun');
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons({ attrs: {}, node: toggleBtn });
+            }
         }
     },
 
@@ -402,7 +406,16 @@ const App = {
     },
 
     _refreshHeaderCoins() {
-        API.getCoins('潘潘').then(d => {
+        // Determine whose coins to show based on current view context
+        let coinUser = '潘潘';
+        if (this.currentView === 'garden' && typeof GardenView !== 'undefined') {
+            coinUser = GardenView.assignee;
+        } else if (this.currentView === 'shop' && typeof GardenView !== 'undefined') {
+            coinUser = GardenView.shopAssignee;
+        } else if (this.currentAssignee && this.currentAssignee !== 'all') {
+            coinUser = this.currentAssignee;
+        }
+        API.getCoins(coinUser).then(d => {
             const el = document.getElementById('header-coins');
             if (el) el.textContent = d.balance;
         }).catch(() => { });

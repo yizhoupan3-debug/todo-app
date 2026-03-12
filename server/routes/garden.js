@@ -2,6 +2,15 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+// ── Server-side plant price catalog (source of truth) ──
+const PLANT_CATALOG = {
+    sprout: 0, rice: 5, sunflower: 10, mushroom: 15, tulip: 20,
+    hibiscus: 25, sakura: 30, chrysanthemum: 35, bamboo: 45,
+    pine: 50, oak: 50, mint: 60, lotus: 70, palm: 80,
+    christmas: 80, cactus: 100, rose: 100, grape: 120,
+    clover: 150, lavender: 200,
+};
+
 // ── Coin Balance ──
 router.get('/coins/:assignee', (req, res) => {
     try {
@@ -127,9 +136,15 @@ router.get('/shop/:assignee', (req, res) => {
 // ── Plant a Tree on a Plot ──
 router.post('/plant', (req, res) => {
     try {
-        const { assignee, tree_type, cost, plot_id } = req.body;
-        if (!assignee || !tree_type || cost === undefined || !plot_id) {
-            return res.status(400).json({ error: 'assignee, tree_type, cost, plot_id required' });
+        const { assignee, tree_type, plot_id } = req.body;
+        if (!assignee || !tree_type || !plot_id) {
+            return res.status(400).json({ error: 'assignee, tree_type, plot_id required' });
+        }
+
+        // Use server-side price, ignore client-sent cost
+        const cost = PLANT_CATALOG[tree_type];
+        if (cost === undefined) {
+            return res.status(400).json({ error: '未知植物类型' });
         }
 
         const plant = db.transaction(() => {

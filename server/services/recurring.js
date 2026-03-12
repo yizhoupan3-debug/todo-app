@@ -62,9 +62,34 @@ function getOccurrences(task, startDate, endDate) {
 
     let current = new Date(taskStart);
 
-    // Advance current to the start of our query range
-    while (current < start) {
-        advanceDate(current, task.recurring_type, interval);
+    // Math jump: skip directly to the query range instead of iterating
+    if (current < start) {
+        const msPerDay = 86400000;
+        const daysGap = Math.floor((start - current) / msPerDay);
+        switch (task.recurring_type) {
+            case 'daily':
+            case 'custom': {
+                const cycles = Math.floor(daysGap / interval);
+                current.setDate(current.getDate() + cycles * interval);
+                break;
+            }
+            case 'weekly': {
+                const weekInterval = 7 * interval;
+                const cycles = Math.floor(daysGap / weekInterval);
+                current.setDate(current.getDate() + cycles * weekInterval);
+                break;
+            }
+            case 'monthly': {
+                const monthsGap = (start.getFullYear() - current.getFullYear()) * 12 + (start.getMonth() - current.getMonth());
+                const cycles = Math.floor(monthsGap / interval);
+                if (cycles > 0) current.setMonth(current.getMonth() + cycles * interval);
+                break;
+            }
+        }
+        // Fine-tune: advance until we're in range
+        while (current < start) {
+            advanceDate(current, task.recurring_type, interval);
+        }
     }
 
     while (current <= end) {

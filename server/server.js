@@ -1,3 +1,6 @@
+// Fix timezone for auto-complete timer (deployed servers may use UTC)
+process.env.TZ = 'Asia/Shanghai';
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -8,7 +11,11 @@ const compression = require('compression');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: { origin: '*' }
+    cors: {
+        origin: process.env.ALLOWED_ORIGINS
+            ? process.env.ALLOWED_ORIGINS.split(',')
+            : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    }
 });
 
 // Middleware
