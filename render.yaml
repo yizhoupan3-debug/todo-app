@@ -1,0 +1,14 @@
+services:
+  - type: web
+    runtime: node
+    name: todo-app
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+    disk:
+      name: todo-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1

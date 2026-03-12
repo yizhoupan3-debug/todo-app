@@ -1,0 +1,222 @@
+const express = require('express');
+const db = require('../db');
+const { generateRecurringInstances } = require('../services/recurring');
+
+const router = express.Router();
+
+// GET /api/tasks — list tasks with optional filters
+router.get('/', (req, res) => {
+    const { assignee, date, month, status } = req.query;
+
+    let where = [];
+    let params = [];
+
+    if (assignee && assignee !== 'all') {
+        where.push('t.assignee = ?');
+        params.push(assignee);
+    }
+
+    if (date) {
+        // Generate recurring instances for this date range
+        generateRecurringInstances(date, date);
+        where.push('t.due_date = ?');
+        params.push(date);
+    }
+
+    if (month) {
+        // month is YYYY-MM format
+        const start = `${month}-01`;
+        const [y, m] = month.split('-').map(Number);
+        const lastDay = new Date(y, m, 0).getDate();
+        const end = `${month}-${String(lastDay).padStart(2, '0')}`;
+        generateRecurringInstances(start, end);
+        where.push('t.due_date >= ? AND t.due_date <= ?');
+        params.push(start, end);
+    }
+
+    if (status) {
+        where.push('t.status = ?');
+        params.push(status);
+    }
+
+    // Exclude recurring parents from results (show only instances)
+    where.push('(t.is_recurring = 0 OR t.recurring_parent_id IS NOT NULL)');
+
+    const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
+
+    const sql = `
+    SELECT t.*, c.name as category_name, c.color as category_color, c.icon as category_icon
+    FROM tasks t
+    LEFT JOIN categories c ON t.category_id = c.id
+    ${whereClause}
+    ORDER BY 
+      CASE t.status 
+        WHEN 'in_progress' THEN 1
+        WHEN 'todo' THEN 2
+        WHEN 'done' THEN 3
+      END,
+      CASE t.priority
+        WHEN 1 THEN 1
+        WHEN 2 THEN 2
+        WHEN 3 THEN 3
+      END,
+      t.due_time ASC,
+      t.created_at DESC
+  `;
+
+    try {
+        const tasks = db.prepare(sql).all(...params);
+        res.json(tasks);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/tasks/month-summary — get task counts per day for a month
+router.get('/month-summary', (req, res) => {
+    const { month, assignee } = req.query;
+    if (!month) return res.status(400).json({ error: 'month param required (YYYY-MM)' });
+
+    const start = `${month}-01`;
+    const [y, m] = month.split('-').map(Number);
+    const lastDay = new Date(y, m, 0).getDate();
+    const end = `${month}-${String(lastDay).padStart(2, '0')}`;
+
+    generateRecurringInstances(start, end);
+
+    let where = "t.due_date >= ? AND t.due_date <= ? AND (t.is_recurring = 0 OR t.recurring_parent_id IS NOT NULL)";
+    let params = [start, end];
+
+    if (assignee && assignee !== 'all') {
+        where += ' AND t.assignee = ?';
+        params.push(assignee);
+    }
+
+    const sql = `
+    SELECT t.due_date, t.status, COUNT(*) as count, 
+           c.color as category_color
+    FROM tasks t
+    LEFT JOIN categories c ON t.category_id = c.id
+    WHERE ${where}
+    GROUP BY t.due_date, t.status, c.color
+    ORDER BY t.due_date
+  `;
+
+    try {
+        const rows = db.prepare(sql).all(...params);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST /api/tasks — create task
+router.post('/', (req, res) => {
+    const { title, description, assignee, category_id, priority, due_date, due_time,
+        is_recurring, recurring_type, recurring_interval, recurring_end_date } = req.body;
+
+    if (!title || !assignee) {
+        return res.status(400).json({ error: 'title and assignee are required' });
+    }
+
+    try {
+        const result = db.prepare(`
+      INSERT INTO tasks (title, description, assignee, category_id, priority, due_date, due_time,
+        is_recurring, recurring_type, recurring_interval, recurring_end_date)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+            title,
+            description || '',
+            assignee,
+            category_id || null,
+            priority || 2,
+            due_date || null,
+            due_time || null,
+            is_recurring ? 1 : 0,
+            recurring_type || null,
+            recurring_interval || 1,
+            recurring_end_date || null
+        );
+
+        const task = db.prepare(`
+      SELECT t.*, c.name as category_name, c.color as category_color, c.icon as category_icon
+      FROM tasks t LEFT JOIN categories c ON t.category_id = c.id
+      WHERE t.id = ?
+    `).get(result.lastInsertRowid);
+
+        res.status(201).json(task);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// PUT /api/tasks/:id — update task
+router.put('/:id', (req, res) => {
+    const { id } = req.params;
+    const fields = req.body;
+
+    const allowedFields = ['title', 'description', 'assignee', 'category_id', 'priority',
+        'due_date', 'due_time', 'status', 'is_recurring', 'recurring_type',
+        'recurring_interval', 'recurring_end_date'];
+
+    const updates = [];
+    const values = [];
+
+    for (const [key, value] of Object.entries(fields)) {
+        if (allowedFields.includes(key)) {
+            updates.push(`${key} = ?`);
+            values.push(value);
+        }
+    }
+
+    if (updates.length === 0) {
+        return res.status(400).json({ error: 'No valid fields to update' });
+    }
+
+    updates.push("updated_at = datetime('now', 'localtime')");
+    values.push(id);
+
+    try {
+        db.prepare(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+
+        const task = db.prepare(`
+      SELECT t.*, c.name as category_name, c.color as category_color, c.icon as category_icon
+      FROM tasks t LEFT JOIN categories c ON t.category_id = c.id
+      WHERE t.id = ?
+    `).get(id);
+
+        if (!task) return res.status(404).json({ error: 'Task not found' });
+        res.json(task);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// DELETE /api/tasks/:id — delete task
+router.delete('/:id', (req, res) => {
+    const { id } = req.params;
+    const { delete_series } = req.query;
+
+    try {
+        const task = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
+        if (!task) return res.status(404).json({ error: 'Task not found' });
+
+        if (delete_series === 'true' && task.is_recurring && !task.recurring_parent_id) {
+            // Delete the parent and all instances
+            db.prepare('DELETE FROM tasks WHERE recurring_parent_id = ?').run(id);
+            db.prepare('DELETE FROM tasks WHERE id = ?').run(id);
+        } else if (delete_series === 'true' && task.recurring_parent_id) {
+            // Delete parent and all siblings
+            db.prepare('DELETE FROM tasks WHERE recurring_parent_id = ?').run(task.recurring_parent_id);
+            db.prepare('DELETE FROM tasks WHERE id = ?').run(task.recurring_parent_id);
+        } else {
+            db.prepare('DELETE FROM tasks WHERE id = ?').run(id);
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+module.exports = router;

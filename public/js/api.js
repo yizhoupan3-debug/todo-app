@@ -1,0 +1,74 @@
+/**
+ * API client — wraps all fetch calls to the backend.
+ */
+const API = {
+    baseURL: '/api',
+
+    async request(path, options = {}) {
+        const url = this.baseURL + path;
+        const config = {
+            headers: { 'Content-Type': 'application/json' },
+            ...options,
+        };
+        if (config.body && typeof config.body === 'object' && !(config.body instanceof FormData)) {
+            config.body = JSON.stringify(config.body);
+        }
+        if (config.body instanceof FormData) {
+            delete config.headers['Content-Type'];
+        }
+        const res = await fetch(url, config);
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({ error: res.statusText }));
+            throw new Error(err.error || 'Request failed');
+        }
+        return res.json();
+    },
+
+    // Tasks
+    getTasks(params = {}) {
+        const qs = new URLSearchParams(params).toString();
+        return this.request('/tasks' + (qs ? '?' + qs : ''));
+    },
+
+    getMonthSummary(month, assignee) {
+        const params = { month };
+        if (assignee) params.assignee = assignee;
+        const qs = new URLSearchParams(params).toString();
+        return this.request('/tasks/month-summary?' + qs);
+    },
+
+    createTask(data) {
+        return this.request('/tasks', { method: 'POST', body: data });
+    },
+
+    updateTask(id, data) {
+        return this.request(`/tasks/${id}`, { method: 'PUT', body: data });
+    },
+
+    deleteTask(id, deleteSeries = false) {
+        return this.request(`/tasks/${id}?delete_series=${deleteSeries}`, { method: 'DELETE' });
+    },
+
+    // Categories
+    getCategories() {
+        return this.request('/categories');
+    },
+
+    createCategory(data) {
+        return this.request('/categories', { method: 'POST', body: data });
+    },
+
+    // ICS Import
+    uploadICS(file) {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.request('/import/ics', { method: 'POST', body: formData });
+    },
+
+    confirmICSImport(tasks, assignee) {
+        return this.request('/import/ics/confirm', {
+            method: 'POST',
+            body: { tasks, assignee },
+        });
+    },
+};

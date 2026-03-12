@@ -1,0 +1,276 @@
+/**
+ * App — main application controller.
+ */
+const App = {
+    currentView: 'daily', // 'daily' | 'monthly'
+    currentAssignee: 'all', // 'all' | '潘潘' | '蒲蒲'
+    socket: null,
+
+    init() {
+        // Init Socket.io
+        this.socket = io();
+        this.socket.on('task:created', () => this.refreshCurrentView());
+        this.socket.on('task:updated', () => this.refreshCurrentView());
+        this.socket.on('task:deleted', () => this.refreshCurrentView());
+        this.socket.on('task:imported', (data) => {
+            this.showToast(`📥 另一设备导入了 ${data.count} 个任务`, 'info');
+            this.refreshCurrentView();
+        });
+
+        // Init modules
+        DailyView.init();
+        MonthlyView.init();
+        TaskModal.init();
+        ICSImport.init();
+
+        // Theme
+        this.initTheme();
+
+        // View switching
+        this.bindNavigation();
+
+        // Person switching
+        this.bindPersonSwitcher();
+
+        // Date navigation
+        this.bindDateNav();
+
+        // Add task buttons
+        document.getElementById('btn-add-task').addEventListener('click', () => TaskModal.openCreate());
+        document.getElementById('fab-add').addEventListener('click', () => TaskModal.openCreate());
+
+        // ICS import
+        document.getElementById('btn-import-ics').addEventListener('click', () => ICSImport.open());
+
+        // Mobile menu with backdrop
+        document.getElementById('btn-menu').addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('open')) {
+                this.closeSidebar();
+            } else {
+                sidebar.classList.add('open');
+                // Create backdrop
+                const backdrop = document.createElement('div');
+                backdrop.className = 'sidebar-backdrop';
+                backdrop.id = 'sidebar-backdrop';
+                backdrop.addEventListener('click', () => this.closeSidebar());
+                document.body.appendChild(backdrop);
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (TaskModal.isOpen) TaskModal.close();
+                document.getElementById('ics-modal-overlay').classList.add('hidden');
+                document.getElementById('person-picker-overlay').classList.add('hidden');
+                this.closeSidebar();
+            }
+            if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !TaskModal.isOpen &&
+                document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                e.preventDefault();
+                TaskModal.openCreate();
+            }
+        });
+
+        // Show daily view by default
+        this.switchView('daily');
+    },
+
+    // ===== Theme =====
+    initTheme() {
+        const saved = localStorage.getItem('panpu-theme') || 'light';
+        document.documentElement.setAttribute('data-theme', saved);
+        this.updateThemeUI(saved);
+
+        document.getElementById('btn-toggle-theme').addEventListener('click', () => this.toggleTheme());
+        document.getElementById('mobile-theme-toggle').addEventListener('click', () => this.toggleTheme());
+    },
+
+    toggleTheme() {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('panpu-theme', next);
+        this.updateThemeUI(next);
+    },
+
+    updateThemeUI(theme) {
+        const isDark = theme === 'dark';
+        document.getElementById('theme-icon').textContent = isDark ? '☀️' : '🌙';
+        document.getElementById('theme-label').textContent = isDark ? '亮色模式' : '暗色模式';
+        document.getElementById('mobile-theme-icon').textContent = isDark ? '☀️' : '🌙';
+    },
+
+    // ===== Navigation =====
+    bindNavigation() {
+        // Desktop nav
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const view = btn.dataset.view;
+                this.switchView(view);
+            });
+        });
+
+        // Mobile bottom nav
+        document.querySelectorAll('.bottom-nav-btn[data-view]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const view = btn.dataset.view;
+                this.switchView(view);
+            });
+        });
+    },
+
+    switchView(view) {
+        this.currentView = view;
+
+        // Update nav active states
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+        document.querySelectorAll('.bottom-nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+
+        // Show/hide views
+        document.getElementById('view-daily').classList.toggle('hidden', view !== 'daily');
+        document.getElementById('view-monthly').classList.toggle('hidden', view !== 'monthly');
+
+        // Show/hide today button
+        document.getElementById('btn-today').classList.toggle('hidden', false);
+
+        // Load view
+        if (view === 'daily') {
+            DailyView.setDate(DailyView.currentDate);
+        } else {
+            MonthlyView.setMonth(MonthlyView.currentYear, MonthlyView.currentMonth);
+        }
+    },
+
+    // ===== Person Switcher =====
+    bindPersonSwitcher() {
+        // Desktop sidebar buttons
+        document.querySelectorAll('.person-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const assignee = btn.dataset.assignee;
+                this.setAssignee(assignee);
+                document.querySelectorAll('.person-btn').forEach(b => b.classList.toggle('active', b.dataset.assignee === assignee));
+            });
+        });
+
+        // Mobile person toggle
+        document.getElementById('mobile-person-toggle').addEventListener('click', () => {
+            document.getElementById('person-picker-overlay').classList.remove('hidden');
+        });
+
+        document.getElementById('person-picker-close').addEventListener('click', () => {
+            document.getElementById('person-picker-overlay').classList.add('hidden');
+        });
+
+        document.getElementById('person-picker-overlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                document.getElementById('person-picker-overlay').classList.add('hidden');
+            }
+        });
+
+        document.querySelectorAll('.person-pick-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const assignee = btn.dataset.assignee;
+                this.setAssignee(assignee);
+
+                // Update active states
+                document.querySelectorAll('.person-pick-btn').forEach(b => b.classList.toggle('active', b.dataset.assignee === assignee));
+                document.querySelectorAll('.person-btn').forEach(b => b.classList.toggle('active', b.dataset.assignee === assignee));
+
+                // Update mobile label
+                const labels = { all: '全部', '潘潘': '潘潘', '蒲蒲': '蒲蒲' };
+                if (assignee === '潘潘') {
+                    document.getElementById('mobile-person-icon').innerHTML = '<img class="mobile-nav-avatar" src="/img/panpan.png" alt="">';
+                } else if (assignee === '蒲蒲') {
+                    document.getElementById('mobile-person-icon').innerHTML = '<img class="mobile-nav-avatar" src="/img/pupu.png" alt="">';
+                } else {
+                    document.getElementById('mobile-person-icon').textContent = '👥';
+                }
+                document.getElementById('mobile-person-label').textContent = labels[assignee];
+
+                document.getElementById('person-picker-overlay').classList.add('hidden');
+            });
+        });
+    },
+
+    setAssignee(assignee) {
+        this.currentAssignee = assignee;
+        this.refreshCurrentView();
+    },
+
+    // ===== Date Navigation =====
+    bindDateNav() {
+        document.getElementById('btn-prev').addEventListener('click', () => {
+            if (this.currentView === 'daily') {
+                DailyView.prevDay();
+            } else {
+                MonthlyView.prevMonth();
+            }
+        });
+
+        document.getElementById('btn-next').addEventListener('click', () => {
+            if (this.currentView === 'daily') {
+                DailyView.nextDay();
+            } else {
+                MonthlyView.nextMonth();
+            }
+        });
+
+        document.getElementById('btn-today').addEventListener('click', () => {
+            if (this.currentView === 'daily') {
+                DailyView.goToday();
+            } else {
+                MonthlyView.goToday();
+            }
+        });
+
+        // Touch swipe for mobile
+        let touchStartX = 0;
+        const mainContent = document.getElementById('main-content');
+        mainContent.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+        mainContent.addEventListener('touchend', (e) => {
+            const diff = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(diff) > 80) {
+                if (this.currentView === 'daily') {
+                    diff > 0 ? DailyView.prevDay() : DailyView.nextDay();
+                } else {
+                    diff > 0 ? MonthlyView.prevMonth() : MonthlyView.nextMonth();
+                }
+            }
+        }, { passive: true });
+    },
+
+    // ===== Utilities =====
+    closeSidebar() {
+        document.getElementById('sidebar').classList.remove('open');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        if (backdrop) backdrop.remove();
+    },
+
+    refreshCurrentView() {
+        if (this.currentView === 'daily') {
+            DailyView.refresh();
+        } else {
+            MonthlyView.refresh();
+        }
+    },
+
+    showToast(message, type = 'info') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'toastOut 0.3s ease forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+};
+
+// Start the app
+document.addEventListener('DOMContentLoaded', () => App.init());

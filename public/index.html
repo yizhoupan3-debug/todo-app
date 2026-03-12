@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="峡谷讨伐日记 — 潘潘和蒲蒲的任务管理">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>峡谷讨伐日记</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+  <!-- Sidebar (Desktop) -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1 class="logo">⚔️ 峡谷讨伐日记</h1>
+    </div>
+
+    <div class="person-switcher">
+      <button class="person-btn active" data-assignee="all">
+        <span class="person-avatar">👥</span>
+        <span>全部</span>
+      </button>
+      <button class="person-btn" data-assignee="潘潘">
+        <img class="person-avatar-img" src="/img/panpan.png" alt="潘潘">
+        <span>潘潘</span>
+      </button>
+      <button class="person-btn" data-assignee="蒲蒲">
+        <img class="person-avatar-img" src="/img/pupu.png" alt="蒲蒲">
+        <span>蒲蒲</span>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-view="daily" id="nav-daily">
+        <span class="nav-icon">📅</span>
+        <span>每日</span>
+      </button>
+      <button class="nav-btn" data-view="monthly" id="nav-monthly">
+        <span class="nav-icon">🗓️</span>
+        <span>每月</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="action-btn" id="btn-import-ics">
+        <span>📥</span> 导入 ICS
+      </button>
+      <button class="action-btn" id="btn-toggle-theme">
+        <span id="theme-icon">🌙</span> <span id="theme-label">暗色模式</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content" id="main-content">
+    <!-- Header Bar -->
+    <header class="main-header" id="main-header">
+      <button class="menu-toggle" id="btn-menu">☰</button>
+      <div class="header-center">
+        <h2 id="header-title">今日任务</h2>
+        <div class="date-nav" id="date-nav">
+          <button class="date-nav-btn" id="btn-prev">‹</button>
+          <span class="date-display" id="date-display"></span>
+          <button class="date-nav-btn" id="btn-next">›</button>
+          <button class="date-nav-btn today-btn" id="btn-today">今天</button>
+        </div>
+      </div>
+      <button class="add-btn" id="btn-add-task">
+        <span>+</span>
+      </button>
+    </header>
+
+    <!-- Daily View -->
+    <section class="view-container" id="view-daily">
+      <div class="task-columns">
+        <div class="task-column" id="col-todo">
+          <div class="column-header">
+            <span class="column-dot todo"></span>
+            <h3>待办</h3>
+            <span class="column-count" id="count-todo">0</span>
+          </div>
+          <div class="task-list" id="list-todo"></div>
+        </div>
+        <div class="task-column" id="col-in-progress">
+          <div class="column-header">
+            <span class="column-dot in-progress"></span>
+            <h3>进行中</h3>
+            <span class="column-count" id="count-in-progress">0</span>
+          </div>
+          <div class="task-list" id="list-in-progress"></div>
+        </div>
+        <div class="task-column" id="col-done">
+          <div class="column-header">
+            <span class="column-dot done"></span>
+            <h3>已完成</h3>
+            <span class="column-count" id="count-done">0</span>
+          </div>
+          <div class="task-list" id="list-done"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Monthly View -->
+    <section class="view-container hidden" id="view-monthly">
+      <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="day-detail" id="day-detail">
+        <h3 id="day-detail-title">选择日期查看任务</h3>
+        <div class="task-list" id="day-detail-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Nav (Mobile) -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bottom-nav-btn active" data-view="daily">
+      <span class="nav-icon">📅</span>
+      <span>每日</span>
+    </button>
+    <button class="bottom-nav-btn" data-view="monthly">
+      <span class="nav-icon">🗓️</span>
+      <span>每月</span>
+    </button>
+    <button class="bottom-nav-btn add-fab" id="fab-add">
+      <span class="nav-icon">➕</span>
+    </button>
+    <button class="bottom-nav-btn" id="mobile-person-toggle">
+      <span class="nav-icon" id="mobile-person-icon">👥</span>
+      <span id="mobile-person-label">全部</span>
+    </button>
+    <button class="bottom-nav-btn" id="mobile-theme-toggle">
+      <span class="nav-icon" id="mobile-theme-icon">🌙</span>
+      <span>主题</span>
+    </button>
+  </nav>
+
+  <!-- Task Modal -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal" id="task-modal">
+      <div class="modal-header">
+        <h3 id="modal-title">新建任务</h3>
+        <button class="modal-close" id="modal-close">×</button>
+      </div>
+      <form id="task-form">
+        <input type="hidden" id="task-id">
+
+        <div class="form-group">
+          <label for="task-title">任务标题</label>
+          <input type="text" id="task-title" placeholder="要做什么？" required autocomplete="off">
+        </div>
+
+        <div class="form-group">
+          <label for="task-description">描述（可选）</label>
+          <textarea id="task-description" placeholder="补充说明..." rows="2"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="task-assignee">指派给</label>
+            <select id="task-assignee">
+              <option value="潘潘">潘潘</option>
+              <option value="蒲蒲">蒲蒲</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="task-priority">优先级</label>
+            <select id="task-priority">
+              <option value="1">🔴 高</option>
+              <option value="2" selected>🟡 中</option>
+              <option value="3">🟢 低</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="task-date">日期</label>
+            <input type="date" id="task-date">
+          </div>
+          <div class="form-group">
+            <label for="task-time">时间</label>
+            <input type="time" id="task-time">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="task-category">分类</label>
+          <select id="task-category">
+            <option value="">无分类</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="task-recurring">
+            重复任务
+          </label>
+        </div>
+
+        <div class="recurring-options hidden" id="recurring-options">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="task-recurring-type">重复类型</label>
+              <select id="task-recurring-type">
+                <option value="daily">每天</option>
+                <option value="weekly">每周</option>
+                <option value="monthly">每月</option>
+                <option value="custom">自定义</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="task-recurring-interval">间隔</label>
+              <input type="number" id="task-recurring-interval" value="1" min="1" max="365">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="task-recurring-end">结束日期（可选）</label>
+            <input type="date" id="task-recurring-end">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" id="btn-cancel">取消</button>
+          <button type="button" class="btn btn-danger hidden" id="btn-delete">删除</button>
+          <button type="submit" class="btn btn-primary" id="btn-save">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ICS Import Modal -->
+  <div class="modal-overlay hidden" id="ics-modal-overlay">
+    <div class="modal" id="ics-modal">
+      <div class="modal-header">
+        <h3>📥 导入 ICS 文件</h3>
+        <button class="modal-close" id="ics-modal-close">×</button>
+      </div>
+      <div class="ics-content">
+        <div class="ics-upload" id="ics-upload-area">
+          <div class="ics-upload-icon">📄</div>
+          <p>点击或拖拽 .ics 文件到此处</p>
+          <input type="file" id="ics-file-input" accept=".ics,.ical" hidden>
+        </div>
+
+        <div class="hidden" id="ics-preview">
+          <div class="form-group">
+            <label for="ics-assignee">导入给</label>
+            <select id="ics-assignee">
+              <option value="潘潘">潘潘</option>
+              <option value="蒲蒲">蒲蒲</option>
+            </select>
+          </div>
+          <div class="ics-task-list" id="ics-task-list"></div>
+          <div class="form-actions">
+            <button class="btn btn-secondary" id="ics-cancel">取消</button>
+            <button class="btn btn-primary" id="ics-confirm">确认导入 (<span id="ics-count">0</span> 项)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Person Picker -->
+  <div class="modal-overlay hidden" id="person-picker-overlay">
+    <div class="modal modal-compact" id="person-picker-modal">
+      <div class="modal-header">
+        <h3>选择查看</h3>
+        <button class="modal-close" id="person-picker-close">×</button>
+      </div>
+      <div class="person-picker-list">
+        <button class="person-pick-btn active" data-assignee="all">👥 全部</button>
+        <button class="person-pick-btn" data-assignee="潘潘"><img class="pick-avatar" src="/img/panpan.png" alt="">
+          潘潘</button>
+        <button class="person-pick-btn" data-assignee="蒲蒲"><img class="pick-avatar" src="/img/pupu.png" alt="">
+          蒲蒲</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/views/daily.js"></script>
+  <script src="/js/views/monthly.js"></script>
+  <script src="/js/components/task-modal.js"></script>
+  <script src="/js/components/ics-import.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+
+</html>
