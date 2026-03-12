@@ -642,30 +642,67 @@
 
   <!-- Widget Instruction Modal -->
   <div class="modal-overlay hidden" id="widget-modal-overlay">
-    <div class="modal" id="widget-modal">
-      <div class="modal-header">
-        <h3 id="widget-modal-title">🖥️ 安装桌面小组件</h3>
-        <button class="modal-close" id="widget-modal-close">×</button>
+    <div class="modal widget-modal" id="widget-modal">
+      <div class="widget-modal-hero">
+        <button class="modal-close widget-modal-x" id="widget-modal-close">×</button>
+        <div class="widget-modal-hero-icon" id="widget-hero-icon">📋</div>
+        <div class="widget-modal-hero-title" id="widget-modal-title">安装「今日待办」小组件</div>
+        <div class="widget-modal-hero-sub" id="widget-hero-sub">紧凑任务列表 · 独立窗口运行</div>
       </div>
       <div class="widget-modal-content">
-        <div class="widget-steps">
-          <div class="widget-step">
-            <span class="widget-step-num">1</span>
-            <span class="widget-step-text" id="widget-step1-text">打开终端 (Terminal)</span>
-          </div>
-          <div class="widget-step">
-            <span class="widget-step-num">2</span>
-            <span>复制下面的命令</span>
-          </div>
-          <div class="widget-step">
-            <span class="widget-step-num">3</span>
-            <span>粘贴到终端中按回车运行</span>
-          </div>
+        <!-- Method tabs -->
+        <div class="widget-method-tabs">
+          <button class="widget-method-tab active" data-method="cmd" id="widget-tab-cmd">
+            <span class="widget-tab-icon" id="widget-tab-cmd-icon">⌨️</span> 终端命令
+          </button>
+          <button class="widget-method-tab" data-method="browser" id="widget-tab-browser">
+            <span class="widget-tab-icon">🌐</span> 直接打开
+          </button>
         </div>
-        <div class="widget-cmd-box">
-          <code class="widget-cmd-code" id="widget-cmd-code"></code>
-          <button class="widget-copy-btn" id="widget-copy-btn">📋 复制</button>
+
+        <!-- Terminal command method -->
+        <div class="widget-method-panel" id="widget-panel-cmd">
+          <div class="widget-steps">
+            <div class="widget-step" style="animation-delay:.05s">
+              <span class="widget-step-num">1</span>
+              <span class="widget-step-text" id="widget-step1-text">打开终端 (Terminal)</span>
+            </div>
+            <div class="widget-step" style="animation-delay:.1s">
+              <span class="widget-step-num">2</span>
+              <span>复制命令并粘贴到终端运行</span>
+            </div>
+          </div>
+          <div class="widget-terminal">
+            <div class="widget-terminal-bar">
+              <span class="widget-terminal-dot red"></span>
+              <span class="widget-terminal-dot yellow"></span>
+              <span class="widget-terminal-dot green"></span>
+              <span class="widget-terminal-bar-title" id="widget-terminal-title">Terminal</span>
+            </div>
+            <div class="widget-terminal-body">
+              <span class="widget-terminal-prompt" id="widget-terminal-prompt">$</span>
+              <code class="widget-cmd-code" id="widget-cmd-code"></code>
+            </div>
+          </div>
+          <button class="widget-action-btn primary" id="widget-copy-btn">
+            <span class="widget-action-icon">📋</span> 复制命令
+          </button>
         </div>
+
+        <!-- Direct browser method -->
+        <div class="widget-method-panel hidden" id="widget-panel-browser">
+          <div class="widget-browser-desc">
+            直接在浏览器中打开小组件页面，可以拖拽调整窗口大小，也可以加入书签方便下次使用。
+          </div>
+          <div class="widget-url-box">
+            <span class="widget-url-label">🔗 小组件地址</span>
+            <code class="widget-url-code" id="widget-url-code"></code>
+          </div>
+          <button class="widget-action-btn primary" id="widget-open-btn">
+            <span class="widget-action-icon">🚀</span> 立即打开
+          </button>
+        </div>
+
         <div class="widget-tip" id="widget-tip"></div>
       </div>
     </div>
