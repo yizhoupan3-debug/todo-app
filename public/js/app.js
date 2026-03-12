@@ -107,25 +107,51 @@ const App = {
         const saved = localStorage.getItem('panpu-theme') || 'light';
         this.applyTheme(saved);
 
-        // Desktop: toggle picker panel
-        document.getElementById('btn-toggle-theme').addEventListener('click', () => {
-            document.getElementById('theme-picker').classList.toggle('open');
+        // Settings panel toggle
+        const settingsBtn = document.getElementById('btn-settings');
+        const settingsPanel = document.getElementById('settings-panel');
+        settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingsPanel.classList.toggle('hidden');
+        });
+        // Close on outside click
+        document.addEventListener('click', (e) => {
+            if (!settingsPanel.contains(e.target) && e.target !== settingsBtn) {
+                settingsPanel.classList.add('hidden');
+            }
         });
 
-        // Swatch clicks
+        // Theme swatch clicks
         document.querySelectorAll('.theme-swatch').forEach(swatch => {
             swatch.addEventListener('click', () => {
                 this.applyTheme(swatch.dataset.theme);
             });
         });
 
-        // Mobile: cycle through themes
-        document.getElementById('mobile-theme-toggle').addEventListener('click', () => {
-            const current = document.documentElement.getAttribute('data-theme');
-            const idx = this.themes.indexOf(current);
-            const next = this.themes[(idx + 1) % this.themes.length];
-            this.applyTheme(next);
+        // Platform auto-detect + toggle
+        const isMac = /Mac|iPhone|iPad/.test(navigator.userAgent);
+        const platformBtns = document.querySelectorAll('.platform-btn');
+        if (!isMac) {
+            document.getElementById('platform-mac').classList.remove('active');
+            document.getElementById('platform-win').classList.add('active');
+        }
+        platformBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                platformBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
         });
+
+        // Mobile: cycle through themes
+        const mobileTheme = document.getElementById('mobile-theme-toggle');
+        if (mobileTheme) {
+            mobileTheme.addEventListener('click', () => {
+                const current = document.documentElement.getAttribute('data-theme');
+                const idx = this.themes.indexOf(current);
+                const next = this.themes[(idx + 1) % this.themes.length];
+                this.applyTheme(next);
+            });
+        }
     },
 
     applyTheme(theme) {
@@ -279,3 +305,70 @@ const App = {
 
 // Start the app
 document.addEventListener('DOMContentLoaded', () => App.init());
+
+// Widget installer — generates downloadable launcher scripts
+function installWidget(widgetType) {
+    const platform = document.querySelector('.platform-btn.active')?.dataset.platform || 'mac';
+    const baseUrl = location.origin;
+    const widgetUrl = `${baseUrl}/widget/${widgetType}.html`;
+
+    const names = { todo: '今日待办', calendar: '月历视图' };
+    const sizes = { todo: '360,520', calendar: '920,640' };
+    const name = names[widgetType] || widgetType;
+    const size = sizes[widgetType] || '600,500';
+
+    let content, filename, mimeType;
+
+    if (platform === 'mac') {
+        filename = `峡谷讨伐日记_${name}.command`;
+        mimeType = 'application/x-sh';
+        content = `#!/bin/bash
+# 峡谷讨伐日记 — ${name} 桌面小组件
+# 双击运行此文件即可打开小组件
+
+WIDGET_URL="${widgetUrl}"
+SIZE="${size}"
+
+# 尝试用 Chrome 打开
+if [ -d "/Applications/Google Chrome.app" ]; then
+    open -na "Google Chrome" --args --app="$WIDGET_URL" --window-size=$SIZE
+elif [ -d "/Applications/Microsoft Edge.app" ]; then
+    open -na "Microsoft Edge" --args --app="$WIDGET_URL" --window-size=$SIZE
+else
+    open "$WIDGET_URL"
+fi
+`;
+    } else {
+        filename = `峡谷讨伐日记_${name}.bat`;
+        mimeType = 'application/x-bat';
+        content = `@echo off
+REM 峡谷讨伐日记 — ${name} 桌面小组件
+REM 双击运行此文件即可打开小组件
+
+set WIDGET_URL=${widgetUrl}
+set SIZE=${size}
+
+REM 尝试用 Chrome 打开
+if exist "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" (
+    start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --app="%WIDGET_URL%" --window-size=%SIZE%
+) else if exist "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe" (
+    start "" "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe" --app="%WIDGET_URL%" --window-size=%SIZE%
+) else if exist "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" (
+    start "" "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" --app="%WIDGET_URL%" --window-size=%SIZE%
+) else (
+    start "" "%WIDGET_URL%"
+)
+`;
+    }
+
+    // Trigger download
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    App.showToast(`已下载 ${filename}，双击即可使用 ✨`, 'success');
+}

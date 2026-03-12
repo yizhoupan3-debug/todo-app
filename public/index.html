@@ -59,19 +59,60 @@
     </nav>
 
     <div class="sidebar-footer">
-      <button class="action-btn" id="btn-import-ics">
-        <span>📥</span> 导入 ICS
+      <button class="action-btn" id="btn-settings">
+        <span>⚙️</span> 设置
       </button>
-      <button class="action-btn" id="btn-toggle-theme">
-        <span id="theme-icon">🎨</span> <span id="theme-label">主题</span>
-      </button>
-      <div class="theme-picker-panel" id="theme-picker">
-        <div class="theme-swatch active" data-theme="light" title="亮色"></div>
-        <div class="theme-swatch" data-theme="dark" title="暗色"></div>
-        <div class="theme-swatch" data-theme="sakura" title="樱花"></div>
-        <div class="theme-swatch" data-theme="ocean" title="深海"></div>
-        <div class="theme-swatch" data-theme="forest" title="森林"></div>
-        <div class="theme-swatch" data-theme="sunset" title="日落"></div>
+
+      <div class="settings-panel hidden" id="settings-panel">
+        <!-- ICS Import -->
+        <div class="settings-section">
+          <div class="settings-section-title">📥 导入</div>
+          <button class="settings-action-btn" id="btn-import-ics">导入 ICS 日历</button>
+        </div>
+
+        <!-- Theme -->
+        <div class="settings-section">
+          <div class="settings-section-title">🎨 主题色</div>
+          <div class="settings-theme-row" id="theme-picker">
+            <div class="theme-swatch active" data-theme="light" title="亮色"></div>
+            <div class="theme-swatch" data-theme="dark" title="暗色"></div>
+            <div class="theme-swatch" data-theme="sakura" title="樱花"></div>
+            <div class="theme-swatch" data-theme="ocean" title="深海"></div>
+            <div class="theme-swatch" data-theme="forest" title="森林"></div>
+            <div class="theme-swatch" data-theme="sunset" title="日落"></div>
+          </div>
+        </div>
+
+        <!-- Widgets -->
+        <div class="settings-section">
+          <div class="settings-section-title">🖥️ 桌面小组件</div>
+          <div class="settings-platform-row">
+            <button class="platform-btn active" data-platform="mac" id="platform-mac">🍎 Mac</button>
+            <button class="platform-btn" data-platform="win" id="platform-win">🪟 Win</button>
+          </div>
+          <div class="widget-install-list">
+            <div class="widget-install-item" data-widget="todo">
+              <div class="widget-install-info">
+                <span class="widget-install-icon">📋</span>
+                <div>
+                  <div class="widget-install-name">今日待办</div>
+                  <div class="widget-install-desc">紧凑任务列表</div>
+                </div>
+              </div>
+              <button class="widget-install-btn" onclick="installWidget('todo')">安装</button>
+            </div>
+            <div class="widget-install-item" data-widget="calendar">
+              <div class="widget-install-info">
+                <span class="widget-install-icon">📅</span>
+                <div>
+                  <div class="widget-install-name">月历视图</div>
+                  <div class="widget-install-desc">日历 + 任务详情</div>
+                </div>
+              </div>
+              <button class="widget-install-btn" onclick="installWidget('calendar')">安装</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </aside>
