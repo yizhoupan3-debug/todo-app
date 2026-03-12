@@ -14,6 +14,28 @@ const MonthlyView = {
         this.currentYear = new Date().getFullYear();
         this.currentMonth = new Date().getMonth();
         this.bindToolbar();
+        this.bindScrollNav();
+    },
+
+    bindScrollNav() {
+        const grid = document.getElementById('calendar-grid');
+        let scrollTimer = null;
+        grid.addEventListener('scroll', () => {
+            if (scrollTimer) return;
+            const threshold = 30;
+            // Scrolled to bottom → next month
+            if (grid.scrollTop + grid.clientHeight >= grid.scrollHeight - threshold) {
+                scrollTimer = setTimeout(() => { scrollTimer = null; }, 600);
+                this.nextMonth();
+            }
+            // Scrolled to top → prev month
+            else if (grid.scrollTop <= threshold) {
+                scrollTimer = setTimeout(() => { scrollTimer = null; }, 600);
+                this.prevMonth();
+                // Scroll to bottom of previous month so user can keep scrolling up
+                setTimeout(() => { grid.scrollTop = grid.scrollHeight - grid.clientHeight - 1; }, 150);
+            }
+        });
     },
 
     bindToolbar() {
