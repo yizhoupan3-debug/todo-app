@@ -145,6 +145,7 @@ const App = {
         // Show/hide views
         document.getElementById('view-daily').classList.toggle('hidden', view !== 'daily');
         document.getElementById('view-monthly').classList.toggle('hidden', view !== 'monthly');
+        document.getElementById('view-checkin').classList.toggle('hidden', view !== 'checkin');
 
         // Show/hide today button
         document.getElementById('btn-today').classList.toggle('hidden', false);
