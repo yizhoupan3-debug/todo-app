@@ -329,58 +329,105 @@ function installWidget(widgetType) {
     const baseUrl = location.origin;
     const widgetUrl = `${baseUrl}/widget/${widgetType}.html`;
 
-    const names = { todo: '今日待办', calendar: '月历视图' };
+    const widgetMeta = {
+        todo: { name: '今日待办', icon: '📋', desc: '紧凑任务列表 · 独立窗口运行' },
+        calendar: { name: '月历视图', icon: '📅', desc: '日历 + 任务详情 · 宽屏视图' }
+    };
     const sizes = { todo: '360,520', calendar: '920,640' };
-    const name = names[widgetType] || widgetType;
+    const meta = widgetMeta[widgetType] || { name: widgetType, icon: '🖥️', desc: '桌面小组件' };
     const size = sizes[widgetType] || '600,500';
 
-    let cmd, step1Text, tipText;
+    let cmd, step1Text, tipText, termTitle, prompt;
 
     if (platform === 'mac') {
-        step1Text = '打开「终端」应用 (按 ⌘+空格 搜索 Terminal)';
+        step1Text = '打开「终端」(按 ⌘+空格 搜索 Terminal)';
         cmd = `/Applications/Google\\ Chrome.app/Contents/MacOS/Google\\ Chrome --app="${widgetUrl}" --window-size=${size}`;
-        tipText = '💡 如果没有 Chrome，也可以直接在浏览器打开这个地址就行啦';
+        tipText = '✨ 用 Chrome App 模式打开，无地址栏，像原生小组件一样';
+        termTitle = 'Terminal';
+        prompt = '$';
     } else {
-        step1Text = '打开「命令提示符」或「PowerShell」(按 Win+R 输入 cmd)';
+        step1Text = '打开「命令提示符」(按 Win+R 输入 cmd)';
         cmd = `start "" "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --app="${widgetUrl}" --window-size=${size}`;
-        tipText = '💡 如果 Chrome 安装位置不同，请修改路径；也可以直接在浏览器打开地址';
+        tipText = '✨ 用 Chrome App 模式打开，无地址栏，像原生小组件一样';
+        termTitle = 'CMD';
+        prompt = '>';
     }
 
-    // Populate modal
-    document.getElementById('widget-modal-title').textContent = `🖥️ 安装「${name}」小组件`;
+    // Populate modal hero
+    document.getElementById('widget-hero-icon').textContent = meta.icon;
+    document.getElementById('widget-modal-title').textContent = `安装「${meta.name}」小组件`;
+    document.getElementById('widget-hero-sub').textContent = meta.desc;
+
+    // Populate terminal
     document.getElementById('widget-step1-text').textContent = step1Text;
     document.getElementById('widget-cmd-code').textContent = cmd;
+    document.getElementById('widget-terminal-title').textContent = termTitle;
+    document.getElementById('widget-terminal-prompt').textContent = prompt;
     document.getElementById('widget-tip').textContent = tipText;
+    document.getElementById('widget-tab-cmd-icon').textContent = platform === 'mac' ? '⌨️' : '💻';
+
+    // Populate URL
+    document.getElementById('widget-url-code').textContent = widgetUrl;
 
     // Show modal
     const overlay = document.getElementById('widget-modal-overlay');
     overlay.classList.remove('hidden');
 
-    // Copy button
+    // --- Method tab switching ---
+    const tabCmd = document.getElementById('widget-tab-cmd');
+    const tabBrowser = document.getElementById('widget-tab-browser');
+    const panelCmd = document.getElementById('widget-panel-cmd');
+    const panelBrowser = document.getElementById('widget-panel-browser');
+
+    tabCmd.className = 'widget-method-tab active';
+    tabBrowser.className = 'widget-method-tab';
+    panelCmd.classList.remove('hidden');
+    panelBrowser.classList.add('hidden');
+
+    tabCmd.onclick = () => {
+        tabCmd.classList.add('active'); tabBrowser.classList.remove('active');
+        panelCmd.classList.remove('hidden'); panelBrowser.classList.add('hidden');
+    };
+    tabBrowser.onclick = () => {
+        tabBrowser.classList.add('active'); tabCmd.classList.remove('active');
+        panelBrowser.classList.remove('hidden'); panelCmd.classList.add('hidden');
+    };
+
+    // --- Copy button ---
     const copyBtn = document.getElementById('widget-copy-btn');
-    copyBtn.textContent = '📋 复制';
+    copyBtn.innerHTML = '<span class="widget-action-icon">📋</span> 复制命令';
+    copyBtn.classList.remove('copied');
     copyBtn.onclick = () => {
         navigator.clipboard.writeText(cmd).then(() => {
-            copyBtn.textContent = '✅ 已复制!';
+            copyBtn.innerHTML = '<span class="widget-action-icon">✅</span> 已复制!';
+            copyBtn.classList.add('copied');
             App.showToast('命令已复制到剪贴板 ✨', 'success');
-            setTimeout(() => { copyBtn.textContent = '📋 复制'; }, 2000);
+            setTimeout(() => {
+                copyBtn.innerHTML = '<span class="widget-action-icon">📋</span> 复制命令';
+                copyBtn.classList.remove('copied');
+            }, 2000);
         }).catch(() => {
-            // Fallback for older browsers
             const ta = document.createElement('textarea');
-            ta.value = cmd;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            copyBtn.textContent = '✅ 已复制!';
+            ta.value = cmd; document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            copyBtn.innerHTML = '<span class="widget-action-icon">✅</span> 已复制!';
+            copyBtn.classList.add('copied');
             App.showToast('命令已复制到剪贴板 ✨', 'success');
-            setTimeout(() => { copyBtn.textContent = '📋 复制'; }, 2000);
+            setTimeout(() => {
+                copyBtn.innerHTML = '<span class="widget-action-icon">📋</span> 复制命令';
+                copyBtn.classList.remove('copied');
+            }, 2000);
         });
     };
 
-    // Close
+    // --- Direct open button ---
+    document.getElementById('widget-open-btn').onclick = () => {
+        window.open(widgetUrl, '_blank');
+        App.showToast(`已在新标签页打开「${meta.name}」✨`, 'success');
+    };
+
+    // --- Close ---
     document.getElementById('widget-modal-close').onclick = () => overlay.classList.add('hidden');
-    overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.add('hidden');
-    });
+    overlay.onclick = (e) => { if (e.target === overlay) overlay.classList.add('hidden'); };
 }
+
