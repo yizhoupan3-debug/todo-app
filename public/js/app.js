@@ -122,7 +122,7 @@ const App = {
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const view = btn.dataset.view;
-                this.switchView(view);
+                if (view) this.switchView(view);
             });
         });
 
