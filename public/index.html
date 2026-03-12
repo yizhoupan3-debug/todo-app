@@ -21,7 +21,7 @@
   <!-- Sidebar (Desktop) -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <h1 class="logo">⚔️ 峡谷讨伐日记</h1>
+      <h1 class="logo"><img class="logo-img" src="/img/taofa.png" alt=""> 峡谷讨伐日记</h1>
     </div>
 
     <div class="love-counter" id="love-counter">
@@ -33,7 +33,7 @@
 
     <div class="person-switcher">
       <button class="person-btn active" data-assignee="all">
-        <span class="person-avatar">👥</span>
+        <img class="person-avatar-img" src="/img/all.png" alt="全部">
         <span>全部</span>
       </button>
       <button class="person-btn" data-assignee="潘潘">
@@ -115,12 +115,38 @@
 
     <!-- Monthly View -->
     <section class="view-container hidden" id="view-monthly">
-      <div class="calendar-grid" id="calendar-grid"></div>
-      <div class="day-detail" id="day-detail">
-        <h3 id="day-detail-title">选择日期查看任务</h3>
-        <div class="task-list" id="day-detail-list"></div>
+      <div class="monthly-toolbar">
+        <div class="monthly-person-filter">
+          <button class="filter-pill active" data-assignee="all">
+            <img class="filter-avatar" src="/img/all.png" alt=""> 全部
+          </button>
+          <button class="filter-pill" data-assignee="潘潘">
+            <img class="filter-avatar" src="/img/panpan.png" alt=""> 潘潘
+          </button>
+          <button class="filter-pill" data-assignee="蒲蒲">
+            <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
+          </button>
+        </div>
+        <div class="monthly-mode-switch">
+          <button class="mode-btn active" data-mode="full" title="完整月">📅</button>
+          <button class="mode-btn" data-mode="float" title="浮动月">📌</button>
+        </div>
       </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
     </section>
+
+    <!-- Day Detail Modal -->
+    <div class="modal-overlay hidden" id="day-detail-overlay">
+      <div class="modal" id="day-detail-modal">
+        <div class="modal-header">
+          <h3 id="day-detail-title">任务详情</h3>
+          <button class="modal-close" id="day-detail-close">×</button>
+        </div>
+        <div class="day-detail-body">
+          <div class="task-list" id="day-detail-list"></div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- Bottom Nav (Mobile) -->
@@ -280,7 +306,8 @@
         <button class="modal-close" id="person-picker-close">×</button>
       </div>
       <div class="person-picker-list">
-        <button class="person-pick-btn active" data-assignee="all">👥 全部</button>
+        <button class="person-pick-btn active" data-assignee="all"><img class="pick-avatar" src="/img/all.png" alt="">
+          全部</button>
         <button class="person-pick-btn" data-assignee="潘潘"><img class="pick-avatar" src="/img/panpan.png" alt="">
           潘潘</button>
         <button class="person-pick-btn" data-assignee="蒲蒲"><img class="pick-avatar" src="/img/pupu.png" alt="">

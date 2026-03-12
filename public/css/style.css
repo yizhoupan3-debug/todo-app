@@ -648,6 +648,23 @@ textarea:focus {
   flex-wrap: wrap;
 }
 
+.logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 16px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
 .task-tag {
   font-size: 0.7rem;
   font-weight: 500;
