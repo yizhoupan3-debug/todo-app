@@ -24,10 +24,23 @@ const io = new Server(server, {
 app.use(compression()); // Gzip all responses
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// Service worker must NEVER be cached by browser
+app.get('/sw.js', (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+    res.sendFile(path.join(__dirname, '..', 'public', 'sw.js'));
+});
 app.use(express.static(path.join(__dirname, '..', 'public'), {
     maxAge: '1d',          // Cache static assets for 1 day
     etag: true,            // Enable ETag for cache validation
-    lastModified: true
+    lastModified: true,
+    setHeaders: (res, filePath) => {
+        // JS and CSS should revalidate more often
+        if (filePath.endsWith('.js') || filePath.endsWith('.css')) {
+            res.set('Cache-Control', 'public, max-age=0, must-revalidate');
+        }
+    }
 }));
 
 // API Routes
