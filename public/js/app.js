@@ -214,20 +214,24 @@ const App = {
             }
         });
 
-        // Touch swipe for mobile
+        // Touch swipe for mobile (horizontal only, skip on stats/checkin)
         let touchStartX = 0;
+        let touchStartY = 0;
         const mainContent = document.getElementById('main-content');
         mainContent.addEventListener('touchstart', (e) => {
             touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
         }, { passive: true });
         mainContent.addEventListener('touchend', (e) => {
             if (this.currentView !== 'daily' && this.currentView !== 'monthly') return;
-            const diff = e.changedTouches[0].clientX - touchStartX;
-            if (Math.abs(diff) > 80) {
+            const diffX = e.changedTouches[0].clientX - touchStartX;
+            const diffY = e.changedTouches[0].clientY - touchStartY;
+            // Only trigger if horizontal swipe is dominant (not vertical scrolling)
+            if (Math.abs(diffX) > 80 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
                 if (this.currentView === 'daily') {
-                    diff > 0 ? DailyView.prevDay() : DailyView.nextDay();
+                    diffX > 0 ? DailyView.prevDay() : DailyView.nextDay();
                 } else {
-                    diff > 0 ? MonthlyView.prevMonth() : MonthlyView.nextMonth();
+                    diffX > 0 ? MonthlyView.prevMonth() : MonthlyView.nextMonth();
                 }
             }
         }, { passive: true });
