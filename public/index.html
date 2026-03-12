@@ -169,6 +169,14 @@
               </div>
               <div class="checkin-item-arrow">›</div>
             </div>
+            <div class="checkin-item-card" data-type="wakeup" id="card-wakeup">
+              <div class="checkin-item-icon">⏰</div>
+              <div class="checkin-item-info">
+                <h4>起床打卡</h4>
+                <span class="checkin-item-stats" id="card-wakeup-stats">今日未打卡</span>
+              </div>
+              <div class="checkin-item-arrow">›</div>
+            </div>
           </div>
         </div>
 
@@ -216,6 +224,25 @@
               <div class="water-log" id="water-log">
                 <div class="water-log-empty">今天还没有喝水记录 💧</div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail: wakeup -->
+        <div class="checkin-detail hidden" id="checkin-detail-wakeup">
+          <button class="checkin-back-btn" id="checkin-back-wakeup">‹ 返回打卡</button>
+          <div class="wakeup-tracker">
+            <div class="wakeup-today">
+              <div class="wakeup-status" id="wakeup-status">今日未打卡</div>
+              <div class="wakeup-time" id="wakeup-time"></div>
+              <button class="wakeup-stamp-btn" id="wakeup-stamp-btn">
+                <span class="wakeup-stamp-icon">⏰</span>
+                <span>起床打卡</span>
+              </button>
+            </div>
+            <div class="wakeup-history">
+              <h4>最近 7 天</h4>
+              <div class="wakeup-log" id="wakeup-log"></div>
             </div>
           </div>
         </div>
