@@ -140,4 +140,11 @@ if (coinCount.count === 0) {
   db.prepare("INSERT INTO coin_accounts (assignee, balance) VALUES ('蒲蒲', 0)").run();
 }
 
+// Migrate: add growth_minutes column to trees if missing
+try {
+  db.prepare("SELECT growth_minutes FROM trees LIMIT 1").get();
+} catch (e) {
+  db.exec("ALTER TABLE trees ADD COLUMN growth_minutes INTEGER NOT NULL DEFAULT 0");
+}
+
 module.exports = db;

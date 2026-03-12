@@ -117,4 +117,43 @@ router.get('/trees/:assignee', (req, res) => {
     }
 });
 
+// ── Grow a Tree (accumulate focus minutes) ──
+router.post('/trees/grow', (req, res) => {
+    try {
+        const { assignee, minutes } = req.body;
+        if (!assignee || !minutes) {
+            return res.status(400).json({ error: 'assignee, minutes required' });
+        }
+
+        const grow = db.transaction(() => {
+            // Find the latest growing tree for this user
+            let tree = db.prepare(
+                "SELECT * FROM trees WHERE assignee = ? AND status = 'growing' ORDER BY planted_at DESC LIMIT 1"
+            ).get(assignee);
+
+            if (!tree) {
+                // If no growing tree, try the latest tree regardless
+                tree = db.prepare(
+                    "SELECT * FROM trees WHERE assignee = ? ORDER BY planted_at DESC LIMIT 1"
+                ).get(assignee);
+            }
+
+            if (!tree) return null;
+
+            const newMinutes = (tree.growth_minutes || 0) + minutes;
+            const newStatus = newMinutes >= 150 ? 'grown' : 'growing';
+
+            db.prepare('UPDATE trees SET growth_minutes = ?, status = ? WHERE id = ?')
+                .run(newMinutes, newStatus, tree.id);
+
+            return db.prepare('SELECT * FROM trees WHERE id = ?').get(tree.id);
+        });
+
+        const tree = grow();
+        res.json({ tree });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

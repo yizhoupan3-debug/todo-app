@@ -136,4 +136,8 @@ const API = {
     getGardenTrees(assignee) {
         return this.request(`/garden/trees/${encodeURIComponent(assignee)}`);
     },
+
+    growTree(data) {
+        return this.request('/garden/trees/grow', { method: 'POST', body: data });
+    },
 };
