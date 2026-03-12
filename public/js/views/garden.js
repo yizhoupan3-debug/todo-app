@@ -1,11 +1,11 @@
 /**
- * Garden View — 花园 + 商城 + 喵喵币
+ * Garden View — 花园 + 喵喵币
+ * Shop View — 商城 (standalone sidebar view)
  */
 const GardenView = {
     assignee: '潘潘',
     balance: 0,
     trees: [],
-    shopOpen: false,
 
     // Tree catalog (frontend-defined)
     catalog: [
@@ -23,13 +23,12 @@ const GardenView = {
         { type: 'lavender', icon: '🪻', name: '彩虹花', cost: 200, desc: '传说之花' },
     ],
 
-    init() {
-        // nothing needed at init
-    },
+    init() { },
 
+    // ======= GARDEN VIEW =======
     async open() {
         await this.loadData();
-        this.render();
+        this.renderGarden();
     },
 
     async loadData() {
@@ -45,12 +44,9 @@ const GardenView = {
         }
     },
 
-    render() {
+    renderGarden() {
         const container = document.getElementById('view-garden');
         if (!container) return;
-
-        // Mark trees older than 1 hour as "grown"
-        const now = Date.now();
 
         container.innerHTML = `
             <div class="garden-header">
@@ -59,10 +55,7 @@ const GardenView = {
                     <span class="coin-balance" id="garden-balance">${this.balance}</span>
                     <span class="coin-label">喵喵币</span>
                 </div>
-                <div class="garden-actions">
-                    <button class="garden-btn" id="btn-garden-history">📊 记录</button>
-                    <button class="garden-btn primary" id="btn-garden-shop">🛒 商城</button>
-                </div>
+                <button class="garden-btn" id="btn-garden-history">📊 记录</button>
             </div>
 
             <div class="garden-person-filter">
@@ -80,7 +73,7 @@ const GardenView = {
                     <div class="garden-empty">
                         <div class="garden-empty-icon">🌱</div>
                         <div class="garden-empty-text">花园还是空的</div>
-                        <div class="garden-empty-sub">完成番茄钟或打卡赚取喵喵币，去商城种一棵树吧！</div>
+                        <div class="garden-empty-sub">完成番茄钟赚取喵喵币，去商城种一棵树吧！</div>
                     </div>
                 ` : this.renderTrees()}
             </div>
@@ -100,27 +93,6 @@ const GardenView = {
                 </div>
             </div>
 
-            <!-- Shop Modal -->
-            <div class="garden-shop hidden" id="garden-shop">
-                <div class="garden-shop-header">
-                    <h3>🛒 树木商城</h3>
-                    <div class="garden-shop-balance">🪙 <span id="shop-balance">${this.balance}</span></div>
-                    <button class="garden-shop-close" id="garden-shop-close">×</button>
-                </div>
-                <div class="garden-shop-grid">
-                    ${this.catalog.map(item => `
-                        <div class="shop-card ${this.balance >= item.cost ? '' : 'locked'}" data-type="${item.type}" data-cost="${item.cost}">
-                            <div class="shop-card-icon">${item.icon}</div>
-                            <div class="shop-card-name">${item.name}</div>
-                            <div class="shop-card-desc">${item.desc}</div>
-                            <button class="shop-buy-btn" ${this.balance < item.cost && item.cost > 0 ? 'disabled' : ''}>
-                                ${item.cost === 0 ? '免费种植' : `🪙 ${item.cost}`}
-                            </button>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-
             <!-- History Modal -->
             <div class="garden-history hidden" id="garden-history">
                 <div class="garden-shop-header">
@@ -133,7 +105,7 @@ const GardenView = {
             </div>
         `;
 
-        this.bindEvents();
+        this.bindGardenEvents();
     },
 
     renderTrees() {
@@ -143,7 +115,7 @@ const GardenView = {
             const x = tree.position_x || (10 + (i % 8) * 11);
             const y = tree.position_y || (20 + Math.floor(i / 8) * 15);
             const age = Date.now() - new Date(tree.planted_at).getTime();
-            const grown = age > 3600000; // 1 hour
+            const grown = age > 3600000;
             return `
                 <div class="garden-tree ${grown ? 'grown' : 'growing'}"
                      style="left:${x}%;top:${y}%"
@@ -154,24 +126,13 @@ const GardenView = {
         }).join('');
     },
 
-    bindEvents() {
-        // Person filter
+    bindGardenEvents() {
         document.querySelectorAll('#view-garden .filter-pill').forEach(btn => {
             btn.addEventListener('click', () => {
                 this.assignee = btn.dataset.assignee;
                 this.open();
             });
         });
-
-        // Shop toggle
-        document.getElementById('btn-garden-shop')?.addEventListener('click', () => {
-            document.getElementById('garden-shop').classList.remove('hidden');
-        });
-        document.getElementById('garden-shop-close')?.addEventListener('click', () => {
-            document.getElementById('garden-shop').classList.add('hidden');
-        });
-
-        // History toggle
         document.getElementById('btn-garden-history')?.addEventListener('click', async () => {
             document.getElementById('garden-history').classList.remove('hidden');
             await this.loadHistory();
@@ -179,37 +140,108 @@ const GardenView = {
         document.getElementById('garden-history-close')?.addEventListener('click', () => {
             document.getElementById('garden-history').classList.add('hidden');
         });
+    },
+
+    // ======= SHOP VIEW (standalone) =======
+    shopAssignee: '潘潘',
+    shopBalance: 0,
+
+    async openShop() {
+        await this.loadShopData();
+        this.renderShop();
+    },
+
+    async loadShopData() {
+        try {
+            const data = await API.getCoins(this.shopAssignee);
+            this.shopBalance = data.balance;
+        } catch (e) {
+            console.error('Shop load error:', e);
+        }
+    },
+
+    renderShop() {
+        const container = document.getElementById('view-shop');
+        if (!container) return;
+
+        container.innerHTML = `
+            <div class="shop-view-header">
+                <div class="garden-coin-display">
+                    <span class="coin-icon">🪙</span>
+                    <span class="coin-balance" id="shop-view-balance">${this.shopBalance}</span>
+                    <span class="coin-label">喵喵币</span>
+                </div>
+            </div>
+
+            <div class="garden-person-filter">
+                <button class="filter-pill ${this.shopAssignee === '潘潘' ? 'active' : ''}" data-assignee="潘潘">
+                    <img class="filter-avatar" src="/img/panpan.png" alt=""> 潘潘
+                </button>
+                <button class="filter-pill ${this.shopAssignee === '蒲蒲' ? 'active' : ''}" data-assignee="蒲蒲">
+                    <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
+                </button>
+            </div>
+
+            <div class="shop-full-grid">
+                ${this.catalog.map(item => `
+                    <div class="shop-card ${this.shopBalance >= item.cost ? '' : 'locked'}" data-type="${item.type}" data-cost="${item.cost}">
+                        <div class="shop-card-icon">${item.icon}</div>
+                        <div class="shop-card-name">${item.name}</div>
+                        <div class="shop-card-desc">${item.desc}</div>
+                        <button class="shop-buy-btn" ${this.shopBalance < item.cost && item.cost > 0 ? 'disabled' : ''}>
+                            ${item.cost === 0 ? '免费种植' : `🪙 ${item.cost}`}
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        this.bindShopEvents();
+    },
+
+    bindShopEvents() {
+        // Person filter
+        document.querySelectorAll('#view-shop .filter-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.shopAssignee = btn.dataset.assignee;
+                this.openShop();
+            });
+        });
 
         // Buy buttons
-        document.querySelectorAll('.shop-card').forEach(card => {
+        document.querySelectorAll('#view-shop .shop-card').forEach(card => {
             const buyBtn = card.querySelector('.shop-buy-btn');
             if (buyBtn && !buyBtn.disabled) {
                 buyBtn.addEventListener('click', () => {
-                    this.buyTree(card.dataset.type, parseInt(card.dataset.cost));
+                    this.buyTree(card.dataset.type, parseInt(card.dataset.cost), true);
                 });
             }
         });
     },
 
-    async buyTree(treeType, cost) {
+    async buyTree(treeType, cost, fromShop = false) {
+        const assignee = fromShop ? this.shopAssignee : this.assignee;
         try {
             const result = await API.plantTree({
-                assignee: this.assignee,
+                assignee,
                 tree_type: treeType,
                 cost: cost,
             });
-            this.balance = result.balance;
             App.showToast(`🌱 种下了一棵${this.catalog.find(c => c.type === treeType)?.name || '植物'}！`, 'success');
-            // Close shop and refresh garden
-            document.getElementById('garden-shop').classList.add('hidden');
-            await this.open();
-            // Update header coin display
+            if (fromShop) {
+                this.shopBalance = result.balance;
+                this.openShop(); // Refresh shop view
+            } else {
+                this.balance = result.balance;
+                this.open(); // Refresh garden view
+            }
             this.updateHeaderCoins();
         } catch (e) {
             App.showToast(e.message || '购买失败', 'error');
         }
     },
 
+    // ======= SHARED =======
     async loadHistory() {
         try {
             const rows = await API.getCoinHistory(this.assignee, 30);
@@ -244,10 +276,9 @@ const GardenView = {
 
     updateHeaderCoins() {
         const el = document.getElementById('header-coins');
-        if (el) el.textContent = this.balance;
+        if (el) el.textContent = this.shopBalance || this.balance;
     },
 
-    // Called from Pomodoro when a focus round completes
     async earnFromPomodoro(assignee, focusMinutes) {
         let amount = 10;
         if (focusMinutes >= 60) amount = 30;
@@ -259,13 +290,13 @@ const GardenView = {
                 reason: 'pomodoro',
                 detail: `${focusMinutes}分钟专注`,
             });
-            this.balance = result.balance;
+            if (assignee === this.assignee) this.balance = result.balance;
+            if (assignee === this.shopAssignee) this.shopBalance = result.balance;
             this.updateHeaderCoins();
             App.showToast(`+${amount} 🪙 喵喵币！`, 'success');
         } catch (e) { /* silent */ }
     },
 
-    // Called from Checkin
     async earnFromCheckin(assignee, type) {
         const amount = 5;
         try {
@@ -275,7 +306,8 @@ const GardenView = {
                 reason: 'checkin',
                 detail: type,
             });
-            this.balance = result.balance;
+            if (assignee === this.assignee) this.balance = result.balance;
+            if (assignee === this.shopAssignee) this.shopBalance = result.balance;
             this.updateHeaderCoins();
         } catch (e) { /* silent */ }
     },

@@ -69,6 +69,9 @@ const App = {
         // Garden from sidebar
         document.getElementById('nav-garden').addEventListener('click', () => this.switchView('garden'));
 
+        // Shop from sidebar
+        document.getElementById('nav-shop').addEventListener('click', () => this.switchView('shop'));
+
         // Header coin button
         document.getElementById('header-coin-btn')?.addEventListener('click', () => this.switchView('garden'));
 
@@ -235,6 +238,7 @@ const App = {
         document.getElementById('view-checkin').classList.toggle('hidden', view !== 'checkin');
         document.getElementById('view-stats').classList.toggle('hidden', view !== 'stats');
         document.getElementById('view-garden').classList.toggle('hidden', view !== 'garden');
+        document.getElementById('view-shop').classList.toggle('hidden', view !== 'shop');
 
         // Show/hide today button
         document.getElementById('btn-today').classList.toggle('hidden', false);
@@ -246,6 +250,8 @@ const App = {
             StatsView.load();
         } else if (view === 'garden') {
             GardenView.open();
+        } else if (view === 'shop') {
+            GardenView.openShop();
         } else {
             MonthlyView.syncLocalAssignee();
             MonthlyView.setMonth(MonthlyView.currentYear, MonthlyView.currentMonth);
