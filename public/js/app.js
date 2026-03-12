@@ -70,6 +70,7 @@ const App = {
                 if (TaskModal.isOpen) TaskModal.close();
                 document.getElementById('ics-modal-overlay').classList.add('hidden');
                 document.getElementById('person-picker-overlay').classList.add('hidden');
+                document.getElementById('day-detail-overlay').classList.add('hidden');
                 this.closeSidebar();
             }
             if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !TaskModal.isOpen &&
@@ -145,6 +146,7 @@ const App = {
         if (view === 'daily') {
             DailyView.setDate(DailyView.currentDate);
         } else {
+            MonthlyView.syncLocalAssignee();
             MonthlyView.setMonth(MonthlyView.currentYear, MonthlyView.currentMonth);
         }
     },

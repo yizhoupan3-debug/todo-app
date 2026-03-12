@@ -539,6 +539,30 @@ textarea:focus {
   margin-left: auto;
 }
 
+.clear-done-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition);
+  background: transparent;
+  border: none;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.clear-done-btn:hover {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  opacity: 1;
+  transform: scale(1.1);
+}
+
 /* ===== TASK CARD ===== */
 .task-card {
   background: var(--card-bg);
@@ -696,6 +720,89 @@ textarea:focus {
   color: var(--todo);
 }
 
+/* ===== MONTHLY TOOLBAR ===== */
+.monthly-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.monthly-person-filter {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.filter-pill:hover {
+  border-color: var(--primary-light);
+  color: var(--text);
+  background: var(--card-hover);
+}
+
+.filter-pill.active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 8px var(--primary-glow);
+}
+
+.filter-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.monthly-mode-switch {
+  display: flex;
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.mode-btn {
+  padding: 7px 14px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all var(--transition);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  position: relative;
+}
+
+.mode-btn:not(:last-child) {
+  border-right: 1.5px solid var(--border);
+}
+
+.mode-btn:hover {
+  background: var(--card-hover);
+}
+
+.mode-btn.active {
+  background: var(--primary);
+  color: white;
+}
+
 /* ===== CALENDAR (Monthly View) ===== */
 .calendar-grid {
   background: var(--card-bg);
@@ -749,8 +856,34 @@ textarea:focus {
   opacity: 0.35;
 }
 
-.calendar-cell.today {
-  background: var(--primary-glow);
+/* Today — gold border & bold */
+.calendar-cell.today-gold {
+  border: 2px solid #d4af37;
+  background: rgba(212, 175, 55, 0.06);
+  z-index: 1;
+}
+
+.calendar-cell.today-gold .calendar-day-num {
+  background: linear-gradient(135deg, #d4af37, #f5d76e);
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.35);
+}
+
+/* Floating month — current week highlight */
+.calendar-cell.current-week {
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.calendar-cell.current-week.today-gold {
+  background: rgba(212, 175, 55, 0.08);
 }
 
 .calendar-cell.selected {
@@ -762,18 +895,6 @@ textarea:focus {
   font-size: 0.85rem;
   font-weight: 500;
   margin-bottom: 6px;
-}
-
-.calendar-cell.today .calendar-day-num {
-  background: var(--primary);
-  color: white;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
 }
 
 .calendar-dots {
@@ -795,24 +916,30 @@ textarea:focus {
   margin-top: 4px;
 }
 
-/* Day Detail Panel */
-.day-detail {
-  margin-top: 20px;
-  background: var(--card-bg);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  padding: 20px;
-  transition: background var(--transition);
+/* Mini progress bar per day */
+.calendar-progress {
+  margin-top: 4px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
 }
 
-.day-detail h3 {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: var(--text-secondary);
+.calendar-progress-bar {
+  height: 100%;
+  background: var(--done);
+  border-radius: 2px;
+  transition: width 0.3s ease;
 }
 
-.day-detail .task-list {
+/* Day Detail Modal Body */
+.day-detail-body {
+  padding: 4px 24px 24px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.day-detail-body .task-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1368,6 +1495,26 @@ form {
   }
 
   /* --- Calendar: Compact Mobile --- */
+  .monthly-toolbar {
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+
+  .filter-pill {
+    padding: 5px 10px;
+    font-size: 0.75rem;
+  }
+
+  .filter-avatar {
+    width: 16px;
+    height: 16px;
+  }
+
+  .mode-btn {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+  }
+
   .calendar-grid {
     border-radius: var(--radius-md);
   }
@@ -1392,7 +1539,7 @@ form {
     margin-bottom: 3px;
   }
 
-  .calendar-cell.today .calendar-day-num {
+  .calendar-cell.today-gold .calendar-day-num {
     width: 22px;
     height: 22px;
     font-size: 0.7rem;
@@ -1407,10 +1554,14 @@ form {
     gap: 2px;
   }
 
-  .day-detail {
-    margin-top: 12px;
-    border-radius: var(--radius-md);
-    padding: 16px;
+  .calendar-progress {
+    height: 2px;
+    margin-top: 2px;
+  }
+
+  .day-detail-body {
+    padding: 4px 16px 16px;
+    max-height: 50vh;
   }
 
   /* --- Modal → Bottom Sheet --- */

@@ -110,6 +110,27 @@ router.get('/month-summary', (req, res) => {
     }
 });
 
+// DELETE /api/tasks/clear-done — delete all done tasks for a date
+router.delete('/clear-done', (req, res) => {
+    const { date, assignee } = req.query;
+    if (!date) return res.status(400).json({ error: 'date param required (YYYY-MM-DD)' });
+
+    let where = "status = 'done' AND due_date = ? AND (is_recurring = 0 OR recurring_parent_id IS NOT NULL)";
+    let params = [date];
+
+    if (assignee && assignee !== 'all') {
+        where += ' AND assignee = ?';
+        params.push(assignee);
+    }
+
+    try {
+        const result = db.prepare(`DELETE FROM tasks WHERE ${where}`).run(...params);
+        res.json({ success: true, deleted: result.changes });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // POST /api/tasks — create task
 router.post('/', (req, res) => {
     const { title, description, assignee, category_id, priority, due_date, due_time,

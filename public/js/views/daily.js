@@ -7,6 +7,25 @@ const DailyView = {
 
     init() {
         this.setDate(new Date());
+
+        // Clear done button
+        document.getElementById('btn-clear-done').addEventListener('click', async () => {
+            const doneCount = this.tasks.filter(t => t.status === 'done').length;
+            if (doneCount === 0) {
+                App.showToast('没有已完成的任务', 'info');
+                return;
+            }
+            if (!confirm(`确定要清除 ${doneCount} 个已完成的任务吗？`)) return;
+            try {
+                const dateStr = this.formatDate(this.currentDate);
+                const result = await API.clearDoneTasks(dateStr, App.currentAssignee);
+                App.socket.emit('task:deleted', {});
+                this.loadTasks();
+                App.showToast(`🗑️ 已清除 ${result.deleted} 个任务`, 'success');
+            } catch (err) {
+                App.showToast('清除失败: ' + err.message, 'error');
+            }
+        });
     },
 
     setDate(date) {

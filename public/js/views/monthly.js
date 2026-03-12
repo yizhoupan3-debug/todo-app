@@ -1,17 +1,68 @@
 /**
- * Monthly View — calendar grid with task dots and day detail panel.
+ * Monthly View — calendar grid with task dots, person filter,
+ * display‐mode toggle (full / float), gold‐bordered today,
+ * and day‐detail modal.
  */
 const MonthlyView = {
     currentYear: new Date().getFullYear(),
     currentMonth: new Date().getMonth(), // 0-indexed
     selectedDate: null,
     monthData: [],
+    displayMode: 'full', // 'full' | 'float'
+    localAssignee: 'all', // independent of App.currentAssignee
 
     init() {
         this.currentYear = new Date().getFullYear();
         this.currentMonth = new Date().getMonth();
+        this.bindToolbar();
+        this.bindDayDetailModal();
     },
 
+    /* ===== Toolbar bindings ===== */
+    bindToolbar() {
+        // Person filter pills
+        document.querySelectorAll('.filter-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const assignee = btn.dataset.assignee;
+                this.localAssignee = assignee;
+                document.querySelectorAll('.filter-pill').forEach(b =>
+                    b.classList.toggle('active', b.dataset.assignee === assignee));
+                this.loadMonth();
+            });
+        });
+
+        // Display mode switch
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const mode = btn.dataset.mode;
+                this.displayMode = mode;
+                document.querySelectorAll('.mode-btn').forEach(b =>
+                    b.classList.toggle('active', b.dataset.mode === mode));
+                this.renderCalendar();
+            });
+        });
+    },
+
+    /* ===== Day Detail Modal ===== */
+    bindDayDetailModal() {
+        const overlay = document.getElementById('day-detail-overlay');
+        const closeBtn = document.getElementById('day-detail-close');
+
+        closeBtn.addEventListener('click', () => this.closeDayDetail());
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) this.closeDayDetail();
+        });
+    },
+
+    openDayDetail() {
+        document.getElementById('day-detail-overlay').classList.remove('hidden');
+    },
+
+    closeDayDetail() {
+        document.getElementById('day-detail-overlay').classList.add('hidden');
+    },
+
+    /* ===== Month navigation ===== */
     setMonth(year, month) {
         this.currentYear = year;
         this.currentMonth = month;
@@ -28,10 +79,18 @@ const MonthlyView = {
         document.getElementById('header-title').textContent = '月度总览';
     },
 
+    syncLocalAssignee() {
+        // Sync filter pills with global assignee when switching to monthly view
+        this.localAssignee = App.currentAssignee;
+        document.querySelectorAll('.filter-pill').forEach(b =>
+            b.classList.toggle('active', b.dataset.assignee === this.localAssignee));
+    },
+
+    /* ===== Data loading ===== */
     async loadMonth() {
         const monthStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}`;
         try {
-            const assignee = App.currentAssignee;
+            const assignee = this.localAssignee;
             this.monthData = await API.getMonthSummary(monthStr, assignee !== 'all' ? assignee : undefined);
             this.renderCalendar();
         } catch (err) {
@@ -39,6 +98,7 @@ const MonthlyView = {
         }
     },
 
+    /* ===== Calendar rendering ===== */
     renderCalendar() {
         const grid = document.getElementById('calendar-grid');
         const today = new Date();
@@ -66,17 +126,21 @@ const MonthlyView = {
         let startDow = firstDay.getDay() - 1;
         if (startDow < 0) startDow = 6;
 
-        let html = '<div class="calendar-header-row">';
+        // Header row
+        let headerHtml = '<div class="calendar-header-row">';
         for (const wd of weekdays) {
-            html += `<div class="calendar-header-cell">${wd}</div>`;
+            headerHtml += `<div class="calendar-header-cell">${wd}</div>`;
         }
-        html += '</div><div class="calendar-body">';
+        headerHtml += '</div>';
+
+        // Build all cells into a flat array
+        const cells = [];
 
         // Previous month padding
         const prevMonth = new Date(this.currentYear, this.currentMonth, 0);
         for (let i = startDow - 1; i >= 0; i--) {
             const day = prevMonth.getDate() - i;
-            html += `<div class="calendar-cell other-month"><div class="calendar-day-num">${day}</div></div>`;
+            cells.push(`<div class="calendar-cell other-month"><div class="calendar-day-num">${day}</div></div>`);
         }
 
         // Current month days
@@ -87,7 +151,7 @@ const MonthlyView = {
             const data = dayMap[dateStr];
 
             let classes = 'calendar-cell';
-            if (isToday) classes += ' today';
+            if (isToday) classes += ' today-gold';
             if (isSelected) classes += ' selected';
 
             let dotsHtml = '';
@@ -105,23 +169,69 @@ const MonthlyView = {
                 dotsHtml += '</div>';
             }
 
-            html += `
+            // Progress bar for days with tasks
+            let progressHtml = '';
+            if (data && data.total > 0) {
+                const pct = Math.round((data.done / data.total) * 100);
+                progressHtml = `<div class="calendar-progress"><div class="calendar-progress-bar" style="width:${pct}%"></div></div>`;
+            }
+
+            cells.push(`
         <div class="${classes}" data-date="${dateStr}">
           <div class="calendar-day-num">${d}</div>
           ${dotsHtml}
+          ${progressHtml}
         </div>
-      `;
+      `);
         }
 
         // Next month padding
         const totalCells = startDow + lastDay.getDate();
         const remaining = (7 - (totalCells % 7)) % 7;
         for (let i = 1; i <= remaining; i++) {
-            html += `<div class="calendar-cell other-month"><div class="calendar-day-num">${i}</div></div>`;
+            cells.push(`<div class="calendar-cell other-month"><div class="calendar-day-num">${i}</div></div>`);
         }
 
-        html += '</div>';
-        grid.innerHTML = html;
+        // Split cells into weeks (rows of 7)
+        const weeks = [];
+        for (let i = 0; i < cells.length; i += 7) {
+            weeks.push(cells.slice(i, i + 7));
+        }
+
+        // Apply display mode
+        let orderedWeeks = weeks;
+        if (this.displayMode === 'float') {
+            // Find which week row contains today
+            const todayDate = today.getDate();
+            const isCurrentMonth = today.getFullYear() === this.currentYear && today.getMonth() === this.currentMonth;
+            if (isCurrentMonth && weeks.length > 0) {
+                const todayWeekIndex = Math.floor((startDow + todayDate - 1) / 7);
+                if (todayWeekIndex >= 0 && todayWeekIndex < weeks.length) {
+                    orderedWeeks = [
+                        weeks[todayWeekIndex],
+                        ...weeks.slice(todayWeekIndex + 1),
+                        ...weeks.slice(0, todayWeekIndex),
+                    ];
+                }
+            }
+        }
+
+        // Build body HTML
+        let bodyHtml = '<div class="calendar-body">';
+        orderedWeeks.forEach((week, weekIdx) => {
+            const isCurrentWeek = this.displayMode === 'float' && weekIdx === 0;
+            week.forEach(cellHtml => {
+                if (isCurrentWeek) {
+                    // Add current-week class to cells
+                    bodyHtml += cellHtml.replace('class="calendar-cell', 'class="calendar-cell current-week');
+                } else {
+                    bodyHtml += cellHtml;
+                }
+            });
+        });
+        bodyHtml += '</div>';
+
+        grid.innerHTML = headerHtml + bodyHtml;
 
         // Bind click events
         grid.querySelectorAll('.calendar-cell:not(.other-month)').forEach(cell => {
@@ -130,16 +240,9 @@ const MonthlyView = {
                 if (date) this.selectDate(date);
             });
         });
-
-        // Show detail if selected
-        if (this.selectedDate) {
-            this.loadDayDetail(this.selectedDate);
-        } else {
-            document.getElementById('day-detail-title').textContent = '点击日期查看任务';
-            document.getElementById('day-detail-list').innerHTML = '';
-        }
     },
 
+    /* ===== Date selection ===== */
     selectDate(dateStr) {
         this.selectedDate = dateStr;
         // Update selected class
@@ -150,17 +253,22 @@ const MonthlyView = {
         this.loadDayDetail(dateStr);
     },
 
+    /* ===== Day detail (modal) ===== */
     async loadDayDetail(dateStr) {
         const [y, m, d] = dateStr.split('-');
         document.getElementById('day-detail-title').textContent = `${parseInt(m)}月${parseInt(d)}日 任务`;
 
+        // Show modal immediately with loading state
+        const list = document.getElementById('day-detail-list');
+        list.innerHTML = '<div class="empty-state"><div class="empty-state-text">加载中...</div></div>';
+        this.openDayDetail();
+
         try {
             const params = { date: dateStr };
-            const assignee = App.currentAssignee;
+            const assignee = this.localAssignee;
             if (assignee !== 'all') params.assignee = assignee;
 
             const tasks = await API.getTasks(params);
-            const list = document.getElementById('day-detail-list');
 
             if (tasks.length === 0) {
                 list.innerHTML = '<div class="empty-state"><div class="empty-state-text">📭 这天没有任务</div></div>';
@@ -169,16 +277,20 @@ const MonthlyView = {
 
             list.innerHTML = tasks.map(task => DailyView.renderTaskCard(task)).join('');
 
-            // Bind events
+            // Bind card click → open edit modal
             list.querySelectorAll('.task-card').forEach(card => {
                 card.addEventListener('click', (e) => {
                     if (e.target.closest('.task-checkbox')) return;
                     const taskId = parseInt(card.dataset.taskId);
                     const task = tasks.find(t => t.id === taskId);
-                    if (task) TaskModal.openEdit(task);
+                    if (task) {
+                        this.closeDayDetail();
+                        TaskModal.openEdit(task);
+                    }
                 });
             });
 
+            // Bind checkbox toggle
             list.querySelectorAll('.task-checkbox').forEach(cb => {
                 cb.addEventListener('click', async (e) => {
                     e.stopPropagation();
@@ -190,6 +302,7 @@ const MonthlyView = {
                         const updated = await API.updateTask(taskId, { status: nextStatus });
                         App.socket.emit('task:updated', updated);
                         this.loadMonth();
+                        this.loadDayDetail(dateStr); // Refresh the modal
                     } catch (err) {
                         App.showToast('更新失败', 'error');
                     }
@@ -200,6 +313,7 @@ const MonthlyView = {
         }
     },
 
+    /* ===== Navigation helpers ===== */
     prevMonth() {
         let m = this.currentMonth - 1;
         let y = this.currentYear;
