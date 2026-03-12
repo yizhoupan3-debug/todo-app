@@ -125,7 +125,9 @@ const GardenView = {
         try {
             const { balance } = await API.getCoins(this.assignee);
             this.balance = balance;
-        } catch (e) { }
+        } catch (e) {
+            App.showToast('获取余额失败', 'error');
+        }
 
         // Load plots
         try {
@@ -501,7 +503,6 @@ const GardenView = {
             const result = await API.plantTree({
                 assignee: this.assignee,
                 tree_type: item.type,
-                cost: item.cost,
                 plot_id: plotId,
             });
             this.balance = result.balance;
@@ -534,7 +535,9 @@ const GardenView = {
             document.body.appendChild(overlay);
             overlay.querySelector('.modal-close-btn').addEventListener('click', () => overlay.remove());
             overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-        } catch (e) { }
+        } catch (e) {
+            App.showToast('加载记录失败', 'error');
+        }
     },
 
     /* ═══════════════════════════════
@@ -544,7 +547,9 @@ const GardenView = {
         try {
             const { balance } = await API.getCoins(this.shopAssignee);
             this.shopBalance = balance;
-        } catch (e) { }
+        } catch (e) {
+            App.showToast('加载商城失败', 'error');
+        }
         this.renderShop();
     },
 
@@ -697,7 +702,9 @@ const GardenView = {
             } catch (e) {
                 App.showToast(`+${amount} 喵喵币！`, 'success');
             }
-        } catch (e) { /* silent */ }
+        } catch (e) {
+            App.showToast('获取币失败', 'error');
+        }
     },
 
     async earnFromCheckin(assignee, type) {
