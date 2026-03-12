@@ -148,55 +148,169 @@ const GardenView = {
             <!-- Draggable island world -->
             <div class="island-viewport" id="island-viewport">
                 <div class="island-world" id="island-world">
-                    <!-- Animated ocean waves -->
+                    <!-- Ocean effects -->
+                    <div class="ocean-foam-ring"></div>
+                    <div class="ocean-caustics"></div>
                     <div class="ocean-wave w1"></div>
                     <div class="ocean-wave w2"></div>
                     <div class="ocean-wave w3"></div>
+                    <div class="ocean-wave w4"></div>
 
-                    <!-- Island shape -->
+                    <!-- Drifting clouds -->
+                    <div class="cloud cloud-1">☁️</div>
+                    <div class="cloud cloud-2">⛅</div>
+                    <div class="cloud cloud-3">☁️</div>
+
+                    <!-- Island SVG shape (detailed) -->
                     <svg class="island-shape" viewBox="0 0 1000 750">
                         <defs>
-                            <filter id="ishadow"><feDropShadow dx="0" dy="6" stdDeviation="16" flood-color="rgba(0,0,0,0.35)"/></filter>
-                            <radialGradient id="sandG" cx="50%" cy="50%"><stop offset="0%" stop-color="#D4C07A"/><stop offset="100%" stop-color="#BDA862"/></radialGradient>
-                            <radialGradient id="grassG" cx="50%" cy="40%"><stop offset="0%" stop-color="#5EA03B"/><stop offset="60%" stop-color="#4A8830"/><stop offset="100%" stop-color="#3D7228"/></radialGradient>
+                            <filter id="ishadow"><feDropShadow dx="0" dy="8" stdDeviation="20" flood-color="rgba(0,0,0,0.4)"/></filter>
+                            <filter id="inner-glow"><feGaussianBlur in="SourceAlpha" stdDeviation="8" result="blur"/>
+                                <feFlood flood-color="#7BC67E" flood-opacity="0.3" result="color"/>
+                                <feComposite in="color" in2="blur" operator="in" result="glow"/>
+                                <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+                            </filter>
+                            <radialGradient id="sandG" cx="50%" cy="50%">
+                                <stop offset="0%" stop-color="#E8D48A"/>
+                                <stop offset="60%" stop-color="#D4C07A"/>
+                                <stop offset="100%" stop-color="#BDA862"/>
+                            </radialGradient>
+                            <radialGradient id="grassG" cx="45%" cy="35%">
+                                <stop offset="0%" stop-color="#6DB845"/>
+                                <stop offset="40%" stop-color="#5AA038"/>
+                                <stop offset="70%" stop-color="#4A8830"/>
+                                <stop offset="100%" stop-color="#3D7228"/>
+                            </radialGradient>
+                            <pattern id="grassTex" patternUnits="userSpaceOnUse" width="40" height="40">
+                                <circle cx="10" cy="8" r="1.5" fill="#5EA03B" opacity="0.3"/>
+                                <circle cx="30" cy="15" r="1" fill="#4A8830" opacity="0.25"/>
+                                <circle cx="20" cy="30" r="1.2" fill="#6DB845" opacity="0.2"/>
+                                <circle cx="5" cy="35" r="0.8" fill="#5EA03B" opacity="0.2"/>
+                                <circle cx="35" cy="5" r="1" fill="#4A8830" opacity="0.15"/>
+                            </pattern>
+                            <linearGradient id="waterEdge" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#8EC9D0" stop-opacity="0.4"/>
+                                <stop offset="100%" stop-color="#0B6A8A" stop-opacity="0"/>
+                            </linearGradient>
                         </defs>
-                        <path d="M80,80 C200,20 400,0 600,10 800,20 950,100 970,200 990,350 980,500 920,600 840,700 650,740 500,730 300,720 120,680 50,580 10,500 0,350 20,220 30,140 50,100 80,80Z" fill="url(#sandG)" filter="url(#ishadow)"/>
-                        <path d="M120,120 C250,60 420,45 580,50 760,60 890,130 910,230 930,360 920,470 870,560 790,650 620,690 480,680 310,670 160,640 100,550 60,480 50,340 65,240 75,170 90,140 120,120Z" fill="url(#grassG)"/>
-                        <path d="M300,350 Q400,320 500,340 Q600,360 700,340" stroke="#8B7355" stroke-width="8" fill="none" opacity="0.25" stroke-linecap="round"/>
-                        <path d="M480,200 Q500,300 490,400 Q480,500 500,600" stroke="#8B7355" stroke-width="6" fill="none" opacity="0.18" stroke-linecap="round"/>
+                        <!-- Water edge glow -->
+                        <path d="M70,70 C190,10 390,-10 610,0 810,10 960,90 980,200 1000,360 990,510 930,610 850,710 660,750 510,740 310,730 110,690 40,590 0,510 -10,360 10,230 20,140 40,90 70,70Z"
+                              fill="url(#waterEdge)" opacity="0.5"/>
+                        <!-- Beach/sand -->
+                        <path d="M80,80 C200,20 400,0 600,10 800,20 950,100 970,200 990,350 980,500 920,600 840,700 650,740 500,730 300,720 120,680 50,580 10,500 0,350 20,220 30,140 50,100 80,80Z"
+                              fill="url(#sandG)" filter="url(#ishadow)"/>
+                        <!-- Sand texture dots -->
+                        <g opacity="0.15">
+                            <circle cx="150" cy="100" r="2" fill="#A08850"/><circle cx="850" cy="150" r="2.5" fill="#A08850"/>
+                            <circle cx="100" cy="600" r="2" fill="#A08850"/><circle cx="800" cy="650" r="1.5" fill="#A08850"/>
+                            <circle cx="400" cy="710" r="2" fill="#A08850"/><circle cx="950" cy="400" r="1.5" fill="#A08850"/>
+                        </g>
+                        <!-- Grass island -->
+                        <path d="M120,120 C250,60 420,45 580,50 760,60 890,130 910,230 930,360 920,470 870,560 790,650 620,690 480,680 310,670 160,640 100,550 60,480 50,340 65,240 75,170 90,140 120,120Z"
+                              fill="url(#grassG)" filter="url(#inner-glow)"/>
+                        <!-- Grass texture overlay -->
+                        <path d="M120,120 C250,60 420,45 580,50 760,60 890,130 910,230 930,360 920,470 870,560 790,650 620,690 480,680 310,670 160,640 100,550 60,480 50,340 65,240 75,170 90,140 120,120Z"
+                              fill="url(#grassTex)"/>
+                        <!-- Elevation contour lines -->
+                        <path d="M180,180 C300,120 450,100 580,110 730,120 830,180 850,260 870,370 860,440 820,510 750,590 600,630 490,620 340,610 210,580 160,510 130,450 120,340 130,270 140,210 155,190 180,180Z"
+                              fill="none" stroke="#5EA03B" stroke-width="1.5" opacity="0.2" stroke-dasharray="8,4"/>
+                        <!-- Dirt paths (more detailed) -->
+                        <path d="M250,350 Q350,310 500,330 Q650,350 750,320" stroke="#8B7355" stroke-width="10" fill="none" opacity="0.2" stroke-linecap="round"/>
+                        <path d="M490,180 Q510,300 500,400 Q490,530 510,620" stroke="#8B7355" stroke-width="7" fill="none" opacity="0.15" stroke-linecap="round"/>
+                        <path d="M200,450 Q300,430 400,440" stroke="#8B7355" stroke-width="5" fill="none" opacity="0.12" stroke-linecap="round"/>
+                        <!-- Small flowers on grass -->
+                        <g class="island-flowers">
+                            <circle cx="200" cy="200" r="3" fill="#FF6B8A" opacity="0.6"/>
+                            <circle cx="205" cy="198" r="2.5" fill="#FF8FAA" opacity="0.5"/>
+                            <circle cx="750" cy="300" r="3" fill="#FFD700" opacity="0.5"/>
+                            <circle cx="755" cy="303" r="2" fill="#FFE44D" opacity="0.4"/>
+                            <circle cx="300" cy="500" r="2.5" fill="#FF6B8A" opacity="0.5"/>
+                            <circle cx="650" cy="550" r="3" fill="#E8A0FF" opacity="0.4"/>
+                            <circle cx="400" cy="180" r="2" fill="#FFD700" opacity="0.45"/>
+                            <circle cx="830" cy="450" r="2.5" fill="#FF6B8A" opacity="0.4"/>
+                            <circle cx="180" cy="400" r="2" fill="#E8A0FF" opacity="0.35"/>
+                        </g>
+                        <!-- Grass tufts -->
+                        <g opacity="0.3">
+                            <path d="M250,250 Q253,240 256,250" stroke="#3D7228" stroke-width="2" fill="none"/>
+                            <path d="M700,400 Q703,390 706,400" stroke="#3D7228" stroke-width="2" fill="none"/>
+                            <path d="M400,580 Q403,570 406,580" stroke="#3D7228" stroke-width="2" fill="none"/>
+                            <path d="M550,250 Q553,240 556,250" stroke="#3D7228" stroke-width="2" fill="none"/>
+                            <path d="M150,450 Q153,440 156,450" stroke="#3D7228" stroke-width="2" fill="none"/>
+                            <path d="M820,350 Q823,340 826,350" stroke="#3D7228" stroke-width="2" fill="none"/>
+                        </g>
                     </svg>
 
-                    <!-- Island land (positions relative to this) -->
+                    <!-- Island land -->
                     <div class="island-land" id="island-land">
-                        <!-- Hut -->
+                        <!-- Premium Hut -->
                         <div class="island-hut" style="left:42%;top:2%">
-                            <div class="hut-body">
-                                <div class="hut-roof"></div>
-                                <div class="hut-wall"></div>
-                                <div class="hut-door"></div>
+                            <div class="hut-chimney">
+                                <div class="smoke s1"></div>
+                                <div class="smoke s2"></div>
+                                <div class="smoke s3"></div>
+                            </div>
+                            <div class="hut-structure">
+                                <div class="hut-roof">
+                                    <div class="hut-flag">🚩</div>
+                                </div>
+                                <div class="hut-wall">
+                                    <div class="hut-window"></div>
+                                    <div class="hut-window"></div>
+                                </div>
+                                <div class="hut-door"><div class="hut-knob"></div></div>
                             </div>
                             <div class="hut-label">🏠 小屋</div>
                         </div>
 
-                        <!-- Wild trees (decorative, not interactive) -->
-                        <img class="deco-tree" src="/img/trees/palm.svg" style="left:2%;top:8%;width:48px;opacity:.6;filter:brightness(.8)saturate(.7)">
-                        <img class="deco-tree" src="/img/trees/palm.svg" style="left:90%;top:12%;width:44px;opacity:.55;filter:brightness(.75)saturate(.65)">
-                        <img class="deco-tree" src="/img/trees/oak.svg"  style="left:92%;top:48%;width:40px;opacity:.5;filter:brightness(.8)saturate(.6)">
-                        <img class="deco-tree" src="/img/trees/pine.svg" style="left:4%;top:65%;width:38px;opacity:.55;filter:brightness(.78)saturate(.65)">
-                        <img class="deco-tree" src="/img/trees/palm.svg" style="left:88%;top:68%;width:46px;opacity:.5;filter:brightness(.75)saturate(.6)">
-                        <img class="deco-tree" src="/img/trees/pine.svg" style="left:50%;top:82%;width:36px;opacity:.45;filter:brightness(.8)saturate(.6)">
-                        <img class="deco-tree" src="/img/trees/oak.svg"  style="left:80%;top:80%;width:34px;opacity:.45;filter:brightness(.78)saturate(.55)">
+                        <!-- Dock/Pier (future boat module) -->
+                        <div class="island-dock" style="left:82%;top:76%">
+                            <div class="dock-planks">
+                                <div class="dock-plank"></div>
+                                <div class="dock-plank"></div>
+                                <div class="dock-plank"></div>
+                                <div class="dock-plank"></div>
+                                <div class="dock-plank"></div>
+                            </div>
+                            <div class="dock-post"></div>
+                            <div class="dock-post right"></div>
+                            <div class="dock-label">⚓ 码头</div>
+                        </div>
 
-                        <!-- Beach palms -->
-                        <img class="deco-tree beach-palm" src="/img/trees/palm.svg" style="left:-3%;top:28%;width:56px;opacity:.8">
-                        <img class="deco-tree beach-palm" src="/img/trees/palm.svg" style="left:95%;top:24%;width:52px;opacity:.75">
-                        <img class="deco-tree beach-palm" src="/img/trees/palm.svg" style="left:32%;top:88%;width:48px;opacity:.7">
-                        <img class="deco-tree beach-palm" src="/img/trees/palm.svg" style="left:70%;top:86%;width:52px;opacity:.75">
+                        <!-- Rich decorative trees -->
+                        <img class="deco-tree" src="/img/trees/palm.svg" style="left:0%;top:6%;width:52px;opacity:.7;filter:brightness(.85)saturate(.8)">
+                        <img class="deco-tree" src="/img/trees/palm.svg" style="left:91%;top:10%;width:48px;opacity:.65;filter:brightness(.8)saturate(.75)">
+                        <img class="deco-tree" src="/img/trees/oak.svg"  style="left:93%;top:46%;width:42px;opacity:.55;filter:brightness(.82)saturate(.65)">
+                        <img class="deco-tree" src="/img/trees/pine.svg" style="left:2%;top:62%;width:40px;opacity:.6;filter:brightness(.8)saturate(.7)">
+                        <img class="deco-tree" src="/img/trees/palm.svg" style="left:89%;top:66%;width:48px;opacity:.55;filter:brightness(.78)saturate(.65)">
+                        <img class="deco-tree" src="/img/trees/pine.svg" style="left:48%;top:83%;width:38px;opacity:.5;filter:brightness(.82)saturate(.6)">
+                        <img class="deco-tree" src="/img/trees/oak.svg"  style="left:78%;top:82%;width:36px;opacity:.5;filter:brightness(.8)saturate(.6)">
 
-                        <!-- Rocks -->
-                        <div class="deco-rock" style="left:8%;top:88%">🪨</div>
-                        <div class="deco-rock" style="left:86%;top:84%">🪨</div>
-                        <div class="deco-rock" style="left:93%;top:40%;font-size:16px">🪨</div>
+                        <!-- Beach palms (larger, more prominent) -->
+                        <img class="deco-tree beach-palm" src="/img/trees/palm.svg" style="left:-5%;top:26%;width:62px;opacity:.85">
+                        <img class="deco-tree beach-palm" src="/img/trees/palm.svg" style="left:96%;top:22%;width:58px;opacity:.8">
+                        <img class="deco-tree beach-palm" src="/img/trees/palm.svg" style="left:28%;top:90%;width:52px;opacity:.75">
+                        <img class="deco-tree beach-palm" src="/img/trees/palm.svg" style="left:68%;top:88%;width:56px;opacity:.78">
+
+                        <!-- Flowers & bushes -->
+                        <div class="deco-flower" style="left:15%;top:20%">🌺</div>
+                        <div class="deco-flower" style="left:85%;top:30%">🌸</div>
+                        <div class="deco-flower" style="left:10%;top:50%">🌼</div>
+                        <div class="deco-flower" style="left:75%;top:55%">🌺</div>
+                        <div class="deco-flower" style="left:35%;top:78%">🌸</div>
+
+                        <!-- Rocks (varied sizes) -->
+                        <div class="deco-rock" style="left:6%;top:88%;font-size:28px">🪨</div>
+                        <div class="deco-rock" style="left:87%;top:83%;font-size:24px">🪨</div>
+                        <div class="deco-rock" style="left:94%;top:38%;font-size:16px">🪨</div>
+                        <div class="deco-rock" style="left:3%;top:42%;font-size:14px">🪨</div>
+                        <div class="deco-rock" style="left:55%;top:90%;font-size:18px">🪨</div>
+
+                        <!-- Ambient particles (butterflies/leaves) -->
+                        <div class="ambient-particle p1">🦋</div>
+                        <div class="ambient-particle p2">🍃</div>
+                        <div class="ambient-particle p3">🦋</div>
+                        <div class="ambient-particle p4">🍃</div>
 
                         <!-- Interactive Plots -->
                         ${this.plots.map((plot, i) => {
@@ -409,7 +523,7 @@ const GardenView = {
         el.innerHTML = `
             <div class="shop-view-header">
                 <div class="garden-balance">
-                    <img src="/img/cat-coin.svg" alt="喵喵币" class="cat-coin-icon">
+                    <img src="/img/cat-coin.png" alt="喵喵币" class="cat-coin-icon">
                     <strong>${this.shopBalance}</strong> 喵喵币
                 </div>
                 <div class="filter-pills">
@@ -426,7 +540,7 @@ const GardenView = {
                     <div class="shop-card ${this.shopBalance >= item.cost ? '' : 'locked'}" data-type="${item.type}" data-cost="${item.cost}">
                         <img class="shop-card-img" src="${item.stages.mature}" alt="${item.name}">
                         <div class="shop-card-name">${item.name}</div>
-                        <div class="shop-card-price">${item.cost === 0 ? '免费' : `<img src="/img/cat-coin.svg" class="cat-coin-icon" style="width:16px;height:16px"> ${item.cost}`}</div>
+                        <div class="shop-card-price">${item.cost === 0 ? '免费' : `<img src="/img/cat-coin.png" class="cat-coin-icon" style="width:16px;height:16px"> ${item.cost}`}</div>
                     </div>
                 `).join('')}
             </div>
@@ -467,7 +581,7 @@ const GardenView = {
                     </div>
                 </div>
                 <div class="tree-detail-footer">
-                    <div class="tree-detail-cost">${item.cost === 0 ? '免费' : `<img src="/img/cat-coin.svg" class="cat-coin-icon" style="width:20px;height:20px"> ${item.cost} 喵喵币`}</div>
+                    <div class="tree-detail-cost">${item.cost === 0 ? '免费' : `<img src="/img/cat-coin.png" class="cat-coin-icon" style="width:20px;height:20px"> ${item.cost} 喵喵币`}</div>
                     <button class="shop-buy-btn ${canBuy ? '' : 'disabled'}" id="tree-detail-buy" ${canBuy ? '' : 'disabled'}>
                         ${item.cost === 0 ? '🌱 去种植' : canBuy ? '🛒 购买并种植' : '🔒 喵喵币不足'}
                     </button>
