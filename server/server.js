@@ -53,6 +53,28 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
+// Auto-complete timer — check every 60 seconds
+const db = require('./db');
+setInterval(() => {
+    try {
+        const now = new Date();
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+        const result = db.prepare(`
+            UPDATE tasks SET status = 'done', updated_at = datetime('now', 'localtime')
+            WHERE auto_complete = 1 AND status = 'todo' AND due_date = ? AND due_time IS NOT NULL AND due_time <= ?
+        `).run(todayStr, timeStr);
+
+        if (result.changes > 0) {
+            console.log(`⏰ 自动完成了 ${result.changes} 个任务`);
+            io.emit('task:updated', { autoCompleted: true });
+        }
+    } catch (err) {
+        console.error('Auto-complete error:', err.message);
+    }
+}, 60000); // every 60 seconds
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
     const os = require('os');

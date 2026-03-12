@@ -134,7 +134,7 @@ router.delete('/clear-done', (req, res) => {
 // POST /api/tasks — create task
 router.post('/', (req, res) => {
     const { title, description, assignee, category_id, priority, due_date, due_time,
-        is_recurring, recurring_type, recurring_interval, recurring_end_date } = req.body;
+        is_recurring, recurring_type, recurring_interval, recurring_end_date, auto_complete } = req.body;
 
     if (!title || !assignee) {
         return res.status(400).json({ error: 'title and assignee are required' });
@@ -143,8 +143,8 @@ router.post('/', (req, res) => {
     try {
         const result = db.prepare(`
       INSERT INTO tasks (title, description, assignee, category_id, priority, due_date, due_time,
-        is_recurring, recurring_type, recurring_interval, recurring_end_date)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        is_recurring, recurring_type, recurring_interval, recurring_end_date, auto_complete)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
             title,
             description || '',
@@ -156,7 +156,8 @@ router.post('/', (req, res) => {
             is_recurring ? 1 : 0,
             recurring_type || null,
             recurring_interval || 1,
-            recurring_end_date || null
+            recurring_end_date || null,
+            due_time ? (auto_complete !== undefined ? (auto_complete ? 1 : 0) : 1) : 0
         );
 
         const task = db.prepare(`
@@ -178,7 +179,7 @@ router.put('/:id', (req, res) => {
 
     const allowedFields = ['title', 'description', 'assignee', 'category_id', 'priority',
         'due_date', 'due_time', 'status', 'is_recurring', 'recurring_type',
-        'recurring_interval', 'recurring_end_date'];
+        'recurring_interval', 'recurring_end_date', 'auto_complete'];
 
     const updates = [];
     const values = [];

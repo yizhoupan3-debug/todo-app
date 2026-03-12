@@ -27,6 +27,12 @@ const TaskModal = {
         });
 
         document.getElementById('btn-delete').addEventListener('click', () => this.delete());
+
+        // Show/hide auto-complete checkbox based on time input
+        document.getElementById('task-time').addEventListener('input', (e) => {
+            const hasTime = !!e.target.value;
+            document.getElementById('auto-complete-group').classList.toggle('hidden', !hasTime);
+        });
     },
 
     async loadCategories() {
@@ -51,6 +57,8 @@ const TaskModal = {
         document.getElementById('task-form').reset();
         document.getElementById('task-id').value = '';
         document.getElementById('recurring-options').classList.add('hidden');
+        document.getElementById('auto-complete-group').classList.add('hidden');
+        document.getElementById('task-auto-complete').checked = true;
 
         // Set default date to current view date
         if (App.currentView === 'daily') {
@@ -80,6 +88,11 @@ const TaskModal = {
         document.getElementById('task-priority').value = task.priority;
         document.getElementById('task-date').value = task.due_date || '';
         document.getElementById('task-time').value = task.due_time || '';
+
+        // Auto-complete checkbox
+        const hasTime = !!task.due_time;
+        document.getElementById('auto-complete-group').classList.toggle('hidden', !hasTime);
+        document.getElementById('task-auto-complete').checked = task.auto_complete !== 0;
 
         const isRecurring = task.is_recurring && !task.recurring_parent_id;
         document.getElementById('task-recurring').checked = isRecurring;
@@ -124,6 +137,7 @@ const TaskModal = {
             recurring_type: document.getElementById('task-recurring-type').value,
             recurring_interval: parseInt(document.getElementById('task-recurring-interval').value) || 1,
             recurring_end_date: document.getElementById('task-recurring-end').value || null,
+            auto_complete: document.getElementById('task-auto-complete').checked ? 1 : 0,
         };
 
         if (!data.title) {

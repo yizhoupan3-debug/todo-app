@@ -52,6 +52,12 @@ db.exec(`
 `);
 
 // Seed default categories if empty
+// Migrate: add auto_complete column if missing
+try {
+  db.prepare("SELECT auto_complete FROM tasks LIMIT 1").get();
+} catch (e) {
+  db.exec("ALTER TABLE tasks ADD COLUMN auto_complete INTEGER NOT NULL DEFAULT 1");
+}
 const catCount = db.prepare('SELECT COUNT(*) as count FROM categories').get();
 if (catCount.count === 0) {
   const insertCat = db.prepare('INSERT INTO categories (name, color, icon, sort_order) VALUES (?, ?, ?, ?)');

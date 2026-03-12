@@ -30,9 +30,6 @@ const App = {
         // View switching
         this.bindNavigation();
 
-        // Person switching
-        this.bindPersonSwitcher();
-
         // Date navigation
         this.bindDateNav();
 
@@ -47,6 +44,10 @@ const App = {
 
         // Pomodoro from sidebar
         document.getElementById('nav-pomodoro').addEventListener('click', () => Pomodoro.open());
+
+        // Mobile pomodoro
+        const mobilePomodoro = document.getElementById('mobile-pomodoro');
+        if (mobilePomodoro) mobilePomodoro.addEventListener('click', () => Pomodoro.open());
 
         // Mobile menu with backdrop
         document.getElementById('btn-menu').addEventListener('click', () => {
@@ -69,7 +70,6 @@ const App = {
             if (e.key === 'Escape') {
                 if (TaskModal.isOpen) TaskModal.close();
                 document.getElementById('ics-modal-overlay').classList.add('hidden');
-                document.getElementById('person-picker-overlay').classList.add('hidden');
                 this.closeSidebar();
             }
             if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !TaskModal.isOpen &&
@@ -150,62 +150,7 @@ const App = {
         }
     },
 
-    // ===== Person Switcher =====
-    bindPersonSwitcher() {
-        // Desktop sidebar buttons
-        document.querySelectorAll('.person-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const assignee = btn.dataset.assignee;
-                this.setAssignee(assignee);
-                document.querySelectorAll('.person-btn').forEach(b => b.classList.toggle('active', b.dataset.assignee === assignee));
-            });
-        });
 
-        // Mobile person toggle
-        document.getElementById('mobile-person-toggle').addEventListener('click', () => {
-            document.getElementById('person-picker-overlay').classList.remove('hidden');
-        });
-
-        document.getElementById('person-picker-close').addEventListener('click', () => {
-            document.getElementById('person-picker-overlay').classList.add('hidden');
-        });
-
-        document.getElementById('person-picker-overlay').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) {
-                document.getElementById('person-picker-overlay').classList.add('hidden');
-            }
-        });
-
-        document.querySelectorAll('.person-pick-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const assignee = btn.dataset.assignee;
-                this.setAssignee(assignee);
-
-                // Update active states
-                document.querySelectorAll('.person-pick-btn').forEach(b => b.classList.toggle('active', b.dataset.assignee === assignee));
-                document.querySelectorAll('.person-btn').forEach(b => b.classList.toggle('active', b.dataset.assignee === assignee));
-
-                // Update mobile label
-                const labels = { all: '全部', '潘潘': '潘潘', '蒲蒲': '蒲蒲' };
-                if (assignee === '潘潘') {
-                    document.getElementById('mobile-person-icon').innerHTML = '<img class="mobile-nav-avatar" src="/img/panpan.png" alt="">';
-                } else if (assignee === '蒲蒲') {
-                    document.getElementById('mobile-person-icon').innerHTML = '<img class="mobile-nav-avatar" src="/img/pupu.png" alt="">';
-                } else {
-                    document.getElementById('mobile-person-icon').textContent = '👥';
-                }
-                document.getElementById('mobile-person-label').textContent = labels[assignee];
-
-                document.getElementById('person-picker-overlay').classList.add('hidden');
-            });
-        });
-    },
-
-    setAssignee(assignee) {
-        this.currentAssignee = assignee;
-        // Always navigate to daily view when person is switched
-        this.switchView('daily');
-    },
 
     // ===== Date Navigation =====
     bindDateNav() {

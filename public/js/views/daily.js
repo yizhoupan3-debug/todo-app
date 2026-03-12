@@ -8,6 +8,17 @@ const DailyView = {
     init() {
         this.setDate(new Date());
 
+        // Person filter pills in daily toolbar
+        document.querySelectorAll('.daily-person-filter .filter-pill').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const assignee = btn.dataset.assignee;
+                App.currentAssignee = assignee;
+                document.querySelectorAll('.daily-person-filter .filter-pill').forEach(b =>
+                    b.classList.toggle('active', b.dataset.assignee === assignee));
+                this.loadTasks();
+            });
+        });
+
         // Clear done button
         document.getElementById('btn-clear-done').addEventListener('click', async () => {
             const doneCount = this.tasks.filter(t => t.status === 'done').length;
@@ -26,6 +37,11 @@ const DailyView = {
                 App.showToast('清除失败: ' + err.message, 'error');
             }
         });
+    },
+
+    syncPersonPills() {
+        document.querySelectorAll('.daily-person-filter .filter-pill').forEach(b =>
+            b.classList.toggle('active', b.dataset.assignee === App.currentAssignee));
     },
 
     setDate(date) {

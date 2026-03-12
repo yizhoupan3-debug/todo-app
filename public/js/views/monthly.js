@@ -1,13 +1,14 @@
 /**
  * Monthly View — calendar grid showing task titles directly in cells.
- * Clicking a date navigates to daily view for that date.
+ * Person filter pills + status filter (全部/未完成/已完成).
+ * Clicking a date navigates to daily view for that date with the same person filter.
  */
 const MonthlyView = {
     currentYear: new Date().getFullYear(),
-    currentMonth: new Date().getMonth(), // 0-indexed
+    currentMonth: new Date().getMonth(),
     monthTasks: [],
-    displayMode: 'full', // 'full' | 'float'
     localAssignee: 'all',
+    statusFilter: 'all', // 'all' | 'todo' | 'done'
 
     init() {
         this.currentYear = new Date().getFullYear();
@@ -15,32 +16,30 @@ const MonthlyView = {
         this.bindToolbar();
     },
 
-    /* ===== Toolbar bindings ===== */
     bindToolbar() {
         // Person filter pills
-        document.querySelectorAll('.filter-pill').forEach(btn => {
+        document.querySelectorAll('.monthly-person-filter .filter-pill').forEach(btn => {
             btn.addEventListener('click', () => {
                 const assignee = btn.dataset.assignee;
                 this.localAssignee = assignee;
-                document.querySelectorAll('.filter-pill').forEach(b =>
+                document.querySelectorAll('.monthly-person-filter .filter-pill').forEach(b =>
                     b.classList.toggle('active', b.dataset.assignee === assignee));
                 this.loadMonth();
             });
         });
 
-        // Display mode switch
-        document.querySelectorAll('.mode-btn').forEach(btn => {
+        // Status filter pills
+        document.querySelectorAll('.monthly-status-filter .filter-pill').forEach(btn => {
             btn.addEventListener('click', () => {
-                const mode = btn.dataset.mode;
-                this.displayMode = mode;
-                document.querySelectorAll('.mode-btn').forEach(b =>
-                    b.classList.toggle('active', b.dataset.mode === mode));
+                const status = btn.dataset.status;
+                this.statusFilter = status;
+                document.querySelectorAll('.monthly-status-filter .filter-pill').forEach(b =>
+                    b.classList.toggle('active', b.dataset.status === status));
                 this.renderCalendar();
             });
         });
     },
 
-    /* ===== Month navigation ===== */
     setMonth(year, month) {
         this.currentYear = year;
         this.currentMonth = month;
@@ -58,17 +57,15 @@ const MonthlyView = {
 
     syncLocalAssignee() {
         this.localAssignee = App.currentAssignee;
-        document.querySelectorAll('.filter-pill').forEach(b =>
+        document.querySelectorAll('.monthly-person-filter .filter-pill').forEach(b =>
             b.classList.toggle('active', b.dataset.assignee === this.localAssignee));
     },
 
-    /* ===== Data loading — full tasks for the month ===== */
     async loadMonth() {
         const monthStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}`;
         try {
             const params = { month: monthStr };
-            const assignee = this.localAssignee;
-            if (assignee !== 'all') params.assignee = assignee;
+            if (this.localAssignee !== 'all') params.assignee = this.localAssignee;
             this.monthTasks = await API.getTasks(params);
             this.renderCalendar();
         } catch (err) {
@@ -76,22 +73,28 @@ const MonthlyView = {
         }
     },
 
-    /* ===== Calendar rendering ===== */
     renderCalendar() {
         const grid = document.getElementById('calendar-grid');
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-
         const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
 
-        // Group tasks by date, sort: undone first, done last
+        // Apply status filter to tasks
+        let filteredTasks = this.monthTasks;
+        if (this.statusFilter === 'todo') {
+            filteredTasks = this.monthTasks.filter(t => t.status !== 'done');
+        } else if (this.statusFilter === 'done') {
+            filteredTasks = this.monthTasks.filter(t => t.status === 'done');
+        }
+
+        // Group tasks by date
         const dayTasks = {};
-        for (const task of this.monthTasks) {
+        for (const task of filteredTasks) {
             if (!task.due_date) continue;
             if (!dayTasks[task.due_date]) dayTasks[task.due_date] = [];
             dayTasks[task.due_date].push(task);
         }
-        // Sort each day: todo first, done last
+        // Sort: todo first, done last
         for (const date in dayTasks) {
             dayTasks[date].sort((a, b) => {
                 if (a.status === 'done' && b.status !== 'done') return 1;
@@ -100,30 +103,25 @@ const MonthlyView = {
             });
         }
 
-        // Calendar structure
+        // Calendar layout
         const firstDay = new Date(this.currentYear, this.currentMonth, 1);
         const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
         let startDow = firstDay.getDay() - 1;
         if (startDow < 0) startDow = 6;
 
-        // Header row
         let headerHtml = '<div class="calendar-header-row">';
         for (const wd of weekdays) {
             headerHtml += `<div class="calendar-header-cell">${wd}</div>`;
         }
         headerHtml += '</div>';
 
-        // Build cells
         const cells = [];
-
-        // Previous month padding
         const prevMonth = new Date(this.currentYear, this.currentMonth, 0);
         for (let i = startDow - 1; i >= 0; i--) {
             const day = prevMonth.getDate() - i;
             cells.push(`<div class="calendar-cell other-month"><div class="calendar-day-num">${day}</div></div>`);
         }
 
-        // Current month days
         for (let d = 1; d <= lastDay.getDate(); d++) {
             const dateStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const isToday = dateStr === todayStr;
@@ -132,7 +130,6 @@ const MonthlyView = {
             let classes = 'calendar-cell';
             if (isToday) classes += ' today-gold';
 
-            // Render compact task titles
             let tasksHtml = '';
             if (tasks.length > 0) {
                 tasksHtml = '<div class="calendar-tasks">';
@@ -159,61 +156,30 @@ const MonthlyView = {
       `);
         }
 
-        // Next month padding
         const totalCells = startDow + lastDay.getDate();
         const remaining = (7 - (totalCells % 7)) % 7;
         for (let i = 1; i <= remaining; i++) {
             cells.push(`<div class="calendar-cell other-month"><div class="calendar-day-num">${i}</div></div>`);
         }
 
-        // Split into weeks
-        const weeks = [];
-        for (let i = 0; i < cells.length; i += 7) {
-            weeks.push(cells.slice(i, i + 7));
-        }
-
-        // Apply display mode (float = current week first)
-        let orderedWeeks = weeks;
-        if (this.displayMode === 'float') {
-            const todayDate = today.getDate();
-            const isCurrentMonth = today.getFullYear() === this.currentYear && today.getMonth() === this.currentMonth;
-            if (isCurrentMonth && weeks.length > 0) {
-                const todayWeekIndex = Math.floor((startDow + todayDate - 1) / 7);
-                if (todayWeekIndex >= 0 && todayWeekIndex < weeks.length) {
-                    orderedWeeks = [
-                        weeks[todayWeekIndex],
-                        ...weeks.slice(todayWeekIndex + 1),
-                        ...weeks.slice(0, todayWeekIndex),
-                    ];
-                }
-            }
-        }
-
         // Build body
         let bodyHtml = '<div class="calendar-body">';
-        orderedWeeks.forEach((week, weekIdx) => {
-            const isCurrentWeek = this.displayMode === 'float' && weekIdx === 0;
-            week.forEach(cellHtml => {
-                if (isCurrentWeek) {
-                    bodyHtml += cellHtml.replace('class="calendar-cell', 'class="calendar-cell current-week');
-                } else {
-                    bodyHtml += cellHtml;
-                }
-            });
-        });
+        bodyHtml += cells.join('');
         bodyHtml += '</div>';
 
         grid.innerHTML = headerHtml + bodyHtml;
 
-        // Bind click: navigate to daily view for that date
+        // Click a date → navigate to daily view with same person filter
         grid.querySelectorAll('.calendar-cell:not(.other-month)').forEach(cell => {
             cell.addEventListener('click', () => {
                 const date = cell.dataset.date;
                 if (date) {
-                    // Switch to daily view for this date
                     const [y, m, d] = date.split('-').map(Number);
                     const dateObj = new Date(y, m - 1, d);
+                    // Pass monthly person filter to daily view
+                    App.currentAssignee = this.localAssignee;
                     App.switchView('daily');
+                    DailyView.syncPersonPills();
                     DailyView.setDate(dateObj);
                 }
             });
@@ -226,7 +192,6 @@ const MonthlyView = {
         return div.innerHTML;
     },
 
-    /* ===== Navigation helpers ===== */
     prevMonth() {
         let m = this.currentMonth - 1;
         let y = this.currentYear;

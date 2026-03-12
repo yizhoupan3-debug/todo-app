@@ -31,20 +31,7 @@
       <span class="love-text">天</span>
     </div>
 
-    <div class="person-switcher">
-      <button class="person-btn active" data-assignee="all">
-        <img class="person-avatar-img" src="/img/all.png" alt="全部">
-        <span>全部</span>
-      </button>
-      <button class="person-btn" data-assignee="潘潘">
-        <img class="person-avatar-img" src="/img/panpan.png" alt="潘潘">
-        <span>潘潘</span>
-      </button>
-      <button class="person-btn" data-assignee="蒲蒲">
-        <img class="person-avatar-img" src="/img/pupu.png" alt="蒲蒲">
-        <span>蒲蒲</span>
-      </button>
-    </div>
+
 
     <nav class="sidebar-nav">
       <button class="nav-btn active" data-view="daily" id="nav-daily">
@@ -92,6 +79,19 @@
 
     <!-- Daily View -->
     <section class="view-container" id="view-daily">
+      <div class="daily-toolbar">
+        <div class="daily-person-filter">
+          <button class="filter-pill active" data-assignee="all">
+            <img class="filter-avatar" src="/img/all.png" alt=""> 全部
+          </button>
+          <button class="filter-pill" data-assignee="潘潘">
+            <img class="filter-avatar" src="/img/panpan.png" alt=""> 潘潘
+          </button>
+          <button class="filter-pill" data-assignee="蒲蒲">
+            <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
+          </button>
+        </div>
+      </div>
       <div class="task-columns">
         <div class="task-column" id="col-todo">
           <div class="column-header">
@@ -128,9 +128,10 @@
             <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
           </button>
         </div>
-        <div class="monthly-mode-switch">
-          <button class="mode-btn active" data-mode="full" title="完整月">📅</button>
-          <button class="mode-btn" data-mode="float" title="浮动月">📌</button>
+        <div class="monthly-status-filter">
+          <button class="filter-pill small active" data-status="all">全部</button>
+          <button class="filter-pill small" data-status="todo">未完成</button>
+          <button class="filter-pill small" data-status="done">已完成</button>
         </div>
       </div>
       <div class="calendar-grid" id="calendar-grid"></div>
@@ -149,9 +150,9 @@
     <button class="bottom-nav-btn add-fab" id="fab-add">
       <span class="nav-icon">➕</span>
     </button>
-    <button class="bottom-nav-btn" id="mobile-person-toggle">
-      <span class="nav-icon" id="mobile-person-icon">👥</span>
-      <span id="mobile-person-label">全部</span>
+    <button class="bottom-nav-btn" id="mobile-pomodoro">
+      <span class="nav-icon"><img class="nav-icon-img" src="/img/pomodoro.png" alt=""></span>
+      <span>番茄钟</span>
     </button>
     <button class="bottom-nav-btn" id="mobile-theme-toggle">
       <span class="nav-icon" id="mobile-theme-icon">🌙</span>
@@ -206,6 +207,13 @@
             <label for="task-time">时间</label>
             <input type="time" id="task-time">
           </div>
+        </div>
+
+        <div class="form-group hidden" id="auto-complete-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="task-auto-complete" checked>
+            ⏰ 到时间自动完成
+          </label>
         </div>
 
         <div class="form-group">
@@ -285,23 +293,7 @@
     </div>
   </div>
 
-  <!-- Mobile Person Picker -->
-  <div class="modal-overlay hidden" id="person-picker-overlay">
-    <div class="modal modal-compact" id="person-picker-modal">
-      <div class="modal-header">
-        <h3>选择查看</h3>
-        <button class="modal-close" id="person-picker-close">×</button>
-      </div>
-      <div class="person-picker-list">
-        <button class="person-pick-btn active" data-assignee="all"><img class="pick-avatar" src="/img/all.png" alt="">
-          全部</button>
-        <button class="person-pick-btn" data-assignee="潘潘"><img class="pick-avatar" src="/img/panpan.png" alt="">
-          潘潘</button>
-        <button class="person-pick-btn" data-assignee="蒲蒲"><img class="pick-avatar" src="/img/pupu.png" alt="">
-          蒲蒲</button>
-      </div>
-    </div>
-  </div>
+
 
   <!-- Pomodoro Modal -->
   <div class="modal-overlay hidden" id="pomodoro-overlay">

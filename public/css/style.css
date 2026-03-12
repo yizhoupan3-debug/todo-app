@@ -771,36 +771,25 @@ textarea:focus {
   object-fit: cover;
 }
 
-.monthly-mode-switch {
+/* Daily toolbar — person filter pills above task columns */
+.daily-toolbar {
+  padding: 0 0 12px;
+}
+
+.daily-person-filter {
   display: flex;
-  background: var(--card-bg);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
-  overflow: hidden;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.mode-btn {
-  padding: 7px 14px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all var(--transition);
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  position: relative;
+.monthly-status-filter {
+  display: flex;
+  gap: 6px;
 }
 
-.mode-btn:not(:last-child) {
-  border-right: 1.5px solid var(--border);
-}
-
-.mode-btn:hover {
-  background: var(--card-hover);
-}
-
-.mode-btn.active {
-  background: var(--primary);
-  color: white;
+.filter-pill.small {
+  padding: 5px 14px;
+  font-size: 0.8rem;
 }
 
 /* ===== CALENDAR (Monthly View) ===== */
@@ -808,7 +797,8 @@ textarea:focus {
   background: var(--card-bg);
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   transition: background var(--transition);
 }
 
@@ -1496,9 +1486,9 @@ form {
     height: 16px;
   }
 
-  .mode-btn {
-    padding: 5px 10px;
-    font-size: 0.9rem;
+  .filter-pill.small {
+    padding: 4px 10px;
+    font-size: 0.75rem;
   }
 
   .calendar-grid {

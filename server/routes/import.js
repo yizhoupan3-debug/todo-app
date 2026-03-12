@@ -30,14 +30,25 @@ router.post('/ics/confirm', (req, res) => {
 
     const insertTask = db.prepare(`
     INSERT INTO tasks (title, description, assignee, due_date, due_time,
-      is_recurring, recurring_type, recurring_interval, recurring_end_date)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      is_recurring, recurring_type, recurring_interval, recurring_end_date, status, auto_complete)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
   `);
 
     try {
+        const now = new Date();
         const insertMany = db.transaction((items) => {
             const inserted = [];
             for (const task of items) {
+                // Auto-complete if due date+time has passed
+                let status = 'todo';
+                if (task.due_date && task.due_time) {
+                    const taskDateTime = new Date(`${task.due_date}T${task.due_time}`);
+                    if (taskDateTime <= now) status = 'done';
+                } else if (task.due_date && !task.due_time) {
+                    // Date-only: mark done if date is in the past
+                    const taskDate = new Date(task.due_date + 'T23:59:59');
+                    if (taskDate < now) status = 'done';
+                }
                 const result = insertTask.run(
                     task.title,
                     task.description || '',
@@ -47,7 +58,8 @@ router.post('/ics/confirm', (req, res) => {
                     task.is_recurring ? 1 : 0,
                     task.recurring_type || null,
                     task.recurring_interval || 1,
-                    task.recurring_end_date || null
+                    task.recurring_end_date || null,
+                    status
                 );
                 inserted.push(result.lastInsertRowid);
             }
