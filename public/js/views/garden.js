@@ -162,7 +162,7 @@ const GardenView = {
             <div class="island-hud">
                 <div class="island-hud-left">
                     <div class="garden-balance">
-                    <img src="/img/cat-coin.png" alt="喵喵币" class="cat-coin-icon">
+                    <img src="/img/cat-coin.svg" alt="喵喵币" class="cat-coin-icon">
                     <strong>${this.balance}</strong> 喵喵币
                 </div>
                 </div>
@@ -560,7 +560,7 @@ const GardenView = {
         el.innerHTML = `
             <div class="shop-view-header">
                 <div class="garden-balance">
-                    <img src="/img/cat-coin.png" alt="喵喵币" class="cat-coin-icon">
+                    <img src="/img/cat-coin.svg" alt="喵喵币" class="cat-coin-icon">
                     <strong>${this.shopBalance}</strong> 喵喵币
                 </div>
                 <div class="filter-pills">
@@ -577,7 +577,7 @@ const GardenView = {
                     <div class="shop-card ${this.shopBalance >= item.cost ? '' : 'locked'}" data-type="${item.type}" data-cost="${item.cost}">
                         <img class="shop-card-img" src="${item.stages.mature}" alt="${item.name}">
                         <div class="shop-card-name">${item.name}</div>
-                        <div class="shop-card-price">${item.cost === 0 ? '免费' : `<img src="/img/cat-coin.png" class="cat-coin-icon" style="width:16px;height:16px"> ${item.cost}`}</div>
+                        <div class="shop-card-price">${item.cost === 0 ? '免费' : `<img src="/img/cat-coin.svg" class="cat-coin-icon" style="width:16px;height:16px"> ${item.cost}`}</div>
                     </div>
                 `).join('')}
             </div>
@@ -618,7 +618,7 @@ const GardenView = {
                     </div>
                 </div>
                 <div class="tree-detail-footer">
-                    <div class="tree-detail-cost">${item.cost === 0 ? '免费' : `<img src="/img/cat-coin.png" class="cat-coin-icon" style="width:20px;height:20px"> ${item.cost} 喵喵币`}</div>
+                    <div class="tree-detail-cost">${item.cost === 0 ? '免费' : `<img src="/img/cat-coin.svg" class="cat-coin-icon" style="width:20px;height:20px"> ${item.cost} 喵喵币`}</div>
                     <button class="shop-buy-btn ${canBuy ? '' : 'disabled'}" id="tree-detail-buy" ${canBuy ? '' : 'disabled'}>
                         ${item.cost === 0 ? '🌱 去种植' : canBuy ? '🛒 购买并种植' : '🔒 喵喵币不足'}
                     </button>
