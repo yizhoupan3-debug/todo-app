@@ -106,6 +106,18 @@ db.exec(`
     position_y REAL NOT NULL DEFAULT 0
   );
   CREATE INDEX IF NOT EXISTS idx_trees_assignee ON trees(assignee);
+
+  CREATE TABLE IF NOT EXISTS garden_plots (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    assignee TEXT NOT NULL CHECK(assignee IN ('潘潘','蒲蒲')),
+    x INTEGER NOT NULL,
+    y INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'wasteland' CHECK(status IN ('wasteland','cleared','planted')),
+    obstacle_type TEXT DEFAULT NULL,
+    tree_id INTEGER DEFAULT NULL,
+    UNIQUE(assignee, x, y)
+  );
+  CREATE INDEX IF NOT EXISTS idx_plots_assignee ON garden_plots(assignee);
 `);
 
 // Seed default categories if empty
@@ -145,6 +157,32 @@ try {
   db.prepare("SELECT growth_minutes FROM trees LIMIT 1").get();
 } catch (e) {
   db.exec("ALTER TABLE trees ADD COLUMN growth_minutes INTEGER NOT NULL DEFAULT 0");
+}
+
+// Seed garden plots if empty (6x4 = 24 plots per user)
+const plotCount = db.prepare('SELECT COUNT(*) as count FROM garden_plots').get();
+if (plotCount.count === 0) {
+  const obstacles = ['rock', 'weed', 'wild_tree'];
+  const insertPlot = db.prepare(
+    'INSERT INTO garden_plots (assignee, x, y, status, obstacle_type) VALUES (?, ?, ?, ?, ?)'
+  );
+  const seedPlots = db.transaction(() => {
+    for (const user of ['潘潘', '蒲蒲']) {
+      for (let y = 0; y < 4; y++) {
+        for (let x = 0; x < 6; x++) {
+          // Center 4 plots (2,1)(3,1)(2,2)(3,2) start cleared
+          const isCenter = (x === 2 || x === 3) && (y === 1 || y === 2);
+          if (isCenter) {
+            insertPlot.run(user, x, y, 'cleared', null);
+          } else {
+            const obs = obstacles[Math.floor(Math.random() * obstacles.length)];
+            insertPlot.run(user, x, y, 'wasteland', obs);
+          }
+        }
+      }
+    }
+  });
+  seedPlots();
 }
 
 module.exports = db;

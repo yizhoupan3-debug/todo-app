@@ -140,4 +140,12 @@ const API = {
     growTree(data) {
         return this.request('/garden/trees/grow', { method: 'POST', body: data });
     },
+
+    getPlots(assignee) {
+        return this.request(`/garden/plots/${encodeURIComponent(assignee)}`);
+    },
+
+    clearPlot(data) {
+        return this.request('/garden/plots/clear', { method: 'POST', body: data });
+    },
 };

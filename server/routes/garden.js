@@ -51,7 +51,66 @@ router.get('/coins/history/:assignee', (req, res) => {
     }
 });
 
-// ── Tree Shop (catalog is frontend-defined, return user's owned tree types) ──
+// ── Get Garden Plots (6x4 grid) ──
+router.get('/plots/:assignee', (req, res) => {
+    try {
+        const plots = db.prepare(
+            `SELECT gp.*, t.tree_type, t.growth_minutes, t.status as tree_status, t.planted_at
+             FROM garden_plots gp
+             LEFT JOIN trees t ON gp.tree_id = t.id
+             WHERE gp.assignee = ?
+             ORDER BY gp.y, gp.x`
+        ).all(req.params.assignee);
+        res.json(plots);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Clear a Plot (remove obstacle, costs coins) ──
+router.post('/plots/clear', (req, res) => {
+    try {
+        const { assignee, plot_id } = req.body;
+        if (!assignee || !plot_id) {
+            return res.status(400).json({ error: 'assignee, plot_id required' });
+        }
+
+        const costMap = { rock: 10, weed: 5, wild_tree: 15 };
+
+        const clear = db.transaction(() => {
+            const plot = db.prepare('SELECT * FROM garden_plots WHERE id = ? AND assignee = ?')
+                .get(plot_id, assignee);
+            if (!plot) throw new Error('NOT_FOUND');
+            if (plot.status !== 'wasteland') throw new Error('ALREADY_CLEARED');
+
+            const cost = costMap[plot.obstacle_type] || 10;
+            const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
+                .get(assignee);
+            if (balance < cost) throw new Error('INSUFFICIENT');
+
+            db.prepare('UPDATE coin_accounts SET balance = balance - ? WHERE assignee = ?')
+                .run(cost, assignee);
+            db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                .run(assignee, -cost, 'clear_land', plot.obstacle_type);
+            db.prepare('UPDATE garden_plots SET status = ?, obstacle_type = NULL WHERE id = ?')
+                .run('cleared', plot_id);
+
+            const newBalance = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
+                .get(assignee).balance;
+            return { balance: newBalance, cost };
+        });
+
+        const result = clear();
+        res.json(result);
+    } catch (err) {
+        if (err.message === 'INSUFFICIENT') return res.status(400).json({ error: '喵喵币不足 😿' });
+        if (err.message === 'ALREADY_CLEARED') return res.status(400).json({ error: '已经开垦过了' });
+        if (err.message === 'NOT_FOUND') return res.status(404).json({ error: '地块不存在' });
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Tree Shop ──
 router.get('/shop/:assignee', (req, res) => {
     try {
         const owned = db.prepare(
@@ -65,30 +124,38 @@ router.get('/shop/:assignee', (req, res) => {
     }
 });
 
-// ── Plant a Tree (purchase) ──
+// ── Plant a Tree on a Plot ──
 router.post('/plant', (req, res) => {
     try {
-        const { assignee, tree_type, cost, position_x, position_y } = req.body;
-        if (!assignee || !tree_type || cost === undefined) {
-            return res.status(400).json({ error: 'assignee, tree_type, cost required' });
+        const { assignee, tree_type, cost, plot_id } = req.body;
+        if (!assignee || !tree_type || cost === undefined || !plot_id) {
+            return res.status(400).json({ error: 'assignee, tree_type, cost, plot_id required' });
         }
 
         const plant = db.transaction(() => {
-            // Check balance
+            const plot = db.prepare('SELECT * FROM garden_plots WHERE id = ? AND assignee = ?')
+                .get(plot_id, assignee);
+            if (!plot) throw new Error('NOT_FOUND');
+            if (plot.status !== 'cleared') throw new Error('NOT_CLEARED');
+
             const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
                 .get(assignee);
-            if (balance < cost) {
-                throw new Error('INSUFFICIENT');
+            if (balance < cost) throw new Error('INSUFFICIENT');
+
+            if (cost > 0) {
+                db.prepare('UPDATE coin_accounts SET balance = balance - ? WHERE assignee = ?')
+                    .run(cost, assignee);
+                db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                    .run(assignee, -cost, 'purchase', tree_type);
             }
-            // Deduct coins
-            db.prepare('UPDATE coin_accounts SET balance = balance - ? WHERE assignee = ?')
-                .run(cost, assignee);
-            db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                .run(assignee, -cost, 'purchase', tree_type);
-            // Plant tree
+
             const result = db.prepare(
                 'INSERT INTO trees (assignee, tree_type, position_x, position_y) VALUES (?, ?, ?, ?)'
-            ).run(assignee, tree_type, position_x || Math.random() * 80 + 10, position_y || Math.random() * 60 + 20);
+            ).run(assignee, tree_type, plot.x, plot.y);
+
+            db.prepare('UPDATE garden_plots SET status = ?, tree_id = ? WHERE id = ?')
+                .run('planted', result.lastInsertRowid, plot_id);
+
             const tree = db.prepare('SELECT * FROM trees WHERE id = ?').get(result.lastInsertRowid);
             const newBalance = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
                 .get(assignee).balance;
@@ -98,9 +165,9 @@ router.post('/plant', (req, res) => {
         const result = plant();
         res.json(result);
     } catch (err) {
-        if (err.message === 'INSUFFICIENT') {
-            return res.status(400).json({ error: '喵喵币不足 😿' });
-        }
+        if (err.message === 'INSUFFICIENT') return res.status(400).json({ error: '喵喵币不足 😿' });
+        if (err.message === 'NOT_CLEARED') return res.status(400).json({ error: '需要先开荒' });
+        if (err.message === 'NOT_FOUND') return res.status(404).json({ error: '地块不存在' });
         res.status(500).json({ error: err.message });
     }
 });
@@ -126,18 +193,14 @@ router.post('/trees/grow', (req, res) => {
         }
 
         const grow = db.transaction(() => {
-            // Find the latest growing tree for this user
             let tree = db.prepare(
                 "SELECT * FROM trees WHERE assignee = ? AND status = 'growing' ORDER BY planted_at DESC LIMIT 1"
             ).get(assignee);
-
             if (!tree) {
-                // If no growing tree, try the latest tree regardless
                 tree = db.prepare(
                     "SELECT * FROM trees WHERE assignee = ? ORDER BY planted_at DESC LIMIT 1"
                 ).get(assignee);
             }
-
             if (!tree) return null;
 
             const newMinutes = (tree.growth_minutes || 0) + minutes;
