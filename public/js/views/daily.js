@@ -93,6 +93,9 @@ const DailyView = {
 
         this.renderColumn('list-todo', groups.todo, 'todo');
         this.renderColumn('list-done', groups.done, 'done');
+
+        // Refresh Lucide icons for dynamically rendered task cards
+        if (typeof lucide !== 'undefined') lucide.createIcons();
     },
 
     renderColumn(containerId, tasks, status) {
