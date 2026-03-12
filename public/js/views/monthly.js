@@ -1,79 +1,84 @@
 /**
- * Monthly View — calendar grid showing task titles directly in cells.
- * Person filter pills + status filter (全部/未完成/已完成).
- * Clicking a date navigates to daily view for that date with the same person filter.
+ * Monthly View — Continuous scrollable calendar.
+ * Renders 3 months at a time with smooth scroll and IntersectionObserver
+ * header tracking. Scrolling near edges loads more months.
  */
 const MonthlyView = {
     currentYear: new Date().getFullYear(),
     currentMonth: new Date().getMonth(),
-    monthTasks: [],
+    monthTasks: {},        // keyed by 'YYYY-MM'
     localAssignee: 'all',
-    statusFilter: 'all', // 'all' | 'todo' | 'done'
+    statusFilter: 'all',
+    visibleYear: null,
+    visibleMonth: null,
+    observer: null,
+    loadingMore: false,
+    renderedMonths: [],    // ['2026-02', '2026-03', '2026-04']
 
     init() {
         this.currentYear = new Date().getFullYear();
         this.currentMonth = new Date().getMonth();
         this.bindToolbar();
-        this.bindScrollNav();
-    },
-
-    bindScrollNav() {
-        const grid = document.getElementById('calendar-grid');
-        let scrollTimer = null;
-        grid.addEventListener('scroll', () => {
-            if (scrollTimer) return;
-            const threshold = 30;
-            // Scrolled to bottom → next month
-            if (grid.scrollTop + grid.clientHeight >= grid.scrollHeight - threshold) {
-                scrollTimer = setTimeout(() => { scrollTimer = null; }, 600);
-                this.nextMonth();
-            }
-            // Scrolled to top → prev month
-            else if (grid.scrollTop <= threshold) {
-                scrollTimer = setTimeout(() => { scrollTimer = null; }, 600);
-                this.prevMonth();
-                // Scroll to bottom of previous month so user can keep scrolling up
-                setTimeout(() => { grid.scrollTop = grid.scrollHeight - grid.clientHeight - 1; }, 150);
-            }
-        });
+        this.bindScrollEdge();
     },
 
     bindToolbar() {
-        // Person filter pills
         document.querySelectorAll('.monthly-person-filter .filter-pill').forEach(btn => {
             btn.addEventListener('click', () => {
                 const assignee = btn.dataset.assignee;
                 this.localAssignee = assignee;
                 document.querySelectorAll('.monthly-person-filter .filter-pill').forEach(b =>
                     b.classList.toggle('active', b.dataset.assignee === assignee));
-                this.loadMonth();
+                this.fullReload();
             });
         });
 
-        // Status filter pills
         document.querySelectorAll('.monthly-status-filter .filter-pill').forEach(btn => {
             btn.addEventListener('click', () => {
                 const status = btn.dataset.status;
                 this.statusFilter = status;
                 document.querySelectorAll('.monthly-status-filter .filter-pill').forEach(b =>
                     b.classList.toggle('active', b.dataset.status === status));
-                this.renderCalendar();
+                this.fullReload();
             });
+        });
+    },
+
+    bindScrollEdge() {
+        const grid = document.getElementById('calendar-grid');
+        let debounce = null;
+        grid.addEventListener('scroll', () => {
+            if (this.loadingMore) return;
+            clearTimeout(debounce);
+            debounce = setTimeout(() => {
+                const threshold = 50;
+                // Near bottom → append next month
+                if (grid.scrollTop + grid.clientHeight >= grid.scrollHeight - threshold) {
+                    this.appendMonth();
+                }
+                // Near top → prepend previous month
+                if (grid.scrollTop <= threshold) {
+                    this.prependMonth();
+                }
+            }, 80);
         });
     },
 
     setMonth(year, month) {
         this.currentYear = year;
         this.currentMonth = month;
+        this.visibleYear = year;
+        this.visibleMonth = month;
         this.updateDateDisplay();
-        this.loadMonth();
+        this.fullReload();
     },
 
     updateDateDisplay() {
+        const y = this.visibleYear || this.currentYear;
+        const m = this.visibleMonth != null ? this.visibleMonth : this.currentMonth;
         const months = ['一月', '二月', '三月', '四月', '五月', '六月',
             '七月', '八月', '九月', '十月', '十一月', '十二月'];
-        document.getElementById('date-display').textContent =
-            `${this.currentYear}年 ${months[this.currentMonth]}`;
+        document.getElementById('date-display').textContent = `${y}年 ${months[m]}`;
         document.getElementById('header-title').textContent = '月度总览';
     },
 
@@ -83,40 +88,126 @@ const MonthlyView = {
             b.classList.toggle('active', b.dataset.assignee === this.localAssignee));
     },
 
-    async loadMonth() {
-        const monthStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}`;
+    _monthKey(y, m) {
+        return `${y}-${String(m + 1).padStart(2, '0')}`;
+    },
+
+    async _loadMonthTasks(y, m) {
+        const key = this._monthKey(y, m);
+        const params = { month: key };
+        if (this.localAssignee !== 'all') params.assignee = this.localAssignee;
         try {
-            const params = { month: monthStr };
-            if (this.localAssignee !== 'all') params.assignee = this.localAssignee;
-            this.monthTasks = await API.getTasks(params);
-            this.renderCalendar();
+            this.monthTasks[key] = await API.getTasks(params);
         } catch (err) {
-            App.showToast('加载月视图失败: ' + err.message, 'error');
+            this.monthTasks[key] = [];
         }
     },
 
-    renderCalendar() {
+    async fullReload() {
         const grid = document.getElementById('calendar-grid');
-        const today = new Date();
-        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
+        this.renderedMonths = [];
+        this.monthTasks = {};
+        grid.innerHTML = '';
 
-        // Apply status filter to tasks
-        let filteredTasks = this.monthTasks;
-        if (this.statusFilter === 'todo') {
-            filteredTasks = this.monthTasks.filter(t => t.status !== 'done');
-        } else if (this.statusFilter === 'done') {
-            filteredTasks = this.monthTasks.filter(t => t.status === 'done');
+        // Setup observer for month headers
+        this._setupObserver();
+
+        // Load and render 3 months: prev, current, next
+        const months = this._getSurroundingMonths(this.currentYear, this.currentMonth);
+        await Promise.all(months.map(([y, m]) => this._loadMonthTasks(y, m)));
+
+        // Render sticky weekday header
+        const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
+        let headerHtml = '<div class="calendar-header-row sticky-header">';
+        for (const wd of weekdays) {
+            headerHtml += `<div class="calendar-header-cell">${wd}</div>`;
+        }
+        headerHtml += '</div>';
+        grid.innerHTML = headerHtml;
+
+        for (const [y, m] of months) {
+            this._renderMonth(y, m, grid);
         }
 
-        // Group tasks by date
+        // Scroll to current month
+        const currentMarker = grid.querySelector(`[data-month-key="${this._monthKey(this.currentYear, this.currentMonth)}"]`);
+        if (currentMarker) {
+            setTimeout(() => currentMarker.scrollIntoView({ block: 'start' }), 50);
+        }
+    },
+
+    _getSurroundingMonths(y, m) {
+        const result = [];
+        // Previous month
+        let pm = m - 1, py = y;
+        if (pm < 0) { pm = 11; py--; }
+        result.push([py, pm]);
+        // Current month
+        result.push([y, m]);
+        // Next month
+        let nm = m + 1, ny = y;
+        if (nm > 11) { nm = 0; ny++; }
+        result.push([ny, nm]);
+        return result;
+    },
+
+    _setupObserver() {
+        if (this.observer) this.observer.disconnect();
+        const grid = document.getElementById('calendar-grid');
+        this.observer = new IntersectionObserver((entries) => {
+            for (const entry of entries) {
+                if (entry.isIntersecting) {
+                    const key = entry.target.dataset.monthKey;
+                    if (key) {
+                        const [y, m] = key.split('-').map(Number);
+                        this.visibleYear = y;
+                        this.visibleMonth = m - 1;
+                        this.updateDateDisplay();
+                        // Also update nav arrows context
+                        this.currentYear = y;
+                        this.currentMonth = m - 1;
+                    }
+                }
+            }
+        }, {
+            root: grid,
+            rootMargin: '-40% 0px -55% 0px', // trigger when label is near top
+            threshold: 0
+        });
+    },
+
+    _renderMonth(y, m, grid) {
+        const key = this._monthKey(y, m);
+        if (this.renderedMonths.includes(key)) return;
+        this.renderedMonths.push(key);
+
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const months = ['一月', '二月', '三月', '四月', '五月', '六月',
+            '七月', '八月', '九月', '十月', '十一月', '十二月'];
+
+        // Month separator label
+        const label = document.createElement('div');
+        label.className = 'calendar-month-label';
+        label.dataset.monthKey = key;
+        label.textContent = `${y}年 ${months[m]}`;
+        grid.appendChild(label);
+
+        // Observe this label for header tracking
+        this.observer.observe(label);
+
+        // Filter tasks
+        let tasks = this.monthTasks[key] || [];
+        if (this.statusFilter === 'todo') tasks = tasks.filter(t => t.status !== 'done');
+        else if (this.statusFilter === 'done') tasks = tasks.filter(t => t.status === 'done');
+
+        // Group by date
         const dayTasks = {};
-        for (const task of filteredTasks) {
+        for (const task of tasks) {
             if (!task.due_date) continue;
             if (!dayTasks[task.due_date]) dayTasks[task.due_date] = [];
             dayTasks[task.due_date].push(task);
         }
-        // Sort: todo first, done last
         for (const date in dayTasks) {
             dayTasks[date].sort((a, b) => {
                 if (a.status === 'done' && b.status !== 'done') return 1;
@@ -125,93 +216,236 @@ const MonthlyView = {
             });
         }
 
-        // Calendar layout
-        const firstDay = new Date(this.currentYear, this.currentMonth, 1);
-        const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+        // Calendar cells
+        const firstDay = new Date(y, m, 1);
+        const lastDay = new Date(y, m + 1, 0);
         let startDow = firstDay.getDay() - 1;
         if (startDow < 0) startDow = 6;
 
-        let headerHtml = '<div class="calendar-header-row">';
-        for (const wd of weekdays) {
-            headerHtml += `<div class="calendar-header-cell">${wd}</div>`;
-        }
-        headerHtml += '</div>';
+        const body = document.createElement('div');
+        body.className = 'calendar-body';
 
-        const cells = [];
-        const prevMonth = new Date(this.currentYear, this.currentMonth, 0);
-        for (let i = startDow - 1; i >= 0; i--) {
-            const day = prevMonth.getDate() - i;
-            cells.push(`<div class="calendar-cell other-month"><div class="calendar-day-num">${day}</div></div>`);
+        // Leading blanks
+        for (let i = 0; i < startDow; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'calendar-cell other-month';
+            body.appendChild(cell);
         }
 
         for (let d = 1; d <= lastDay.getDate(); d++) {
-            const dateStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const isToday = dateStr === todayStr;
-            const tasks = dayTasks[dateStr] || [];
+            const dTasks = dayTasks[dateStr] || [];
 
-            let classes = 'calendar-cell';
-            if (isToday) classes += ' today-gold';
+            const cell = document.createElement('div');
+            cell.className = 'calendar-cell' + (isToday ? ' today-gold' : '');
+            cell.dataset.date = dateStr;
 
-            let tasksHtml = '';
-            if (tasks.length > 0) {
-                tasksHtml = '<div class="calendar-tasks">';
-                const maxShow = 4;
-                const shown = tasks.slice(0, maxShow);
-                for (const task of shown) {
-                    const isDone = task.status === 'done';
-                    const color = task.category_color || '#6366f1';
-                    tasksHtml += `<div class="calendar-task-item${isDone ? ' done' : ''}" style="--cat-color:${color}">`;
-                    tasksHtml += this.escapeHtml(task.title);
-                    tasksHtml += '</div>';
+            // Day number
+            const numEl = document.createElement('div');
+            numEl.className = 'calendar-day-num';
+            numEl.textContent = d;
+            cell.appendChild(numEl);
+
+            // Tasks
+            if (dTasks.length > 0) {
+                const tasksEl = document.createElement('div');
+                tasksEl.className = 'calendar-tasks';
+                const maxShow = 3;
+                for (let ti = 0; ti < Math.min(dTasks.length, maxShow); ti++) {
+                    const task = dTasks[ti];
+                    const item = document.createElement('div');
+                    item.className = 'calendar-task-item' + (task.status === 'done' ? ' done' : '');
+                    item.style.setProperty('--cat-color', task.category_color || '#6366f1');
+                    item.textContent = task.title;
+                    tasksEl.appendChild(item);
                 }
-                if (tasks.length > maxShow) {
-                    tasksHtml += `<div class="calendar-task-more">+${tasks.length - maxShow} 更多</div>`;
+                if (dTasks.length > maxShow) {
+                    const more = document.createElement('div');
+                    more.className = 'calendar-task-more';
+                    more.textContent = `+${dTasks.length - maxShow} 更多`;
+                    tasksEl.appendChild(more);
                 }
-                tasksHtml += '</div>';
+                cell.appendChild(tasksEl);
             }
 
-            cells.push(`
-        <div class="${classes}" data-date="${dateStr}">
-          <div class="calendar-day-num">${d}</div>
-          ${tasksHtml}
-        </div>
-      `);
+            // Click → daily view
+            cell.addEventListener('click', () => {
+                const [cy, cm, cd] = dateStr.split('-').map(Number);
+                App.currentAssignee = this.localAssignee;
+                App.switchView('daily');
+                DailyView.syncPersonPills();
+                DailyView.setDate(new Date(cy, cm - 1, cd));
+            });
+
+            body.appendChild(cell);
+        }
+
+        // Trailing blanks
+        const totalCells = startDow + lastDay.getDate();
+        const remaining = (7 - (totalCells % 7)) % 7;
+        for (let i = 0; i < remaining; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'calendar-cell other-month';
+            body.appendChild(cell);
+        }
+
+        grid.appendChild(body);
+    },
+
+    async appendMonth() {
+        if (this.loadingMore || this.renderedMonths.length === 0) return;
+        this.loadingMore = true;
+
+        const lastKey = this.renderedMonths[this.renderedMonths.length - 1];
+        const [ly, lm] = lastKey.split('-').map(Number);
+        let ny = ly, nm = lm; // lm is 1-based
+        nm++;
+        if (nm > 12) { nm = 1; ny++; }
+
+        await this._loadMonthTasks(ny, nm - 1);
+        this._renderMonth(ny, nm - 1, document.getElementById('calendar-grid'));
+
+        this.loadingMore = false;
+    },
+
+    async prependMonth() {
+        if (this.loadingMore || this.renderedMonths.length === 0) return;
+        this.loadingMore = true;
+
+        const firstKey = this.renderedMonths[0];
+        const [fy, fm] = firstKey.split('-').map(Number);
+        let py = fy, pm = fm; // fm is 1-based
+        pm--;
+        if (pm < 1) { pm = 12; py--; }
+
+        const grid = document.getElementById('calendar-grid');
+        const scrollBefore = grid.scrollHeight;
+
+        await this._loadMonthTasks(py, pm - 1);
+
+        // We need to insert before the first month label
+        const firstLabel = grid.querySelector('.calendar-month-label');
+        if (firstLabel) {
+            // Create temp container, render, then insert before first label
+            const tempGrid = document.createElement('div');
+            this._renderMonthToFragment(py, pm - 1, tempGrid);
+            // Insert children before first label
+            while (tempGrid.firstChild) {
+                grid.insertBefore(tempGrid.firstChild, firstLabel);
+            }
+            this.renderedMonths.unshift(this._monthKey(py, pm - 1));
+        }
+
+        // Maintain scroll position
+        const scrollAfter = grid.scrollHeight;
+        grid.scrollTop += (scrollAfter - scrollBefore);
+
+        this.loadingMore = false;
+    },
+
+    _renderMonthToFragment(y, m, container) {
+        // Same as _renderMonth but into a container element
+        const key = this._monthKey(y, m);
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月',
+            '七月', '八月', '九月', '十月', '十一月', '十二月'];
+
+        const label = document.createElement('div');
+        label.className = 'calendar-month-label';
+        label.dataset.monthKey = key;
+        label.textContent = `${y}年 ${monthNames[m]}`;
+        container.appendChild(label);
+        this.observer.observe(label);
+
+        let tasks = this.monthTasks[key] || [];
+        if (this.statusFilter === 'todo') tasks = tasks.filter(t => t.status !== 'done');
+        else if (this.statusFilter === 'done') tasks = tasks.filter(t => t.status === 'done');
+
+        const dayTasks = {};
+        for (const task of tasks) {
+            if (!task.due_date) continue;
+            if (!dayTasks[task.due_date]) dayTasks[task.due_date] = [];
+            dayTasks[task.due_date].push(task);
+        }
+        for (const date in dayTasks) {
+            dayTasks[date].sort((a, b) => {
+                if (a.status === 'done' && b.status !== 'done') return 1;
+                if (a.status !== 'done' && b.status === 'done') return -1;
+                return a.priority - b.priority;
+            });
+        }
+
+        const firstDay = new Date(y, m, 1);
+        const lastDay = new Date(y, m + 1, 0);
+        let startDow = firstDay.getDay() - 1;
+        if (startDow < 0) startDow = 6;
+
+        const body = document.createElement('div');
+        body.className = 'calendar-body';
+
+        for (let i = 0; i < startDow; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'calendar-cell other-month';
+            body.appendChild(cell);
+        }
+
+        for (let d = 1; d <= lastDay.getDate(); d++) {
+            const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const isToday = dateStr === todayStr;
+            const dTasks = dayTasks[dateStr] || [];
+
+            const cell = document.createElement('div');
+            cell.className = 'calendar-cell' + (isToday ? ' today-gold' : '');
+            cell.dataset.date = dateStr;
+
+            const numEl = document.createElement('div');
+            numEl.className = 'calendar-day-num';
+            numEl.textContent = d;
+            cell.appendChild(numEl);
+
+            if (dTasks.length > 0) {
+                const tasksEl = document.createElement('div');
+                tasksEl.className = 'calendar-tasks';
+                const maxShow = 3;
+                for (let ti = 0; ti < Math.min(dTasks.length, maxShow); ti++) {
+                    const task = dTasks[ti];
+                    const item = document.createElement('div');
+                    item.className = 'calendar-task-item' + (task.status === 'done' ? ' done' : '');
+                    item.style.setProperty('--cat-color', task.category_color || '#6366f1');
+                    item.textContent = task.title;
+                    tasksEl.appendChild(item);
+                }
+                if (dTasks.length > maxShow) {
+                    const more = document.createElement('div');
+                    more.className = 'calendar-task-more';
+                    more.textContent = `+${dTasks.length - maxShow} 更多`;
+                    tasksEl.appendChild(more);
+                }
+                cell.appendChild(tasksEl);
+            }
+
+            cell.addEventListener('click', () => {
+                const [cy, cm, cd] = dateStr.split('-').map(Number);
+                App.currentAssignee = this.localAssignee;
+                App.switchView('daily');
+                DailyView.syncPersonPills();
+                DailyView.setDate(new Date(cy, cm - 1, cd));
+            });
+
+            body.appendChild(cell);
         }
 
         const totalCells = startDow + lastDay.getDate();
         const remaining = (7 - (totalCells % 7)) % 7;
-        for (let i = 1; i <= remaining; i++) {
-            cells.push(`<div class="calendar-cell other-month"><div class="calendar-day-num">${i}</div></div>`);
+        for (let i = 0; i < remaining; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'calendar-cell other-month';
+            body.appendChild(cell);
         }
 
-        // Build body
-        let bodyHtml = '<div class="calendar-body">';
-        bodyHtml += cells.join('');
-        bodyHtml += '</div>';
-
-        grid.innerHTML = headerHtml + bodyHtml;
-
-        // Click a date → navigate to daily view with same person filter
-        grid.querySelectorAll('.calendar-cell:not(.other-month)').forEach(cell => {
-            cell.addEventListener('click', () => {
-                const date = cell.dataset.date;
-                if (date) {
-                    const [y, m, d] = date.split('-').map(Number);
-                    const dateObj = new Date(y, m - 1, d);
-                    // Pass monthly person filter to daily view
-                    App.currentAssignee = this.localAssignee;
-                    App.switchView('daily');
-                    DailyView.syncPersonPills();
-                    DailyView.setDate(dateObj);
-                }
-            });
-        });
-
-        // Auto-scroll to today's row
-        const todayCell = grid.querySelector('.today-gold');
-        if (todayCell) {
-            setTimeout(() => todayCell.scrollIntoView({ block: 'center', behavior: 'smooth' }), 100);
-        }
+        container.appendChild(body);
     },
 
     escapeHtml(str) {
@@ -239,7 +473,11 @@ const MonthlyView = {
         this.setMonth(now.getFullYear(), now.getMonth());
     },
 
+    // Alias for compatibility
+    loadMonth() { this.fullReload(); },
+    renderCalendar() { this.fullReload(); },
+
     refresh() {
-        this.loadMonth();
+        this.fullReload();
     }
 };

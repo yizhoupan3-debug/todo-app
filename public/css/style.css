@@ -800,7 +800,25 @@ textarea:focus {
   overflow-y: auto;
   overflow-x: hidden;
   max-height: calc(100vh - 200px);
+  scroll-behavior: smooth;
   transition: background var(--transition);
+}
+
+.calendar-header-row.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--bg-secondary);
+}
+
+.calendar-month-label {
+  padding: 14px 20px 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 
 .calendar-header-row {
