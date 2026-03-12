@@ -43,17 +43,14 @@ const DailyView = {
 
     render() {
         const groups = {
-            todo: this.tasks.filter(t => t.status === 'todo'),
-            in_progress: this.tasks.filter(t => t.status === 'in_progress'),
+            todo: this.tasks.filter(t => t.status === 'todo' || t.status === 'in_progress'),
             done: this.tasks.filter(t => t.status === 'done'),
         };
 
         document.getElementById('count-todo').textContent = groups.todo.length;
-        document.getElementById('count-in-progress').textContent = groups.in_progress.length;
         document.getElementById('count-done').textContent = groups.done.length;
 
         this.renderColumn('list-todo', groups.todo, 'todo');
-        this.renderColumn('list-in-progress', groups.in_progress, 'in_progress');
         this.renderColumn('list-done', groups.done, 'done');
     },
 
@@ -62,7 +59,6 @@ const DailyView = {
         if (tasks.length === 0) {
             const emptyTexts = {
                 todo: '🎉 没有待办任务',
-                in_progress: '✨ 没有进行中的任务',
                 done: '📭 还没有完成的任务',
             };
             container.innerHTML = `
@@ -78,9 +74,20 @@ const DailyView = {
         container.querySelectorAll('.task-card').forEach(card => {
             card.addEventListener('click', (e) => {
                 if (e.target.closest('.task-checkbox')) return;
+                if (e.target.closest('.task-pomodoro-btn')) return;
                 const taskId = parseInt(card.dataset.taskId);
                 const task = this.tasks.find(t => t.id === taskId);
                 if (task) TaskModal.openEdit(task);
+            });
+        });
+
+        // Pomodoro buttons
+        container.querySelectorAll('.task-pomodoro-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const taskId = parseInt(btn.closest('.task-card').dataset.taskId);
+                const task = this.tasks.find(t => t.id === taskId);
+                if (task) Pomodoro.openForTask(task);
             });
         });
 
@@ -129,6 +136,7 @@ const DailyView = {
         <div class="task-card-header">
           <div class="task-checkbox ${isDone ? 'checked' : ''}"></div>
           <div class="task-card-title">${this.escapeHtml(task.title)}</div>
+          ${!isDone ? '<button class="task-pomodoro-btn" title="番茄钟"><img src="/img/pomodoro.png" alt="" class="pomodoro-icon"></button>' : ''}
         </div>
         ${metaTags ? `<div class="task-card-meta">${metaTags}</div>` : ''}
       </div>

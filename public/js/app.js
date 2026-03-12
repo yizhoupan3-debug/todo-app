@@ -22,6 +22,7 @@ const App = {
         MonthlyView.init();
         TaskModal.init();
         ICSImport.init();
+        Pomodoro.init();
 
         // Theme
         this.initTheme();
@@ -42,8 +43,10 @@ const App = {
         document.getElementById('btn-add-task').addEventListener('click', () => TaskModal.openCreate());
         document.getElementById('fab-add').addEventListener('click', () => TaskModal.openCreate());
 
-        // ICS import
         document.getElementById('btn-import-ics').addEventListener('click', () => ICSImport.open());
+
+        // Pomodoro from sidebar
+        document.getElementById('nav-pomodoro').addEventListener('click', () => Pomodoro.open());
 
         // Mobile menu with backdrop
         document.getElementById('btn-menu').addEventListener('click', () => {
