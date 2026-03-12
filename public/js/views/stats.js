@@ -3,7 +3,7 @@
  */
 const StatsView = {
     currentRange: 'week', // 'week' | 'month'
-    currentAssignee: 'all',
+    currentAssignee: '潘潘',
     data: null,
 
     init() {
