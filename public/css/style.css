@@ -1832,6 +1832,8 @@ textarea:focus {
   font-size: 0.82rem;
   font-weight: 500;
   background: var(--card-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border: 1.5px solid var(--border);
   color: var(--text-secondary);
   cursor: pointer;
