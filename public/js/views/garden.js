@@ -120,7 +120,7 @@ const GardenView = {
                 <div class="garden-tree ${grown ? 'grown' : 'growing'}"
                      style="left:${x}%;top:${y}%"
                      title="${catItem ? catItem.name : tree.tree_type}">
-                    <span class="garden-tree-icon">${icon}</span>
+                    <img class="garden-tree-img" src="${icon}" alt="${catItem ? catItem.name : ''}">
                 </div>
             `;
         }).join('');
