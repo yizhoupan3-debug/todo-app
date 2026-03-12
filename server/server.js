@@ -19,11 +19,13 @@ const tasksRouter = require('./routes/tasks');
 const categoriesRouter = require('./routes/categories');
 const importRouter = require('./routes/import');
 const checkinRouter = require('./routes/checkin');
+const statsRouter = require('./routes/stats');
 
 app.use('/api/tasks', tasksRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/import', importRouter);
 app.use('/api/checkin', checkinRouter);
+app.use('/api/stats', statsRouter);
 
 // Socket.io for real-time sync
 io.on('connection', (socket) => {

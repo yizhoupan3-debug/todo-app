@@ -2841,3 +2841,416 @@ form {
   padding: 12px;
   border-radius: var(--radius-md);
 }
+
+/* ===== STATS MODULE ===== */
+.stats-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.stats-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stats-person-filter {
+  display: flex;
+  gap: 8px;
+}
+
+.stats-range-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+}
+
+.stats-range-btn {
+  padding: 6px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.stats-range-btn.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 8px var(--primary-glow);
+}
+
+.stats-range-btn:hover:not(.active) {
+  color: var(--primary);
+}
+
+/* Overview Cards */
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.stats-card.overview {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.stats-card.overview::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.stats-card.overview:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 20px var(--primary-glow);
+  transform: translateY(-2px);
+}
+
+.stats-card.overview:hover::before {
+  opacity: 1;
+}
+
+.stats-card-icon {
+  font-size: 1.5rem;
+}
+
+.stats-card-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.stats-card-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.stats-card-sub {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* Stats Sections */
+.stats-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: all var(--transition);
+}
+
+.stats-section:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.stats-section-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 16px;
+}
+
+/* Bar Chart */
+.stats-chart-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 160px;
+  padding: 8px 0;
+  position: relative;
+}
+
+.stats-chart-container.water-chart {
+  padding-bottom: 0;
+}
+
+.chart-bar-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.chart-bar-wrapper.today .chart-bar-label {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.chart-bar-value {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  min-height: 14px;
+  white-space: nowrap;
+}
+
+.chart-bar {
+  width: 70%;
+  min-height: 2px;
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(180deg, var(--primary-light), var(--primary));
+  transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.chart-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), transparent);
+  border-radius: 4px 4px 0 0;
+}
+
+/* Water bars */
+.chart-bar.water {
+  background: linear-gradient(180deg, #93c5fd, #3b82f6);
+}
+
+.chart-bar.water.reached {
+  background: linear-gradient(180deg, #6ee7a0, #22c55e);
+}
+
+.chart-bar-label {
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* Goal line */
+.chart-goal-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 2px dashed rgba(239, 68, 68, 0.4);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.chart-goal-label {
+  position: absolute;
+  right: 0;
+  top: -16px;
+  font-size: 0.62rem;
+  color: #ef4444;
+  font-weight: 600;
+  background: var(--card-bg);
+  padding: 0 4px;
+  border-radius: 2px;
+}
+
+/* Wakeup Heatmap */
+.stats-heatmap {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.heatmap-cell {
+  width: calc((100% - 42px) / 7);
+  min-width: 48px;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: all var(--transition);
+  cursor: default;
+}
+
+.heatmap-cell.checked {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(34, 197, 94, 0.06));
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.heatmap-cell.today {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-glow);
+}
+
+.heatmap-day {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.heatmap-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.heatmap-date {
+  font-size: 0.6rem;
+  color: var(--text-tertiary);
+}
+
+/* Pomodoro Stats Card */
+.stats-pomo-card {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.stats-pomo-ring-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}
+
+.stats-pomo-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.stats-pomo-track {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 8;
+}
+
+.stats-pomo-progress {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.stats-pomo-ring-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stats-pomo-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stats-pomo-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stats-pomo-meta-item .meta-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.stats-pomo-meta-item .meta-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stats-pomo-mini-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 60px;
+  flex: 1;
+  min-width: 0;
+}
+
+.pomo-mini-bar {
+  flex: 1;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(180deg, var(--primary-light), var(--primary));
+  transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 0.7;
+}
+
+.pomo-mini-bar.today {
+  opacity: 1;
+  background: linear-gradient(180deg, var(--accent-light), var(--accent));
+}
+
+/* Responsive Stats */
+@media (max-width: 768px) {
+  .stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stats-person-filter {
+    justify-content: center;
+  }
+
+  .stats-range-toggle {
+    justify-content: center;
+  }
+
+  .stats-pomo-card {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .stats-pomo-mini-bars {
+    width: 100%;
+  }
+
+  .heatmap-cell {
+    min-width: 40px;
+  }
+
+  .stats-chart-container {
+    height: 130px;
+  }
+}

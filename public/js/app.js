@@ -21,6 +21,7 @@ const App = {
         DailyView.init();
         MonthlyView.init();
         CheckinView.init();
+        StatsView.init();
         TaskModal.init();
         ICSImport.init();
         Pomodoro.init();
@@ -56,6 +57,13 @@ const App = {
         // Mobile checkin
         const mobileCheckin = document.getElementById('mobile-checkin');
         if (mobileCheckin) mobileCheckin.addEventListener('click', () => CheckinView.open());
+
+        // Stats from sidebar
+        document.getElementById('nav-stats').addEventListener('click', () => StatsView.open());
+
+        // Mobile stats
+        const mobileStats = document.getElementById('mobile-stats');
+        if (mobileStats) mobileStats.addEventListener('click', () => StatsView.open());
 
         // Mobile menu with backdrop
         document.getElementById('btn-menu').addEventListener('click', () => {
@@ -162,6 +170,7 @@ const App = {
         document.getElementById('view-daily').classList.toggle('hidden', view !== 'daily');
         document.getElementById('view-monthly').classList.toggle('hidden', view !== 'monthly');
         document.getElementById('view-checkin').classList.toggle('hidden', view !== 'checkin');
+        document.getElementById('view-stats').classList.toggle('hidden', view !== 'stats');
 
         // Show/hide today button
         document.getElementById('btn-today').classList.toggle('hidden', false);
@@ -169,6 +178,8 @@ const App = {
         // Load view
         if (view === 'daily') {
             DailyView.setDate(DailyView.currentDate);
+        } else if (view === 'stats') {
+            StatsView.load();
         } else {
             MonthlyView.syncLocalAssignee();
             MonthlyView.setMonth(MonthlyView.currentYear, MonthlyView.currentMonth);

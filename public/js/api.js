@@ -101,4 +101,14 @@ const API = {
     setGoal(data) {
         return this.request('/checkin/goal', { method: 'PUT', body: data });
     },
+
+    // Stats
+    getStats(params) {
+        const qs = new URLSearchParams(params).toString();
+        return this.request('/stats?' + qs);
+    },
+
+    addPomodoroSession(data) {
+        return this.request('/stats/pomodoro', { method: 'POST', body: data });
+    },
 };

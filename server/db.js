@@ -68,6 +68,18 @@ db.exec(`
     goal INTEGER NOT NULL DEFAULT 2000,
     UNIQUE(type, assignee)
   );
+
+  CREATE TABLE IF NOT EXISTS pomodoro_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    assignee TEXT NOT NULL CHECK(assignee IN ('潘潘', '蒲蒲')),
+    focus_minutes INTEGER NOT NULL,
+    rounds INTEGER NOT NULL DEFAULT 1,
+    task_title TEXT,
+    date TEXT NOT NULL DEFAULT (date('now', 'localtime')),
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_pomodoro_date ON pomodoro_sessions(date);
+  CREATE INDEX IF NOT EXISTS idx_pomodoro_assignee ON pomodoro_sessions(assignee);
 `);
 
 // Seed default categories if empty

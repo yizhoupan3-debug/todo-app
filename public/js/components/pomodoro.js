@@ -149,6 +149,16 @@ const Pomodoro = {
         if (this.phase === 'focus') {
             // Play notification sound
             this.playNotification();
+            // Persist this focus round to DB
+            try {
+                const assignee = (this.currentTask && this.currentTask.assignee) || '潘潘';
+                API.addPomodoroSession({
+                    assignee,
+                    focus_minutes: this.focusMin,
+                    rounds: 1,
+                    task_title: this.currentTask ? this.currentTask.title : null
+                });
+            } catch (e) { /* silent */ }
             App.showToast('🎉 专注时间结束！开始休息', 'success');
             this.startRest();
         } else if (this.phase === 'rest') {

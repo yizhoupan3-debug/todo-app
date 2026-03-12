@@ -52,6 +52,10 @@
         <span class="nav-icon">✅</span>
         <span>打卡</span>
       </button>
+      <button class="nav-btn" id="nav-stats">
+        <span class="nav-icon">📊</span>
+        <span>统计</span>
+      </button>
     </nav>
 
     <div class="sidebar-footer">
@@ -258,6 +262,103 @@
         </div>
       </div>
     </section>
+
+    <!-- Stats View -->
+    <section class="view-container hidden" id="view-stats">
+      <div class="stats-container">
+        <div class="stats-toolbar">
+          <div class="stats-person-filter">
+            <button class="filter-pill active" data-assignee="all">
+              <img class="filter-avatar" src="/img/all.png" alt=""> 全部
+            </button>
+            <button class="filter-pill" data-assignee="潘潘">
+              <img class="filter-avatar" src="/img/panpan.png" alt=""> 潘潘
+            </button>
+            <button class="filter-pill" data-assignee="蒲蒲">
+              <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
+            </button>
+          </div>
+          <div class="stats-range-toggle">
+            <button class="stats-range-btn active" data-range="week">近7天</button>
+            <button class="stats-range-btn" data-range="month">近30天</button>
+          </div>
+        </div>
+
+        <!-- Overview Cards -->
+        <div class="stats-overview">
+          <div class="stats-card overview">
+            <div class="stats-card-icon">✅</div>
+            <div class="stats-card-body">
+              <div class="stats-card-value" id="stat-total-tasks">0</div>
+              <div class="stats-card-label">完成任务</div>
+            </div>
+            <div class="stats-card-sub">日均 <span id="stat-avg-tasks">0</span></div>
+          </div>
+          <div class="stats-card overview">
+            <div class="stats-card-icon">💧</div>
+            <div class="stats-card-body">
+              <div class="stats-card-value" id="stat-total-water">0L</div>
+              <div class="stats-card-label">喝水总量</div>
+            </div>
+          </div>
+          <div class="stats-card overview">
+            <div class="stats-card-icon">⏰</div>
+            <div class="stats-card-body">
+              <div class="stats-card-value" id="stat-wakeup-days">0/7</div>
+              <div class="stats-card-label">起床打卡</div>
+            </div>
+          </div>
+          <div class="stats-card overview">
+            <div class="stats-card-icon">🍅</div>
+            <div class="stats-card-body">
+              <div class="stats-card-value" id="stat-pomo-minutes">0</div>
+              <div class="stats-card-label">专注分钟</div>
+            </div>
+            <div class="stats-card-sub">共 <span id="stat-pomo-rounds">0</span> 轮</div>
+          </div>
+        </div>
+
+        <!-- Task Completion Chart -->
+        <div class="stats-section">
+          <h3 class="stats-section-title">📋 任务完成趋势</h3>
+          <div class="stats-chart-container" id="stats-task-chart"></div>
+        </div>
+
+        <!-- Water Intake Chart -->
+        <div class="stats-section">
+          <h3 class="stats-section-title">💧 喝水趋势</h3>
+          <div class="stats-chart-container water-chart" id="stats-water-chart"></div>
+        </div>
+
+        <!-- Wakeup Heatmap -->
+        <div class="stats-section">
+          <h3 class="stats-section-title">⏰ 起床打卡记录</h3>
+          <div class="stats-heatmap" id="stats-wakeup-grid"></div>
+        </div>
+
+        <!-- Pomodoro Summary -->
+        <div class="stats-section">
+          <h3 class="stats-section-title">🍅 番茄钟专注</h3>
+          <div class="stats-pomo-card">
+            <div class="stats-pomo-ring-wrap">
+              <svg class="stats-pomo-svg" viewBox="0 0 120 120">
+                <circle class="stats-pomo-track" cx="60" cy="60" r="54" />
+                <circle class="stats-pomo-progress" id="stats-pomo-ring-progress" cx="60" cy="60" r="54" />
+              </svg>
+              <div class="stats-pomo-ring-text" id="stats-pomo-ring-text">0min</div>
+            </div>
+            <div class="stats-pomo-meta">
+              <div class="stats-pomo-meta-item">
+                <span class="meta-label">活跃天数</span>
+                <span class="meta-value" id="stats-pomo-active-days">0</span>
+              </div>
+            </div>
+            <div class="stats-pomo-mini-bars" id="stats-pomo-bars"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
   </main>
 
   <!-- Bottom Nav (Mobile) -->
@@ -281,8 +382,12 @@
       <span class="nav-icon">✅</span>
       <span>打卡</span>
     </button>
+    <button class="bottom-nav-btn" id="mobile-stats">
+      <span class="nav-icon">📊</span>
+      <span>统计</span>
+    </button>
     <button class="bottom-nav-btn" id="mobile-theme-toggle">
-      <span class="nav-icon" id="mobile-theme-icon">�</span>
+      <span class="nav-icon" id="mobile-theme-icon"></span>
       <span>主题</span>
     </button>
   </nav>
@@ -488,6 +593,7 @@
   <script src="/js/views/daily.js"></script>
   <script src="/js/views/monthly.js"></script>
   <script src="/js/views/checkin.js"></script>
+  <script src="/js/views/stats.js"></script>
   <script src="/js/components/task-modal.js"></script>
   <script src="/js/components/ics-import.js"></script>
   <script src="/js/components/pomodoro.js"></script>
