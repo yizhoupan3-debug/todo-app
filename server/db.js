@@ -49,6 +49,17 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
   CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
   CREATE INDEX IF NOT EXISTS idx_tasks_recurring_parent ON tasks(recurring_parent_id);
+
+  CREATE TABLE IF NOT EXISTS checkin_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL DEFAULT 'water',
+    amount INTEGER NOT NULL,
+    assignee TEXT NOT NULL CHECK(assignee IN ('潘潘', '蒲蒲')),
+    date TEXT NOT NULL DEFAULT (date('now', 'localtime')),
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_checkin_date ON checkin_records(date);
+  CREATE INDEX IF NOT EXISTS idx_checkin_assignee ON checkin_records(assignee);
 `);
 
 // Seed default categories if empty

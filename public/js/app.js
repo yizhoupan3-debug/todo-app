@@ -20,6 +20,7 @@ const App = {
         // Init modules
         DailyView.init();
         MonthlyView.init();
+        CheckinView.init();
         TaskModal.init();
         ICSImport.init();
         Pomodoro.init();
@@ -45,9 +46,16 @@ const App = {
         // Pomodoro from sidebar
         document.getElementById('nav-pomodoro').addEventListener('click', () => Pomodoro.open());
 
+        // Checkin from sidebar
+        document.getElementById('nav-checkin').addEventListener('click', () => CheckinView.open());
+
         // Mobile pomodoro
         const mobilePomodoro = document.getElementById('mobile-pomodoro');
         if (mobilePomodoro) mobilePomodoro.addEventListener('click', () => Pomodoro.open());
+
+        // Mobile checkin
+        const mobileCheckin = document.getElementById('mobile-checkin');
+        if (mobileCheckin) mobileCheckin.addEventListener('click', () => CheckinView.open());
 
         // Mobile menu with backdrop
         document.getElementById('btn-menu').addEventListener('click', () => {

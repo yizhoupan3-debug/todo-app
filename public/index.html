@@ -46,6 +46,10 @@
         <img class="nav-icon-img" src="/img/pomodoro.png" alt="">
         <span>番茄钟</span>
       </button>
+      <button class="nav-btn" id="nav-checkin">
+        <span class="nav-icon">💧</span>
+        <span>打卡</span>
+      </button>
     </nav>
 
     <div class="sidebar-footer">
@@ -135,6 +139,58 @@
         </div>
       </div>
       <div class="calendar-grid" id="calendar-grid"></div>
+    </section>
+
+    <!-- Checkin View -->
+    <section class="view-container hidden" id="view-checkin">
+      <div class="checkin-container">
+        <div class="checkin-person-toggle">
+          <button class="checkin-person-btn active" data-assignee="潘潘">
+            <img class="filter-avatar" src="/img/panpan.png" alt=""> 潘潘
+          </button>
+          <button class="checkin-person-btn" data-assignee="蒲蒲">
+            <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
+          </button>
+        </div>
+
+        <div class="water-tracker">
+          <div class="glass-section">
+            <div class="glass-container" id="glass-container">
+              <div class="glass-body">
+                <div class="glass-water" id="glass-water"></div>
+                <div class="glass-bubbles">
+                  <span class="bubble"></span>
+                  <span class="bubble"></span>
+                  <span class="bubble"></span>
+                </div>
+              </div>
+              <div class="glass-base"></div>
+            </div>
+            <div class="water-stats">
+              <div class="water-amount"><span id="water-amount-text">0</span>ml</div>
+              <div class="water-goal">/ <span id="water-goal-text">2000</span>ml</div>
+              <div class="water-progress-label" id="water-progress-label">还差 2000ml</div>
+            </div>
+          </div>
+
+          <div class="water-controls">
+            <h4>加水</h4>
+            <div class="water-quick-buttons">
+              <button class="water-quick-btn" data-amount="100">100ml</button>
+              <button class="water-quick-btn" data-amount="500">500ml</button>
+              <button class="water-quick-btn" data-amount="1000">1000ml</button>
+            </div>
+            <div class="water-custom">
+              <input type="number" id="water-custom-input" placeholder="自定义ml" min="1" max="5000">
+              <button class="water-custom-add-btn" id="water-custom-add">+</button>
+            </div>
+            <div class="water-log" id="water-log">
+              <div class="water-log-empty">今天还没有喝水记录 💧</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- Bottom Nav (Mobile) -->
@@ -153,6 +209,10 @@
     <button class="bottom-nav-btn" id="mobile-pomodoro">
       <span class="nav-icon"><img class="nav-icon-img" src="/img/pomodoro.png" alt=""></span>
       <span>番茄钟</span>
+    </button>
+    <button class="bottom-nav-btn" id="mobile-checkin">
+      <span class="nav-icon">💧</span>
+      <span>打卡</span>
     </button>
     <button class="bottom-nav-btn" id="mobile-theme-toggle">
       <span class="nav-icon" id="mobile-theme-icon">🌙</span>
@@ -360,6 +420,7 @@
   <script src="/js/api.js"></script>
   <script src="/js/views/daily.js"></script>
   <script src="/js/views/monthly.js"></script>
+  <script src="/js/views/checkin.js"></script>
   <script src="/js/components/task-modal.js"></script>
   <script src="/js/components/ics-import.js"></script>
   <script src="/js/components/pomodoro.js"></script>

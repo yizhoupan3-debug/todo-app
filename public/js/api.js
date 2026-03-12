@@ -78,4 +78,18 @@ const API = {
         const qs = new URLSearchParams(params).toString();
         return this.request('/tasks/clear-done?' + qs, { method: 'DELETE' });
     },
+
+    // Check-in
+    getCheckin(params) {
+        const qs = new URLSearchParams(params).toString();
+        return this.request('/checkin?' + qs);
+    },
+
+    addCheckin(data) {
+        return this.request('/checkin', { method: 'POST', body: data });
+    },
+
+    deleteCheckin(id) {
+        return this.request('/checkin/' + id, { method: 'DELETE' });
+    },
 };

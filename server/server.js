@@ -18,10 +18,12 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 const tasksRouter = require('./routes/tasks');
 const categoriesRouter = require('./routes/categories');
 const importRouter = require('./routes/import');
+const checkinRouter = require('./routes/checkin');
 
 app.use('/api/tasks', tasksRouter);
 app.use('/api/categories', categoriesRouter);
 app.use('/api/import', importRouter);
+app.use('/api/checkin', checkinRouter);
 
 // Socket.io for real-time sync
 io.on('connection', (socket) => {
