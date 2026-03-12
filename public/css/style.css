@@ -195,6 +195,62 @@ textarea:focus {
   color: var(--text);
 }
 
+/* Love Counter */
+.love-counter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 12px;
+  margin: 0 12px 8px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.12), rgba(244, 114, 182, 0.08));
+  border: 1px solid rgba(236, 72, 153, 0.2);
+  animation: loveGlow 3s ease-in-out infinite;
+}
+
+@keyframes loveGlow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(236, 72, 153, 0.1);
+  }
+
+  50% {
+    box-shadow: 0 0 16px rgba(236, 72, 153, 0.2);
+  }
+}
+
+.love-heart {
+  font-size: 1rem;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+.love-text {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.love-days {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ec4899;
+  font-variant-numeric: tabular-nums;
+}
+
 .person-btn.active {
   background: linear-gradient(135deg, var(--primary), var(--primary-light));
   color: var(--text-on-primary);

@@ -35,6 +35,9 @@ const App = {
         // Date navigation
         this.bindDateNav();
 
+        // Love counter (在一起天数)
+        this.initLoveCounter();
+
         // Add task buttons
         document.getElementById('btn-add-task').addEventListener('click', () => TaskModal.openCreate());
         document.getElementById('fab-add').addEventListener('click', () => TaskModal.openCreate());
@@ -244,6 +247,17 @@ const App = {
     },
 
     // ===== Utilities =====
+    initLoveCounter() {
+        const startDate = new Date(2024, 3, 1); // 2024年4月1日 (月份从0开始)
+        const update = () => {
+            const now = new Date();
+            const diff = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
+            document.getElementById('love-days').textContent = diff;
+        };
+        update();
+        setInterval(update, 60000); // 每分钟更新
+    },
+
     closeSidebar() {
         document.getElementById('sidebar').classList.remove('open');
         const backdrop = document.getElementById('sidebar-backdrop');
