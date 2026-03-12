@@ -2,19 +2,24 @@
  * App — main application controller.
  */
 const App = {
-    currentView: 'daily', // 'daily' | 'monthly'
+    currentView: 'daily', // 'daily' | 'monthly' | 'checkin' | 'stats' | 'garden' | 'shop'
     currentAssignee: 'all', // 'all' | '潘潘' | '蒲蒲'
     socket: null,
+    _refreshTimer: null, // Socket debounce timer
 
     init() {
-        // Init Socket.io
+        // Init Socket.io with debounced refresh
         this.socket = io();
-        this.socket.on('task:created', () => this.refreshCurrentView());
-        this.socket.on('task:updated', () => this.refreshCurrentView());
-        this.socket.on('task:deleted', () => this.refreshCurrentView());
+        const debouncedRefresh = () => {
+            clearTimeout(this._refreshTimer);
+            this._refreshTimer = setTimeout(() => this.refreshCurrentView(), 300);
+        };
+        this.socket.on('task:created', debouncedRefresh);
+        this.socket.on('task:updated', debouncedRefresh);
+        this.socket.on('task:deleted', debouncedRefresh);
         this.socket.on('task:imported', (data) => {
             this.showToast(`📥 另一设备导入了 ${data.count} 个任务`, 'info');
-            this.refreshCurrentView();
+            debouncedRefresh();
         });
 
         // Init modules
@@ -64,7 +69,7 @@ const App = {
         document.getElementById('nav-pomodoro').addEventListener('click', () => Pomodoro.open());
 
         // Checkin from sidebar
-        document.getElementById('nav-checkin').addEventListener('click', () => CheckinView.open());
+        document.getElementById('nav-checkin').addEventListener('click', () => this.switchView('checkin'));
 
         // Garden from sidebar
         document.getElementById('nav-garden').addEventListener('click', () => this.switchView('garden'));
@@ -86,14 +91,14 @@ const App = {
 
         // Mobile checkin
         const mobileCheckin = document.getElementById('mobile-checkin');
-        if (mobileCheckin) mobileCheckin.addEventListener('click', () => CheckinView.open());
+        if (mobileCheckin) mobileCheckin.addEventListener('click', () => this.switchView('checkin'));
 
         // Stats from sidebar
-        document.getElementById('nav-stats').addEventListener('click', () => StatsView.open());
+        document.getElementById('nav-stats').addEventListener('click', () => this.switchView('stats'));
 
         // Mobile stats
         const mobileStats = document.getElementById('mobile-stats');
-        if (mobileStats) mobileStats.addEventListener('click', () => StatsView.open());
+        if (mobileStats) mobileStats.addEventListener('click', () => this.switchView('stats'));
 
         // Mobile menu with backdrop
         document.getElementById('btn-menu').addEventListener('click', () => {
@@ -228,11 +233,19 @@ const App = {
     switchView(view) {
         this.currentView = view;
 
-        // Update nav active states
+        // Update desktop nav active states
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+        // Stats/checkin sidebar buttons
+        document.getElementById('nav-stats')?.classList.toggle('active', view === 'stats');
+        document.getElementById('nav-checkin')?.classList.toggle('active', view === 'checkin');
+        // Mobile bottom nav
         document.querySelectorAll('.bottom-nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+        const mobileStats = document.getElementById('mobile-stats');
+        if (mobileStats) mobileStats.classList.toggle('active', view === 'stats');
+        const mobileCheckin = document.getElementById('mobile-checkin');
+        if (mobileCheckin) mobileCheckin.classList.toggle('active', view === 'checkin');
 
-        // Show/hide views
+        // Show/hide view containers
         document.getElementById('view-daily').classList.toggle('hidden', view !== 'daily');
         document.getElementById('view-monthly').classList.toggle('hidden', view !== 'monthly');
         document.getElementById('view-checkin').classList.toggle('hidden', view !== 'checkin');
@@ -240,21 +253,45 @@ const App = {
         document.getElementById('view-garden').classList.toggle('hidden', view !== 'garden');
         document.getElementById('view-shop').classList.toggle('hidden', view !== 'shop');
 
-        // Show/hide today button
-        document.getElementById('btn-today').classList.toggle('hidden', false);
+        // Show/hide date navigation (only for daily/monthly)
+        const showDateNav = (view === 'daily' || view === 'monthly');
+        document.getElementById('date-nav').style.display = showDateNav ? '' : 'none';
 
-        // Load view
-        if (view === 'daily') {
-            DailyView.setDate(DailyView.currentDate);
-        } else if (view === 'stats') {
-            StatsView.load();
-        } else if (view === 'garden') {
-            GardenView.open();
-        } else if (view === 'shop') {
-            GardenView.openShop();
-        } else {
-            MonthlyView.syncLocalAssignee();
-            MonthlyView.setMonth(MonthlyView.currentYear, MonthlyView.currentMonth);
+        // Update header title
+        const titles = {
+            daily: '今日任务', monthly: '月度总览',
+            checkin: '打卡', stats: '统计',
+            garden: '花园', shop: '商城'
+        };
+        document.getElementById('header-title').textContent = titles[view] || '峡谷讨伐日记';
+
+        // Close sidebar on mobile after switching
+        this.closeSidebar();
+
+        // Refresh header coin balance
+        this._refreshHeaderCoins();
+
+        // Load view data
+        switch (view) {
+            case 'daily':
+                DailyView.setDate(DailyView.currentDate);
+                break;
+            case 'monthly':
+                MonthlyView.syncLocalAssignee();
+                MonthlyView.setMonth(MonthlyView.currentYear, MonthlyView.currentMonth);
+                break;
+            case 'checkin':
+                CheckinView.showLanding();
+                break;
+            case 'stats':
+                StatsView.load();
+                break;
+            case 'garden':
+                GardenView.open();
+                break;
+            case 'shop':
+                GardenView.openShop();
+                break;
         }
     },
 
@@ -328,11 +365,23 @@ const App = {
     },
 
     refreshCurrentView() {
-        if (this.currentView === 'daily') {
-            DailyView.refresh();
-        } else {
-            MonthlyView.refresh();
+        switch (this.currentView) {
+            case 'daily': DailyView.refresh(); break;
+            case 'monthly': MonthlyView.refresh(); break;
+            case 'stats': StatsView.load(); break;
+            case 'checkin': CheckinView._reloadCurrentPage(); break;
+            case 'garden': GardenView.open(); break;
+            case 'shop': GardenView.openShop(); break;
         }
+        // Also refresh header coins
+        this._refreshHeaderCoins();
+    },
+
+    _refreshHeaderCoins() {
+        API.getCoins('潘潘').then(d => {
+            const el = document.getElementById('header-coins');
+            if (el) el.textContent = d.balance;
+        }).catch(() => { });
     },
 
     showToast(message, type = 'info') {

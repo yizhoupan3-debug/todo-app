@@ -13,6 +13,7 @@ const MonthlyView = {
     visibleMonth: null,
     observer: null,
     loadingMore: false,
+    _loadId: 0,            // Race condition guard
     renderedMonths: [],    // ['2026-02', '2026-03', '2026-04']
 
     init() {
@@ -105,6 +106,7 @@ const MonthlyView = {
 
     async fullReload() {
         const grid = document.getElementById('calendar-grid');
+        const loadId = ++this._loadId;
         this.renderedMonths = [];
         this.monthTasks = {};
         grid.innerHTML = '';
@@ -115,6 +117,9 @@ const MonthlyView = {
         // Load and render 3 months: prev, current, next
         const months = this._getSurroundingMonths(this.currentYear, this.currentMonth);
         await Promise.all(months.map(([y, m]) => this._loadMonthTasks(y, m)));
+
+        // Discard stale response
+        if (loadId !== this._loadId) return;
 
         // Render sticky weekday header
         const weekdays = ['一', '二', '三', '四', '五', '六', '日'];

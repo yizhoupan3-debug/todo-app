@@ -40,19 +40,11 @@ const StatsView = {
     },
 
     open() {
-        document.querySelectorAll('.view-container').forEach(v => v.classList.add('hidden'));
-        document.getElementById('view-stats').classList.remove('hidden');
-
-        document.getElementById('header-title').textContent = '统计';
-        document.getElementById('date-nav').style.display = 'none';
-
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('nav-stats').classList.add('active');
-        document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
-        const mobileStats = document.getElementById('mobile-stats');
-        if (mobileStats) mobileStats.classList.add('active');
-
-        App.currentView = 'stats';
+        // Delegate to unified switchView to ensure consistent state
+        if (App.currentView !== 'stats') {
+            App.switchView('stats');
+            return;
+        }
         this.load();
     },
 

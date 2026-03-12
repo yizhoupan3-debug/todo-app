@@ -81,17 +81,11 @@ const CheckinView = {
     },
 
     open() {
-        document.querySelectorAll('.view-container').forEach(v => v.classList.add('hidden'));
-        document.getElementById('view-checkin').classList.remove('hidden');
-
-        document.getElementById('header-title').textContent = '打卡';
-        document.getElementById('date-nav').style.display = 'none';
-
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('nav-checkin').classList.add('active');
-        document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
-
-        App.currentView = 'checkin';
+        // Delegate to unified switchView to ensure consistent state
+        if (App.currentView !== 'checkin') {
+            App.switchView('checkin');
+            return;
+        }
         this.showLanding();
     },
 
@@ -294,28 +288,32 @@ const CheckinView = {
             days.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
         }
 
+        // Parallel fetch all 7 days for speed
+        const results = await Promise.allSettled(
+            days.map(date => API.getCheckin({
+                date, assignee: this.currentAssignee, type: 'wakeup'
+            }).then(data => ({ date, data })))
+        );
+
+        const weekday = ['日', '一', '二', '三', '四', '五', '六'];
         let html = '';
-        for (const date of days) {
-            try {
-                const data = await API.getCheckin({
-                    date, assignee: this.currentAssignee, type: 'wakeup'
-                });
-                const weekday = ['日', '一', '二', '三', '四', '五', '六'];
-                const d = new Date(date);
-                const dayLabel = `${date.slice(5)} 周${weekday[d.getDay()]}`;
-                if (data.records.length > 0) {
-                    const time = data.records[0].created_at?.split(' ')[1]?.slice(0, 5) || '';
-                    html += `<div class="wakeup-log-item">
-                        <span class="wakeup-log-date">${dayLabel}</span>
-                        <span class="wakeup-log-time checked">⏰ ${time}</span>
-                    </div>`;
-                } else {
-                    html += `<div class="wakeup-log-item">
-                        <span class="wakeup-log-date">${dayLabel}</span>
-                        <span class="wakeup-log-time missed">未打卡</span>
-                    </div>`;
-                }
-            } catch (err) { /* skip */ }
+        for (const result of results) {
+            if (result.status !== 'fulfilled') continue;
+            const { date, data } = result.value;
+            const d = new Date(date);
+            const dayLabel = `${date.slice(5)} 周${weekday[d.getDay()]}`;
+            if (data.records.length > 0) {
+                const time = data.records[0].created_at?.split(' ')[1]?.slice(0, 5) || '';
+                html += `<div class="wakeup-log-item">
+                    <span class="wakeup-log-date">${dayLabel}</span>
+                    <span class="wakeup-log-time checked">⏰ ${time}</span>
+                </div>`;
+            } else {
+                html += `<div class="wakeup-log-item">
+                    <span class="wakeup-log-date">${dayLabel}</span>
+                    <span class="wakeup-log-time missed">未打卡</span>
+                </div>`;
+            }
         }
         logEl.innerHTML = html || '<div class="water-log-empty">暂无记录</div>';
     },

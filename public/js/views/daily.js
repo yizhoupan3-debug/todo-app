@@ -4,6 +4,7 @@
 const DailyView = {
     currentDate: new Date(),
     tasks: [],
+    _loadId: 0, // Race condition guard
 
     init() {
         this.setDate(new Date());
@@ -64,14 +65,19 @@ const DailyView = {
 
     async loadTasks() {
         const dateStr = this.formatDate(this.currentDate);
+        const loadId = ++this._loadId;
         try {
             const assignee = App.currentAssignee;
             const params = { date: dateStr };
             if (assignee !== 'all') params.assignee = assignee;
 
-            this.tasks = await API.getTasks(params);
+            const tasks = await API.getTasks(params);
+            // Discard stale response if another load was triggered
+            if (loadId !== this._loadId) return;
+            this.tasks = tasks;
             this.render();
         } catch (err) {
+            if (loadId !== this._loadId) return;
             App.showToast('加载失败: ' + err.message, 'error');
         }
     },

@@ -276,7 +276,10 @@ const GardenView = {
 
     updateHeaderCoins() {
         const el = document.getElementById('header-coins');
-        if (el) el.textContent = this.shopBalance || this.balance;
+        if (!el) return;
+        // Use shopBalance when in shop view, otherwise garden balance
+        const bal = App.currentView === 'shop' ? this.shopBalance : this.balance;
+        el.textContent = bal;
     },
 
     async earnFromPomodoro(assignee, focusMinutes) {
