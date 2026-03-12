@@ -14,7 +14,9 @@ const io = new Server(server, {
     cors: {
         origin: process.env.ALLOWED_ORIGINS
             ? process.env.ALLOWED_ORIGINS.split(',')
-            : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+            : (process.env.NODE_ENV === 'production'
+                ? true   // Allow same-origin in production when no explicit list
+                : ['http://localhost:3000', 'http://127.0.0.1:3000']),
     }
 });
 

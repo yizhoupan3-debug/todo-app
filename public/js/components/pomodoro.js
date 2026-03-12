@@ -158,7 +158,9 @@ const Pomodoro = {
                     rounds: 1,
                     task_title: this.currentTask ? this.currentTask.title : null
                 });
-            } catch (e) { /* silent */ }
+            } catch (e) {
+                console.error('Pomodoro save error:', e);
+            }
             App.showToast('🎉 专注时间结束！开始休息', 'success');
             // Earn coins
             GardenView.earnFromPomodoro(
@@ -217,6 +219,8 @@ const Pomodoro = {
             if (Notification.permission === 'granted') {
                 new Notification('🍅 番茄钟', { body: this.phase === 'focus' ? '专注时间结束！' : '休息结束！' });
             }
-        } catch (e) { /* silent fail */ }
+        } catch (e) {
+            console.error('Pomodoro session save error:', e);
+        }
     }
 };

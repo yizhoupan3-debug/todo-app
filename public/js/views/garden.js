@@ -720,6 +720,8 @@ const GardenView = {
             if (assignee === this.shopAssignee) this.shopBalance = result.balance;
             this.updateHeaderCoins();
             App.showToast(`+${amount} 喵喵币！`, 'success');
-        } catch (e) { /* silent */ }
+        } catch (e) {
+            App.showToast('打卡奖励获取失败', 'error');
+        }
     },
 };
