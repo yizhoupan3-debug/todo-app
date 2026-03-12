@@ -191,7 +191,7 @@ const DailyView = {
         <div class="task-card-header">
           <div class="task-checkbox ${isDone ? 'checked' : ''}"></div>
           <div class="task-card-title">${this.escapeHtml(task.title)}</div>
-          ${!isDone ? '<button class="task-pomodoro-btn" title="番茄钟"><img src="/img/pomodoro.png" alt="" class="pomodoro-icon"></button>' : ''}
+          ${!isDone ? '<button class="task-pomodoro-btn" title="番茄钟"><i data-lucide="timer" class="pomodoro-icon"></i></button>' : ''}
         </div>
         ${metaTags ? `<div class="task-card-meta">${metaTags}</div>` : ''}
       </div>
