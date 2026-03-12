@@ -1,208 +1,364 @@
-/**
- * Garden View — 花园 + 喵喵币
- * Shop View — 商城 (standalone sidebar view)
- */
+/* ── Garden & Shop View ── */
 const GardenView = {
-    assignee: '潘潘',
-    balance: 0,
+    plots: [],
     trees: [],
+    balance: 0,
+    shopBalance: 0,
+    assignee: '潘潘',
+    shopAssignee: '潘潘',
+    selectedTree: null, // for planting
 
-    // Tree catalog (frontend-defined)
+    // Tree catalog with 4 stage images
     catalog: [
-        { type: 'sprout', icon: '🌱', img: '/img/trees/sprout.svg', name: '小草', cost: 0, desc: '万物起始' },
-        { type: 'sunflower', icon: '🌻', img: '/img/trees/sunflower.svg', name: '向日葵', cost: 10, desc: '追逐阳光' },
-        { type: 'tulip', icon: '🌷', img: '/img/trees/tulip.svg', name: '郁金香', cost: 20, desc: '优雅绽放' },
-        { type: 'sakura', icon: '🌸', img: '/img/trees/sakura.svg', name: '樱花树', cost: 30, desc: '浪漫满开' },
-        { type: 'pine', icon: '🌲', img: '/img/trees/pine.svg', name: '松树', cost: 50, desc: '四季常青' },
-        { type: 'oak', icon: '🌳', img: '/img/trees/oak.svg', name: '落叶树', cost: 50, desc: '枝繁叶茂' },
-        { type: 'palm', icon: '🌴', img: '/img/trees/palm.svg', name: '棕榈树', cost: 80, desc: '热带风情' },
-        { type: 'christmas', icon: '🎄', img: '/img/trees/christmas.svg', name: '圣诞树', cost: 80, desc: '节日快乐' },
-        { type: 'cactus', icon: '🌵', img: '/img/trees/cactus.svg', name: '仙人掌', cost: 100, desc: '沙漠之花' },
-        { type: 'rose', icon: '🌹', img: '/img/trees/rose.svg', name: '玫瑰', cost: 100, desc: '爱的承诺' },
-        { type: 'clover', icon: '🍀', img: '/img/trees/clover.svg', name: '四叶草', cost: 150, desc: '幸运降临' },
-        { type: 'lavender', icon: '🪻', img: '/img/trees/lavender.svg', name: '彩虹花', cost: 200, desc: '传说之花' },
+        {
+            type: 'sprout', icon: '🌱', name: '小草', cost: 0, desc: '万物起始',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/sprout_growing.svg', mature: '/img/trees/sprout.svg' }
+        },
+        {
+            type: 'sunflower', icon: '🌻', name: '向日葵', cost: 10, desc: '追逐阳光',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/sunflower_growing.svg', mature: '/img/trees/sunflower.svg' }
+        },
+        {
+            type: 'tulip', icon: '🌷', name: '郁金香', cost: 20, desc: '优雅绽放',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/tulip_growing.svg', mature: '/img/trees/tulip.svg' }
+        },
+        {
+            type: 'sakura', icon: '🌸', name: '樱花树', cost: 30, desc: '浪漫满开',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/sakura_growing.svg', mature: '/img/trees/sakura.svg' }
+        },
+        {
+            type: 'pine', icon: '🌲', name: '松树', cost: 50, desc: '四季常青',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/pine_growing.svg', mature: '/img/trees/pine.svg' }
+        },
+        {
+            type: 'oak', icon: '🌳', name: '落叶树', cost: 50, desc: '枝繁叶茂',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/oak_growing.svg', mature: '/img/trees/oak.svg' }
+        },
+        {
+            type: 'palm', icon: '🌴', name: '棕榈树', cost: 80, desc: '热带风情',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/palm_growing.svg', mature: '/img/trees/palm.svg' }
+        },
+        {
+            type: 'christmas', icon: '🎄', name: '圣诞树', cost: 80, desc: '节日快乐',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/christmas_growing.svg', mature: '/img/trees/christmas.svg' }
+        },
+        {
+            type: 'cactus', icon: '🌵', name: '仙人掌', cost: 100, desc: '沙漠之花',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/cactus_growing.svg', mature: '/img/trees/cactus.svg' }
+        },
+        {
+            type: 'rose', icon: '🌹', name: '玫瑰', cost: 100, desc: '爱的承诺',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/rose_growing.svg', mature: '/img/trees/rose.svg' }
+        },
+        {
+            type: 'clover', icon: '🍀', name: '四叶草', cost: 150, desc: '幸运降临',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/clover_growing.svg', mature: '/img/trees/clover.svg' }
+        },
+        {
+            type: 'lavender', icon: '🪻', name: '彩虹花', cost: 200, desc: '传说之花',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/lavender_growing.svg', mature: '/img/trees/lavender.svg' }
+        },
     ],
+
+    obstacleMap: {
+        rock: { img: '/img/trees/obstacle_rock.svg', name: '石头', cost: 10 },
+        weed: { img: '/img/trees/obstacle_weed.svg', name: '杂草', cost: 5 },
+        wild_tree: { img: '/img/trees/obstacle_wild_tree.svg', name: '野树', cost: 15 },
+    },
 
     init() { },
 
-    // ======= GARDEN VIEW =======
+    getGrowthStage(minutes) {
+        if (minutes >= 150) return 'mature';
+        if (minutes >= 75) return 'growing';
+        if (minutes >= 25) return 'sprout';
+        return 'seed';
+    },
+
+    getGrowthLabel(minutes) {
+        if (minutes >= 150) return '成熟';
+        if (minutes >= 75) return '成长中';
+        if (minutes >= 25) return '发芽';
+        return '种子';
+    },
+
+    /* ═══════════════════════════════
+       GARDEN VIEW (6×4 Island Grid)
+       ═══════════════════════════════ */
     async open() {
-        await this.loadData();
-        this.renderGarden();
-    },
+        const el = document.getElementById('view-garden');
+        if (!el) return;
 
-    async loadData() {
+        // Load balance
         try {
-            const [coinsData, treesData] = await Promise.all([
-                API.getCoins(this.assignee),
-                API.getGardenTrees(this.assignee),
-            ]);
-            this.balance = coinsData.balance;
-            this.trees = treesData;
+            const { balance } = await API.getCoins(this.assignee);
+            this.balance = balance;
+        } catch (e) { }
+
+        // Load plots
+        try {
+            this.plots = await API.getPlots(this.assignee);
         } catch (e) {
-            console.error('Garden load error:', e);
+            this.plots = [];
         }
+
+        this.selectedTree = null;
+        this.render();
     },
 
-    renderGarden() {
-        const container = document.getElementById('view-garden');
-        if (!container) return;
+    render() {
+        const el = document.getElementById('view-garden');
+        if (!el) return;
 
-        container.innerHTML = `
+        const clearedCount = this.plots.filter(p => p.status !== 'wasteland').length;
+        const plantedCount = this.plots.filter(p => p.status === 'planted').length;
+        const typesCollected = new Set(this.plots.filter(p => p.tree_type).map(p => p.tree_type)).size;
+
+        el.innerHTML = `
             <div class="garden-header">
-                <div class="garden-coin-display">
-                    <span class="coin-icon">🪙</span>
-                    <span class="coin-balance" id="garden-balance">${this.balance}</span>
-                    <span class="coin-label">喵喵币</span>
+                <div class="garden-balance">
+                    <img src="/img/icons/潘潘.png" alt="" style="width:28px;height:28px;border-radius:50%;margin-right:6px">
+                    <strong>${this.balance}</strong> 喵喵币
                 </div>
-                <button class="garden-btn" id="btn-garden-history">📊 记录</button>
+                <div class="filter-pills">
+                    <button class="filter-pill ${this.assignee === '潘潘' ? 'active' : ''}" data-person="潘潘">
+                        <img src="/img/icons/潘潘.png" alt="" style="width:18px;height:18px;border-radius:50%"> 潘潘
+                    </button>
+                    <button class="filter-pill ${this.assignee === '蒲蒲' ? 'active' : ''}" data-person="蒲蒲">
+                        <img src="/img/icons/蒲蒲.png" alt="" style="width:18px;height:18px;border-radius:50%"> 蒲蒲
+                    </button>
+                </div>
+                <button class="btn-history" id="garden-history-btn">📊 记录</button>
             </div>
-
-            <div class="garden-person-filter">
-                <button class="filter-pill ${this.assignee === '潘潘' ? 'active' : ''}" data-assignee="潘潘">
-                    <img class="filter-avatar" src="/img/panpan.png" alt=""> 潘潘
-                </button>
-                <button class="filter-pill ${this.assignee === '蒲蒲' ? 'active' : ''}" data-assignee="蒲蒲">
-                    <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
-                </button>
+            <div class="island-container">
+                <div class="island-grid">
+                    ${this.renderGrid()}
+                </div>
             </div>
-
-            <div class="garden-canvas" id="garden-canvas">
-                <div class="garden-ground"></div>
-                ${this.trees.length === 0 ? `
-                    <div class="garden-empty">
-                        <div class="garden-empty-icon">🌱</div>
-                        <div class="garden-empty-text">花园还是空的</div>
-                        <div class="garden-empty-sub">完成番茄钟赚取喵喵币，去商城种一棵树吧！</div>
-                    </div>
-                ` : this.renderTrees()}
-            </div>
-
+            ${this.selectedTree ? this.renderPlantingToolbar() : ''}
             <div class="garden-stats">
-                <div class="garden-stat">
-                    <span class="garden-stat-num">${this.trees.length}</span>
-                    <span class="garden-stat-label">已种植物</span>
-                </div>
-                <div class="garden-stat">
-                    <span class="garden-stat-num">${new Set(this.trees.map(t => t.tree_type)).size}</span>
-                    <span class="garden-stat-label">种类收集</span>
-                </div>
-                <div class="garden-stat">
-                    <span class="garden-stat-num">${this.catalog.length}</span>
-                    <span class="garden-stat-label">图鉴总数</span>
-                </div>
-            </div>
-
-            <!-- History Modal -->
-            <div class="garden-history hidden" id="garden-history">
-                <div class="garden-shop-header">
-                    <h3>📊 喵喵币记录</h3>
-                    <button class="garden-shop-close" id="garden-history-close">×</button>
-                </div>
-                <div class="garden-history-list" id="garden-history-list">
-                    <div class="garden-empty-text">加载中...</div>
-                </div>
+                <div class="garden-stat"><div class="garden-stat-num">${plantedCount}</div><div>已种植物</div></div>
+                <div class="garden-stat"><div class="garden-stat-num">${typesCollected}</div><div>种类收集</div></div>
+                <div class="garden-stat"><div class="garden-stat-num">${clearedCount}</div><div>已开垦</div></div>
             </div>
         `;
 
         this.bindGardenEvents();
     },
 
-    // Growth stages based on minutes
-    // Stage 0: seed     (0 min)   — tiny, just planted
-    // Stage 1: sprout   (25 min)  — small
-    // Stage 2: growing  (75 min)  — medium, swaying
-    // Stage 3: mature   (150 min) — full size, glow
-    getGrowthStage(minutes) {
-        if (minutes >= 150) return { stage: 'mature', label: '成熟', pct: 100 };
-        if (minutes >= 75) return { stage: 'growing', label: '成长中', pct: Math.round(minutes / 150 * 100) };
-        if (minutes >= 25) return { stage: 'sprout', label: '发芽', pct: Math.round(minutes / 150 * 100) };
-        return { stage: 'seed', label: '种子', pct: Math.round(minutes / 150 * 100) };
-    },
-
-    renderTrees() {
-        return this.trees.map((tree, i) => {
-            const catItem = this.catalog.find(c => c.type === tree.tree_type);
-            const icon = catItem ? catItem.img : '/img/trees/sprout.svg';
-            const x = tree.position_x || (10 + (i % 8) * 11);
-            const y = tree.position_y || (20 + Math.floor(i / 8) * 15);
-            const gm = tree.growth_minutes || 0;
-            const { stage, label, pct } = this.getGrowthStage(gm);
-            return `
-                <div class="garden-tree stage-${stage}"
-                     style="left:${x}%;top:${y}%"
-                     title="${catItem ? catItem.name : tree.tree_type} · ${label} (${gm}分钟)">
-                    <img class="garden-tree-img" src="${icon}" alt="${catItem ? catItem.name : ''}">
-                    <div class="tree-growth-bar"><div class="tree-growth-fill" style="width:${pct}%"></div></div>
-                </div>
-            `;
+    renderGrid() {
+        return this.plots.map(plot => {
+            if (plot.status === 'wasteland') {
+                return this.renderWastelandPlot(plot);
+            } else if (plot.status === 'cleared') {
+                return this.renderClearedPlot(plot);
+            } else {
+                return this.renderPlantedPlot(plot);
+            }
         }).join('');
     },
 
+    renderWastelandPlot(plot) {
+        const obs = this.obstacleMap[plot.obstacle_type] || this.obstacleMap.rock;
+        return `
+            <div class="island-plot wasteland" data-plot-id="${plot.id}" title="${obs.name} · 开荒 ${obs.cost}🪙">
+                <img class="plot-obstacle" src="${obs.img}" alt="${obs.name}">
+                <div class="plot-clear-cost">⛏️ ${obs.cost}</div>
+            </div>
+        `;
+    },
+
+    renderClearedPlot(plot) {
+        const isSelected = this.selectedTree;
+        return `
+            <div class="island-plot cleared ${isSelected ? 'plantable' : ''}" data-plot-id="${plot.id}" title="空地 · ${isSelected ? '点击种植' : '在商城选树'}">
+                ${isSelected ? '<div class="plot-plant-hint">🌱</div>' : '<div class="plot-empty-hint">空</div>'}
+            </div>
+        `;
+    },
+
+    renderPlantedPlot(plot) {
+        const catItem = this.catalog.find(c => c.type === plot.tree_type);
+        const gm = plot.growth_minutes || 0;
+        const stage = this.getGrowthStage(gm);
+        const label = this.getGrowthLabel(gm);
+        const pct = Math.min(100, Math.round(gm / 150 * 100));
+
+        let imgSrc = '/img/trees/seed.svg';
+        if (catItem && catItem.stages) {
+            imgSrc = catItem.stages[stage] || catItem.stages.mature;
+        }
+
+        return `
+            <div class="island-plot planted stage-${stage}" data-plot-id="${plot.id}"
+                 title="${catItem ? catItem.name : plot.tree_type} · ${label} (${gm}分钟)">
+                <img class="plot-tree-img" src="${imgSrc}" alt="${catItem ? catItem.name : ''}">
+                <div class="tree-growth-bar"><div class="tree-growth-fill" style="width:${pct}%"></div></div>
+            </div>
+        `;
+    },
+
+    renderPlantingToolbar() {
+        const item = this.catalog.find(c => c.type === this.selectedTree);
+        if (!item) return '';
+        return `
+            <div class="planting-toolbar">
+                <img src="${item.stages.mature}" alt="" style="width:32px;height:40px">
+                <span>正在种植: <strong>${item.name}</strong></span>
+                <button class="btn-cancel-plant" id="cancel-plant-btn">✕ 取消</button>
+            </div>
+        `;
+    },
+
     bindGardenEvents() {
+        // Person filter
         document.querySelectorAll('#view-garden .filter-pill').forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.assignee = btn.dataset.assignee;
-                this.open();
+            btn.addEventListener('click', async () => {
+                this.assignee = btn.dataset.person;
+                await this.open();
             });
         });
-        document.getElementById('btn-garden-history')?.addEventListener('click', async () => {
-            document.getElementById('garden-history').classList.remove('hidden');
-            await this.loadHistory();
+
+        // History button
+        document.getElementById('garden-history-btn')?.addEventListener('click', () => {
+            this.showHistory();
         });
-        document.getElementById('garden-history-close')?.addEventListener('click', () => {
-            document.getElementById('garden-history').classList.add('hidden');
+
+        // Cancel planting
+        document.getElementById('cancel-plant-btn')?.addEventListener('click', () => {
+            this.selectedTree = null;
+            this.render();
+        });
+
+        // Plot clicks
+        document.querySelectorAll('.island-plot').forEach(plotEl => {
+            plotEl.addEventListener('click', async () => {
+                const plotId = parseInt(plotEl.dataset.plotId);
+                const plot = this.plots.find(p => p.id === plotId);
+                if (!plot) return;
+
+                if (plot.status === 'wasteland') {
+                    await this.clearPlot(plotId, plot.obstacle_type);
+                } else if (plot.status === 'cleared' && this.selectedTree) {
+                    await this.plantOnPlot(plotId);
+                }
+            });
         });
     },
 
-    // ======= SHOP VIEW (standalone) =======
-    shopAssignee: '潘潘',
-    shopBalance: 0,
+    async clearPlot(plotId, obstacleType) {
+        const obs = this.obstacleMap[obstacleType] || this.obstacleMap.rock;
+        if (this.balance < obs.cost) {
+            App.showToast(`喵喵币不足！需要 ${obs.cost}🪙`, 'error');
+            return;
+        }
+        if (!confirm(`开荒: 清除${obs.name}，花费 ${obs.cost}🪙？`)) return;
 
-    async openShop() {
-        await this.loadShopData();
-        this.renderShop();
-    },
-
-    async loadShopData() {
         try {
-            const data = await API.getCoins(this.shopAssignee);
-            this.shopBalance = data.balance;
+            const result = await API.clearPlot({ assignee: this.assignee, plot_id: plotId });
+            this.balance = result.balance;
+            this.updateHeaderCoins();
+            App.showToast(`⛏️ 开荒成功！-${result.cost}🪙`, 'success');
+            await this.open();
         } catch (e) {
-            console.error('Shop load error:', e);
+            App.showToast(e.message || '开荒失败', 'error');
         }
     },
 
-    renderShop() {
-        const container = document.getElementById('view-shop');
-        if (!container) return;
+    async plantOnPlot(plotId) {
+        const item = this.catalog.find(c => c.type === this.selectedTree);
+        if (!item) return;
+        if (this.balance < item.cost) {
+            App.showToast(`喵喵币不足！需要 ${item.cost}🪙`, 'error');
+            return;
+        }
 
-        container.innerHTML = `
+        try {
+            const result = await API.plantTree({
+                assignee: this.assignee,
+                tree_type: item.type,
+                cost: item.cost,
+                plot_id: plotId,
+            });
+            this.balance = result.balance;
+            this.selectedTree = null;
+            this.updateHeaderCoins();
+            App.showToast(`🌱 种下了${item.name}！`, 'success');
+            await this.open();
+        } catch (e) {
+            App.showToast(e.message || '种植失败', 'error');
+        }
+    },
+
+    async showHistory() {
+        try {
+            const history = await API.getCoinHistory(this.assignee, 30);
+            const html = history.map(h => `
+                <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+                    <span>${h.reason === 'pomodoro' ? '🍅' : h.reason === 'checkin' ? '✅' : h.reason === 'purchase' ? '🛒' : '⛏️'} ${h.detail || h.reason}</span>
+                    <span style="color:${h.amount > 0 ? '#4CAF50' : '#ef5350'};font-weight:600">${h.amount > 0 ? '+' : ''}${h.amount}</span>
+                </div>
+            `).join('') || '<p style="text-align:center;opacity:0.5">暂无记录</p>';
+
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `<div class="modal-box" style="max-width:400px">
+                <h3>📊 喵喵币记录</h3>
+                <div style="max-height:300px;overflow-y:auto">${html}</div>
+                <button class="modal-close-btn" style="margin-top:12px;width:100%">关闭</button>
+            </div>`;
+            document.body.appendChild(overlay);
+            overlay.querySelector('.modal-close-btn').addEventListener('click', () => overlay.remove());
+            overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+        } catch (e) { }
+    },
+
+    /* ═══════════════════════════════
+       SHOP VIEW (standalone)
+       ═══════════════════════════════ */
+    async openShop() {
+        try {
+            const { balance } = await API.getCoins(this.shopAssignee);
+            this.shopBalance = balance;
+        } catch (e) { }
+        this.renderShop();
+    },
+
+    renderShop() {
+        const el = document.getElementById('view-shop');
+        if (!el) return;
+
+        el.innerHTML = `
             <div class="shop-view-header">
-                <div class="garden-coin-display">
-                    <span class="coin-icon">🪙</span>
-                    <span class="coin-balance" id="shop-view-balance">${this.shopBalance}</span>
-                    <span class="coin-label">喵喵币</span>
+                <div class="garden-balance">
+                    <img src="/img/icons/${this.shopAssignee}.png" alt="" style="width:28px;height:28px;border-radius:50%;margin-right:6px">
+                    <strong>${this.shopBalance}</strong> 喵喵币
+                </div>
+                <div class="filter-pills">
+                    <button class="filter-pill ${this.shopAssignee === '潘潘' ? 'active' : ''}" data-person="潘潘">
+                        <img src="/img/icons/潘潘.png" alt="" style="width:18px;height:18px;border-radius:50%"> 潘潘
+                    </button>
+                    <button class="filter-pill ${this.shopAssignee === '蒲蒲' ? 'active' : ''}" data-person="蒲蒲">
+                        <img src="/img/icons/蒲蒲.png" alt="" style="width:18px;height:18px;border-radius:50%"> 蒲蒲
+                    </button>
                 </div>
             </div>
-
-            <div class="garden-person-filter">
-                <button class="filter-pill ${this.shopAssignee === '潘潘' ? 'active' : ''}" data-assignee="潘潘">
-                    <img class="filter-avatar" src="/img/panpan.png" alt=""> 潘潘
-                </button>
-                <button class="filter-pill ${this.shopAssignee === '蒲蒲' ? 'active' : ''}" data-assignee="蒲蒲">
-                    <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
-                </button>
-            </div>
-
             <div class="shop-full-grid">
                 ${this.catalog.map(item => `
                     <div class="shop-card ${this.shopBalance >= item.cost ? '' : 'locked'}" data-type="${item.type}" data-cost="${item.cost}">
-                        <img class="shop-card-img" src="${item.img}" alt="${item.name}">
+                        <div class="shop-stages-preview">
+                            <div class="stage-thumb" title="种子"><img src="${item.stages.seed}" alt="种子"></div>
+                            <div class="stage-arrow">→</div>
+                            <div class="stage-thumb" title="发芽"><img src="${item.stages.sprout}" alt="发芽"></div>
+                            <div class="stage-arrow">→</div>
+                            <div class="stage-thumb" title="成长"><img src="${item.stages.growing}" alt="成长"></div>
+                            <div class="stage-arrow">→</div>
+                            <div class="stage-thumb active" title="成熟"><img src="${item.stages.mature}" alt="成熟"></div>
+                        </div>
                         <div class="shop-card-name">${item.name}</div>
                         <div class="shop-card-desc">${item.desc}</div>
                         <button class="shop-buy-btn" ${this.shopBalance < item.cost && item.cost > 0 ? 'disabled' : ''}>
-                            ${item.cost === 0 ? '免费种植' : `🪙 ${item.cost}`}
+                            ${item.cost === 0 ? '🌱 去种植' : `🪙 ${item.cost}`}
                         </button>
                     </div>
                 `).join('')}
@@ -215,82 +371,31 @@ const GardenView = {
     bindShopEvents() {
         // Person filter
         document.querySelectorAll('#view-shop .filter-pill').forEach(btn => {
-            btn.addEventListener('click', () => {
-                this.shopAssignee = btn.dataset.assignee;
-                this.openShop();
+            btn.addEventListener('click', async () => {
+                this.shopAssignee = btn.dataset.person;
+                await this.openShop();
             });
         });
 
-        // Buy buttons
-        document.querySelectorAll('#view-shop .shop-card').forEach(card => {
-            const buyBtn = card.querySelector('.shop-buy-btn');
-            if (buyBtn && !buyBtn.disabled) {
-                buyBtn.addEventListener('click', () => {
-                    this.buyTree(card.dataset.type, parseInt(card.dataset.cost), true);
-                });
-            }
-        });
-    },
+        // Buy buttons → select tree for planting, switch to garden
+        document.querySelectorAll('.shop-buy-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const card = btn.closest('.shop-card');
+                const type = card.dataset.type;
+                const cost = parseInt(card.dataset.cost);
 
-    async buyTree(treeType, cost, fromShop = false) {
-        const assignee = fromShop ? this.shopAssignee : this.assignee;
-        try {
-            const result = await API.plantTree({
-                assignee,
-                tree_type: treeType,
-                cost: cost,
+                // Set this tree as selected, sync assignee, switch to garden
+                this.selectedTree = type;
+                this.assignee = this.shopAssignee;
+                App.switchView('garden');
+                App.showToast('👆 点击空地种植', 'info');
             });
-            App.showToast(`🌱 种下了一棵${this.catalog.find(c => c.type === treeType)?.name || '植物'}！`, 'success');
-            if (fromShop) {
-                this.shopBalance = result.balance;
-                this.openShop(); // Refresh shop view
-            } else {
-                this.balance = result.balance;
-                this.open(); // Refresh garden view
-            }
-            this.updateHeaderCoins();
-        } catch (e) {
-            App.showToast(e.message || '购买失败', 'error');
-        }
-    },
-
-    // ======= SHARED =======
-    async loadHistory() {
-        try {
-            const rows = await API.getCoinHistory(this.assignee, 30);
-            const list = document.getElementById('garden-history-list');
-            if (!list) return;
-            if (rows.length === 0) {
-                list.innerHTML = '<div class="garden-empty-text">暂无记录</div>';
-                return;
-            }
-            const reasonMap = {
-                pomodoro: '🍅 番茄钟',
-                checkin: '✅ 打卡',
-                streak: '🔥 连续奖励',
-                purchase: '🌳 种树',
-            };
-            list.innerHTML = rows.map(r => `
-                <div class="history-row">
-                    <div class="history-info">
-                        <span class="history-reason">${reasonMap[r.reason] || r.reason}</span>
-                        <span class="history-detail">${r.detail || ''}</span>
-                    </div>
-                    <div class="history-amount ${r.amount > 0 ? 'earn' : 'spend'}">
-                        ${r.amount > 0 ? '+' : ''}${r.amount} 🪙
-                    </div>
-                    <div class="history-time">${new Date(r.created_at).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
-                </div>
-            `).join('');
-        } catch (e) {
-            console.error('History load error:', e);
-        }
+        });
     },
 
     updateHeaderCoins() {
         const el = document.getElementById('header-coins');
         if (!el) return;
-        // Use shopBalance when in shop view, otherwise garden balance
         const bal = App.currentView === 'shop' ? this.shopBalance : this.balance;
         el.textContent = bal;
     },
@@ -300,7 +405,6 @@ const GardenView = {
         if (focusMinutes >= 60) amount = 30;
         else if (focusMinutes >= 45) amount = 20;
         try {
-            // Earn coins
             const result = await API.earnCoins({
                 assignee,
                 amount,
@@ -311,13 +415,12 @@ const GardenView = {
             if (assignee === this.shopAssignee) this.shopBalance = result.balance;
             this.updateHeaderCoins();
 
-            // Also grow the latest tree
             try {
                 const growResult = await API.growTree({ assignee, minutes: focusMinutes });
                 if (growResult.tree) {
                     const catItem = this.catalog.find(c => c.type === growResult.tree.tree_type);
                     const name = catItem ? catItem.name : '植物';
-                    const { label } = this.getGrowthStage(growResult.tree.growth_minutes);
+                    const label = this.getGrowthLabel(growResult.tree.growth_minutes);
                     App.showToast(`+${amount} 🪙 · ${name} 成长了！(${label})`, 'success');
                 } else {
                     App.showToast(`+${amount} 🪙 喵喵币！`, 'success');
@@ -340,6 +443,7 @@ const GardenView = {
             if (assignee === this.assignee) this.balance = result.balance;
             if (assignee === this.shopAssignee) this.shopBalance = result.balance;
             this.updateHeaderCoins();
+            App.showToast(`+${amount} 🪙 喵喵币！`, 'success');
         } catch (e) { /* silent */ }
     },
 };
