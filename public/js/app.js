@@ -70,7 +70,6 @@ const App = {
                 if (TaskModal.isOpen) TaskModal.close();
                 document.getElementById('ics-modal-overlay').classList.add('hidden');
                 document.getElementById('person-picker-overlay').classList.add('hidden');
-                document.getElementById('day-detail-overlay').classList.add('hidden');
                 this.closeSidebar();
             }
             if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !TaskModal.isOpen &&
@@ -204,7 +203,8 @@ const App = {
 
     setAssignee(assignee) {
         this.currentAssignee = assignee;
-        this.refreshCurrentView();
+        // Always navigate to daily view when person is switched
+        this.switchView('daily');
     },
 
     // ===== Date Navigation =====

@@ -1,21 +1,18 @@
 /**
- * Monthly View — calendar grid with task dots, person filter,
- * display‐mode toggle (full / float), gold‐bordered today,
- * and day‐detail modal.
+ * Monthly View — calendar grid showing task titles directly in cells.
+ * Clicking a date navigates to daily view for that date.
  */
 const MonthlyView = {
     currentYear: new Date().getFullYear(),
     currentMonth: new Date().getMonth(), // 0-indexed
-    selectedDate: null,
-    monthData: [],
+    monthTasks: [],
     displayMode: 'full', // 'full' | 'float'
-    localAssignee: 'all', // independent of App.currentAssignee
+    localAssignee: 'all',
 
     init() {
         this.currentYear = new Date().getFullYear();
         this.currentMonth = new Date().getMonth();
         this.bindToolbar();
-        this.bindDayDetailModal();
     },
 
     /* ===== Toolbar bindings ===== */
@@ -43,30 +40,10 @@ const MonthlyView = {
         });
     },
 
-    /* ===== Day Detail Modal ===== */
-    bindDayDetailModal() {
-        const overlay = document.getElementById('day-detail-overlay');
-        const closeBtn = document.getElementById('day-detail-close');
-
-        closeBtn.addEventListener('click', () => this.closeDayDetail());
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) this.closeDayDetail();
-        });
-    },
-
-    openDayDetail() {
-        document.getElementById('day-detail-overlay').classList.remove('hidden');
-    },
-
-    closeDayDetail() {
-        document.getElementById('day-detail-overlay').classList.add('hidden');
-    },
-
     /* ===== Month navigation ===== */
     setMonth(year, month) {
         this.currentYear = year;
         this.currentMonth = month;
-        this.selectedDate = null;
         this.updateDateDisplay();
         this.loadMonth();
     },
@@ -80,18 +57,19 @@ const MonthlyView = {
     },
 
     syncLocalAssignee() {
-        // Sync filter pills with global assignee when switching to monthly view
         this.localAssignee = App.currentAssignee;
         document.querySelectorAll('.filter-pill').forEach(b =>
             b.classList.toggle('active', b.dataset.assignee === this.localAssignee));
     },
 
-    /* ===== Data loading ===== */
+    /* ===== Data loading — full tasks for the month ===== */
     async loadMonth() {
         const monthStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}`;
         try {
+            const params = { month: monthStr };
             const assignee = this.localAssignee;
-            this.monthData = await API.getMonthSummary(monthStr, assignee !== 'all' ? assignee : undefined);
+            if (assignee !== 'all') params.assignee = assignee;
+            this.monthTasks = await API.getTasks(params);
             this.renderCalendar();
         } catch (err) {
             App.showToast('加载月视图失败: ' + err.message, 'error');
@@ -106,23 +84,25 @@ const MonthlyView = {
 
         const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
 
-        // Build day data map
-        const dayMap = {};
-        for (const row of this.monthData) {
-            if (!dayMap[row.due_date]) {
-                dayMap[row.due_date] = { total: 0, done: 0, colors: [] };
-            }
-            dayMap[row.due_date].total += row.count;
-            if (row.status === 'done') dayMap[row.due_date].done += row.count;
-            if (row.category_color && !dayMap[row.due_date].colors.includes(row.category_color)) {
-                dayMap[row.due_date].colors.push(row.category_color);
-            }
+        // Group tasks by date, sort: undone first, done last
+        const dayTasks = {};
+        for (const task of this.monthTasks) {
+            if (!task.due_date) continue;
+            if (!dayTasks[task.due_date]) dayTasks[task.due_date] = [];
+            dayTasks[task.due_date].push(task);
+        }
+        // Sort each day: todo first, done last
+        for (const date in dayTasks) {
+            dayTasks[date].sort((a, b) => {
+                if (a.status === 'done' && b.status !== 'done') return 1;
+                if (a.status !== 'done' && b.status === 'done') return -1;
+                return a.priority - b.priority;
+            });
         }
 
         // Calendar structure
         const firstDay = new Date(this.currentYear, this.currentMonth, 1);
         const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
-        // Monday = 0 (ISO week format)
         let startDow = firstDay.getDay() - 1;
         if (startDow < 0) startDow = 6;
 
@@ -133,7 +113,7 @@ const MonthlyView = {
         }
         headerHtml += '</div>';
 
-        // Build all cells into a flat array
+        // Build cells
         const cells = [];
 
         // Previous month padding
@@ -147,40 +127,34 @@ const MonthlyView = {
         for (let d = 1; d <= lastDay.getDate(); d++) {
             const dateStr = `${this.currentYear}-${String(this.currentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
             const isToday = dateStr === todayStr;
-            const isSelected = dateStr === this.selectedDate;
-            const data = dayMap[dateStr];
+            const tasks = dayTasks[dateStr] || [];
 
             let classes = 'calendar-cell';
             if (isToday) classes += ' today-gold';
-            if (isSelected) classes += ' selected';
 
-            let dotsHtml = '';
-            if (data) {
-                const colors = data.colors.length > 0 ? data.colors : ['#6366f1'];
-                dotsHtml = '<div class="calendar-dots">';
-                const dotCount = Math.min(data.total, 6);
-                for (let i = 0; i < dotCount; i++) {
-                    const color = colors[i % colors.length];
-                    dotsHtml += `<div class="calendar-dot" style="background:${color}"></div>`;
+            // Render compact task titles
+            let tasksHtml = '';
+            if (tasks.length > 0) {
+                tasksHtml = '<div class="calendar-tasks">';
+                const maxShow = 4;
+                const shown = tasks.slice(0, maxShow);
+                for (const task of shown) {
+                    const isDone = task.status === 'done';
+                    const color = task.category_color || '#6366f1';
+                    tasksHtml += `<div class="calendar-task-item${isDone ? ' done' : ''}" style="--cat-color:${color}">`;
+                    tasksHtml += this.escapeHtml(task.title);
+                    tasksHtml += '</div>';
                 }
-                if (data.total > 6) {
-                    dotsHtml += `<span class="calendar-task-count">+${data.total - 6}</span>`;
+                if (tasks.length > maxShow) {
+                    tasksHtml += `<div class="calendar-task-more">+${tasks.length - maxShow} 更多</div>`;
                 }
-                dotsHtml += '</div>';
-            }
-
-            // Progress bar for days with tasks
-            let progressHtml = '';
-            if (data && data.total > 0) {
-                const pct = Math.round((data.done / data.total) * 100);
-                progressHtml = `<div class="calendar-progress"><div class="calendar-progress-bar" style="width:${pct}%"></div></div>`;
+                tasksHtml += '</div>';
             }
 
             cells.push(`
         <div class="${classes}" data-date="${dateStr}">
           <div class="calendar-day-num">${d}</div>
-          ${dotsHtml}
-          ${progressHtml}
+          ${tasksHtml}
         </div>
       `);
         }
@@ -192,16 +166,15 @@ const MonthlyView = {
             cells.push(`<div class="calendar-cell other-month"><div class="calendar-day-num">${i}</div></div>`);
         }
 
-        // Split cells into weeks (rows of 7)
+        // Split into weeks
         const weeks = [];
         for (let i = 0; i < cells.length; i += 7) {
             weeks.push(cells.slice(i, i + 7));
         }
 
-        // Apply display mode
+        // Apply display mode (float = current week first)
         let orderedWeeks = weeks;
         if (this.displayMode === 'float') {
-            // Find which week row contains today
             const todayDate = today.getDate();
             const isCurrentMonth = today.getFullYear() === this.currentYear && today.getMonth() === this.currentMonth;
             if (isCurrentMonth && weeks.length > 0) {
@@ -216,13 +189,12 @@ const MonthlyView = {
             }
         }
 
-        // Build body HTML
+        // Build body
         let bodyHtml = '<div class="calendar-body">';
         orderedWeeks.forEach((week, weekIdx) => {
             const isCurrentWeek = this.displayMode === 'float' && weekIdx === 0;
             week.forEach(cellHtml => {
                 if (isCurrentWeek) {
-                    // Add current-week class to cells
                     bodyHtml += cellHtml.replace('class="calendar-cell', 'class="calendar-cell current-week');
                 } else {
                     bodyHtml += cellHtml;
@@ -233,84 +205,25 @@ const MonthlyView = {
 
         grid.innerHTML = headerHtml + bodyHtml;
 
-        // Bind click events
+        // Bind click: navigate to daily view for that date
         grid.querySelectorAll('.calendar-cell:not(.other-month)').forEach(cell => {
             cell.addEventListener('click', () => {
                 const date = cell.dataset.date;
-                if (date) this.selectDate(date);
+                if (date) {
+                    // Switch to daily view for this date
+                    const [y, m, d] = date.split('-').map(Number);
+                    const dateObj = new Date(y, m - 1, d);
+                    App.switchView('daily');
+                    DailyView.setDate(dateObj);
+                }
             });
         });
     },
 
-    /* ===== Date selection ===== */
-    selectDate(dateStr) {
-        this.selectedDate = dateStr;
-        // Update selected class
-        document.querySelectorAll('.calendar-cell.selected').forEach(c => c.classList.remove('selected'));
-        const cell = document.querySelector(`.calendar-cell[data-date="${dateStr}"]`);
-        if (cell) cell.classList.add('selected');
-
-        this.loadDayDetail(dateStr);
-    },
-
-    /* ===== Day detail (modal) ===== */
-    async loadDayDetail(dateStr) {
-        const [y, m, d] = dateStr.split('-');
-        document.getElementById('day-detail-title').textContent = `${parseInt(m)}月${parseInt(d)}日 任务`;
-
-        // Show modal immediately with loading state
-        const list = document.getElementById('day-detail-list');
-        list.innerHTML = '<div class="empty-state"><div class="empty-state-text">加载中...</div></div>';
-        this.openDayDetail();
-
-        try {
-            const params = { date: dateStr };
-            const assignee = this.localAssignee;
-            if (assignee !== 'all') params.assignee = assignee;
-
-            const tasks = await API.getTasks(params);
-
-            if (tasks.length === 0) {
-                list.innerHTML = '<div class="empty-state"><div class="empty-state-text">📭 这天没有任务</div></div>';
-                return;
-            }
-
-            list.innerHTML = tasks.map(task => DailyView.renderTaskCard(task)).join('');
-
-            // Bind card click → open edit modal
-            list.querySelectorAll('.task-card').forEach(card => {
-                card.addEventListener('click', (e) => {
-                    if (e.target.closest('.task-checkbox')) return;
-                    const taskId = parseInt(card.dataset.taskId);
-                    const task = tasks.find(t => t.id === taskId);
-                    if (task) {
-                        this.closeDayDetail();
-                        TaskModal.openEdit(task);
-                    }
-                });
-            });
-
-            // Bind checkbox toggle
-            list.querySelectorAll('.task-checkbox').forEach(cb => {
-                cb.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const taskId = parseInt(cb.closest('.task-card').dataset.taskId);
-                    const task = tasks.find(t => t.id === taskId);
-                    if (!task) return;
-                    const nextStatus = task.status === 'done' ? 'todo' : 'done';
-                    try {
-                        const updated = await API.updateTask(taskId, { status: nextStatus });
-                        App.socket.emit('task:updated', updated);
-                        this.loadMonth();
-                        this.loadDayDetail(dateStr); // Refresh the modal
-                    } catch (err) {
-                        App.showToast('更新失败', 'error');
-                    }
-                });
-            });
-        } catch (err) {
-            App.showToast('加载日详情失败', 'error');
-        }
+    escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
     },
 
     /* ===== Navigation helpers ===== */
