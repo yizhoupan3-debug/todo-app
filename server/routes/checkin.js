@@ -85,4 +85,32 @@ router.delete('/:id', (req, res) => {
     }
 });
 
+// GET /api/checkin/goal — get goal for type + assignee
+router.get('/goal', (req, res) => {
+    const { type, assignee } = req.query;
+    if (!assignee) return res.status(400).json({ error: 'assignee is required' });
+    try {
+        const row = db.prepare('SELECT goal FROM checkin_goals WHERE type = ? AND assignee = ?')
+            .get(type || 'water', assignee);
+        res.json({ goal: row ? row.goal : 2000 });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// PUT /api/checkin/goal — set goal for type + assignee
+router.put('/goal', (req, res) => {
+    const { type, assignee, goal } = req.body;
+    if (!assignee || !goal) return res.status(400).json({ error: 'assignee and goal are required' });
+    try {
+        db.prepare(`
+            INSERT INTO checkin_goals (type, assignee, goal) VALUES (?, ?, ?)
+            ON CONFLICT(type, assignee) DO UPDATE SET goal = excluded.goal
+        `).run(type || 'water', assignee, goal);
+        res.json({ success: true, goal });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

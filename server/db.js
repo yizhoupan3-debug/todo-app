@@ -60,6 +60,14 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_checkin_date ON checkin_records(date);
   CREATE INDEX IF NOT EXISTS idx_checkin_assignee ON checkin_records(assignee);
+
+  CREATE TABLE IF NOT EXISTS checkin_goals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL DEFAULT 'water',
+    assignee TEXT NOT NULL CHECK(assignee IN ('潘潘', '蒲蒲')),
+    goal INTEGER NOT NULL DEFAULT 2000,
+    UNIQUE(type, assignee)
+  );
 `);
 
 // Seed default categories if empty

@@ -47,7 +47,7 @@
         <span>番茄钟</span>
       </button>
       <button class="nav-btn" id="nav-checkin">
-        <span class="nav-icon">💧</span>
+        <span class="nav-icon">✅</span>
         <span>打卡</span>
       </button>
     </nav>
@@ -153,39 +153,69 @@
           </button>
         </div>
 
-        <div class="water-tracker">
-          <div class="glass-section">
-            <div class="glass-container" id="glass-container">
-              <div class="glass-body">
-                <div class="glass-water" id="glass-water"></div>
-                <div class="glass-bubbles">
-                  <span class="bubble"></span>
-                  <span class="bubble"></span>
-                  <span class="bubble"></span>
+        <!-- Landing: checkin item cards -->
+        <div class="checkin-landing" id="checkin-landing">
+          <div class="checkin-items-grid">
+            <div class="checkin-item-card" data-type="water" id="card-water">
+              <div class="checkin-item-icon">💧</div>
+              <div class="checkin-item-info">
+                <h4>喝水</h4>
+                <div class="checkin-item-progress">
+                  <div class="checkin-item-bar">
+                    <div class="checkin-item-bar-fill" id="card-water-bar"></div>
+                  </div>
+                  <span class="checkin-item-stats" id="card-water-stats">0 / 2000ml</span>
                 </div>
               </div>
-              <div class="glass-base"></div>
-            </div>
-            <div class="water-stats">
-              <div class="water-amount"><span id="water-amount-text">0</span>ml</div>
-              <div class="water-goal">/ <span id="water-goal-text">2000</span>ml</div>
-              <div class="water-progress-label" id="water-progress-label">还差 2000ml</div>
+              <div class="checkin-item-arrow">›</div>
             </div>
           </div>
+        </div>
 
-          <div class="water-controls">
-            <h4>加水</h4>
-            <div class="water-quick-buttons">
-              <button class="water-quick-btn" data-amount="100">100ml</button>
-              <button class="water-quick-btn" data-amount="500">500ml</button>
-              <button class="water-quick-btn" data-amount="1000">1000ml</button>
+        <!-- Detail: water tracker -->
+        <div class="checkin-detail hidden" id="checkin-detail-water">
+          <button class="checkin-back-btn" id="checkin-back">‹ 返回打卡</button>
+          <div class="water-tracker">
+            <div class="glass-section">
+              <div class="glass-container" id="glass-container">
+                <div class="glass-body">
+                  <div class="glass-water" id="glass-water"></div>
+                  <div class="glass-bubbles">
+                    <span class="bubble"></span>
+                    <span class="bubble"></span>
+                    <span class="bubble"></span>
+                  </div>
+                </div>
+                <div class="glass-base"></div>
+              </div>
+              <div class="water-stats">
+                <div class="water-amount"><span id="water-amount-text">0</span>ml</div>
+                <div class="water-goal" id="water-goal-display">
+                  / <span id="water-goal-text">2000</span>ml
+                  <button class="goal-edit-btn" id="goal-edit-btn" title="修改目标">✏️</button>
+                </div>
+                <div class="water-goal-editor hidden" id="water-goal-editor">
+                  <input type="number" id="goal-input" min="500" max="10000" step="100" value="2000">
+                  <button class="goal-save-btn" id="goal-save-btn">确定</button>
+                </div>
+                <div class="water-progress-label" id="water-progress-label">还差 2000ml</div>
+              </div>
             </div>
-            <div class="water-custom">
-              <input type="number" id="water-custom-input" placeholder="自定义ml" min="1" max="5000">
-              <button class="water-custom-add-btn" id="water-custom-add">+</button>
-            </div>
-            <div class="water-log" id="water-log">
-              <div class="water-log-empty">今天还没有喝水记录 💧</div>
+
+            <div class="water-controls">
+              <h4>加水</h4>
+              <div class="water-quick-buttons">
+                <button class="water-quick-btn" data-amount="100">100ml</button>
+                <button class="water-quick-btn" data-amount="500">500ml</button>
+                <button class="water-quick-btn" data-amount="1000">1000ml</button>
+              </div>
+              <div class="water-custom">
+                <input type="number" id="water-custom-input" placeholder="自定义ml" min="1" max="5000">
+                <button class="water-custom-add-btn" id="water-custom-add">+</button>
+              </div>
+              <div class="water-log" id="water-log">
+                <div class="water-log-empty">今天还没有喝水记录 💧</div>
+              </div>
             </div>
           </div>
         </div>
@@ -211,7 +241,7 @@
       <span>番茄钟</span>
     </button>
     <button class="bottom-nav-btn" id="mobile-checkin">
-      <span class="nav-icon">💧</span>
+      <span class="nav-icon">✅</span>
       <span>打卡</span>
     </button>
     <button class="bottom-nav-btn" id="mobile-theme-toggle">

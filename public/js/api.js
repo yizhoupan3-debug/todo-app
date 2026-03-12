@@ -92,4 +92,13 @@ const API = {
     deleteCheckin(id) {
         return this.request('/checkin/' + id, { method: 'DELETE' });
     },
+
+    getGoal(params) {
+        const qs = new URLSearchParams(params).toString();
+        return this.request('/checkin/goal?' + qs);
+    },
+
+    setGoal(data) {
+        return this.request('/checkin/goal', { method: 'PUT', body: data });
+    },
 };
