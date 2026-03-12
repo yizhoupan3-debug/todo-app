@@ -92,28 +92,44 @@ const App = {
     },
 
     // ===== Theme =====
+    themes: ['light', 'dark', 'sakura', 'ocean', 'forest', 'sunset'],
+    themeLabels: { light: '☀️ 亮色', dark: '🌙 暗色', sakura: '🌸 樱花', ocean: '🌊 深海', forest: '🌿 森林', sunset: '🌅 日落' },
+
     initTheme() {
         const saved = localStorage.getItem('panpu-theme') || 'light';
-        document.documentElement.setAttribute('data-theme', saved);
-        this.updateThemeUI(saved);
+        this.applyTheme(saved);
 
-        document.getElementById('btn-toggle-theme').addEventListener('click', () => this.toggleTheme());
-        document.getElementById('mobile-theme-toggle').addEventListener('click', () => this.toggleTheme());
+        // Desktop: toggle picker panel
+        document.getElementById('btn-toggle-theme').addEventListener('click', () => {
+            document.getElementById('theme-picker').classList.toggle('open');
+        });
+
+        // Swatch clicks
+        document.querySelectorAll('.theme-swatch').forEach(swatch => {
+            swatch.addEventListener('click', () => {
+                this.applyTheme(swatch.dataset.theme);
+            });
+        });
+
+        // Mobile: cycle through themes
+        document.getElementById('mobile-theme-toggle').addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const idx = this.themes.indexOf(current);
+            const next = this.themes[(idx + 1) % this.themes.length];
+            this.applyTheme(next);
+        });
     },
 
-    toggleTheme() {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('panpu-theme', next);
-        this.updateThemeUI(next);
+    applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('panpu-theme', theme);
+        this.updateThemeUI(theme);
     },
 
     updateThemeUI(theme) {
-        const isDark = theme === 'dark';
-        document.getElementById('theme-icon').textContent = isDark ? '☀️' : '🌙';
-        document.getElementById('theme-label').textContent = isDark ? '亮色模式' : '暗色模式';
-        document.getElementById('mobile-theme-icon').textContent = isDark ? '☀️' : '🌙';
+        document.getElementById('theme-label').textContent = this.themeLabels[theme] || '主题';
+        document.querySelectorAll('.theme-swatch').forEach(s =>
+            s.classList.toggle('active', s.dataset.theme === theme));
     },
 
     // ===== Navigation =====
