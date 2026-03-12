@@ -161,7 +161,8 @@ const App = {
     },
 
     updateThemeUI(theme) {
-        document.getElementById('theme-label').textContent = this.themeLabels[theme] || '主题';
+        const themeLabel = document.getElementById('theme-label');
+        if (themeLabel) themeLabel.textContent = this.themeLabels[theme] || '主题';
         document.querySelectorAll('.theme-swatch').forEach(s =>
             s.classList.toggle('active', s.dataset.theme === theme));
     },
