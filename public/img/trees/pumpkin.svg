@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <defs>
+    <radialGradient id="pG" cx="38%" cy="30%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="40%" stop-color="#FF9800"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </radialGradient>
+    <linearGradient id="sG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#33691E"/>
+      <stop offset="50%" stop-color="#558B2F"/>
+      <stop offset="100%" stop-color="#33691E"/>
+    </linearGradient>
+    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+  <ellipse cx="50" cy="114" rx="30" ry="8" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
+  <!-- Vine -->
+  <path d="M50 112 Q40 96 32 88 Q24 82 20 76" stroke="url(#sG)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M32 88 Q42 82 50 76 Q58 72 64 68" stroke="#388E3C" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Leaves -->
+  <path d="M28 82 Q14 72 10 78 Q16 86 28 82Z" fill="#558B2F"/>
+  <path d="M38 76 Q44 66 54 68 Q48 76 38 76Z" fill="#689F38"/>
+  <path d="M56 72 Q66 62 74 66 Q68 72 56 72Z" fill="#558B2F"/>
+  <path d="M64 68 Q72 58 80 62 Q74 68 64 68Z" fill="#689F38"/>
+  <!-- Pumpkin — big round -->
+  <path d="M50 108 Q22 108 14 82 Q10 62 26 50 Q38 42 50 40 Q62 42 74 50 Q90 62 86 82 Q78 108 50 108Z" fill="url(#pG)"/>
+  <!-- Ridges -->
+  <path d="M50 40 Q50 70 50 108" stroke="#E65100" stroke-width="1.5" fill="none" opacity="0.25"/>
+  <path d="M34 46 Q32 70 34 104" stroke="#E65100" stroke-width="1.2" fill="none" opacity="0.2"/>
+  <path d="M66 46 Q68 70 66 104" stroke="#E65100" stroke-width="1.2" fill="none" opacity="0.2"/>
+  <!-- Depth -->
+  <path d="M50 108 Q28 108 20 82 Q16 66 30 52 Q50 48 50 108Z" fill="#FB8C00" opacity="0.35"/>
+  <path d="M50 108 Q72 108 80 82 Q84 66 70 52 Q50 48 50 108Z" fill="#BF360C" opacity="0.15"/>
+  <!-- Stem -->
+  <path d="M50 40 Q50 32 52 28" stroke="#5D4037" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M52 30 Q56 24 62 22" stroke="#689F38" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Highlight -->
+  <ellipse cx="36" cy="62" rx="6" ry="10" fill="#FFE082" opacity="0.12" transform="rotate(-5 36 62)"/>
+</svg>

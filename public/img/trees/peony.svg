@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <defs>
+    <linearGradient id="sG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#33691E"/>
+      <stop offset="50%" stop-color="#558B2F"/>
+      <stop offset="100%" stop-color="#33691E"/>
+    </linearGradient>
+    <radialGradient id="oP" cx="38%" cy="25%">
+      <stop offset="0%" stop-color="#FCE4EC"/>
+      <stop offset="30%" stop-color="#F48FB1"/>
+      <stop offset="100%" stop-color="#C2185B"/>
+    </radialGradient>
+    <radialGradient id="iP" cx="38%" cy="28%">
+      <stop offset="0%" stop-color="#F8BBD0"/>
+      <stop offset="100%" stop-color="#E91E63"/>
+    </radialGradient>
+    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+  <ellipse cx="50" cy="114" rx="28" ry="8" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
+  <!-- Stem -->
+  <path d="M50 112 Q48 86 46 58" stroke="url(#sG)" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+  <path d="M50 112 Q49 88 47 60" stroke="#7CB342" stroke-width="1.2" fill="none" opacity="0.15"/>
+  <!-- Leaves -->
+  <path d="M46 92 Q26 80 14 86 Q22 94 46 92Z" fill="#558B2F"/>
+  <path d="M46 82 Q62 70 74 76 Q66 84 46 82Z" fill="#689F38"/>
+  <path d="M46 72 Q30 62 20 68 Q28 76 46 72Z" fill="#558B2F"/>
+  <!-- Peony — massive layered flower -->
+  <g transform="translate(46 32)">
+    <!-- Outer petals — big and ruffled -->
+    <ellipse cx="0" cy="-18" rx="10" ry="17" fill="url(#oP)" transform="rotate(0 0 0)"/>
+    <ellipse cx="0" cy="-18" rx="10" ry="17" fill="#EC407A" transform="rotate(36 0 0)"/>
+    <ellipse cx="0" cy="-18" rx="10" ry="17" fill="url(#oP)" transform="rotate(72 0 0)"/>
+    <ellipse cx="0" cy="-18" rx="10" ry="17" fill="#F06292" transform="rotate(108 0 0)"/>
+    <ellipse cx="0" cy="-18" rx="10" ry="17" fill="url(#oP)" transform="rotate(144 0 0)"/>
+    <ellipse cx="0" cy="-18" rx="10" ry="17" fill="#EC407A" transform="rotate(180 0 0)"/>
+    <ellipse cx="0" cy="-18" rx="10" ry="17" fill="url(#oP)" transform="rotate(216 0 0)"/>
+    <ellipse cx="0" cy="-18" rx="10" ry="17" fill="#F06292" transform="rotate(252 0 0)"/>
+    <ellipse cx="0" cy="-18" rx="10" ry="17" fill="url(#oP)" transform="rotate(288 0 0)"/>
+    <ellipse cx="0" cy="-18" rx="10" ry="17" fill="#EC407A" transform="rotate(324 0 0)"/>
+    <!-- Middle layer -->
+    <ellipse cx="0" cy="-12" rx="7" ry="11" fill="url(#iP)" transform="rotate(18 0 0)"/>
+    <ellipse cx="0" cy="-12" rx="7" ry="11" fill="url(#iP)" transform="rotate(90 0 0)"/>
+    <ellipse cx="0" cy="-12" rx="7" ry="11" fill="url(#iP)" transform="rotate(162 0 0)"/>
+    <ellipse cx="0" cy="-12" rx="7" ry="11" fill="url(#iP)" transform="rotate(234 0 0)"/>
+    <ellipse cx="0" cy="-12" rx="7" ry="11" fill="url(#iP)" transform="rotate(306 0 0)"/>
+    <!-- Inner petals -->
+    <ellipse cx="0" cy="-7" rx="4.5" ry="7" fill="#FCE4EC" transform="rotate(0 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="4.5" ry="7" fill="#F8BBD0" transform="rotate(72 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="4.5" ry="7" fill="#FCE4EC" transform="rotate(144 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="4.5" ry="7" fill="#F8BBD0" transform="rotate(216 0 0)"/>
+    <ellipse cx="0" cy="-7" rx="4.5" ry="7" fill="#FCE4EC" transform="rotate(288 0 0)"/>
+    <!-- Center -->
+    <circle cx="0" cy="0" r="6" fill="#FFEB3B"/>
+    <circle cx="-2" cy="-2" r="2.5" fill="#FFF9C4" opacity="0.3"/>
+    <circle cx="2" cy="1" r="1.5" fill="#F9A825" opacity="0.4"/>
+  </g>
+</svg>

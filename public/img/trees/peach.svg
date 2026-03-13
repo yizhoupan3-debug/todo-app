@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <defs>
+    <radialGradient id="cG" cx="38%" cy="30%">
+      <stop offset="0%" stop-color="#F8BBD0"/>
+      <stop offset="40%" stop-color="#F06292"/>
+      <stop offset="100%" stop-color="#AD1457"/>
+    </radialGradient>
+    <linearGradient id="tG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#4E342E"/>
+      <stop offset="40%" stop-color="#795548"/>
+      <stop offset="60%" stop-color="#795548"/>
+      <stop offset="100%" stop-color="#4E342E"/>
+    </linearGradient>
+    <radialGradient id="fG" cx="40%" cy="30%">
+      <stop offset="0%" stop-color="#FFAB91"/>
+      <stop offset="50%" stop-color="#FF7043"/>
+      <stop offset="100%" stop-color="#E64A19"/>
+    </radialGradient>
+    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+  <ellipse cx="50" cy="114" rx="32" ry="9" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
+  <!-- Trunk -->
+  <path d="M44 112 Q44 90 46 66 Q48 64 52 64 Q54 64 55 66 Q56 90 56 112Z" fill="url(#tG)"/>
+  <!-- Branches -->
+  <path d="M44 82 Q26 74 16 80" stroke="#6D4C41" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M56 76 Q74 68 84 74" stroke="#6D4C41" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Peach blossom canopy -->
+  <path d="M50 8 Q14 8 2 30 Q-4 48 14 56 Q6 64 18 70 Q30 78 44 74 Q36 82 50 82 Q64 82 56 74 Q70 78 82 70 Q94 64 86 56 Q104 48 98 30 Q86 8 50 8Z" fill="url(#cG)"/>
+  <path d="M50 10 Q22 12 10 30 Q4 45 18 54 Q38 62 50 58 Q50 30 50 10Z" fill="#EC407A" opacity="0.35"/>
+  <!-- Highlights -->
+  <circle cx="28" cy="28" r="3.5" fill="#fff" opacity="0.25"/>
+  <circle cx="66" cy="24" r="3" fill="#fff" opacity="0.2"/>
+  <circle cx="40" cy="44" r="2.5" fill="#FCE4EC" opacity="0.2"/>
+  <!-- Peaches -->
+  <circle cx="22" cy="68" r="7" fill="url(#fG)"/>
+  <circle cx="20" cy="66" r="2.5" fill="#FFCCBC" opacity="0.2"/>
+  <circle cx="80" cy="64" r="6.5" fill="url(#fG)"/>
+  <circle cx="78" cy="62" r="2" fill="#FFCCBC" opacity="0.2"/>
+  <circle cx="50" cy="72" r="6" fill="url(#fG)"/>
+  <circle cx="48" cy="70" r="2" fill="#FFCCBC" opacity="0.18"/>
+</svg>

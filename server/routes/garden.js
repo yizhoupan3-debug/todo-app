@@ -4,10 +4,12 @@ const db = require('../db');
 
 // ── Server-side plant price catalog (source of truth) ──
 const PLANT_CATALOG = {
-    sprout: 0, rice: 5, sunflower: 10, mushroom: 15, tulip: 20,
-    hibiscus: 25, sakura: 30, chrysanthemum: 35, bamboo: 45,
-    pine: 50, oak: 50, mint: 60, lotus: 70, palm: 80,
-    christmas: 80, cactus: 100, rose: 100, grape: 120,
+    sprout: 0, rice: 5, strawberry: 8, sunflower: 10, corn: 12,
+    mushroom: 15, tulip: 20, daisy: 22, hibiscus: 25, sakura: 30,
+    chrysanthemum: 35, true_lavender: 38, pumpkin: 42, bamboo: 45,
+    pine: 50, oak: 50, peach: 55, mint: 60, orange_tree: 65,
+    lotus: 70, palm: 80, christmas: 80, maple: 95,
+    cactus: 100, rose: 100, peony: 110, grape: 120,
     clover: 150, lavender: 200,
 };
 

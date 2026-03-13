@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <defs>
+    <radialGradient id="cG" cx="38%" cy="30%">
+      <stop offset="0%" stop-color="#C8E6C9"/>
+      <stop offset="40%" stop-color="#66BB6A"/>
+      <stop offset="100%" stop-color="#1B5E20"/>
+    </radialGradient>
+    <linearGradient id="tG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#4E342E"/>
+      <stop offset="40%" stop-color="#795548"/>
+      <stop offset="60%" stop-color="#795548"/>
+      <stop offset="100%" stop-color="#4E342E"/>
+    </linearGradient>
+    <radialGradient id="oG" cx="40%" cy="30%">
+      <stop offset="0%" stop-color="#FFE082"/>
+      <stop offset="40%" stop-color="#FF9800"/>
+      <stop offset="100%" stop-color="#E65100"/>
+    </radialGradient>
+    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
+  </defs>
+  <ellipse cx="50" cy="114" rx="32" ry="9" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
+  <!-- Trunk -->
+  <path d="M44 112 Q44 90 46 66 Q48 64 52 64 Q54 64 55 66 Q56 90 56 112Z" fill="url(#tG)"/>
+  <!-- Branches -->
+  <path d="M44 82 Q24 72 14 80" stroke="#6D4C41" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M56 74 Q76 64 86 72" stroke="#6D4C41" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <!-- Canopy -->
+  <path d="M50 6 Q14 6 2 28 Q-4 46 14 54 Q6 62 18 68 Q30 76 44 72 Q36 80 50 80 Q64 80 56 72 Q70 76 82 68 Q94 62 86 54 Q104 46 98 28 Q86 6 50 6Z" fill="url(#cG)"/>
+  <path d="M50 8 Q22 10 10 28 Q4 44 18 52 Q38 60 50 56 Q50 30 50 8Z" fill="#388E3C" opacity="0.35"/>
+  <!-- Oranges -->
+  <circle cx="24" cy="58" r="8" fill="url(#oG)"/>
+  <circle cx="22" cy="56" r="3" fill="#FFE082" opacity="0.15"/>
+  <circle cx="78" cy="54" r="7.5" fill="url(#oG)"/>
+  <circle cx="76" cy="52" r="2.5" fill="#FFE082" opacity="0.15"/>
+  <circle cx="50" cy="70" r="7" fill="url(#oG)"/>
+  <circle cx="48" cy="68" r="2.5" fill="#FFE082" opacity="0.12"/>
+  <circle cx="36" cy="44" r="6" fill="url(#oG)"/>
+  <circle cx="34" cy="42" r="2" fill="#FFE082" opacity="0.1"/>
+  <circle cx="68" cy="40" r="6" fill="url(#oG)"/>
+  <!-- Highlights -->
+  <circle cx="32" cy="26" r="3" fill="#E8F5E9" opacity="0.2"/>
+  <circle cx="62" cy="22" r="2.5" fill="#E8F5E9" opacity="0.15"/>
+</svg>

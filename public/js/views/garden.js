@@ -19,8 +19,16 @@ const GardenView = {
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/rice_growing.svg', mature: '/img/trees/rice.svg' }
         },
         {
+            type: 'strawberry', icon: '🍓', name: '草莓', cost: 8, desc: '甜蜜小确幸',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/strawberry_growing.svg', mature: '/img/trees/strawberry.svg' }
+        },
+        {
             type: 'sunflower', icon: '🌻', name: '向日葵', cost: 10, desc: '追逐阳光',
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/sunflower_growing.svg', mature: '/img/trees/sunflower.svg' }
+        },
+        {
+            type: 'corn', icon: '🌽', name: '玉米', cost: 12, desc: '金色丰收',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/corn_growing.svg', mature: '/img/trees/corn.svg' }
         },
         {
             type: 'mushroom', icon: '🍄', name: '蘑菇', cost: 15, desc: '雨后精灵',
@@ -29,6 +37,10 @@ const GardenView = {
         {
             type: 'tulip', icon: '🌷', name: '郁金香', cost: 20, desc: '优雅绽放',
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/tulip_growing.svg', mature: '/img/trees/tulip.svg' }
+        },
+        {
+            type: 'daisy', icon: '🌼', name: '雏菊', cost: 22, desc: '天真烂漫',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/daisy_growing.svg', mature: '/img/trees/daisy.svg' }
         },
         {
             type: 'hibiscus', icon: '🌺', name: '芙蓉花', cost: 25, desc: '热情似火',
@@ -43,6 +55,14 @@ const GardenView = {
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/chrysanthemum_growing.svg', mature: '/img/trees/chrysanthemum.svg' }
         },
         {
+            type: 'true_lavender', icon: '💜', name: '薰衣草', cost: 38, desc: '普罗旺斯之梦',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/true_lavender_growing.svg', mature: '/img/trees/true_lavender.svg' }
+        },
+        {
+            type: 'pumpkin', icon: '🎃', name: '南瓜', cost: 42, desc: '万圣精灵',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/pumpkin_growing.svg', mature: '/img/trees/pumpkin.svg' }
+        },
+        {
             type: 'bamboo', icon: '🎋', name: '竹子', cost: 45, desc: '节节高升',
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/bamboo_growing.svg', mature: '/img/trees/bamboo.svg' }
         },
@@ -55,8 +75,16 @@ const GardenView = {
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/oak_growing.svg', mature: '/img/trees/oak.svg' }
         },
         {
+            type: 'peach', icon: '🍑', name: '桃树', cost: 55, desc: '人面桃花',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/peach_growing.svg', mature: '/img/trees/peach.svg' }
+        },
+        {
             type: 'mint', icon: '🌿', name: '薄荷', cost: 60, desc: '清凉一夏',
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/mint_growing.svg', mature: '/img/trees/mint.svg' }
+        },
+        {
+            type: 'orange_tree', icon: '🍊', name: '橘子树', cost: 65, desc: '大吉大利',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/orange_tree_growing.svg', mature: '/img/trees/orange_tree.svg' }
         },
         {
             type: 'lotus', icon: '🪷', name: '莲花', cost: 70, desc: '出淤泥不染',
@@ -71,12 +99,20 @@ const GardenView = {
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/christmas_growing.svg', mature: '/img/trees/christmas.svg' }
         },
         {
+            type: 'maple', icon: '🍁', name: '枫树', cost: 95, desc: '霜叶红于花',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/maple_growing.svg', mature: '/img/trees/maple.svg' }
+        },
+        {
             type: 'cactus', icon: '🌵', name: '仙人掌', cost: 100, desc: '沙漠之花',
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/cactus_growing.svg', mature: '/img/trees/cactus.svg' }
         },
         {
             type: 'rose', icon: '🌹', name: '玫瑰', cost: 100, desc: '爱的承诺',
             stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/rose_growing.svg', mature: '/img/trees/rose.svg' }
+        },
+        {
+            type: 'peony', icon: '🏵️', name: '牡丹', cost: 110, desc: '国色天香',
+            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/peony_growing.svg', mature: '/img/trees/peony.svg' }
         },
         {
             type: 'grape', icon: '🍇', name: '葡萄藤', cost: 120, desc: '硕果累累',
@@ -534,12 +570,23 @@ const GardenView = {
             drag = true; sx = e.pageX; sy = e.pageY; sl = vp.scrollLeft; st = vp.scrollTop;
             vp.style.cursor = 'grabbing';
         });
-        document.addEventListener('mousemove', e => {
-            if (!drag) return; e.preventDefault();
-            vp.scrollLeft = sl - (e.pageX - sx);
-            vp.scrollTop = st - (e.pageY - sy);
-        });
-        document.addEventListener('mouseup', () => { drag = false; if (vp) vp.style.cursor = 'grab'; });
+
+        // Only bind document-level listeners once to prevent leak
+        if (!this._dragInitialized) {
+            this._dragInitialized = true;
+            document.addEventListener('mousemove', e => {
+                if (!drag) return; e.preventDefault();
+                const vpEl = document.getElementById('island-viewport');
+                if (!vpEl) return;
+                vpEl.scrollLeft = sl - (e.pageX - sx);
+                vpEl.scrollTop = st - (e.pageY - sy);
+            });
+            document.addEventListener('mouseup', () => {
+                drag = false;
+                const vpEl = document.getElementById('island-viewport');
+                if (vpEl) vpEl.style.cursor = 'grab';
+            });
+        }
 
         // ─── Scroll-wheel zoom ───
         vp.addEventListener('wheel', e => {

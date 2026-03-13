@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <defs>
+    <linearGradient id="sG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#33691E"/>
+      <stop offset="50%" stop-color="#558B2F"/>
+      <stop offset="100%" stop-color="#33691E"/>
+    </linearGradient>
+    <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
+  </defs>
+  <ellipse cx="50" cy="112" rx="20" ry="6" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
+  <path d="M50 108 Q49 90 48 66" stroke="url(#sG)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M48 90 Q30 80 20 86 Q28 92 48 90Z" fill="#558B2F"/>
+  <path d="M48 78 Q62 68 72 74 Q64 80 48 78Z" fill="#689F38"/>
+  <path d="M48 66 Q38 62 36 52 Q38 44 48 42 Q58 44 60 52 Q58 62 48 66Z" fill="#FFD54F"/>
+  <path d="M48 66 Q42 64 40 54 Q40 46 48 44 Q48 54 48 66Z" fill="#FFCA28" opacity="0.3"/>
+  <path d="M48 66 Q36 62 34 54 Q40 62 48 66Z" fill="#689F38"/>
+</svg>
