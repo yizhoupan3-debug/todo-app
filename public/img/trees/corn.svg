@@ -1,47 +1,47 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <linearGradient id="sG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#33691E"/>
-      <stop offset="50%" stop-color="#558B2F"/>
-      <stop offset="100%" stop-color="#33691E"/>
-    </linearGradient>
-    <linearGradient id="cG" x1="0.3" y1="0" x2="0.7" y2="1">
+    <linearGradient id="eG" x1="0.3" y1="0" x2="0.7" y2="1">
       <stop offset="0%" stop-color="#FFF9C4"/>
-      <stop offset="30%" stop-color="#FFEE58"/>
+      <stop offset="40%" stop-color="#FFEE58"/>
       <stop offset="100%" stop-color="#F9A825"/>
     </linearGradient>
-    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
   </defs>
-  <ellipse cx="50" cy="114" rx="28" ry="8" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
-  <!-- Tall thick stalk -->
-  <path d="M50 112 Q48 78 46 22" stroke="url(#sG)" stroke-width="7" fill="none" stroke-linecap="round"/>
-  <path d="M50 112 Q49 80 47 24" stroke="#7CB342" stroke-width="1.5" fill="none" opacity="0.12"/>
-  <!-- Long strap-like leaves — arching downward -->
-  <path d="M46 82 Q8 62 2 76 Q10 86 46 82Z" fill="#558B2F"/>
-  <path d="M48 68 Q84 50 90 62 Q82 72 48 68Z" fill="#689F38"/>
-  <path d="M46 54 Q6 36 0 50 Q8 60 46 54Z" fill="#558B2F" opacity="0.9"/>
-  <path d="M48 42 Q80 26 88 38 Q80 48 48 42Z" fill="#689F38" opacity="0.9"/>
-  <!-- Corn ear — grows from SIDE of stalk (leaf axil), not top -->
-  <path d="M48 58 Q54 56 58 54" stroke="#558B2F" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <path d="M58 54 Q58 38 56 28 Q54 20 58 16 Q68 18 70 28 Q72 38 72 54Z" fill="url(#cG)"/>
-  <!-- Kernel rows on ear -->
-  <line x1="60" y1="52" x2="58" y2="20" stroke="#F9A825" stroke-width="0.7" opacity="0.3"/>
-  <line x1="64" y1="52" x2="62" y2="18" stroke="#F9A825" stroke-width="0.7" opacity="0.3"/>
-  <line x1="68" y1="52" x2="68" y2="20" stroke="#F9A825" stroke-width="0.7" opacity="0.3"/>
-  <!-- Kernel bumps -->
-  <circle cx="62" cy="28" r="2" fill="#FFD54F" opacity="0.35"/>
-  <circle cx="66" cy="34" r="2" fill="#FFCA28" opacity="0.3"/>
-  <circle cx="62" cy="40" r="2" fill="#FFD54F" opacity="0.35"/>
-  <circle cx="66" cy="46" r="2" fill="#FFCA28" opacity="0.3"/>
-  <!-- Husk wrapping ear -->
-  <path d="M72 54 Q78 50 80 40 Q74 46 72 54Z" fill="#689F38"/>
-  <path d="M58 54 Q52 50 50 40 Q56 46 58 54Z" fill="#558B2F"/>
-  <!-- Silk from top of ear -->
-  <path d="M58 18 Q54 10 50 6" stroke="#A1887F" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-  <path d="M60 16 Q58 8 60 4" stroke="#BCAAA4" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-  <path d="M64 18 Q66 10 70 6" stroke="#A1887F" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-  <!-- Tassel at actual top of stalk -->
-  <path d="M46 22 Q42 14 38 8" stroke="#BCAAA4" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-  <path d="M46 22 Q46 12 46 4" stroke="#A1887F" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-  <path d="M46 22 Q50 14 54 8" stroke="#BCAAA4" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="46" cy="114" rx="26" ry="8" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
+  <!-- Thick jointed stalk -->
+  <path d="M46 112 Q44 90 44 20" stroke="#558B2F" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M46 112 Q45 92 45 22" stroke="#7CB342" stroke-width="1.2" fill="none" opacity="0.1"/>
+  <!-- Nodes/joints -->
+  <ellipse cx="44" cy="42" rx="4.5" ry="2" fill="#33691E" opacity="0.4"/>
+  <ellipse cx="44" cy="66" rx="4.5" ry="2" fill="#33691E" opacity="0.35"/>
+  <ellipse cx="46" cy="90" rx="4.5" ry="2" fill="#33691E" opacity="0.3"/>
+  <!-- Long strap leaves — alternating, drooping from nodes -->
+  <path d="M44 42 Q6 28 -2 40 Q12 46 44 42Z" fill="#558B2F"/>
+  <path d="M44 42 Q10 32 4 42" fill="#7CB342" opacity="0.1"/>
+  <path d="M46 42 Q82 28 92 38 Q78 44 46 42Z" fill="#689F38"/>
+  <path d="M44 66 Q8 52 0 64 Q14 68 44 66Z" fill="#558B2F"/>
+  <path d="M46 66 Q78 54 88 62 Q76 68 46 66Z" fill="#689F38"/>
+  <path d="M44 90 Q14 78 6 88 Q16 92 44 90Z" fill="#558B2F" opacity="0.9"/>
+  <path d="M46 90 Q74 80 84 88 Q74 92 46 90Z" fill="#689F38" opacity="0.9"/>
+  <!-- Ear growing from node at stalk side — wrapped in husk -->
+  <path d="M44 48 Q50 46 54 44" stroke="#558B2F" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Husk leaves wrapping ear -->
+  <path d="M54 44 Q48 42 46 28 Q56 26 62 32 Q66 38 66 48 Q62 50 54 44Z" fill="#689F38"/>
+  <path d="M54 44 Q60 40 64 34 Q68 40 68 48 Q64 50 54 44Z" fill="#558B2F"/>
+  <!-- Ear visible through husk opening -->
+  <path d="M50 42 Q48 34 50 28 Q54 26 56 30 Q58 36 56 42Z" fill="url(#eG)"/>
+  <!-- Individual kernel bumps -->
+  <circle cx="52" cy="30" r="1.5" fill="#FFD54F" opacity="0.4"/>
+  <circle cx="54" cy="34" r="1.5" fill="#FFCA28" opacity="0.35"/>
+  <circle cx="52" cy="38" r="1.5" fill="#FFD54F" opacity="0.4"/>
+  <!-- Silk coming out of husk top -->
+  <path d="M50 28 Q46 20 42 16" stroke="#A1887F" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <path d="M52 26 Q50 18 52 12" stroke="#BCAAA4" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <path d="M54 28 Q56 20 60 16" stroke="#A1887F" stroke-width="1" fill="none" stroke-linecap="round"/>
+  <!-- Tassel at top of stalk -->
+  <path d="M44 20 Q38 10 34 4" stroke="#BCAAA4" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M44 20 Q44 8 44 0" stroke="#A1887F" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M44 20 Q50 10 54 4" stroke="#BCAAA4" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M44 20 Q40 12 38 8" stroke="#8D6E63" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <path d="M44 20 Q48 12 50 8" stroke="#8D6E63" stroke-width="1.2" fill="none" stroke-linecap="round"/>
 </svg>

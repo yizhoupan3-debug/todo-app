@@ -1,21 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <radialGradient id="cG" cx="38%" cy="30%">
-      <stop offset="0%" stop-color="#C8E6C9"/>
-      <stop offset="100%" stop-color="#1B5E20"/>
-    </radialGradient>
-    <linearGradient id="tG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#4E342E"/>
-      <stop offset="50%" stop-color="#795548"/>
-      <stop offset="100%" stop-color="#4E342E"/>
-    </linearGradient>
-    <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="2"/></filter>
   </defs>
-  <ellipse cx="50" cy="112" rx="26" ry="7" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
-  <path d="M46 110 Q46 92 47 76 Q49 74 51 74 Q53 74 54 76 Q55 92 54 110Z" fill="url(#tG)"/>
-  <path d="M44 90 Q32 84 26 88" stroke="#6D4C41" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <path d="M50 30 Q20 30 14 46 Q8 58 26 64 Q42 70 50 68 Q58 70 74 64 Q92 58 86 46 Q80 30 50 30Z" fill="url(#cG)"/>
-  <path d="M50 32 Q28 34 20 46 Q16 56 30 62 Q50 66 50 32Z" fill="#388E3C" opacity="0.3"/>
-  <circle cx="38" cy="56" r="5" fill="#FF9800"/>
-  <circle cx="60" cy="52" r="4.5" fill="#FF9800"/>
+  <ellipse cx="50" cy="112" rx="24" ry="7" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
+  <!-- Trunk -->
+  <path d="M50 110 Q48 100 48 90" stroke="#795548" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- Branches -->
+  <path d="M48 90 Q34 80 24 78" stroke="#6D4C41" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M48 90 Q62 78 72 76" stroke="#6D4C41" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M48 90 Q48 76 50 64" stroke="#6D4C41" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Small leaf clusters -->
+  <circle cx="24" cy="70" r="10" fill="#2E7D32"/>
+  <circle cx="50" cy="58" r="10" fill="#43A047"/>
+  <circle cx="72" cy="68" r="10" fill="#388E3C"/>
+  <circle cx="38" cy="64" r="8" fill="#43A047"/>
+  <circle cx="60" cy="62" r="8" fill="#2E7D32"/>
+  <!-- Small orange forming -->
+  <circle cx="28" cy="74" r="4" fill="#FFA726"/>
+  <circle cx="66" cy="72" r="3.5" fill="#FF9800"/>
 </svg>

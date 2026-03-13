@@ -22,7 +22,7 @@ const STATIC_ASSETS = [
     '/img/pupu.png',
     '/img/all.png',
     '/img/taofa.png',
-    '/img/cat-coin.png',
+    '/img/meow-coin.png',
     '/img/icon-48.png',
     '/img/icon-96.png',
     '/img/icon-144.png',

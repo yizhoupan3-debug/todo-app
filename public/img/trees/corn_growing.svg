@@ -1,23 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <linearGradient id="sG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#33691E"/>
-      <stop offset="50%" stop-color="#558B2F"/>
-      <stop offset="100%" stop-color="#33691E"/>
-    </linearGradient>
-    <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="2"/></filter>
   </defs>
-  <ellipse cx="50" cy="112" rx="20" ry="6" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
-  <path d="M50 108 Q48 82 46 46" stroke="url(#sG)" stroke-width="5.5" fill="none" stroke-linecap="round"/>
-  <path d="M46 82 Q16 64 8 76 Q14 84 46 82Z" fill="#558B2F"/>
-  <path d="M48 68 Q74 52 82 64 Q76 72 48 68Z" fill="#689F38"/>
-  <path d="M46 56 Q18 42 10 54 Q16 62 46 56Z" fill="#558B2F" opacity="0.9"/>
-  <!-- Side ear starting to form -->
-  <path d="M48 60 Q54 58 56 56" stroke="#558B2F" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-  <path d="M56 56 Q56 46 54 40 Q56 36 60 38 Q62 42 62 52Z" fill="#FFEE58"/>
-  <path d="M62 52 Q66 48 66 42 Q60 46 62 52Z" fill="#689F38"/>
-  <!-- Tassel at top -->
-  <path d="M46 46 Q42 38 38 32" stroke="#BCAAA4" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-  <path d="M46 46 Q46 36 46 28" stroke="#A1887F" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-  <path d="M46 46 Q50 38 54 32" stroke="#BCAAA4" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="48" cy="112" rx="18" ry="5" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
+  <!-- Shorter stalk -->
+  <path d="M48 110 Q46 90 46 50" stroke="#558B2F" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="46" cy="70" rx="3.5" ry="1.5" fill="#33691E" opacity="0.35"/>
+  <ellipse cx="47" cy="90" rx="3.5" ry="1.5" fill="#33691E" opacity="0.3"/>
+  <!-- Fewer leaves -->
+  <path d="M46 70 Q14 56 8 66 Q16 72 46 70Z" fill="#558B2F"/>
+  <path d="M48 70 Q76 56 84 64 Q74 70 48 70Z" fill="#689F38"/>
+  <path d="M46 90 Q18 78 10 86 Q18 92 46 90Z" fill="#558B2F" opacity="0.9"/>
+  <!-- Small ear bud forming at side -->
+  <path d="M46 74 Q52 72 54 70" stroke="#558B2F" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M54 70 Q54 62 52 56 Q56 54 58 58 Q60 64 58 70Z" fill="#C5E1A5"/>
+  <!-- Tassel beginning -->
+  <path d="M46 50 Q42 42 40 36" stroke="#BCAAA4" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <path d="M46 50 Q46 40 46 34" stroke="#A1887F" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <path d="M46 50 Q50 42 52 36" stroke="#BCAAA4" stroke-width="1.2" fill="none" stroke-linecap="round"/>
 </svg>
