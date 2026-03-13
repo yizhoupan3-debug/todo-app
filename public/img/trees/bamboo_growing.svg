@@ -1,17 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <linearGradient id="bG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#33691E"/>
+    <linearGradient id="b1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1B5E20"/>
       <stop offset="50%" stop-color="#558B2F"/>
-      <stop offset="100%" stop-color="#33691E"/>
+      <stop offset="100%" stop-color="#1B5E20"/>
     </linearGradient>
-    <filter id="sh"><feGaussianBlur stdDeviation="2"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
   </defs>
-  <ellipse cx="50" cy="112" rx="18" ry="5" fill="#3E2723" opacity="0.15" filter="url(#sh)"/>
-  <path d="M50 108 Q50 86 50 54" stroke="url(#bG)" stroke-width="5" fill="none" stroke-linecap="round"/>
-  <path d="M50 108 Q50 88 50 56" stroke="#8BC34A" stroke-width="1" fill="none" opacity="0.15"/>
-  <rect x="46" y="68" width="8" height="3" rx="1.5" fill="#1B5E20" opacity="0.35"/>
-  <rect x="46" y="88" width="8" height="3" rx="1.5" fill="#1B5E20" opacity="0.3"/>
-  <ellipse cx="36" cy="58" rx="9" ry="3.5" fill="#7CB342" transform="rotate(-25 36 58)"/>
-  <ellipse cx="62" cy="66" rx="8" ry="3" fill="#8BC34A" transform="rotate(20 62 66)"/>
+  <ellipse cx="50" cy="112" rx="22" ry="7" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
+  <!-- 2 culms -->
+  <path d="M40 110 Q38 82 40 46" stroke="url(#b1)" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+  <path d="M58 110 Q60 84 58 50" stroke="#2E7D32" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <!-- Joints -->
+  <rect x="35" y="60" width="10" height="3.5" rx="2" fill="#1B5E20" opacity="0.45"/>
+  <rect x="35" y="82" width="10" height="3.5" rx="2" fill="#1B5E20" opacity="0.4"/>
+  <rect x="53" y="68" width="10" height="3.5" rx="2" fill="#1B5E20" opacity="0.45"/>
+  <rect x="53" y="90" width="10" height="3.5" rx="2" fill="#1B5E20" opacity="0.4"/>
+  <!-- Leaves -->
+  <path d="M40 52 Q20 38 12 46 Q18 54 40 52Z" fill="#66BB6A"/>
+  <path d="M58 56 Q76 42 84 50 Q78 58 58 56Z" fill="#8BC34A"/>
+  <path d="M40 70 Q24 58 16 64 Q22 72 40 70Z" fill="#558B2F"/>
+  <path d="M58 74 Q72 62 80 68 Q74 76 58 74Z" fill="#7CB342"/>
 </svg>
