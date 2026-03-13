@@ -5913,6 +5913,531 @@ form {
   transition: width 1s ease;
 }
 
+/* ═══════════════════════════════════════════ */
+/* ═══ Fog of War Overlay ═══════════════════ */
+/* ═══════════════════════════════════════════ */
+
+.fog-overlay {
+  position: absolute;
+  pointer-events: none;
+  z-index: 25;
+  overflow: hidden;
+}
+
+.fog-overlay.fog-top {
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(180deg,
+      rgba(180, 200, 220, 0.95) 0%,
+      rgba(180, 200, 220, 0.7) 30%,
+      rgba(180, 200, 220, 0.3) 60%,
+      transparent 100%);
+}
+
+.fog-overlay.fog-bottom {
+  bottom: -10px;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(0deg,
+      rgba(180, 200, 220, 0.95) 0%,
+      rgba(180, 200, 220, 0.7) 30%,
+      rgba(180, 200, 220, 0.3) 60%,
+      transparent 100%);
+}
+
+.fog-overlay.fog-left {
+  top: 0;
+  bottom: 0;
+  left: -10px;
+  width: 120px;
+  background: linear-gradient(90deg,
+      rgba(180, 200, 220, 0.95) 0%,
+      rgba(180, 200, 220, 0.7) 30%,
+      rgba(180, 200, 220, 0.3) 60%,
+      transparent 100%);
+}
+
+.fog-overlay.fog-right {
+  top: 0;
+  bottom: 0;
+  right: -10px;
+  width: 120px;
+  background: linear-gradient(270deg,
+      rgba(180, 200, 220, 0.95) 0%,
+      rgba(180, 200, 220, 0.7) 30%,
+      rgba(180, 200, 220, 0.3) 60%,
+      transparent 100%);
+}
+
+/* Animated fog particles inside fog overlays */
+.fog-particle {
+  position: absolute;
+  width: 80px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(210, 220, 235, 0.6) 0%, transparent 70%);
+  animation: fogDrift 8s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.fog-particle:nth-child(2) {
+  animation-delay: -2s;
+  animation-duration: 10s;
+  width: 100px;
+  height: 70px;
+}
+
+.fog-particle:nth-child(3) {
+  animation-delay: -4s;
+  animation-duration: 12s;
+  width: 60px;
+  height: 50px;
+}
+
+.fog-particle:nth-child(4) {
+  animation-delay: -6s;
+  animation-duration: 9s;
+  width: 90px;
+  height: 65px;
+}
+
+@keyframes fogDrift {
+  0% {
+    transform: translateX(-20px) translateY(-5px) scale(1);
+    opacity: 0.4;
+  }
+
+  50% {
+    transform: translateX(20px) translateY(5px) scale(1.15);
+    opacity: 0.7;
+  }
+
+  100% {
+    transform: translateX(-10px) translateY(-3px) scale(1.05);
+    opacity: 0.5;
+  }
+}
+
+/* ═══ Harbor Building ═══ */
+.island-harbor {
+  position: absolute;
+  z-index: 10;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.3s cubic-bezier(.34, 1.56, .64, 1);
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+}
+
+.island-harbor:hover {
+  transform: scale(1.1);
+}
+
+.harbor-building {
+  width: 50px;
+  height: 45px;
+  background: linear-gradient(180deg, #6B4E12, #8B6914);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.harbor-building::before {
+  content: '⚓';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+}
+
+.harbor-building::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -4px;
+  right: -4px;
+  height: 12px;
+  background: linear-gradient(180deg, #A0782C, #8B6914);
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.harbor-label {
+  font-size: 11px;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+/* ═══ World Map Button (Top-Left) ═══ */
+.world-map-btn {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 6px 14px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.world-map-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: scale(1.05);
+}
+
+/* ═══ World Map Overlay ═══ */
+.world-map-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 20, 40, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.world-map-overlay.hidden {
+  display: none;
+}
+
+.world-map-container {
+  position: relative;
+  width: 500px;
+  height: 400px;
+  background:
+    radial-gradient(ellipse at center, rgba(0, 80, 120, 0.3) 0%, transparent 70%),
+    linear-gradient(180deg, #0a2a4a, #0d3d66, #0a2a4a);
+  border-radius: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.world-map-title {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.world-map-close {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.world-map-close:hover {
+  background: rgba(255, 80, 80, 0.4);
+}
+
+/* Island nodes on world map */
+.island-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.island-node:hover {
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.island-node-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.island-node.discovered .island-node-icon {
+  background: linear-gradient(135deg, #2d8f4e, #43b86a);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 10px rgba(45, 143, 78, 0.4);
+}
+
+.island-node.foggy .island-node-icon {
+  background: rgba(150, 165, 180, 0.5);
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  animation: fogNodePulse 3s ease-in-out infinite;
+}
+
+.island-node.starter .island-node-icon {
+  background: linear-gradient(135deg, #FFB300, #FF8F00);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 2px 14px rgba(255, 179, 0, 0.5);
+}
+
+.island-node-name {
+  font-size: 10px;
+  color: #fff;
+  margin-top: 4px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.island-node.foggy .island-node-name {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+@keyframes fogNodePulse {
+
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* ═══ Harbor Panel (modal) ═══ */
+.harbor-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 20, 40, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.harbor-panel.hidden {
+  display: none;
+}
+
+.harbor-content {
+  background: linear-gradient(180deg, #1a3a5c, #0d2a4a);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.harbor-title {
+  font-size: 18px;
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.harbor-section {
+  margin-bottom: 20px;
+}
+
+.harbor-section-title {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Boat cards */
+.boat-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.boat-card:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.boat-card.sailing {
+  border-color: rgba(100, 180, 255, 0.3);
+  background: rgba(100, 180, 255, 0.08);
+}
+
+.boat-card-icon {
+  font-size: 28px;
+  width: 44px;
+  text-align: center;
+}
+
+.boat-card-info {
+  flex: 1;
+}
+
+.boat-card-name {
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.boat-card-status {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 2px;
+}
+
+.boat-card-action {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.boat-card-action.explore {
+  background: linear-gradient(135deg, #43b86a, #2d8f4e);
+  color: #fff;
+}
+
+.boat-card-action.explore:hover {
+  filter: brightness(1.15);
+}
+
+.boat-card-action.buy {
+  background: linear-gradient(135deg, #FFB300, #FF8F00);
+  color: #fff;
+}
+
+.boat-card-action.buy:hover {
+  filter: brightness(1.15);
+}
+
+/* Expedition progress */
+.expedition-active {
+  background: rgba(100, 180, 255, 0.08);
+  border: 1px solid rgba(100, 180, 255, 0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.expedition-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.expedition-char {
+  font-size: 24px;
+}
+
+.expedition-info {
+  flex: 1;
+}
+
+.expedition-dest {
+  color: #fff;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.expedition-time {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.expedition-bar {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.expedition-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #43b86a, #64B5F6);
+  border-radius: 3px;
+  transition: width 1s linear;
+}
+
+/* Harbor close btn */
+.harbor-close {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 6px 16px;
+  margin-top: 8px;
+  width: 100%;
+  transition: background 0.2s;
+}
+
+.harbor-close:hover {
+  background: rgba(255, 80, 80, 0.3);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes seedPulse {
 
   0%,

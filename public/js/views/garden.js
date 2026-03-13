@@ -7,6 +7,10 @@ const GardenView = {
     assignee: '潘潘',
     shopAssignee: '潘潘',
     selectedTree: null, // for planting
+    islands: [],
+    boats: [],
+    expeditions: [],
+    currentIsland: null, // active island being viewed
 
     // Tree catalog with 4 stage images
     catalog: [
@@ -165,12 +169,35 @@ const GardenView = {
             App.showToast('获取余额失败', 'error');
         }
 
-        // Load plots
+        // Load islands
         try {
-            this.plots = await API.getPlots(this.assignee);
+            this.islands = await fetch(`/api/garden/islands/${encodeURIComponent(this.assignee)}`).then(r => r.json());
+            if (!this.currentIsland) {
+                this.currentIsland = this.islands.find(i => i.island_type === 'starter') || this.islands[0];
+            }
+        } catch (e) {
+            this.islands = [];
+        }
+
+        // Load plots for current island
+        try {
+            if (this.currentIsland) {
+                this.plots = await fetch(`/api/garden/plots/${encodeURIComponent(this.assignee)}/${this.currentIsland.id}`).then(r => r.json());
+            } else {
+                this.plots = await API.getPlots(this.assignee);
+            }
         } catch (e) {
             this.plots = [];
         }
+
+        // Load boats & expeditions
+        try {
+            const boatData = await fetch(`/api/garden/boats/${encodeURIComponent(this.assignee)}`).then(r => r.json());
+            this.boats = boatData.boats || [];
+        } catch (e) { this.boats = []; }
+        try {
+            this.expeditions = await fetch(`/api/garden/expeditions/${encodeURIComponent(this.assignee)}`).then(r => r.json());
+        } catch (e) { this.expeditions = []; }
 
         this.selectedTree = null;
         this.render();
@@ -193,22 +220,33 @@ const GardenView = {
             [28, 70], [48, 68], [62, 72],
         ];
 
+        const islandName = this.currentIsland ? this.currentIsland.name : '起始岛';
+        const discoveredCount = this.islands.filter(i => i.discovered).length;
+        const totalCount = this.islands.length;
+        const activeExp = this.expeditions.find(e => e.status === 'sailing');
+
         el.innerHTML = `
             <!-- Floating HUD -->
             <div class="island-hud">
                 <div class="island-hud-left">
+                    <button class="world-map-btn" id="world-map-btn" title="世界地图">
+                        🗺️ <span>${discoveredCount}/${totalCount}</span>
+                    </button>
                     <div class="garden-balance">
                     <img src="/img/meow-coin.png" alt="喵喵币" class="cat-coin-icon">
                     <strong>${this.balance}</strong> 喵喵币
                 </div>
                 </div>
                 <div class="island-hud-center">
+                    <span style="color:#fff;font-size:12px;font-weight:700;opacity:0.7">🏝️ ${islandName}</span>
+                    <div style="display:flex;gap:6px;margin-top:4px">
                     <button class="filter-pill ${this.assignee === '潘潘' ? 'active' : ''}" data-person="潘潘">
                         <img src="/img/panpan.png" alt="" style="width:16px;height:16px;border-radius:50%"> 潘潘
                     </button>
                     <button class="filter-pill ${this.assignee === '蒲蒲' ? 'active' : ''}" data-person="蒲蒲">
                         <img src="/img/pupu.png" alt="" style="width:16px;height:16px;border-radius:50%"> 蒲蒲
                     </button>
+                    </div>
                 </div>
                 <div class="island-hud-right">
                     <div class="zoom-controls">
@@ -224,6 +262,17 @@ const GardenView = {
             <!-- Draggable island world -->
             <div class="island-viewport" id="island-viewport">
                 <div class="island-world" id="island-world">
+                    <!-- ═══ Fog of War Overlays ═══ -->
+                    <div class="fog-overlay fog-top"><div class="fog-particle" style="left:10%;top:20%"></div><div class="fog-particle" style="left:50%;top:10%"></div><div class="fog-particle" style="left:80%;top:30%"></div></div>
+                    <div class="fog-overlay fog-bottom"><div class="fog-particle" style="left:20%;top:40%"></div><div class="fog-particle" style="left:60%;top:20%"></div><div class="fog-particle" style="left:85%;top:50%"></div></div>
+                    <div class="fog-overlay fog-left"><div class="fog-particle" style="left:20%;top:15%"></div><div class="fog-particle" style="left:30%;top:55%"></div><div class="fog-particle" style="left:10%;top:80%"></div></div>
+                    <div class="fog-overlay fog-right"><div class="fog-particle" style="left:20%;top:25%"></div><div class="fog-particle" style="left:40%;top:60%"></div><div class="fog-particle" style="left:10%;top:85%"></div></div>
+
+                    ${activeExp ? `<div style="position:absolute;z-index:30;top:10px;right:10px;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);border-radius:10px;padding:8px 14px;color:#fff;font-size:12px;display:flex;align-items:center;gap:6px">
+                        <span style="font-size:18px">${this.assignee === '潘潘' ? '🐱' : '🐰'}</span>
+                        <span>探索中... ⛵</span>
+                    </div>` : ''}
+
                     <!-- Ocean effects -->
                     <div class="ocean-foam-ring"></div>
                     <div class="ocean-caustics"></div>
@@ -426,18 +475,10 @@ const GardenView = {
                             <div class="hut-label">🏠 小屋</div>
                         </div>
 
-                        <!-- Dock/Pier (future boat module) -->
-                        <div class="island-dock" style="left:82%;top:76%">
-                            <div class="dock-planks">
-                                <div class="dock-plank"></div>
-                                <div class="dock-plank"></div>
-                                <div class="dock-plank"></div>
-                                <div class="dock-plank"></div>
-                                <div class="dock-plank"></div>
-                            </div>
-                            <div class="dock-post"></div>
-                            <div class="dock-post right"></div>
-                            <div class="dock-label">⚓ 码头</div>
+                        <!-- Harbor (click to open harbor panel) -->
+                        <div class="island-harbor" style="left:82%;top:76%" id="harbor-building" title="港口 — 点击管理船只和探索">
+                            <div class="harbor-building"></div>
+                            <div class="harbor-label">⚓ 港口</div>
                             <div style="position:absolute;bottom:-18px;left:-15px;font-size:22px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));animation:boatBob 3s ease-in-out infinite">⛵</div>
                         </div>
 
@@ -694,6 +735,7 @@ const GardenView = {
         document.querySelectorAll('#view-garden .filter-pill').forEach(btn => {
             btn.addEventListener('click', async () => {
                 this.assignee = btn.dataset.person;
+                this.currentIsland = null;
                 await this.open();
             });
         });
@@ -701,6 +743,16 @@ const GardenView = {
         // History button
         document.getElementById('garden-history-btn')?.addEventListener('click', () => {
             this.showHistory();
+        });
+
+        // World map button
+        document.getElementById('world-map-btn')?.addEventListener('click', () => {
+            this.showWorldMap();
+        });
+
+        // Harbor building click
+        document.getElementById('harbor-building')?.addEventListener('click', () => {
+            this.showHarborPanel();
         });
 
         // Cancel planting
@@ -723,6 +775,110 @@ const GardenView = {
                 }
             });
         });
+    },
+
+    // ═══ World Map Overlay ═══
+    showWorldMap() {
+        document.querySelector('.world-map-overlay')?.remove();
+        const discovered = this.islands.filter(i => i.discovered);
+        const overlay = document.createElement('div');
+        overlay.className = 'world-map-overlay';
+        overlay.innerHTML = `
+            <div class="world-map-title">🗺️ 世界地图 — ${discovered.length} 已发现 / ${this.islands.length} 总计</div>
+            <div class="world-map-container">
+                <button class="world-map-close" id="world-map-close">✕</button>
+                ${this.islands.map(island => {
+            const cx = 250 + island.position_x * 90;
+            const cy = 200 + island.position_y * 90;
+            const cls = island.island_type === 'starter' ? 'starter' : island.discovered ? 'discovered' : 'foggy';
+            const icon = island.island_type === 'starter' ? '🏠' : island.discovered ? '🏝️' : '❓';
+            return `<div class="island-node ${cls}" data-island-id="${island.id}" style="left:${cx}px;top:${cy}px" title="${island.discovered ? island.name + ' (' + island.grid_w + '×' + island.grid_h + ')' : '未探索'}">
+                        <div class="island-node-icon">${icon}</div>
+                        <div class="island-node-name">${island.discovered ? island.name : '???'}</div>
+                    </div>`;
+        }).join('')}
+                <div style="position:absolute;bottom:10px;right:14px;font-size:10px;color:rgba(255,255,255,0.3)">🧭 N↑</div>
+            </div>`;
+        document.body.appendChild(overlay);
+        document.getElementById('world-map-close')?.addEventListener('click', () => overlay.remove());
+        overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+        overlay.querySelectorAll('.island-node.discovered, .island-node.starter').forEach(node => {
+            node.addEventListener('click', async () => {
+                const id = parseInt(node.dataset.islandId);
+                const island = this.islands.find(i => i.id === id);
+                if (island && island.discovered) {
+                    this.currentIsland = island;
+                    overlay.remove();
+                    await this.open();
+                }
+            });
+        });
+    },
+
+    // ═══ Harbor Panel ═══
+    async showHarborPanel() {
+        try {
+            const bd = await fetch(`/api/garden/boats/${encodeURIComponent(this.assignee)}`).then(r => r.json());
+            this.boats = bd.boats || [];
+        } catch (e) { /* keep */ }
+        try {
+            this.expeditions = await fetch(`/api/garden/expeditions/${encodeURIComponent(this.assignee)}`).then(r => r.json());
+        } catch (e) { /* keep */ }
+
+        document.querySelector('.harbor-panel')?.remove();
+        const CAT = { raft: { name: '小木筏', cost: 200, icon: '🛶', dur: 30 }, sailboat: { name: '帆船', cost: 500, icon: '⛵', dur: 15 }, galleon: { name: '大帆船', cost: 1000, icon: '🚢', dur: 5 } };
+        const charName = this.assignee === '潘潘' ? '小八 🐱' : '乌撒奇 🐰';
+        const activeExp = this.expeditions.find(e => e.status === 'sailing');
+
+        let expHtml = '';
+        if (activeExp) {
+            const start = new Date(activeExp.started_at.replace(' ', 'T'));
+            const elapsed = Math.floor((Date.now() - start.getTime()) / 60000);
+            const pct = Math.min(100, Math.round(elapsed / activeExp.duration_min * 100));
+            const rem = Math.max(0, activeExp.duration_min - elapsed);
+            expHtml = `<div class="expedition-active"><div class="expedition-header"><div class="expedition-char">${this.assignee === '潘潘' ? '🐱' : '🐰'}</div><div class="expedition-info"><div class="expedition-dest">${activeExp.character} 正在探索未知海域...</div><div class="expedition-time">剩余约 ${rem} 分钟</div></div></div><div class="expedition-bar"><div class="expedition-bar-fill" style="width:${pct}%"></div></div></div>`;
+        }
+
+        const myBoats = this.boats.length ? this.boats.map(b => {
+            const s = CAT[b.boat_type] || CAT.raft;
+            return `<div class="boat-card ${b.status === 'sailing' ? 'sailing' : ''}" data-boat-id="${b.id}"><div class="boat-card-icon">${s.icon}</div><div class="boat-card-info"><div class="boat-card-name">${s.name}</div><div class="boat-card-status">${b.status === 'sailing' ? '⛵ 航行中' : '停泊中'} · ${s.dur}分/次</div></div>${b.status === 'docked' && !activeExp ? `<button class="boat-card-action explore" data-sail="${b.id}">🧭 探索</button>` : ''}</div>`;
+        }).join('') : '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:8px">还没有船只，先买一艘吧！</div>';
+
+        const shop = Object.entries(CAT).map(([t, s]) => `<div class="boat-card"><div class="boat-card-icon">${s.icon}</div><div class="boat-card-info"><div class="boat-card-name">${s.name}</div><div class="boat-card-status">${s.cost} 喵喵币 · ${s.dur}分钟</div></div><button class="boat-card-action buy" data-buy="${t}">购买</button></div>`).join('');
+
+        const p = document.createElement('div');
+        p.className = 'harbor-panel';
+        p.innerHTML = `<div class="harbor-content"><div class="harbor-title">⚓ 港口 — ${charName}</div>${expHtml}<div class="harbor-section"><div class="harbor-section-title">🚢 我的船只</div>${myBoats}</div><div class="harbor-section"><div class="harbor-section-title">🛒 船只商店</div>${shop}</div><button class="harbor-close" id="hp-close">关闭</button></div>`;
+        document.body.appendChild(p);
+
+        document.getElementById('hp-close')?.addEventListener('click', () => p.remove());
+        p.addEventListener('click', e => { if (e.target === p) p.remove(); });
+        p.querySelectorAll('[data-buy]').forEach(b => b.addEventListener('click', async () => { await this.buyBoat(b.dataset.buy); p.remove(); }));
+        p.querySelectorAll('[data-sail]').forEach(b => b.addEventListener('click', async () => { await this.startExpedition(parseInt(b.dataset.sail)); p.remove(); }));
+    },
+
+    async buyBoat(type) {
+        try {
+            const r = await fetch('/api/garden/boats/buy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assignee: this.assignee, boat_type: type }) }).then(r => { if (!r.ok) throw r; return r.json(); });
+            this.balance = r.balance;
+            this.updateHeaderCoins();
+            App.showToast(`🚢 购买成功！${r.boat.name}`, 'success');
+            await this.open();
+        } catch (e) {
+            const err = e.json ? await e.json() : { error: '购买失败' };
+            App.showToast(err.error || '购买失败', 'error');
+        }
+    },
+
+    async startExpedition(boatId) {
+        try {
+            const r = await fetch('/api/garden/expeditions/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assignee: this.assignee, boat_id: boatId }) }).then(r => { if (!r.ok) throw r; return r.json(); });
+            App.showToast(`⛵ ${r.character} 出发探索 ${r.targetIsland.name}！`, 'success');
+            await this.open();
+        } catch (e) {
+            const err = e.json ? await e.json() : { error: '出发失败' };
+            App.showToast(err.error || '出发失败', 'error');
+        }
     },
 
     async clearPlot(plotId, obstacleType) {

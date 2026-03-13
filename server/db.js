@@ -115,9 +115,49 @@ db.exec(`
     status TEXT NOT NULL DEFAULT 'wasteland' CHECK(status IN ('wasteland','cleared','planted')),
     obstacle_type TEXT DEFAULT NULL,
     tree_id INTEGER DEFAULT NULL,
-    UNIQUE(assignee, x, y)
+    island_id INTEGER DEFAULT NULL,
+    UNIQUE(assignee, x, y, island_id)
   );
   CREATE INDEX IF NOT EXISTS idx_plots_assignee ON garden_plots(assignee);
+
+  -- ═══ Multi-island exploration system ═══
+  CREATE TABLE IF NOT EXISTS islands (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    assignee TEXT NOT NULL CHECK(assignee IN ('潘潘','蒲蒲')),
+    name TEXT NOT NULL DEFAULT '起始岛',
+    island_type TEXT NOT NULL DEFAULT 'starter',
+    grid_w INTEGER NOT NULL DEFAULT 6,
+    grid_h INTEGER NOT NULL DEFAULT 4,
+    discovered INTEGER NOT NULL DEFAULT 1,
+    position_x REAL NOT NULL DEFAULT 0,
+    position_y REAL NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_islands_assignee ON islands(assignee);
+
+  CREATE TABLE IF NOT EXISTS boats (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    assignee TEXT NOT NULL CHECK(assignee IN ('潘潘','蒲蒲')),
+    boat_type TEXT NOT NULL DEFAULT 'raft',
+    name TEXT NOT NULL DEFAULT '小木筏',
+    status TEXT NOT NULL DEFAULT 'docked',
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_boats_assignee ON boats(assignee);
+
+  CREATE TABLE IF NOT EXISTS expeditions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    assignee TEXT NOT NULL CHECK(assignee IN ('潘潘','蒲蒲')),
+    boat_id INTEGER NOT NULL,
+    from_island_id INTEGER NOT NULL,
+    to_island_id INTEGER,
+    character TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'sailing',
+    started_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    duration_min INTEGER NOT NULL DEFAULT 30,
+    completed_at TEXT
+  );
+  CREATE INDEX IF NOT EXISTS idx_expeditions_assignee ON expeditions(assignee);
 `);
 
 // Seed default categories if empty
@@ -159,24 +199,72 @@ try {
   db.exec("ALTER TABLE trees ADD COLUMN growth_minutes INTEGER NOT NULL DEFAULT 0");
 }
 
+// Migrate: add island_id column to garden_plots if missing
+try {
+  db.prepare("SELECT island_id FROM garden_plots LIMIT 1").get();
+} catch (e) {
+  db.exec("ALTER TABLE garden_plots ADD COLUMN island_id INTEGER DEFAULT NULL");
+}
+
+// Seed starter islands if empty
+const islandCount = db.prepare('SELECT COUNT(*) as count FROM islands').get();
+if (islandCount.count === 0) {
+  const ISLAND_NAMES = [
+    '骷髅礁', '翡翠湾', '珊瑚岛', '月牙岬', '雷霆岩',
+    '迷雾港', '黄金沙洲', '幽灵岛', '椰风岛', '火山口',
+    '星落湾', '藏宝阁', '深海礁', '鲸歌岬', '龙脊岛',
+  ];
+  const seedIslands = db.transaction(() => {
+    for (const user of ['潘潘', '蒲蒲']) {
+      // Create starter island (center position)
+      const starter = db.prepare(
+        "INSERT INTO islands (assignee, name, island_type, grid_w, grid_h, discovered, position_x, position_y) VALUES (?, '起始岛', 'starter', 6, 4, 1, 0, 0)"
+      ).run(user);
+
+      // Link existing plots to this starter island
+      db.prepare('UPDATE garden_plots SET island_id = ? WHERE assignee = ? AND island_id IS NULL')
+        .run(starter.lastInsertRowid, user);
+
+      // Create 4 undiscovered foggy neighbor islands
+      const dirs = [
+        { dx: 0, dy: -1 },  // North
+        { dx: 1, dy: 0 },   // East
+        { dx: 0, dy: 1 },   // South
+        { dx: -1, dy: 0 },  // West
+      ];
+      for (const d of dirs) {
+        const name = ISLAND_NAMES[Math.floor(Math.random() * ISLAND_NAMES.length)];
+        // Random grid size: 4-8 wide, 3-5 tall
+        const gw = 4 + Math.floor(Math.random() * 5); // 4~8
+        const gh = 3 + Math.floor(Math.random() * 3); // 3~5
+        db.prepare(
+          'INSERT INTO islands (assignee, name, island_type, grid_w, grid_h, discovered, position_x, position_y) VALUES (?, ?, ?, ?, ?, 0, ?, ?)'
+        ).run(user, name, 'normal', gw, gh, d.dx, d.dy);
+      }
+    }
+  });
+  seedIslands();
+}
+
 // Seed garden plots if empty (6x4 = 24 plots per user)
 const plotCount = db.prepare('SELECT COUNT(*) as count FROM garden_plots').get();
 if (plotCount.count === 0) {
   const obstacles = ['rock', 'weed', 'wild_tree'];
+  // Get starter island IDs
+  const starterIslands = db.prepare("SELECT id, assignee FROM islands WHERE island_type = 'starter'").all();
   const insertPlot = db.prepare(
-    'INSERT INTO garden_plots (assignee, x, y, status, obstacle_type) VALUES (?, ?, ?, ?, ?)'
+    'INSERT INTO garden_plots (assignee, x, y, status, obstacle_type, island_id) VALUES (?, ?, ?, ?, ?, ?)'
   );
   const seedPlots = db.transaction(() => {
-    for (const user of ['潘潘', '蒲蒲']) {
+    for (const island of starterIslands) {
       for (let y = 0; y < 4; y++) {
         for (let x = 0; x < 6; x++) {
-          // Center 4 plots (2,1)(3,1)(2,2)(3,2) start cleared
           const isCenter = (x === 2 || x === 3) && (y === 1 || y === 2);
           if (isCenter) {
-            insertPlot.run(user, x, y, 'cleared', null);
+            insertPlot.run(island.assignee, x, y, 'cleared', null, island.id);
           } else {
             const obs = obstacles[Math.floor(Math.random() * obstacles.length)];
-            insertPlot.run(user, x, y, 'wasteland', obs);
+            insertPlot.run(island.assignee, x, y, 'wasteland', obs, island.id);
           }
         }
       }
