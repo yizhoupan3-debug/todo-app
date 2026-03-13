@@ -6,6 +6,10 @@ const Utils = {
         return '/img/meow-coin.png?v=4';
     },
 
+    headerCoinMarkup(balance = 0) {
+        return `${this.coinSvg()} <span id="header-coins">${this.formatCoinBalance(balance)}</span> 喵喵币`;
+    },
+
     /**
      * Escape HTML to prevent XSS when inserting user-supplied text.
      */
@@ -22,14 +26,6 @@ const Utils = {
      */
     coinSvg(cls = 'cat-coin-icon', style = '') {
         return `<img class="${cls}" ${style ? `style="${style}"` : ''} src="${this.coinIconSrc()}" alt="喵喵币">`;
-    },
-
-    syncCoinIcons(root = document) {
-        const src = this.coinIconSrc();
-        root.querySelectorAll('img.cat-coin-icon').forEach(img => {
-            img.src = src;
-            img.alt = '喵喵币';
-        });
     },
 
     formatCoinBalance(balance) {

@@ -39,11 +39,11 @@ const App = {
         // Initialize Lucide icons
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        // Force static header icon to use the same coin asset as dynamic views.
-        Utils.syncCoinIcons();
-
         // Theme
         this.initTheme();
+
+        // Render header coin button dynamically so icon and amount always share one source of truth.
+        this._renderHeaderCoins(0);
 
         // View switching
         this.bindNavigation();
@@ -431,11 +431,14 @@ const App = {
             coinUser = this.currentAssignee;
         }
         API.getCoins(coinUser).then(d => {
-            const el = document.getElementById('header-coins');
-            if (el) {
-                el.textContent = Utils.formatCoinBalance(d.balance);
-            }
+            this._renderHeaderCoins(d.balance);
         }).catch(() => { });
+    },
+
+    _renderHeaderCoins(balance = 0) {
+        const btn = document.getElementById('header-coin-btn');
+        if (!btn) return;
+        btn.innerHTML = Utils.headerCoinMarkup(balance);
     },
 
     _showCoinRules() {

@@ -666,4 +666,33 @@ router.post('/plots/speedup', (req, res) => {
     }
 });
 
+// ── Backpack: list all owned plants ──
+router.get('/backpack/:assignee', (req, res) => {
+    try {
+        const plants = db.prepare(
+            `SELECT t.id, t.tree_type, t.growth_minutes, t.status, t.planted_at,
+                    gp.island_id, i.name as island_name
+             FROM trees t
+             LEFT JOIN garden_plots gp ON gp.tree_id = t.id
+             LEFT JOIN islands i ON gp.island_id = i.id
+             WHERE t.assignee = ?
+             ORDER BY t.planted_at DESC`
+        ).all(req.params.assignee);
+
+        const result = plants.map(p => ({
+            id: p.id,
+            tree_type: p.tree_type,
+            growth_minutes: p.growth_minutes || 0,
+            status: p.status,
+            planted_at: p.planted_at,
+            island_name: p.island_name || '未知',
+            price: PLANT_CATALOG[p.tree_type] ?? 0,
+        }));
+
+        res.json({ plants: result });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;
