@@ -1,28 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <radialGradient id="soilG" cx="50%" cy="40%">
-      <stop offset="0%" stop-color="#8D6E63"/>
-      <stop offset="100%" stop-color="#5D4037"/>
+    <radialGradient id="sg" cx="50%" cy="40%">
+      <stop offset="0%" stop-color="#A1887F"/>
+      <stop offset="100%" stop-color="#4E342E"/>
     </radialGradient>
-    <radialGradient id="seedG" cx="35%" cy="30%">
-      <stop offset="0%" stop-color="#D7CCC8"/>
+    <radialGradient id="sd" cx="35%" cy="30%">
+      <stop offset="0%" stop-color="#EFEBE9"/>
       <stop offset="60%" stop-color="#BCAAA4"/>
-      <stop offset="100%" stop-color="#8D6E63"/>
+      <stop offset="100%" stop-color="#795548"/>
     </radialGradient>
-    <filter id="ss"><feGaussianBlur stdDeviation="2" in="SourceGraphic"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
   </defs>
-  <ellipse cx="50" cy="95" rx="30" ry="10" fill="#3E2723" opacity="0.2" filter="url(#ss)"/>
-  <ellipse cx="50" cy="90" rx="24" ry="11" fill="url(#soilG)"/>
-  <ellipse cx="50" cy="87" rx="20" ry="8" fill="#A1887F" opacity="0.4"/>
+  <!-- Shadow -->
+  <ellipse cx="50" cy="98" rx="32" ry="13" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
+  <!-- Soil mound -->
+  <path d="M20 95 Q30 80 50 76 Q70 80 80 95 Q70 102 50 104 Q30 102 20 95Z" fill="url(#sg)"/>
+  <path d="M26 94 Q38 82 50 78 Q50 88 35 96Z" fill="#6D4C41" opacity="0.4"/>
+  <ellipse cx="50" cy="88" rx="24" ry="8" fill="#8D6E63" opacity="0.3"/>
   <!-- Soil crumbs -->
-  <circle cx="35" cy="88" r="2" fill="#6D4C41" opacity="0.5"/>
-  <circle cx="62" cy="86" r="1.5" fill="#6D4C41" opacity="0.4"/>
-  <circle cx="42" cy="93" r="2.5" fill="#5D4037" opacity="0.3"/>
-  <circle cx="58" cy="91" r="1.8" fill="#6D4C41" opacity="0.35"/>
+  <circle cx="32" cy="92" r="2.5" fill="#5D4037" opacity="0.4"/>
+  <circle cx="65" cy="90" r="2" fill="#5D4037" opacity="0.35"/>
+  <circle cx="42" cy="96" r="3" fill="#4E342E" opacity="0.25"/>
+  <circle cx="58" cy="94" r="2.2" fill="#5D4037" opacity="0.3"/>
   <!-- Seed -->
-  <ellipse cx="50" cy="82" rx="7" ry="4.5" fill="url(#seedG)" transform="rotate(-15 50 82)"/>
-  <ellipse cx="49" cy="81" rx="4" ry="2.5" fill="#EFEBE9" opacity="0.3" transform="rotate(-15 49 81)"/>
-  <!-- Tiny sprout hint -->
-  <path d="M50 79 Q51.5 74 54 76" stroke="#8BC34A" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-  <path d="M53 76 Q55 73 54 76" fill="#AED581" opacity="0.6"/>
+  <ellipse cx="50" cy="82" rx="9" ry="6" fill="url(#sd)" transform="rotate(-20 50 82)"/>
+  <ellipse cx="48" cy="80" rx="5" ry="3" fill="#EFEBE9" opacity="0.25" transform="rotate(-20 48 80)"/>
+  <!-- Crack + tiny sprout -->
+  <path d="M50 78 Q52 72 56 74" stroke="#7CB342" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M55 74 Q57 70 56 74" fill="#AED581" opacity="0.7"/>
 </svg>
