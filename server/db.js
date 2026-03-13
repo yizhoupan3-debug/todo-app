@@ -158,6 +158,12 @@ db.exec(`
     completed_at TEXT
   );
   CREATE INDEX IF NOT EXISTS idx_expeditions_assignee ON expeditions(assignee);
+
+  CREATE TABLE IF NOT EXISTS app_meta (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+  );
 `);
 
 // Seed default categories if empty
@@ -188,8 +194,8 @@ if (catCount.count === 0) {
 // Seed coin accounts if empty
 const coinCount = db.prepare('SELECT COUNT(*) as count FROM coin_accounts').get();
 if (coinCount.count === 0) {
-  db.prepare("INSERT INTO coin_accounts (assignee, balance) VALUES ('潘潘', 0)").run();
-  db.prepare("INSERT INTO coin_accounts (assignee, balance) VALUES ('蒲蒲', 0)").run();
+  db.prepare("INSERT INTO coin_accounts (assignee, balance) VALUES ('潘潘', 5)").run();
+  db.prepare("INSERT INTO coin_accounts (assignee, balance) VALUES ('蒲蒲', 5)").run();
 }
 
 // Migrate: add growth_minutes column to trees if missing
@@ -337,3 +343,25 @@ try {
   }
 } catch (e) { /* already migrated or fresh */ }
 
+// One-time migration: ensure both users start with 5 coins on existing databases
+try {
+  const grantKey = 'initial_coin_grant_v1';
+  const alreadyGranted = db.prepare('SELECT value FROM app_meta WHERE key = ?').get(grantKey);
+  if (!alreadyGranted) {
+    const ensureInitialCoins = db.transaction(() => {
+      const users = ['潘潘', '蒲蒲'];
+      for (const user of users) {
+        const account = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?').get(user);
+        if (!account) {
+          db.prepare('INSERT INTO coin_accounts (assignee, balance) VALUES (?, 5)').run(user);
+          continue;
+        }
+        if (account.balance === 0) {
+          db.prepare('UPDATE coin_accounts SET balance = 5 WHERE assignee = ?').run(user);
+        }
+      }
+      db.prepare('INSERT INTO app_meta (key, value) VALUES (?, ?)').run(grantKey, '1');
+    });
+    ensureInitialCoins();
+  }
+} catch (e) { /* ignore migration failures */ }

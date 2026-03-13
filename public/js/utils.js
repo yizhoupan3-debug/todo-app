@@ -19,4 +19,8 @@ const Utils = {
     coinSvg(cls = 'cat-coin-icon', style = '') {
         return `<img class="${cls}" ${style ? `style="${style}"` : ''} src="/img/meow-coin.png?v=2" alt="喵喵币">`;
     },
+
+    formatCoinBalance(balance) {
+        return Number.isInteger(balance) ? String(balance) : balance.toFixed(1);
+    },
 };

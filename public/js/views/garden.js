@@ -142,6 +142,25 @@ const GardenView = {
 
     init() { },
 
+    _getHeaderCoinContext() {
+        if (App.currentView === 'garden') {
+            return { assignee: this.assignee, balance: this.balance };
+        }
+        if (App.currentView === 'shop') {
+            return { assignee: this.shopAssignee, balance: this.shopBalance };
+        }
+        if (App.currentAssignee && App.currentAssignee !== 'all') {
+            if (App.currentAssignee === this.assignee) {
+                return { assignee: this.assignee, balance: this.balance };
+            }
+            if (App.currentAssignee === this.shopAssignee) {
+                return { assignee: this.shopAssignee, balance: this.shopBalance };
+            }
+            return { assignee: App.currentAssignee, balance: null };
+        }
+        return { assignee: '潘潘', balance: null };
+    },
+
     /* Lightweight refresh: re-fetch data + update dynamic DOM only (no full re-render) */
     async refreshData() {
         const el = document.getElementById('view-garden');
@@ -166,6 +185,7 @@ const GardenView = {
 
         // Update only dynamic parts
         this._updateDynamicContent();
+        this.updateHeaderCoins();
     },
 
     async refreshShopData() {
@@ -177,17 +197,17 @@ const GardenView = {
         } catch (e) { /* keep old */ }
         // Update balance display only
         const balEl = el.querySelector('.garden-balance strong');
-        if (balEl) balEl.textContent = this.shopBalance;
+        if (balEl) balEl.textContent = Utils.formatCoinBalance(this.shopBalance);
+        this.updateHeaderCoins();
     },
 
     /* Update only the dynamic parts of the garden view (plots, HUD, stats bar) */
     _updateDynamicContent() {
+        // Must match the PP in render()
         const PP = [
-            [22, 18], [36, 14], [50, 12], [64, 16], [78, 20],
-            [16, 32], [30, 28], [44, 26], [58, 28], [72, 32], [86, 34],
-            [12, 46], [26, 42], [40, 40], [54, 42], [68, 44], [82, 48],
-            [18, 58], [32, 56], [46, 54], [60, 56], [74, 60],
-            [28, 70], [48, 68], [62, 72],
+            [15, 10], [35, 8],  [55, 12], [75, 10],
+            [10, 35], [30, 32], [50, 35], [70, 33], [88, 36],
+            [15, 58], [35, 55], [55, 58], [75, 56],
         ];
 
         // Update plots
@@ -199,21 +219,25 @@ const GardenView = {
                 return this.renderIslandPlot(plot, p[0], p[1]);
             }).join('');
             land.insertAdjacentHTML('beforeend', plotsHtml);
-            // Re-bind plot clicks
             land.querySelectorAll('.iplot').forEach(plotEl => {
-                plotEl.addEventListener('click', async () => {
+                plotEl.addEventListener('click', async (e) => {
+                    e.stopPropagation();
                     const plotId = parseInt(plotEl.dataset.plotId);
                     const plot = this.plots.find(p => p.id === plotId);
                     if (!plot) return;
+                    if (this._movingPlotId && plot.status === 'cleared') {
+                        await this.executeMoveToPlot(plotId); return;
+                    }
                     if (plot.status === 'wasteland') await this.clearPlot(plotId, plot.obstacle_type);
                     else if (plot.status === 'cleared' && this.selectedTree) await this.plantOnPlot(plotId);
+                    else if (plot.status === 'planted') this.showPlotMenu(plotId, plotEl);
                 });
             });
         }
 
         // Update HUD balance
         const balEl = document.querySelector('.island-hud .garden-balance strong');
-        if (balEl) balEl.textContent = this.balance;
+        if (balEl) balEl.textContent = Utils.formatCoinBalance(this.balance);
 
         // Update stats bar
         const clearedCount = this.plots.filter(p => p.status !== 'wasteland').length;
@@ -286,6 +310,7 @@ const GardenView = {
 
         this.selectedTree = null;
         this.render();
+        this.updateHeaderCoins();
     },
 
     render() {
@@ -319,7 +344,7 @@ const GardenView = {
                 <div class="island-hud-left">
                     <div class="garden-balance">
                     ${Utils.coinSvg()}
-                    <strong>${this.balance}</strong> 喵喵币
+                    <strong>${Utils.formatCoinBalance(this.balance)}</strong> 喵喵币
                 </div>
                 </div>
                 <div class="island-hud-center">
@@ -669,7 +694,7 @@ const GardenView = {
     _applyTransform(world) {
         if (!world) world = document.getElementById('island-world');
         if (!world) return;
-        world.style.transform = `scale(${this._zoom}) perspective(1200px) rotateX(28deg)`;
+        world.style.transform = `scale(${this._zoom}) perspective(1200px) rotateX(15deg)`;
         world.style.transformOrigin = 'center center';
     },
 
@@ -724,18 +749,192 @@ const GardenView = {
 
         // Plot clicks
         document.querySelectorAll('.iplot').forEach(plotEl => {
-            plotEl.addEventListener('click', async () => {
+            plotEl.addEventListener('click', async (e) => {
+                e.stopPropagation();
                 const plotId = parseInt(plotEl.dataset.plotId);
                 const plot = this.plots.find(p => p.id === plotId);
                 if (!plot) return;
+
+                // Moving mode — select target
+                if (this._movingPlotId && plot.status === 'cleared') {
+                    await this.executeMoveToPlot(plotId);
+                    return;
+                }
 
                 if (plot.status === 'wasteland') {
                     await this.clearPlot(plotId, plot.obstacle_type);
                 } else if (plot.status === 'cleared' && this.selectedTree) {
                     await this.plantOnPlot(plotId);
+                } else if (plot.status === 'planted') {
+                    this.showPlotMenu(plotId, plotEl);
                 }
             });
         });
+
+        // Close menu when clicking outside
+        document.getElementById('island-viewport')?.addEventListener('click', (e) => {
+            if (!e.target.closest('.plot-menu') && !e.target.closest('.iplot')) {
+                this.closePlotMenu();
+            }
+        });
+    },
+
+    // ═══ Plant Interaction Menu ═══
+    _movingPlotId: null,
+
+    showPlotMenu(plotId, plotEl) {
+        this.closePlotMenu();
+        const plot = this.plots.find(p => p.id === plotId);
+        if (!plot) return;
+
+        const catItem = this.catalog.find(c => c.type === plot.tree_type);
+        const gm = plot.growth_minutes || 0;
+        const stage = this.getGrowthStage(gm);
+        const isMature = gm >= 150;
+
+        const menu = document.createElement('div');
+        menu.className = 'plot-menu';
+        menu.innerHTML = `
+            <div class="plot-menu-header">
+                <span>${catItem?.icon || '🌱'}</span>
+                <strong>${catItem?.name || plot.tree_type}</strong>
+                <small>${this.getGrowthLabel(gm)}</small>
+            </div>
+            <div class="plot-menu-actions">
+                <button class="pm-btn pm-collect ${isMature ? '' : 'disabled'}" data-action="collect" title="收取金币">
+                    💰
+                    <span>收取</span>
+                </button>
+                <button class="pm-btn pm-speedup ${isMature ? 'disabled' : ''}" data-action="speedup" title="花费 5 喵喵币加速">
+                    ⏩
+                    <span>加速<br><small>5币</small></span>
+                </button>
+                <button class="pm-btn pm-move" data-action="move" title="移动到空地">
+                    🔄
+                    <span>移动</span>
+                </button>
+                <button class="pm-btn pm-remove" data-action="remove" title="铲除植物">
+                    🗑️
+                    <span>铲除</span>
+                </button>
+                <button class="pm-btn pm-items disabled" data-action="items" title="道具（即将上线）">
+                    🧪
+                    <span>道具</span>
+                </button>
+            </div>
+        `;
+
+        // Position near the plot
+        const rect = plotEl.getBoundingClientRect();
+        const vpRect = document.getElementById('island-viewport')?.getBoundingClientRect() || { left: 0, top: 0 };
+        menu.style.left = `${rect.left - vpRect.left + rect.width / 2}px`;
+        menu.style.top = `${rect.top - vpRect.top - 10}px`;
+
+        document.getElementById('island-viewport')?.appendChild(menu);
+
+        // Bind actions
+        menu.querySelectorAll('.pm-btn:not(.disabled)').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const action = btn.dataset.action;
+                if (action === 'collect') await this.collectPlot(plotId);
+                else if (action === 'remove') await this.removePlot(plotId);
+                else if (action === 'move') this.startMovePlot(plotId);
+                else if (action === 'speedup') await this.speedupPlot(plotId);
+                else if (action === 'items') Utils.toast('🧪 道具功能即将上线！');
+            });
+        });
+    },
+
+    closePlotMenu() {
+        document.querySelectorAll('.plot-menu').forEach(m => m.remove());
+        this._movingPlotId = null;
+        document.querySelectorAll('.iplot.move-target').forEach(el => el.classList.remove('move-target'));
+    },
+
+    async collectPlot(plotId) {
+        this.closePlotMenu();
+        const plot = this.plots.find(p => p.id === plotId);
+        if (!plot || !plot.tree_id) return;
+        try {
+            const res = await fetch('/api/garden/harvest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ assignee: this.assignee, tree_id: plot.tree_id })
+            });
+            const data = await res.json();
+            if (!res.ok) { Utils.toast(data.error || '收取失败'); return; }
+            Utils.toast(`💰 收获 ${data.reward} 喵喵币！`, 'success');
+            this.balance = data.balance;
+            await this.refreshData();
+        } catch (e) { Utils.toast('网络错误'); }
+    },
+
+    async removePlot(plotId) {
+        this.closePlotMenu();
+        const plot = this.plots.find(p => p.id === plotId);
+        const catItem = this.catalog.find(c => c.type === plot?.tree_type);
+        if (!confirm(`确定要铲除 ${catItem?.name || '这株植物'} 吗？\n（不会返还喵喵币）`)) return;
+        try {
+            const res = await fetch('/api/garden/plots/remove', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ assignee: this.assignee, plot_id: plotId })
+            });
+            const data = await res.json();
+            if (!res.ok) { Utils.toast(data.error || '铲除失败'); return; }
+            Utils.toast('🗑️ 已铲除', 'success');
+            this._staticRendered = false;
+            await this.open();
+        } catch (e) { Utils.toast('网络错误'); }
+    },
+
+    startMovePlot(plotId) {
+        this.closePlotMenu();
+        this._movingPlotId = plotId;
+        // Highlight cleared plots as targets
+        document.querySelectorAll('.iplot.cleared').forEach(el => {
+            el.classList.add('move-target');
+        });
+        Utils.toast('🔄 点击一个空地块来移动植物', 'info');
+    },
+
+    async executeMoveToPlot(targetPlotId) {
+        if (!this._movingPlotId) return;
+        try {
+            const res = await fetch('/api/garden/plots/move', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    assignee: this.assignee,
+                    from_plot_id: this._movingPlotId,
+                    to_plot_id: targetPlotId
+                })
+            });
+            const data = await res.json();
+            if (!res.ok) { Utils.toast(data.error || '移动失败'); return; }
+            Utils.toast('🔄 移动成功！', 'success');
+            this._movingPlotId = null;
+            this._staticRendered = false;
+            await this.open();
+        } catch (e) { Utils.toast('网络错误'); }
+    },
+
+    async speedupPlot(plotId) {
+        this.closePlotMenu();
+        try {
+            const res = await fetch('/api/garden/plots/speedup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ assignee: this.assignee, plot_id: plotId })
+            });
+            const data = await res.json();
+            if (!res.ok) { Utils.toast(data.error || '加速失败'); return; }
+            Utils.toast(`⏩ 加速成功！花费 ${data.cost} 喵喵币`, 'success');
+            this.balance = data.balance;
+            this._staticRendered = false;
+            await this.open();
+        } catch (e) { Utils.toast('网络错误'); }
     },
 
     // ═══ World Map Overlay ═══
@@ -922,6 +1121,7 @@ const GardenView = {
             App.showToast('加载商城失败', 'error');
         }
         this.renderShop();
+        this.updateHeaderCoins();
     },
 
     renderShop() {
@@ -932,7 +1132,7 @@ const GardenView = {
             <div class="shop-view-header">
                 <div class="garden-balance">
                     ${Utils.coinSvg()}
-                    <strong>${this.shopBalance}</strong> 喵喵币
+                    <strong>${Utils.formatCoinBalance(this.shopBalance)}</strong> 喵喵币
                 </div>
                 <div class="filter-pills">
                     <button class="filter-pill ${this.shopAssignee === '潘潘' ? 'active' : ''}" data-person="潘潘">
@@ -1041,8 +1241,12 @@ const GardenView = {
     updateHeaderCoins() {
         const el = document.getElementById('header-coins');
         if (!el) return;
-        const bal = App.currentView === 'shop' ? this.shopBalance : this.balance;
-        el.textContent = bal;
+        const { balance } = this._getHeaderCoinContext();
+        if (balance == null) {
+            App._refreshHeaderCoins();
+            return;
+        }
+        el.textContent = Utils.formatCoinBalance(balance);
     },
 
     async earnFromPomodoro(assignee, focusMinutes) {

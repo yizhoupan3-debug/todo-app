@@ -540,4 +540,130 @@ router.get('/plots/:assignee/:islandId', (req, res) => {
     }
 });
 
+// ── Remove (shovel) a planted tree ──
+router.post('/plots/remove', (req, res) => {
+    try {
+        const { assignee, plot_id } = req.body;
+        if (!assignee || !plot_id) return res.status(400).json({ error: 'assignee, plot_id required' });
+
+        const remove = db.transaction(() => {
+            const plot = db.prepare('SELECT * FROM garden_plots WHERE id = ? AND assignee = ?')
+                .get(plot_id, assignee);
+            if (!plot) throw new Error('NOT_FOUND');
+            if (plot.status !== 'planted') throw new Error('NOT_PLANTED');
+
+            // Delete the tree
+            if (plot.tree_id) {
+                db.prepare('DELETE FROM trees WHERE id = ?').run(plot.tree_id);
+            }
+            // Reset plot to cleared
+            db.prepare('UPDATE garden_plots SET status = ?, tree_id = NULL WHERE id = ?')
+                .run('cleared', plot_id);
+            return { success: true };
+        });
+
+        remove();
+        res.json({ success: true });
+    } catch (err) {
+        if (err.message === 'NOT_FOUND') return res.status(404).json({ error: '地块不存在' });
+        if (err.message === 'NOT_PLANTED') return res.status(400).json({ error: '该地块没有植物' });
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Move a plant to a different plot ──
+router.post('/plots/move', (req, res) => {
+    try {
+        const { assignee, from_plot_id, to_plot_id } = req.body;
+        if (!assignee || !from_plot_id || !to_plot_id)
+            return res.status(400).json({ error: 'assignee, from_plot_id, to_plot_id required' });
+
+        const move = db.transaction(() => {
+            const fromPlot = db.prepare('SELECT * FROM garden_plots WHERE id = ? AND assignee = ?')
+                .get(from_plot_id, assignee);
+            const toPlot = db.prepare('SELECT * FROM garden_plots WHERE id = ? AND assignee = ?')
+                .get(to_plot_id, assignee);
+
+            if (!fromPlot || !toPlot) throw new Error('NOT_FOUND');
+            if (fromPlot.status !== 'planted') throw new Error('NOT_PLANTED');
+            if (toPlot.status !== 'cleared') throw new Error('TARGET_NOT_CLEARED');
+
+            // Move tree_id from source to target
+            db.prepare('UPDATE garden_plots SET status = ?, tree_id = ? WHERE id = ?')
+                .run('planted', fromPlot.tree_id, to_plot_id);
+            db.prepare('UPDATE garden_plots SET status = ?, tree_id = NULL WHERE id = ?')
+                .run('cleared', from_plot_id);
+
+            // Update tree position
+            if (fromPlot.tree_id) {
+                db.prepare('UPDATE trees SET position_x = ?, position_y = ? WHERE id = ?')
+                    .run(toPlot.x, toPlot.y, fromPlot.tree_id);
+            }
+
+            return { success: true };
+        });
+
+        move();
+        res.json({ success: true });
+    } catch (err) {
+        if (err.message === 'NOT_FOUND') return res.status(404).json({ error: '地块不存在' });
+        if (err.message === 'NOT_PLANTED') return res.status(400).json({ error: '源地块没有植物' });
+        if (err.message === 'TARGET_NOT_CLEARED') return res.status(400).json({ error: '目标地块不是空地' });
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Speed up growth (pay coins to advance stage) ──
+router.post('/plots/speedup', (req, res) => {
+    try {
+        const { assignee, plot_id } = req.body;
+        if (!assignee || !plot_id) return res.status(400).json({ error: 'assignee, plot_id required' });
+
+        const SPEED_COST = 5; // 5 coins per stage jump
+        const SPEED_MINUTES = 50; // adds 50 minutes of growth
+
+        const speedup = db.transaction(() => {
+            const plot = db.prepare('SELECT * FROM garden_plots WHERE id = ? AND assignee = ?')
+                .get(plot_id, assignee);
+            if (!plot) throw new Error('NOT_FOUND');
+            if (plot.status !== 'planted' || !plot.tree_id) throw new Error('NOT_PLANTED');
+
+            const tree = db.prepare('SELECT * FROM trees WHERE id = ?').get(plot.tree_id);
+            if (!tree) throw new Error('NOT_FOUND');
+            if ((tree.growth_minutes || 0) >= 150) throw new Error('ALREADY_MATURE');
+
+            const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
+                .get(assignee);
+            if (balance < SPEED_COST) throw new Error('INSUFFICIENT');
+
+            // Deduct coins
+            db.prepare('UPDATE coin_accounts SET balance = balance - ? WHERE assignee = ?')
+                .run(SPEED_COST, assignee);
+            db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                .run(assignee, -SPEED_COST, 'speedup', tree.tree_type);
+
+            // Advance growth
+            const newMinutes = Math.min(150, (tree.growth_minutes || 0) + SPEED_MINUTES);
+            const newStatus = newMinutes >= 150 ? 'grown' : 'growing';
+            db.prepare('UPDATE trees SET growth_minutes = ?, status = ? WHERE id = ?')
+                .run(newMinutes, newStatus, tree.id);
+
+            const newBalance = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
+                .get(assignee).balance;
+            const updatedTree = db.prepare('SELECT * FROM trees WHERE id = ?').get(tree.id);
+
+            return { balance: newBalance, tree: updatedTree, cost: SPEED_COST };
+        });
+
+        const result = speedup();
+        res.json(result);
+    } catch (err) {
+        if (err.message === 'NOT_FOUND') return res.status(404).json({ error: '不存在' });
+        if (err.message === 'NOT_PLANTED') return res.status(400).json({ error: '没有植物' });
+        if (err.message === 'ALREADY_MATURE') return res.status(400).json({ error: '已经成熟了' });
+        if (err.message === 'INSUFFICIENT') return res.status(400).json({ error: '喵喵币不足 😿' });
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

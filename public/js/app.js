@@ -430,9 +430,7 @@ const App = {
         API.getCoins(coinUser).then(d => {
             const el = document.getElementById('header-coins');
             if (el) {
-                // Format: integer shows as-is, decimal shows 1 decimal place
-                const bal = d.balance;
-                el.textContent = Number.isInteger(bal) ? bal : bal.toFixed(1);
+                el.textContent = Utils.formatCoinBalance(d.balance);
             }
         }).catch(() => { });
     },
@@ -609,4 +607,3 @@ function installWidget(widgetType) {
     document.getElementById('widget-modal-close').onclick = () => overlay.classList.add('hidden');
     overlay.onclick = (e) => { if (e.target === overlay) overlay.classList.add('hidden'); };
 }
-
