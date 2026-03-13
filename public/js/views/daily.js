@@ -16,7 +16,11 @@ const DailyView = {
                 App.currentAssignee = assignee;
                 document.querySelectorAll('.daily-person-filter .filter-pill').forEach(b =>
                     b.classList.toggle('active', b.dataset.assignee === assignee));
+                // Show/hide coin button based on assignee
+                const coinBtn = document.getElementById('header-coin-btn');
+                if (coinBtn) coinBtn.style.display = assignee === 'all' ? 'none' : '';
                 this.loadTasks();
+                App._refreshHeaderCoins();
             });
         });
 
