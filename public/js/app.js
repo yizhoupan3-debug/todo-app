@@ -80,8 +80,8 @@ const App = {
         // Shop from sidebar
         document.getElementById('nav-shop').addEventListener('click', () => this.switchView('shop'));
 
-        // Header coin button
-        document.getElementById('header-coin-btn')?.addEventListener('click', () => this.switchView('garden'));
+        // Header coin button — show rules popup
+        document.getElementById('header-coin-btn')?.addEventListener('click', () => this._showCoinRules());
 
         // Load initial coin balance
         this._refreshHeaderCoins();
@@ -296,6 +296,14 @@ const App = {
         // Close sidebar on mobile after switching
         this.closeSidebar();
 
+        // Show/hide header coin button (hide in daily/monthly when assignee='all')
+        const coinBtn = document.getElementById('header-coin-btn');
+        if (coinBtn) {
+            const hideViews = ['daily', 'monthly'];
+            const shouldHide = hideViews.includes(view) && this.currentAssignee === 'all';
+            coinBtn.style.display = shouldHide ? 'none' : '';
+        }
+
         // Refresh header coin balance
         this._refreshHeaderCoins();
 
@@ -420,6 +428,50 @@ const App = {
             if (el) el.textContent = d.balance;
         }).catch(() => { });
     },
+
+    _showCoinRules() {
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'coin-rules-overlay';
+        overlay.innerHTML = `
+            <div class="coin-rules-modal">
+                <div class="coin-rules-header">
+                    <img src="/img/meow-coin.png" class="cat-coin-icon large" alt="喵喵币">
+                    <h3>喵喵币获取规则</h3>
+                    <button class="coin-rules-close">✕</button>
+                </div>
+                <div class="coin-rules-body">
+                    <div class="coin-rule-item">
+                        <span class="coin-rule-icon">✅</span>
+                        <div><strong>完成任务</strong><br>每完成一个任务获得 1 喵喵币</div>
+                    </div>
+                    <div class="coin-rule-item">
+                        <span class="coin-rule-icon">📅</span>
+                        <div><strong>每日打卡</strong><br>连续打卡可获得额外奖励</div>
+                    </div>
+                    <div class="coin-rule-item">
+                        <span class="coin-rule-icon">🌳</span>
+                        <div><strong>植物成长</strong><br>专注种树，植物成长时获得喵喵币</div>
+                    </div>
+                    <div class="coin-rule-item">
+                        <span class="coin-rule-icon">🛒</span>
+                        <div><strong>商城消费</strong><br>在商城中购买植物、装饰等</div>
+                    </div>
+                </div>
+                <div class="coin-rules-footer">
+                    <button class="coin-rules-goto-garden">🌴 去花园</button>
+                    <button class="coin-rules-goto-shop">🛒 去商城</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        // Close handlers
+        overlay.querySelector('.coin-rules-close').onclick = () => overlay.remove();
+        overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+        overlay.querySelector('.coin-rules-goto-garden').onclick = () => { overlay.remove(); this.switchView('garden'); };
+        overlay.querySelector('.coin-rules-goto-shop').onclick = () => { overlay.remove(); this.switchView('shop'); };
+    },
+
 
     showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
