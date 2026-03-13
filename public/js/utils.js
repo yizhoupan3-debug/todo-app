@@ -2,6 +2,10 @@
  * Shared utility functions — avoids duplication across modules.
  */
 const Utils = {
+    coinIconSrc() {
+        return '/img/meow-coin.png?v=4';
+    },
+
     /**
      * Escape HTML to prevent XSS when inserting user-supplied text.
      */
@@ -17,7 +21,15 @@ const Utils = {
      * @param {string} [style=''] — inline style override
      */
     coinSvg(cls = 'cat-coin-icon', style = '') {
-        return `<img class="${cls}" ${style ? `style="${style}"` : ''} src="/img/meow-coin.png?v=2" alt="喵喵币">`;
+        return `<img class="${cls}" ${style ? `style="${style}"` : ''} src="${this.coinIconSrc()}" alt="喵喵币">`;
+    },
+
+    syncCoinIcons(root = document) {
+        const src = this.coinIconSrc();
+        root.querySelectorAll('img.cat-coin-icon').forEach(img => {
+            img.src = src;
+            img.alt = '喵喵币';
+        });
     },
 
     formatCoinBalance(balance) {

@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v23'; // Bump on each deploy
+const CACHE_VERSION = 'v25'; // Bump on each deploy
 const CACHE_NAME = `panpu-todo-${CACHE_VERSION}`;
 
 const STATIC_ASSETS = [
@@ -22,7 +22,7 @@ const STATIC_ASSETS = [
     '/img/pupu.png',
     '/img/all.png',
     '/img/taofa.png',
-    '/img/meow-coin.png?v=2',
+    '/img/meow-coin.png?v=4',
     '/img/icon-48.png',
     '/img/icon-96.png',
     '/img/icon-144.png',

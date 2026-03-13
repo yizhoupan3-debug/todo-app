@@ -39,6 +39,9 @@ const App = {
         // Initialize Lucide icons
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
+        // Force static header icon to use the same coin asset as dynamic views.
+        Utils.syncCoinIcons();
+
         // Theme
         this.initTheme();
 

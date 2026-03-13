@@ -7594,6 +7594,11 @@ form {
 }
 
 /* ═══ BOOM BEACH ISLAND STYLES ═══ */
+/* Override old island-world ocean background from line ~5095 */
+.island-world { background: none !important; }
+.island-world::before { display: none !important; }
+.island-world::after { display: none !important; }
+.ocean-wave { display: none !important; }
 
 /* Viewport — Boom Beach ocean background */
 .island-viewport {
@@ -7605,6 +7610,8 @@ form {
   scrollbar-width: none;
   -ms-overflow-style: none;
   background:
+    radial-gradient(ellipse 400px 300px at 20% 85%, rgba(0,180,220,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 350px 250px at 80% 15%, rgba(0,200,160,0.12) 0%, transparent 65%),
     radial-gradient(ellipse at center, rgba(0,180,220,0.15) 0%, transparent 60%),
     linear-gradient(180deg,
       #0A7EA4 0%, #0B6A8A 20%, #0A5B79 40%,
@@ -7613,11 +7620,11 @@ form {
 
 .island-viewport::-webkit-scrollbar { display: none; }
 
-/* World — isometric perspective */
+/* World — isometric canvas, bigger for better detail */
 .island-world {
   position: relative;
-  width: 1200px;
-  height: 960px;
+  width: 1400px;
+  height: 1120px;
   user-select: none;
   transform: perspective(1200px) rotateX(15deg);
   transform-origin: center 40%;
@@ -7630,19 +7637,20 @@ form {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 90%;
+  width: 92%;
   height: auto;
   pointer-events: none;
   z-index: 1;
 }
 
-/* ── Island land (interactive overlay) ── */
+/* ── Island land (interactive overlay) — MUST overlay SVG exactly ── */
 .island-land {
   position: absolute;
-  left: 14%;
-  top: 22%;
-  width: 64%;
-  height: 52%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 92%;
+  aspect-ratio: 1000 / 800;
   z-index: 5;
 }
 
