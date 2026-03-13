@@ -1,7 +1,6 @@
-const CACHE_VERSION = 'v7'; // Bump on each deploy
+const CACHE_VERSION = 'v9'; // Bump on each deploy
 const CACHE_NAME = `panpu-todo-${CACHE_VERSION}`;
 
-// Static assets (cache-first)
 const STATIC_ASSETS = [
     '/',
     '/index.html',
@@ -28,17 +27,17 @@ const STATIC_ASSETS = [
     '/img/icon-512.png',
 ];
 
-// Install — cache static assets
+// Install — pre-cache static assets for offline use
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
             return cache.addAll(STATIC_ASSETS);
         })
     );
-    self.skipWaiting();
+    self.skipWaiting(); // Activate immediately
 });
 
-// Activate — clean old caches
+// Activate — delete ALL old caches
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keys) => {
@@ -47,10 +46,11 @@ self.addEventListener('activate', (event) => {
             );
         })
     );
-    self.clients.claim();
+    self.clients.claim(); // Take control immediately
 });
 
-// Fetch — different strategies for different resource types
+// Fetch — NETWORK-FIRST for everything
+// Always try network first; only fall back to cache when offline
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
 
@@ -59,38 +59,23 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // HTML pages: network-first (get latest version)
-    if (event.request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname === '/') {
-        event.respondWith(
-            fetch(event.request)
-                .then((response) => {
-                    const clone = response.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-                    return response;
-                })
-                .catch(() => {
-                    return caches.match(event.request).then(cached => {
-                        return cached || caches.match('/');
-                    });
-                })
-        );
-        return;
-    }
-
-    // Static assets (JS, CSS, images): cache-first, fallback to network
     event.respondWith(
-        caches.match(event.request).then(cached => {
-            if (cached) return cached;
-            return fetch(event.request).then(response => {
+        fetch(event.request)
+            .then((response) => {
+                // Got network response — update cache and return
                 const clone = response.clone();
                 caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
                 return response;
-            });
-        }).catch(() => {
-            // Ultimate fallback for navigation
-            if (event.request.mode === 'navigate') {
-                return caches.match('/');
-            }
-        })
+            })
+            .catch(() => {
+                // Network failed (offline) — fall back to cache
+                return caches.match(event.request).then(cached => {
+                    if (cached) return cached;
+                    // Ultimate fallback for navigation
+                    if (event.request.mode === 'navigate') {
+                        return caches.match('/');
+                    }
+                });
+            })
     );
 });

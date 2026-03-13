@@ -1,46 +1,47 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
     <linearGradient id="b1" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#33691E"/>
+      <stop offset="0%" stop-color="#1B5E20"/>
+      <stop offset="30%" stop-color="#33691E"/>
       <stop offset="50%" stop-color="#558B2F"/>
-      <stop offset="100%" stop-color="#33691E"/>
+      <stop offset="70%" stop-color="#33691E"/>
+      <stop offset="100%" stop-color="#1B5E20"/>
     </linearGradient>
     <linearGradient id="b2" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#388E3C"/>
-      <stop offset="50%" stop-color="#689F38"/>
-      <stop offset="100%" stop-color="#388E3C"/>
-    </linearGradient>
-    <linearGradient id="b3" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#2E7D32"/>
       <stop offset="50%" stop-color="#4CAF50"/>
       <stop offset="100%" stop-color="#2E7D32"/>
     </linearGradient>
-    <radialGradient id="lfG" cx="40%" cy="30%">
-      <stop offset="0%" stop-color="#C5E1A5"/>
-      <stop offset="100%" stop-color="#7CB342"/>
+    <radialGradient id="lfG" cx="35%" cy="25%">
+      <stop offset="0%" stop-color="#AED581"/>
+      <stop offset="100%" stop-color="#558B2F"/>
     </radialGradient>
-    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
   </defs>
-  <ellipse cx="50" cy="114" rx="24" ry="7" fill="#3E2723" opacity="0.18" filter="url(#sh)"/>
-  <!-- Stalks -->
-  <path d="M42 112 Q42 70 42 18" stroke="url(#b1)" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <path d="M55 112 Q55 75 55 28" stroke="url(#b2)" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <path d="M48 112 Q48 72 48 23" stroke="url(#b3)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="50" cy="114" rx="28" ry="8" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
+  <!-- Stalks — 3 thick culms, slightly varied -->
+  <path d="M36 112 Q34 72 36 14" stroke="url(#b1)" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M56 112 Q58 76 56 22" stroke="url(#b2)" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M46 112 Q44 74 46 18" stroke="url(#b1)" stroke-width="7" fill="none" stroke-linecap="round"/>
   <!-- Highlight strips -->
-  <path d="M42 112 Q42 70 42 18" stroke="#8BC34A" stroke-width="1.2" fill="none" opacity="0.15"/>
-  <path d="M55 112 Q55 75 55 28" stroke="#8BC34A" stroke-width="1.2" fill="none" opacity="0.12"/>
-  <!-- Joints -->
-  <rect x="38" y="38" width="9" height="3.5" rx="1.5" fill="#1B5E20" opacity="0.4"/>
-  <rect x="38" y="68" width="9" height="3.5" rx="1.5" fill="#1B5E20" opacity="0.35"/>
-  <rect x="51" y="48" width="9" height="3.5" rx="1.5" fill="#1B5E20" opacity="0.4"/>
-  <rect x="51" y="78" width="9" height="3.5" rx="1.5" fill="#1B5E20" opacity="0.35"/>
-  <rect x="44" y="53" width="8" height="3" rx="1.5" fill="#1B5E20" opacity="0.3"/>
-  <rect x="44" y="83" width="8" height="3" rx="1.5" fill="#1B5E20" opacity="0.3"/>
-  <!-- Leaves -->
-  <ellipse cx="28" cy="26" rx="13" ry="4.5" fill="url(#lfG)" transform="rotate(-30 28 26)"/>
-  <ellipse cx="29" cy="25" rx="8" ry="2" fill="#E8F5E9" opacity="0.2" transform="rotate(-30 29 25)"/>
-  <ellipse cx="68" cy="34" rx="12" ry="4" fill="#7CB342" transform="rotate(25 68 34)"/>
-  <ellipse cx="26" cy="50" rx="11" ry="4" fill="#8BC34A" transform="rotate(-20 26 50)"/>
-  <ellipse cx="66" cy="56" rx="11" ry="3.5" fill="#7CB342" transform="rotate(20 66 56)"/>
-  <ellipse cx="32" cy="74" rx="10" ry="3.5" fill="#9CCC65" transform="rotate(-15 32 74)"/>
+  <path d="M34 112 Q32 72 34 16" stroke="#8BC34A" stroke-width="1.5" fill="none" opacity="0.12"/>
+  <path d="M54 112 Q56 78 54 24" stroke="#8BC34A" stroke-width="1.5" fill="none" opacity="0.1"/>
+  <!-- Joints — prominent -->
+  <rect x="31" y="34" width="11" height="4" rx="2" fill="#1B5E20" opacity="0.5"/>
+  <rect x="31" y="62" width="11" height="4" rx="2" fill="#1B5E20" opacity="0.45"/>
+  <rect x="31" y="88" width="11" height="4" rx="2" fill="#1B5E20" opacity="0.4"/>
+  <rect x="51" y="44" width="11" height="4" rx="2" fill="#1B5E20" opacity="0.5"/>
+  <rect x="51" y="72" width="11" height="4" rx="2" fill="#1B5E20" opacity="0.45"/>
+  <rect x="51" y="96" width="11" height="4" rx="2" fill="#1B5E20" opacity="0.4"/>
+  <rect x="41" y="48" width="10" height="3.5" rx="2" fill="#1B5E20" opacity="0.4"/>
+  <rect x="41" y="78" width="10" height="3.5" rx="2" fill="#1B5E20" opacity="0.35"/>
+  <!-- Leaves — big sweeping organic shapes -->
+  <path d="M36 28 Q12 12 4 22 Q10 32 36 28Z" fill="url(#lfG)"/>
+  <path d="M36 28 Q16 16 10 24" fill="#C5E1A5" opacity="0.12"/>
+  <path d="M56 36 Q80 18 90 28 Q82 38 56 36Z" fill="#7CB342"/>
+  <path d="M36 56 Q8 42 2 52 Q8 62 36 56Z" fill="url(#lfG)"/>
+  <path d="M56 62 Q84 46 92 56 Q86 66 56 62Z" fill="#8BC34A"/>
+  <path d="M46 40 Q24 30 16 38 Q22 46 46 40Z" fill="#66BB6A"/>
+  <path d="M46 70 Q22 58 14 66 Q20 74 46 70Z" fill="url(#lfG)"/>
+  <path d="M56 76 Q78 64 86 72 Q80 80 56 76Z" fill="#7CB342"/>
 </svg>
