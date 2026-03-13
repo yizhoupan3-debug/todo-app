@@ -241,9 +241,9 @@ router.post('/trees/grow', (req, res) => {
 // ═══════════════════════════════════════════
 
 const BOAT_CATALOG = {
-    raft: { name: '小木筏', cost: 200, icon: '🛶', duration: 30 },
-    sailboat: { name: '帆船', cost: 500, icon: '⛵', duration: 15 },
-    galleon: { name: '大帆船', cost: 1000, icon: '🚢', duration: 5 },
+    raft:     { name: '小木筏', cost: 200, icon: '🛶', duration: 60 },
+    sailboat: { name: '帆船',   cost: 500, icon: '⛵', duration: 300 },
+    galleon:  { name: '大帆船', cost: 1000, icon: '🚢', duration: 720 },
 };
 
 const CHARACTER_MAP = { '潘潘': '小八', '蒲蒲': '乌撒奇' };
