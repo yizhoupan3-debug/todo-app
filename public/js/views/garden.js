@@ -292,6 +292,12 @@ const GardenView = {
         const el = document.getElementById('view-garden');
         if (!el) return;
 
+        // Skip full rebuild if already rendered — just update dynamic content
+        if (this._staticRendered) {
+            this._updateDynamicContent();
+            return;
+        }
+
         const clearedCount = this.plots.filter(p => p.status !== 'wasteland').length;
         const plantedCount = this.plots.filter(p => p.status === 'planted').length;
         const typesCollected = new Set(this.plots.filter(p => p.tree_type).map(p => p.tree_type)).size;
@@ -314,9 +320,6 @@ const GardenView = {
             <!-- Floating HUD -->
             <div class="island-hud">
                 <div class="island-hud-left">
-                    <button class="world-map-btn" id="world-map-btn" title="世界地图">
-                        🗺️ <span>${discoveredCount}/${totalCount}</span>
-                    </button>
                     <div class="garden-balance">
                     ${Utils.coinSvg()}
                     <strong>${this.balance}</strong> 喵喵币
@@ -334,6 +337,7 @@ const GardenView = {
                     </div>
                 </div>
                 <div class="island-hud-right">
+                    <button class="hud-btn" id="world-map-btn" title="世界地图" style="font-size:14px">🗺️ ${discoveredCount}/${totalCount}</button>
                     <div class="zoom-controls">
                         <button class="hud-btn zoom-btn" id="zoom-out-btn" title="缩小">−</button>
                         <span class="zoom-level" id="zoom-level-text">100%</span>
@@ -347,11 +351,8 @@ const GardenView = {
             <!-- Draggable island world -->
             <div class="island-viewport" id="island-viewport">
                 <div class="island-world" id="island-world">
-                    <!-- ═══ Fog of War Overlays ═══ -->
-                    <div class="fog-overlay fog-top"><div class="fog-particle" style="left:10%;top:20%"></div><div class="fog-particle" style="left:50%;top:10%"></div><div class="fog-particle" style="left:80%;top:30%"></div></div>
-                    <div class="fog-overlay fog-bottom"><div class="fog-particle" style="left:20%;top:40%"></div><div class="fog-particle" style="left:60%;top:20%"></div><div class="fog-particle" style="left:85%;top:50%"></div></div>
-                    <div class="fog-overlay fog-left"><div class="fog-particle" style="left:20%;top:15%"></div><div class="fog-particle" style="left:30%;top:55%"></div><div class="fog-particle" style="left:10%;top:80%"></div></div>
-                    <div class="fog-overlay fog-right"><div class="fog-particle" style="left:20%;top:25%"></div><div class="fog-particle" style="left:40%;top:60%"></div><div class="fog-particle" style="left:10%;top:85%"></div></div>
+                    <!-- ═══ Thick Fog Vignette (surrounding edges) ═══ -->
+                    <div class="fog-vignette"></div>
 
                     ${activeExp ? `<div style="position:absolute;z-index:30;top:10px;right:10px;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);border-radius:10px;padding:8px 14px;color:#fff;font-size:12px;display:flex;align-items:center;gap:6px">
                         <span style="font-size:18px">${this.assignee === '潘潘' ? '🐱' : '🐰'}</span>

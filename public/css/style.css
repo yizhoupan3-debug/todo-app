@@ -5073,8 +5073,8 @@ form {
 /* World — deep tropical ocean with 3D perspective */
 .island-world {
   position: relative;
-  width: 1800px;
-  height: 1350px;
+  width: 1200px;
+  height: 900px;
   -webkit-user-select: none;
   user-select: none;
   transform-style: preserve-3d;
@@ -6141,67 +6141,24 @@ form {
   transition: width 1s ease;
 }
 
-/* ═══════════════════════════════════════════ */
-/* ═══ Fog of War Overlay ═══════════════════ */
-/* ═══════════════════════════════════════════ */
+/* ═══ Fog Vignette — thick surrounding fog ═══ */
 
-.fog-overlay {
+.fog-vignette {
   position: absolute;
+  inset: 0;
   pointer-events: none;
   z-index: 25;
-  overflow: hidden;
-}
-
-.fog-overlay.fog-top {
-  top: -300px;
-  left: -300px;
-  right: -300px;
-  height: 420px;
-  background: linear-gradient(180deg,
-      #b4c8dc 0%,
-      rgba(180, 200, 220, 0.98) 50%,
-      rgba(180, 200, 220, 0.85) 70%,
-      rgba(180, 200, 220, 0.4) 85%,
-      transparent 100%);
-}
-
-.fog-overlay.fog-bottom {
-  bottom: -300px;
-  left: -300px;
-  right: -300px;
-  height: 420px;
-  background: linear-gradient(0deg,
-      #b4c8dc 0%,
-      rgba(180, 200, 220, 0.98) 50%,
-      rgba(180, 200, 220, 0.85) 70%,
-      rgba(180, 200, 220, 0.4) 85%,
-      transparent 100%);
-}
-
-.fog-overlay.fog-left {
-  top: -300px;
-  bottom: -300px;
-  left: -300px;
-  width: 420px;
-  background: linear-gradient(90deg,
-      #b4c8dc 0%,
-      rgba(180, 200, 220, 0.98) 50%,
-      rgba(180, 200, 220, 0.85) 70%,
-      rgba(180, 200, 220, 0.4) 85%,
-      transparent 100%);
-}
-
-.fog-overlay.fog-right {
-  top: -300px;
-  bottom: -300px;
-  right: -300px;
-  width: 420px;
-  background: linear-gradient(270deg,
-      #b4c8dc 0%,
-      rgba(180, 200, 220, 0.98) 50%,
-      rgba(180, 200, 220, 0.85) 70%,
-      rgba(180, 200, 220, 0.4) 85%,
-      transparent 100%);
+  background: radial-gradient(
+    ellipse 55% 55% at 50% 50%,
+    transparent 0%,
+    transparent 30%,
+    rgba(180, 200, 220, 0.15) 40%,
+    rgba(180, 200, 220, 0.4) 50%,
+    rgba(180, 200, 220, 0.7) 60%,
+    rgba(180, 200, 220, 0.9) 70%,
+    rgba(180, 200, 220, 0.97) 80%,
+    #b4c8dc 90%
+  );
 }
 
 /* Animated fog particles inside fog overlays */
