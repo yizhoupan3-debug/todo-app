@@ -6,6 +6,9 @@ const App = {
     currentAssignee: 'all', // 'all' | '潘潘' | '蒲蒲'
     socket: null,
     _refreshTimer: null, // Socket debounce timer
+    _headerCoinBalance: 0,
+    _headerCoinSyncTimer: null,
+    _headerCoinGainTimer: null,
 
     init() {
         // Init Socket.io with debounced refresh (safe — won't crash if server is down)
@@ -420,25 +423,107 @@ const App = {
         this._refreshHeaderCoins();
     },
 
-    _refreshHeaderCoins() {
-        // Determine whose coins to show based on current view context
-        let coinUser = '潘潘';
+    _normalizeCoinBalance(balance) {
+        return Math.round((Number(balance) || 0) * 10) / 10;
+    },
+
+    _getHeaderCoinUser() {
         if (this.currentView === 'garden' && typeof GardenView !== 'undefined') {
-            coinUser = GardenView.assignee;
-        } else if (this.currentView === 'shop' && typeof GardenView !== 'undefined') {
-            coinUser = GardenView.shopAssignee;
-        } else if (this.currentAssignee && this.currentAssignee !== 'all') {
-            coinUser = this.currentAssignee;
+            return GardenView.assignee;
         }
+        if (this.currentView === 'shop' && typeof GardenView !== 'undefined') {
+            return GardenView.shopAssignee;
+        }
+        if (this.currentView === 'checkin' && typeof CheckinView !== 'undefined') {
+            return CheckinView.currentAssignee;
+        }
+        if (this.currentView === 'stats' && typeof StatsView !== 'undefined') {
+            return StatsView.currentAssignee;
+        }
+        if (this.currentAssignee && this.currentAssignee !== 'all') {
+            return this.currentAssignee;
+        }
+        return '潘潘';
+    },
+
+    _syncCoinCaches({ assignee, balance = null, delta = 0 }) {
+        if (typeof GardenView === 'undefined' || !assignee) return;
+        const nextBalance = (current) => (
+            balance == null
+                ? this._normalizeCoinBalance((Number(current) || 0) + delta)
+                : this._normalizeCoinBalance(balance)
+        );
+
+        if (GardenView.assignee === assignee) {
+            GardenView.balance = nextBalance(GardenView.balance);
+            const el = document.querySelector('.island-hud .garden-balance strong');
+            if (el) el.textContent = Utils.formatCoinBalance(GardenView.balance);
+        }
+
+        if (GardenView.shopAssignee === assignee) {
+            GardenView.shopBalance = nextBalance(GardenView.shopBalance);
+            const el = document.querySelector('#view-shop .garden-balance strong');
+            if (el) el.textContent = Utils.formatCoinBalance(GardenView.shopBalance);
+        }
+    },
+
+    syncCoins({ assignee, balance = null, delta = 0, animate = delta > 0 } = {}) {
+        if (!assignee) return;
+
+        const normalizedDelta = this._normalizeCoinBalance(delta);
+        this._syncCoinCaches({ assignee, balance, delta: normalizedDelta });
+
+        if (assignee !== this._getHeaderCoinUser()) return;
+
+        const nextBalance = balance == null
+            ? this._normalizeCoinBalance(this._headerCoinBalance + normalizedDelta)
+            : this._normalizeCoinBalance(balance);
+
+        this._renderHeaderCoins(nextBalance);
+
+        if (animate && normalizedDelta > 0) {
+            this._animateHeaderCoinGain(normalizedDelta);
+        }
+
+        if (balance == null) {
+            clearTimeout(this._headerCoinSyncTimer);
+            this._headerCoinSyncTimer = setTimeout(() => this._refreshHeaderCoins(), 180);
+        }
+    },
+
+    _refreshHeaderCoins() {
+        const coinUser = this._getHeaderCoinUser();
         API.getCoins(coinUser).then(d => {
-            this._renderHeaderCoins(d.balance);
+            this._renderHeaderCoins(this._normalizeCoinBalance(d.balance));
         }).catch(() => { });
     },
 
     _renderHeaderCoins(balance = 0) {
         const btn = document.getElementById('header-coin-btn');
         if (!btn) return;
-        btn.innerHTML = Utils.headerCoinMarkup(balance);
+        this._headerCoinBalance = this._normalizeCoinBalance(balance);
+        btn.innerHTML = Utils.headerCoinMarkup(this._headerCoinBalance);
+    },
+
+    _animateHeaderCoinGain(delta) {
+        const btn = document.getElementById('header-coin-btn');
+        if (!btn || btn.style.display === 'none') return;
+
+        btn.classList.remove('coin-gain');
+        void btn.offsetWidth;
+        btn.classList.add('coin-gain');
+
+        clearTimeout(this._headerCoinGainTimer);
+        this._headerCoinGainTimer = setTimeout(() => {
+            btn.classList.remove('coin-gain');
+        }, 700);
+
+        btn.querySelectorAll('.header-coin-float').forEach(el => el.remove());
+        const float = document.createElement('span');
+        float.className = 'header-coin-float';
+        float.textContent = `+${Utils.formatCoinBalance(delta)}`;
+        btn.appendChild(float);
+        float.addEventListener('animationend', () => float.remove(), { once: true });
     },
 
     _showCoinRules() {
@@ -463,7 +548,7 @@ const App = {
                 </div>
                 <div class="coin-rule-item">
                     <span class="coin-rule-icon">🍅</span>
-                    <div><strong>番茄钟</strong><br>15分钟 <b>1</b> · 25分 <b>2</b> · 45分 <b>4</b> · 60分 <b>6</b> 币<br>专注自评 1～5★ 额外 <b>0.2～1.0</b> 币</div>
+                    <div><strong>番茄钟</strong><br>15分钟 <b>0.5</b> · 25分 <b>1</b> · 45分 <b>2</b> · 60分 <b>3</b> 币<br>专注结束后评分结算：时间奖励 × <b>50%</b> · <b>75%</b> · <b>100%</b> · <b>125%</b> · <b>150%</b></div>
                 </div>
                 <div class="coin-rule-item">
                     <span class="coin-rule-icon">🌳</span>

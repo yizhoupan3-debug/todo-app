@@ -7356,6 +7356,284 @@ form {
   white-space: nowrap;
 }
 
+/* ═══ Backpack Overlay ═══ */
+.backpack-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.backpack-overlay.active {
+  opacity: 1;
+}
+
+.backpack-modal {
+  width: min(480px, 92vw);
+  max-height: 80vh;
+  background: linear-gradient(160deg, rgba(30, 35, 50, 0.97), rgba(18, 22, 36, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.92);
+  transition: transform 0.25s ease;
+}
+
+.backpack-overlay.active .backpack-modal {
+  transform: scale(1);
+}
+
+.backpack-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.backpack-header h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.backpack-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.backpack-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.backpack-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 10px 20px 0;
+}
+
+.backpack-tab {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 10px 10px 0 0;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.backpack-tab.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.backpack-tab-count {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.backpack-sort-bar {
+  display: flex;
+  gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.backpack-sort-btn {
+  padding: 5px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.backpack-sort-btn:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.backpack-sort-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.sort-arrow {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.backpack-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 16px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.backpack-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 8px;
+}
+
+.backpack-plant-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.2s;
+}
+
+.backpack-plant-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.backpack-plant-img-wrap {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+}
+
+.backpack-plant-img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.backpack-plant-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.backpack-plant-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 3px;
+}
+
+.backpack-plant-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.backpack-plant-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f0c040;
+}
+
+.backpack-plant-stage {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.backpack-plant-stage.stage-mature {
+  background: rgba(76, 175, 80, 0.2);
+  color: #66bb6a;
+}
+
+.backpack-plant-stage.stage-growing {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffca28;
+}
+
+.backpack-plant-stage.stage-sprout {
+  background: rgba(139, 195, 74, 0.15);
+  color: #aed581;
+}
+
+.backpack-plant-stage.stage-seed {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.backpack-plant-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 3px;
+}
+
+.backpack-plant-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #66bb6a, #aed581);
+  transition: width 0.3s ease;
+}
+
+.backpack-plant-location {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.backpack-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 14px;
+}
+
+/* Backpack button in shop header */
+.backpack-btn-shop {
+  margin-left: auto;
+  margin-right: 8px;
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
 
@@ -7623,8 +7901,8 @@ form {
 /* World — isometric canvas, bigger for better detail */
 .island-world {
   position: relative;
-  width: 1400px;
-  height: 1120px;
+  width: 1800px;
+  height: 3600px;
   user-select: none;
   transform: perspective(1200px) rotateX(15deg);
   transform-origin: center 40%;
@@ -7637,7 +7915,7 @@ form {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 92%;
+  width: 95%;
   height: auto;
   pointer-events: none;
   z-index: 1;
@@ -7649,8 +7927,8 @@ form {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 92%;
-  aspect-ratio: 1000 / 800;
+  width: 95%;
+  aspect-ratio: 1000 / 2000;
   z-index: 5;
 }
 

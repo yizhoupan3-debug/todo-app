@@ -10,6 +10,18 @@ const Utils = {
         return `${this.coinSvg()} <span id="header-coins">${this.formatCoinBalance(balance)}</span> 喵喵币`;
     },
 
+    roundCoin(balance) {
+        return Math.round((Number(balance) || 0) * 10) / 10;
+    },
+
+    getPomodoroBaseReward(focusMinutes) {
+        let amount = 0.5;
+        if (focusMinutes >= 60) amount = 3;
+        else if (focusMinutes >= 45) amount = 2;
+        else if (focusMinutes >= 25) amount = 1;
+        return amount;
+    },
+
     /**
      * Escape HTML to prevent XSS when inserting user-supplied text.
      */

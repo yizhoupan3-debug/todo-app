@@ -139,6 +139,7 @@ const GardenView = {
     },
 
     _staticRendered: false,
+    _backpackSort: { by: 'price', order: 'asc' },
 
     init() { },
 
@@ -205,9 +206,9 @@ const GardenView = {
     _updateDynamicContent() {
         // Must match the PP in render() — % coords map to SVG viewBox
         const PP = [
-            [22, 57], [38, 55], [54, 57], [70, 59],
-            [18, 66], [34, 64], [50, 66], [66, 65], [80, 67],
-            [26, 75], [42, 73], [58, 75], [74, 74],
+            [22, 53], [38, 51], [54, 53], [70, 55],
+            [18, 60], [34, 58], [50, 60], [66, 59], [80, 61],
+            [26, 67], [42, 65], [58, 67], [74, 66],
         ];
 
         // Update plots
@@ -331,11 +332,11 @@ const GardenView = {
         const totalCount = this.islands.length;
         const activeExp = this.expeditions.find(e => e.status === 'sailing');
 
-        // Farmland plot positions — % coords map to SVG viewBox (1000x800)
+        // Farmland positions — on grass below house, y=52-68% of island-land
         const PP = [
-            [22, 57], [38, 55], [54, 57], [70, 59],
-            [18, 66], [34, 64], [50, 66], [66, 65], [80, 67],
-            [26, 75], [42, 73], [58, 75], [74, 74],
+            [22, 53], [38, 51], [54, 53], [70, 55],
+            [18, 60], [34, 58], [50, 60], [66, 59], [80, 61],
+            [26, 67], [42, 65], [58, 67], [74, 66],
         ];
 
         el.innerHTML = `
@@ -359,6 +360,7 @@ const GardenView = {
                     </div>
                 </div>
                 <div class="island-hud-right">
+                    <button class="hud-btn" id="garden-backpack-btn" title="背包" style="font-size:14px">\u{1F392}</button>
                     <button class="hud-btn" id="world-map-btn" title="世界地图" style="font-size:14px">\u{1F5FA}\uFE0F ${discoveredCount}/${totalCount}</button>
                     <button class="hud-btn" id="garden-history-btn" title="记录">\u{1F4CA}</button>
                 </div>
@@ -368,159 +370,194 @@ const GardenView = {
             <div class="island-viewport" id="island-viewport">
                 <div class="island-world" id="island-world">
 
-                    <!-- Ocean effects -->
-                    <div class="ocean-shimmer"></div>
-
-                    <!-- ═══ Island SVG Terrain ═══ -->
-                    <svg class="island-shape" viewBox="0 0 1000 800" xmlns="http://www.w3.org/2000/svg">
+                    <!-- ═══ TALL ISLAND SVG (viewBox 1000x2000) ═══ -->
+                    <svg class="island-shape" viewBox="0 0 1000 2000" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <filter id="ishadow"><feDropShadow dx="0" dy="8" stdDeviation="18" flood-color="rgba(0,0,0,0.4)"/></filter>
-                            <!-- Ocean shallow -->
-                            <radialGradient id="shallowG" cx="50%" cy="50%"><stop offset="0%" stop-color="#40C8C8" stop-opacity="0.3"/><stop offset="100%" stop-color="#0B8C8A" stop-opacity="0"/></radialGradient>
-                            <!-- Sand -->
                             <radialGradient id="sandG" cx="50%" cy="55%"><stop offset="0%" stop-color="#F5E6B8"/><stop offset="60%" stop-color="#E8D48A"/><stop offset="100%" stop-color="#C4AE68"/></radialGradient>
-                            <!-- Grass -->
                             <radialGradient id="grassG" cx="45%" cy="40%"><stop offset="0%" stop-color="#6BC84A"/><stop offset="40%" stop-color="#5AB838"/><stop offset="80%" stop-color="#4A9A2E"/><stop offset="100%" stop-color="#3A7A22"/></radialGradient>
-                            <!-- Forest (dark) -->
                             <linearGradient id="forestG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1A4420"/><stop offset="40%" stop-color="#2A5A2C"/><stop offset="100%" stop-color="#3A7530"/></linearGradient>
-                            <!-- Cliff rock -->
-                            <linearGradient id="cliffG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8B7355"/><stop offset="30%" stop-color="#7A6548"/><stop offset="60%" stop-color="#6B583C"/><stop offset="100%" stop-color="#5A4A30"/></linearGradient>
-                            <!-- Cliff highlight -->
-                            <linearGradient id="cliffHL" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="rgba(255,255,255,0.15)"/><stop offset="100%" stop-color="rgba(0,0,0,0.1)"/></linearGradient>
+                            <linearGradient id="cliffG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7A6548"/><stop offset="50%" stop-color="#6B583C"/><stop offset="100%" stop-color="#5A4A30"/></linearGradient>
+                            <linearGradient id="fogG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(180,195,215,0)" /><stop offset="30%" stop-color="rgba(180,195,215,0.4)"/><stop offset="100%" stop-color="rgba(180,195,215,0.95)"/></linearGradient>
                         </defs>
 
-                        <!-- Shallow water ring -->
-                        <ellipse cx="500" cy="430" rx="480" ry="360" fill="url(#shallowG)"/>
+                        <!-- ═══ ZONE 1: Rocky Mountains (y=0-350) ═══ -->
+                        <rect x="0" y="0" width="1000" height="350" fill="#4A5568"/>
+                        <!-- Mountain peaks -->
+                        <polygon points="0,350 100,120 200,350" fill="#6B583C"/>
+                        <polygon points="0,350 100,120 100,350" fill="#7A6F5A" opacity="0.5"/>
+                        <polygon points="120,350 250,50 380,350" fill="#5A4A30"/>
+                        <polygon points="120,350 250,50 250,350" fill="#7A6F5A" opacity="0.4"/>
+                        <polygon points="300,350 420,80 540,350" fill="#6B583C"/>
+                        <polygon points="300,350 420,80 420,350" fill="#8A7F6A" opacity="0.4"/>
+                        <polygon points="460,350 580,30 700,350" fill="#5A4A30"/>
+                        <polygon points="460,350 580,30 580,350" fill="#7A6F5A" opacity="0.5"/>
+                        <polygon points="620,350 740,100 860,350" fill="#6B583C"/>
+                        <polygon points="620,350 740,100 740,350" fill="#8A7F6A" opacity="0.3"/>
+                        <polygon points="800,350 900,150 1000,350" fill="#5A4A30"/>
+                        <polygon points="800,350 900,150 900,350" fill="#7A6F5A" opacity="0.4"/>
+                        <!-- Snow caps -->
+                        <polygon points="230,80 250,50 270,80" fill="rgba(255,255,255,0.6)"/>
+                        <polygon points="560,55 580,30 600,55" fill="rgba(255,255,255,0.7)"/>
+                        <polygon points="720,125 740,100 760,125" fill="rgba(255,255,255,0.5)"/>
+                        <!-- Mountain mist -->
+                        <rect x="0" y="280" width="1000" height="70" fill="url(#fogG)" opacity="0.4" transform="rotate(180 500 315)"/>
 
-                        <!-- Beach/sand layer -->
-                        <path d="M100,320 C150,180 300,100 500,90 700,100 850,180 900,320 930,440 900,560 820,640 720,720 600,760 500,760 400,760 280,720 180,640 100,560 70,440 100,320Z"
-                              fill="url(#sandG)" filter="url(#ishadow)"/>
-
-                        <!-- Grass island -->
-                        <path d="M140,310 C180,200 320,130 500,120 680,130 820,200 860,310 880,410 860,510 800,590 720,660 620,700 500,700 380,700 280,660 200,590 140,510 120,410 140,310Z"
-                              fill="url(#grassG)"/>
-
-                        <!-- ═══ Rocky Cliffs (back/top) — like Boom Beach mountains ═══ -->
-                        <!-- Main cliff mass -->
-                        <path d="M200,220 C220,140 340,80 420,70 480,65 520,62 560,68 640,78 750,130 780,200 790,240 770,270 740,285 680,300 600,310 500,315 400,312 300,295 240,275 210,255 200,220Z"
-                              fill="url(#cliffG)"/>
-                        <!-- Cliff face shadow (3D depth) -->
-                        <path d="M210,250 C220,215 280,200 340,195 400,192 500,190 600,195 680,200 740,215 770,245 760,270 740,285 680,300 600,310 500,315 400,312 300,295 240,275 215,260 210,250Z"
-                              fill="rgba(0,0,0,0.15)"/>
-                        <!-- Cliff highlight (sunlit side) -->
-                        <path d="M250,195 C280,145 380,100 460,90 520,85 560,88 600,95 660,108 720,140 740,180 730,200 700,210 660,215 580,220 500,222 420,218 350,210 290,200 260,195 250,195Z"
-                              fill="url(#cliffHL)"/>
-                        <!-- Small peak left -->
-                        <path d="M230,200 L260,120 L290,190Z" fill="#7A6548"/>
-                        <path d="M230,200 L260,120 L260,200Z" fill="rgba(255,255,255,0.08)"/>
-                        <!-- Tall peak center -->
-                        <path d="M460,95 L490,30 L530,90Z" fill="#6B583C"/>
-                        <path d="M460,95 L490,30 L490,95Z" fill="rgba(255,255,255,0.1)"/>
-                        <!-- Peak right -->
-                        <path d="M700,160 L730,90 L760,155Z" fill="#7A6548"/>
-
-                        <!-- ═══ Dense Forest (behind buildings) ═══ -->
-                        <!-- Forest canopy mass -->
-                        <path d="M180,300 C200,260 300,240 400,235 500,232 600,238 700,250 770,265 810,290 820,320 810,345 780,360 740,370 660,380 580,385 500,386 420,384 340,378 260,365 210,345 190,325 180,300Z"
-                              fill="url(#forestG)"/>
-                        <!-- Canopy texture (individual tree crowns) -->
-                        <circle cx="220" cy="305" r="22" fill="#2A5528" opacity="0.8"/>
-                        <circle cx="260" cy="290" r="26" fill="#1E4420" opacity="0.85"/>
-                        <circle cx="300" cy="280" r="24" fill="#2A5528" opacity="0.8"/>
-                        <circle cx="340" cy="272" r="28" fill="#225020" opacity="0.9"/>
-                        <circle cx="380" cy="268" r="22" fill="#2A5528" opacity="0.8"/>
-                        <circle cx="420" cy="262" r="26" fill="#1E4420" opacity="0.85"/>
-                        <circle cx="460" cy="258" r="30" fill="#225020" opacity="0.9"/>
-                        <circle cx="500" cy="260" r="24" fill="#2A5528" opacity="0.8"/>
-                        <circle cx="540" cy="264" r="28" fill="#1E4420" opacity="0.85"/>
-                        <circle cx="580" cy="270" r="22" fill="#2A5528" opacity="0.8"/>
-                        <circle cx="620" cy="278" r="26" fill="#225020" opacity="0.9"/>
-                        <circle cx="660" cy="288" r="24" fill="#2A5528" opacity="0.8"/>
-                        <circle cx="700" cy="300" r="22" fill="#1E4420" opacity="0.85"/>
-                        <circle cx="740" cy="315" r="20" fill="#225020" opacity="0.8"/>
-                        <!-- Second row (deeper) -->
-                        <circle cx="280" cy="260" r="20" fill="#1A3A1A" opacity="0.7"/>
-                        <circle cx="360" cy="248" r="24" fill="#163516" opacity="0.75"/>
-                        <circle cx="440" cy="242" r="22" fill="#1A3A1A" opacity="0.7"/>
-                        <circle cx="520" cy="240" r="26" fill="#163516" opacity="0.75"/>
-                        <circle cx="600" cy="248" r="20" fill="#1A3A1A" opacity="0.7"/>
-                        <circle cx="680" cy="262" r="22" fill="#163516" opacity="0.75"/>
-                        <!-- Forest edge highlight -->
-                        <path d="M200,295 C220,275 320,255 420,250 520,248 620,255 720,275 760,285 780,300 785,310"
-                              fill="none" stroke="rgba(120,200,80,0.2)" stroke-width="3"/>
-
-                        <!-- Beach detail dots -->
-                        <g opacity="0.25">
-                            <circle cx="150" cy="600" r="2.5" fill="#A08850"/>
-                            <circle cx="300" cy="700" r="2" fill="#B09850"/>
-                            <circle cx="700" cy="700" r="2.5" fill="#A08850"/>
-                            <circle cx="850" cy="550" r="2" fill="#B09850"/>
-                            <circle cx="130" cy="450" r="1.5" fill="#C4AE68"/>
-                            <circle cx="870" cy="420" r="1.5" fill="#A08850"/>
+                        <!-- ═══ ZONE 2: Dense Forest (y=350-800) ═══ -->
+                        <rect x="50" y="350" width="900" height="450" rx="30" fill="url(#forestG)"/>
+                        <!-- Tree canopy mass — 4 rows of circles for depth -->
+                        <g opacity="0.9">
+                            <circle cx="100" cy="400" r="35" fill="#1A3A1A"/><circle cx="180" cy="390" r="40" fill="#1E4420"/>
+                            <circle cx="270" cy="385" r="38" fill="#225020"/><circle cx="360" cy="380" r="42" fill="#1A3A1A"/>
+                            <circle cx="450" cy="375" r="45" fill="#1E4420"/><circle cx="540" cy="378" r="40" fill="#225020"/>
+                            <circle cx="630" cy="383" r="38" fill="#1A3A1A"/><circle cx="720" cy="388" r="42" fill="#1E4420"/>
+                            <circle cx="810" cy="395" r="36" fill="#225020"/><circle cx="900" cy="402" r="34" fill="#1A3A1A"/>
                         </g>
+                        <g opacity="0.85">
+                            <circle cx="130" cy="460" r="32" fill="#2A5528"/><circle cx="220" cy="450" r="36" fill="#1E4420"/>
+                            <circle cx="310" cy="445" r="34" fill="#2A5528"/><circle cx="400" cy="440" r="38" fill="#225020"/>
+                            <circle cx="490" cy="438" r="40" fill="#1E4420"/><circle cx="580" cy="442" r="36" fill="#2A5528"/>
+                            <circle cx="670" cy="448" r="34" fill="#225020"/><circle cx="760" cy="455" r="38" fill="#1E4420"/>
+                            <circle cx="850" cy="462" r="32" fill="#2A5528"/>
+                        </g>
+                        <g opacity="0.8">
+                            <circle cx="160" cy="530" r="30" fill="#3A7530"/><circle cx="250" cy="520" r="34" fill="#2A5528"/>
+                            <circle cx="340" cy="515" r="32" fill="#3A7530"/><circle cx="430" cy="510" r="36" fill="#2A5528"/>
+                            <circle cx="520" cy="508" r="38" fill="#3A7530"/><circle cx="610" cy="512" r="34" fill="#2A5528"/>
+                            <circle cx="700" cy="518" r="32" fill="#3A7530"/><circle cx="790" cy="525" r="30" fill="#2A5528"/>
+                        </g>
+                        <g opacity="0.75">
+                            <circle cx="200" cy="600" r="28" fill="#4A9A2E"/><circle cx="300" cy="590" r="32" fill="#3A7530"/>
+                            <circle cx="400" cy="585" r="30" fill="#4A9A2E"/><circle cx="500" cy="582" r="34" fill="#3A7530"/>
+                            <circle cx="600" cy="588" r="30" fill="#4A9A2E"/><circle cx="700" cy="595" r="32" fill="#3A7530"/>
+                            <circle cx="800" cy="602" r="28" fill="#4A9A2E"/>
+                        </g>
+                        <!-- Forest edge (transition to grass) -->
+                        <path d="M50,750 Q200,700 350,720 Q500,690 650,710 Q800,700 950,750 L950,800 L50,800Z" fill="#4A9A2E" opacity="0.5"/>
 
-                        <!-- Dock/Harbor (right side) -->
-                        <rect x="840" y="440" width="100" height="16" rx="2" fill="#8B7355" transform="rotate(-15 840 440)"/>
-                        <rect x="850" y="420" width="8" height="30" rx="2" fill="#6B5535"/>
-                        <rect x="920" y="415" width="8" height="30" rx="2" fill="#6B5535"/>
-                        <rect x="865" y="410" width="50" height="6" rx="1" fill="#7A6548"/>
+                        <!-- ═══ ZONE 3: Grass Island (y=800-1350) ═══ -->
+                        <rect x="30" y="800" width="940" height="550" rx="30" fill="url(#grassG)"/>
+                        <!-- Subtle grass texture lines -->
+                        <g opacity="0.08" stroke="#2A5528" stroke-width="1">
+                            <line x1="80" y1="900" x2="920" y2="900"/>
+                            <line x1="80" y1="1000" x2="920" y2="1000"/>
+                            <line x1="80" y1="1100" x2="920" y2="1100"/>
+                            <line x1="80" y1="1200" x2="920" y2="1200"/>
+                        </g>
+                        <!-- Path/road from house to harbor -->
+                        <path d="M500,950 Q500,1200 500,1350" stroke="rgba(139,115,85,0.3)" stroke-width="20" fill="none" stroke-linecap="round"/>
+
+                        <!-- ═══ ZONE 4: Beach + Harbor (y=1350-1600) ═══ -->
+                        <rect x="20" y="1350" width="960" height="250" rx="20" fill="url(#sandG)"/>
+                        <!-- Harbor dock -->
+                        <rect x="420" y="1480" width="160" height="14" rx="3" fill="#8B7355"/>
+                        <rect x="430" y="1494" width="12" height="40" rx="2" fill="#6B5535"/>
+                        <rect x="558" y="1494" width="12" height="40" rx="2" fill="#6B5535"/>
+                        <rect x="440" y="1530" width="120" height="8" rx="2" fill="#7A6548"/>
+                        <!-- Beach details -->
+                        <circle cx="100" cy="1420" r="3" fill="#C4AE68" opacity="0.3"/>
+                        <circle cx="800" cy="1450" r="2.5" fill="#C4AE68" opacity="0.3"/>
+                        <circle cx="300" cy="1500" r="2" fill="#C4AE68" opacity="0.25"/>
+
+                        <!-- ═══ ZONE 5: Fog (y=1600-2000) ═══ -->
+                        <rect x="0" y="1600" width="1000" height="400" fill="url(#fogG)"/>
+                        <!-- Fog wisps -->
+                        <ellipse cx="200" cy="1700" rx="150" ry="30" fill="rgba(180,195,215,0.3)"/>
+                        <ellipse cx="600" cy="1750" rx="200" ry="40" fill="rgba(180,195,215,0.25)"/>
+                        <ellipse cx="400" cy="1850" rx="250" ry="50" fill="rgba(180,195,215,0.4)"/>
+                        <ellipse cx="800" cy="1900" rx="180" ry="35" fill="rgba(180,195,215,0.35)"/>
                     </svg>
 
                     <!-- ═══ Island Land (interactive layer) ═══ -->
                     <div class="island-land" id="island-land">
 
-                        <!-- ═══ House (center of island) ═══ -->
-                        <div class="boom-house" style="left:43%;top:47%">
-                            <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="145" y="18" width="16" height="40" rx="2" fill="#8B6914"/>
-                                <rect x="143" y="14" width="20" height="8" rx="2" fill="#A07018"/>
-                                <circle cx="153" cy="10" r="4" fill="rgba(200,200,200,0.5)"><animate attributeName="cy" values="10;-5;-20" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0.3;0" dur="3s" repeatCount="indefinite"/></circle>
-                                <circle cx="158" cy="6" r="3" fill="rgba(200,200,200,0.4)"><animate attributeName="cy" values="6;-8;-22" dur="3.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.4;0.2;0" dur="3.5s" repeatCount="indefinite"/></circle>
-                                <polygon points="10,68 100,18 190,68" fill="#B83B2C"/>
-                                <polygon points="10,68 100,18 100,68" fill="#C94435" opacity="0.6"/>
-                                <polygon points="100,18 190,68 100,68" fill="#9E2E20" opacity="0.5"/>
-                                <line x1="10" y1="68" x2="190" y2="68" stroke="#7A2018" stroke-width="3"/>
-                                <rect x="20" y="68" width="160" height="90" rx="3" fill="#F5E0B0"/>
-                                <rect x="20" y="68" width="80" height="90" fill="#FAECC8" opacity="0.4"/>
-                                <line x1="20" y1="90" x2="180" y2="90" stroke="#D4C090" stroke-width="0.5" opacity="0.3"/>
-                                <line x1="20" y1="112" x2="180" y2="112" stroke="#D4C090" stroke-width="0.5" opacity="0.3"/>
-                                <rect x="35" y="82" width="28" height="28" rx="3" fill="#87CEEB" stroke="#8B6914" stroke-width="2"/>
-                                <line x1="49" y1="82" x2="49" y2="110" stroke="#8B6914" stroke-width="1.5"/>
-                                <line x1="35" y1="96" x2="63" y2="96" stroke="#8B6914" stroke-width="1.5"/>
-                                <rect x="137" y="82" width="28" height="28" rx="3" fill="#87CEEB" stroke="#8B6914" stroke-width="2"/>
-                                <line x1="151" y1="82" x2="151" y2="110" stroke="#8B6914" stroke-width="1.5"/>
-                                <line x1="137" y1="96" x2="165" y2="96" stroke="#8B6914" stroke-width="1.5"/>
-                                <rect x="80" y="108" width="40" height="50" rx="4" fill="#6B4410"/>
-                                <rect x="82" y="110" width="36" height="46" rx="3" fill="#8B5E14"/>
-                                <path d="M80,108 Q100,95 120,108" fill="#5A3A0C" opacity="0.4"/>
-                                <circle cx="112" cy="134" r="3" fill="#DAA520"/><circle cx="112" cy="134" r="1.5" fill="#FFD700"/>
-                                <rect x="15" y="155" width="170" height="12" rx="2" fill="#8B7355"/>
-                                <rect x="35" y="111" width="28" height="5" rx="1" fill="#6B4410"/>
-                                <circle cx="40" cy="110" r="3" fill="#FF6B8A"/><circle cx="49" cy="109" r="2.5" fill="#FFD700"/><circle cx="58" cy="110" r="3" fill="#FF8FAA"/>
-                                <rect x="137" y="111" width="28" height="5" rx="1" fill="#6B4410"/>
-                                <circle cx="142" cy="110" r="3" fill="#FFD700"/><circle cx="151" cy="109" r="2.5" fill="#FF6B8A"/><circle cx="160" cy="110" r="3" fill="#FFD700"/>
+                        <!-- ═══ House (center of grass area y=43-48%) ═══ -->
+                        <div class="boom-house" style="left:42%;top:44%">
+                            <svg viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Foundation -->
+                                <rect x="20" y="190" width="200" height="16" rx="3" fill="#8B7355"/>
+                                <!-- Walls — stone texture -->
+                                <rect x="30" y="88" width="180" height="108" rx="4" fill="#E8D8B0"/>
+                                <rect x="30" y="88" width="90" height="108" fill="#F0E0C0" opacity="0.3"/>
+                                <!-- Stone brick lines -->
+                                <g stroke="#C4B090" stroke-width="0.8" opacity="0.3">
+                                    <line x1="30" y1="108" x2="210" y2="108"/>
+                                    <line x1="30" y1="128" x2="210" y2="128"/>
+                                    <line x1="30" y1="148" x2="210" y2="148"/>
+                                    <line x1="30" y1="168" x2="210" y2="168"/>
+                                    <line x1="120" y1="88" x2="120" y2="196"/>
+                                </g>
+                                <!-- Roof — layered red tiles -->
+                                <polygon points="10,88 120,25 230,88" fill="#C0392B"/>
+                                <polygon points="10,88 120,25 120,88" fill="#E74C3C" opacity="0.4"/>
+                                <polygon points="120,25 230,88 120,88" fill="#962D22" opacity="0.3"/>
+                                <line x1="10" y1="88" x2="230" y2="88" stroke="#7A2018" stroke-width="4"/>
+                                <!-- Roof ridge line -->
+                                <line x1="120" y1="25" x2="120" y2="88" stroke="#7A2018" stroke-width="1.5" opacity="0.3"/>
+                                <!-- Chimney -->
+                                <rect x="170" y="30" width="18" height="45" rx="2" fill="#8B6914"/>
+                                <rect x="168" y="26" width="22" height="8" rx="2" fill="#A07018"/>
+                                <!-- Smoke -->
+                                <circle cx="179" cy="20" r="5" fill="rgba(200,200,200,0.5)"><animate attributeName="cy" values="20;5;-10" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0.3;0" dur="3s" repeatCount="indefinite"/></circle>
+                                <circle cx="184" cy="15" r="4" fill="rgba(200,200,200,0.4)"><animate attributeName="cy" values="15;0;-15" dur="3.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.4;0.2;0" dur="3.5s" repeatCount="indefinite"/></circle>
+                                <!-- Left window -->
+                                <rect x="48" y="105" width="32" height="32" rx="3" fill="#87CEEB" stroke="#8B6914" stroke-width="2.5"/>
+                                <line x1="64" y1="105" x2="64" y2="137" stroke="#8B6914" stroke-width="2"/>
+                                <line x1="48" y1="121" x2="80" y2="121" stroke="#8B6914" stroke-width="2"/>
+                                <!-- Right window -->
+                                <rect x="160" y="105" width="32" height="32" rx="3" fill="#87CEEB" stroke="#8B6914" stroke-width="2.5"/>
+                                <line x1="176" y1="105" x2="176" y2="137" stroke="#8B6914" stroke-width="2"/>
+                                <line x1="160" y1="121" x2="192" y2="121" stroke="#8B6914" stroke-width="2"/>
+                                <!-- Door — arched -->
+                                <rect x="95" y="140" width="50" height="56" rx="4" fill="#6B4410"/>
+                                <rect x="98" y="143" width="44" height="50" rx="3" fill="#8B5E14"/>
+                                <path d="M95,140 Q120,125 145,140" fill="#5A3A0C" opacity="0.4"/>
+                                <!-- Door handle -->
+                                <circle cx="133" cy="170" r="3.5" fill="#DAA520"/><circle cx="133" cy="170" r="2" fill="#FFD700"/>
+                                <!-- Window boxes with flowers -->
+                                <rect x="48" y="138" width="32" height="6" rx="1" fill="#6B4410"/>
+                                <circle cx="54" cy="136" r="4" fill="#FF6B8A"/><circle cx="64" cy="135" r="3.5" fill="#FFD700"/><circle cx="74" cy="136" r="4" fill="#FF8FAA"/>
+                                <rect x="160" y="138" width="32" height="6" rx="1" fill="#6B4410"/>
+                                <circle cx="166" cy="136" r="4" fill="#FFD700"/><circle cx="176" cy="135" r="3.5" fill="#FF6B8A"/><circle cx="186" cy="136" r="4" fill="#FFD700"/>
+                                <!-- Lantern by door -->
+                                <rect x="86" y="145" width="6" height="12" rx="1" fill="#DAA520"/>
+                                <circle cx="89" cy="142" r="4" fill="rgba(255,200,50,0.6)"><animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/></circle>
                             </svg>
                             <div class="hut-label">\u{1F3E0} 小屋</div>
                         </div>
 
-                        <!-- ═══ Harbor (right side, aligned w/ SVG dock) ═══ -->
-                        <div class="boom-harbor" id="harbor-building" style="left:86%;top:54%" title="港口 — 点击管理">
+                        <!-- ═══ Choppable Forest Trees (y=18-38%, arrow shape, increasing cost) ═══ -->
+                        <!-- Back row (deepest, most expensive) -->
+                        <div class="forest-tree-btn" style="left:40%;top:20%" data-cost="50" title="\u{1FA93} 砍伐 50 喵喵币"><img src="/img/trees/pine.svg" style="width:52px"></div>
+                        <div class="forest-tree-btn" style="left:52%;top:19%" data-cost="50" title="\u{1FA93} 砍伐 50 喵喵币"><img src="/img/trees/oak.svg" style="width:50px"></div>
+                        <!-- Second row -->
+                        <div class="forest-tree-btn" style="left:30%;top:24%" data-cost="35" title="\u{1FA93} 砍伐 35 喵喵币"><img src="/img/trees/oak.svg" style="width:48px"></div>
+                        <div class="forest-tree-btn" style="left:45%;top:23%" data-cost="35" title="\u{1FA93} 砍伐 35 喵喵币"><img src="/img/trees/pine.svg" style="width:46px"></div>
+                        <div class="forest-tree-btn" style="left:60%;top:24%" data-cost="35" title="\u{1FA93} 砍伐 35 喵喵币"><img src="/img/trees/palm.svg" style="width:48px"></div>
+                        <!-- Third row -->
+                        <div class="forest-tree-btn" style="left:20%;top:28%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/pine.svg" style="width:44px"></div>
+                        <div class="forest-tree-btn" style="left:35%;top:27%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/oak.svg" style="width:42px"></div>
+                        <div class="forest-tree-btn" style="left:50%;top:27%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/palm.svg" style="width:44px"></div>
+                        <div class="forest-tree-btn" style="left:65%;top:28%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/pine.svg" style="width:42px"></div>
+                        <!-- Front row (cheapest) — widest spread -->
+                        <div class="forest-tree-btn" style="left:12%;top:33%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/palm.svg" style="width:40px"></div>
+                        <div class="forest-tree-btn" style="left:27%;top:32%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/oak.svg" style="width:38px"></div>
+                        <div class="forest-tree-btn" style="left:42%;top:31%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/pine.svg" style="width:40px"></div>
+                        <div class="forest-tree-btn" style="left:57%;top:32%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/oak.svg" style="width:38px"></div>
+                        <div class="forest-tree-btn" style="left:72%;top:33%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/palm.svg" style="width:40px"></div>
+                        <div class="forest-tree-btn" style="left:85%;top:35%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/pine.svg" style="width:36px"></div>
+
+                        <!-- ═══ Harbor (center of beach/dock area y=76%) ═══ -->
+                        <div class="boom-harbor" id="harbor-building" style="left:48%;top:76%" title="港口 — 点击管理">
                             <span class="harbor-icon">\u26F5</span>
                             <div class="hut-label">\u2693 港口</div>
                         </div>
 
-                        <!-- ═══ Forest trees (in canopy area, y=32-40%) ═══ -->
-                        <div class="forest-tree-btn" style="left:20%;top:34%" data-cost="15" title="\u{1FA93} 砍伐 15 喵喵币"><img src="/img/trees/palm.svg" style="width:42px"></div>
-                        <div class="forest-tree-btn" style="left:32%;top:31%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/oak.svg" style="width:46px"></div>
-                        <div class="forest-tree-btn" style="left:48%;top:29%" data-cost="25" title="\u{1FA93} 砍伐 25 喵喵币"><img src="/img/trees/pine.svg" style="width:50px"></div>
-                        <div class="forest-tree-btn" style="left:63%;top:31%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/oak.svg" style="width:44px"></div>
-                        <div class="forest-tree-btn" style="left:76%;top:35%" data-cost="15" title="\u{1FA93} 砍伐 15 喵喵币"><img src="/img/trees/pine.svg" style="width:40px"></div>
-
-                        <!-- ═══ Beach palms (on sand, y=76-87%) ═══ -->
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:12%;top:78%;width:55px;opacity:0.85">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:85%;top:76%;width:50px;opacity:0.8">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:35%;top:85%;width:45px;opacity:0.75">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:62%;top:87%;width:48px;opacity:0.7">
+                        <!-- ═══ Beach palms (on sand y=70-75%) ═══ -->
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:8%;top:70%;width:50px;opacity:0.85">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:88%;top:71%;width:45px;opacity:0.8">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:25%;top:73%;width:40px;opacity:0.75">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:72%;top:72%;width:42px;opacity:0.7">
 
                         <!-- Ambient -->
                         <div class="ambient-particle p1" style="font-size:11px">\u{1F54A}\uFE0F</div>
@@ -530,7 +567,7 @@ const GardenView = {
 
                         <!-- ═══ Interactive Farmland Plots ═══ -->
                         ${this.plots.map((plot, i) => {
-            const p = PP[i] || [50, 50];
+            const p = PP[i] || [50, 60];
             return this.renderIslandPlot(plot, p[0], p[1]);
         }).join('')}
                     </div>
@@ -541,8 +578,8 @@ const GardenView = {
                     <div class="zoom-controls">
                         <button id="zoom-in-btn" class="zoom-btn">+</button>
                         <span id="zoom-level-text">100%</span>
-                        <button id="zoom-out-btn" class="zoom-btn">−</button>
-                        <button id="zoom-reset-btn" class="zoom-btn" style="font-size:10px">⟲</button>
+                        <button id="zoom-out-btn" class="zoom-btn">\u2212</button>
+                        <button id="zoom-reset-btn" class="zoom-btn" style="font-size:10px">\u27f2</button>
                     </div>
                 </div>
             </div>
@@ -732,6 +769,11 @@ const GardenView = {
                 this._staticRendered = false;
                 await this.open();
             });
+        });
+
+        // Backpack button (garden)
+        document.getElementById('garden-backpack-btn')?.addEventListener('click', () => {
+            this.showBackpack(this.assignee);
         });
 
         // History button
@@ -1142,6 +1184,7 @@ const GardenView = {
                     ${Utils.coinSvg()}
                     <strong>${Utils.formatCoinBalance(this.shopBalance)}</strong> 喵喵币
                 </div>
+                <button class="hud-btn backpack-btn-shop" id="shop-backpack-btn" title="背包">\u{1F392}</button>
                 <div class="filter-pills">
                     <button class="filter-pill ${this.shopAssignee === '潘潘' ? 'active' : ''}" data-person="潘潘">
                         <img src="/img/panpan.png" alt="" style="width:18px;height:18px;border-radius:50%"> 潘潘
@@ -1238,6 +1281,11 @@ const GardenView = {
             });
         });
 
+        // Backpack button (shop)
+        document.getElementById('shop-backpack-btn')?.addEventListener('click', () => {
+            this.showBackpack(this.shopAssignee);
+        });
+
         // Clicking card opens detail modal
         document.querySelectorAll('#view-shop .shop-card').forEach(card => {
             card.addEventListener('click', () => {
@@ -1246,50 +1294,191 @@ const GardenView = {
         });
     },
 
+    // ═══ Backpack Overlay ═══
+    async showBackpack(assignee) {
+        document.querySelector('.backpack-overlay')?.remove();
+
+        let plants = [];
+        try {
+            const data = await fetch(`/api/garden/backpack/${encodeURIComponent(assignee)}`).then(r => r.json());
+            plants = data.plants || [];
+        } catch (e) {
+            App.showToast('加载背包失败', 'error');
+            return;
+        }
+
+        this._backpackPlants = plants;
+        this._backpackSort = { by: 'price', order: 'asc' };
+
+        const overlay = document.createElement('div');
+        overlay.className = 'backpack-overlay';
+        overlay.innerHTML = `
+            <div class="backpack-modal">
+                <div class="backpack-header">
+                    <h3>\u{1F392} 背包</h3>
+                    <button class="backpack-close" id="backpack-close">✕</button>
+                </div>
+                <div class="backpack-tabs">
+                    <button class="backpack-tab active" data-tab="plants">\u{1F331} 植物 <span class="backpack-tab-count">${plants.length}</span></button>
+                </div>
+                <div class="backpack-sort-bar">
+                    <button class="backpack-sort-btn active" data-sort="price">按价格 <span class="sort-arrow">▲</span></button>
+                    <button class="backpack-sort-btn" data-sort="maturity">按成熟度 <span class="sort-arrow">▲</span></button>
+                </div>
+                <div class="backpack-content" id="backpack-content">
+                    ${this._renderBackpackPlants(plants, 'price', 'asc')}
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('active'));
+
+        // Close
+        document.getElementById('backpack-close')?.addEventListener('click', () => {
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.remove(), 200);
+        });
+        overlay.addEventListener('click', e => {
+            if (e.target === overlay) {
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.remove(), 200);
+            }
+        });
+
+        // Sort buttons
+        overlay.querySelectorAll('.backpack-sort-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sortBy = btn.dataset.sort;
+                if (this._backpackSort.by === sortBy) {
+                    // Toggle order
+                    this._backpackSort.order = this._backpackSort.order === 'asc' ? 'desc' : 'asc';
+                } else {
+                    this._backpackSort.by = sortBy;
+                    this._backpackSort.order = 'asc';
+                }
+                // Update active state
+                overlay.querySelectorAll('.backpack-sort-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                // Update arrow
+                overlay.querySelectorAll('.backpack-sort-btn').forEach(b => {
+                    const arrow = b.querySelector('.sort-arrow');
+                    if (b === btn) {
+                        arrow.textContent = this._backpackSort.order === 'asc' ? '▲' : '▼';
+                    } else {
+                        arrow.textContent = '▲';
+                    }
+                });
+                // Re-render
+                const content = document.getElementById('backpack-content');
+                if (content) {
+                    content.innerHTML = this._renderBackpackPlants(
+                        this._backpackPlants, this._backpackSort.by, this._backpackSort.order
+                    );
+                }
+            });
+        });
+    },
+
+    _renderBackpackPlants(plants, sortBy, sortOrder) {
+        if (!plants.length) {
+            return '<div class="backpack-empty">\u{1F331} 还没有植物哦，去商城购买吧！</div>';
+        }
+
+        const sorted = [...plants].sort((a, b) => {
+            let va, vb;
+            if (sortBy === 'price') {
+                va = a.price; vb = b.price;
+            } else {
+                va = a.growth_minutes; vb = b.growth_minutes;
+            }
+            return sortOrder === 'asc' ? va - vb : vb - va;
+        });
+
+        return '<div class="backpack-grid">' + sorted.map(plant => {
+            const catItem = this.catalog.find(c => c.type === plant.tree_type);
+            const gm = plant.growth_minutes || 0;
+            const stage = this.getGrowthStage(gm);
+            const stageLabel = this.getGrowthLabel(gm);
+            const pct = Math.min(100, Math.round(gm / 150 * 100));
+            const imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.svg';
+            const name = catItem?.name || plant.tree_type;
+            const icon = catItem?.icon || '\u{1F331}';
+
+            return `<div class="backpack-plant-card">
+                <div class="backpack-plant-img-wrap">
+                    <img src="${imgSrc}" alt="${name}" class="backpack-plant-img">
+                </div>
+                <div class="backpack-plant-info">
+                    <div class="backpack-plant-name">${icon} ${name}</div>
+                    <div class="backpack-plant-meta">
+                        <span class="backpack-plant-price">${Utils.coinSvg('cat-coin-icon','width:14px;height:14px')} ${plant.price}</span>
+                        <span class="backpack-plant-stage stage-${stage}">${stageLabel}</span>
+                    </div>
+                    <div class="backpack-plant-bar"><div class="backpack-plant-bar-fill" style="width:${pct}%"></div></div>
+                    <div class="backpack-plant-location">\u{1F3DD}\uFE0F ${plant.island_name}</div>
+                </div>
+            </div>`;
+        }).join('') + '</div>';
+    },
+
     updateHeaderCoins() {
-        const el = document.getElementById('header-coins');
-        if (!el) return;
         const { balance } = this._getHeaderCoinContext();
         if (balance == null) {
             App._refreshHeaderCoins();
             return;
         }
-        el.textContent = Utils.formatCoinBalance(balance);
+        App._renderHeaderCoins(balance);
     },
 
-    async earnFromPomodoro(assignee, focusMinutes) {
-        let amount = 1;
-        if (focusMinutes >= 60) amount = 6;
-        else if (focusMinutes >= 45) amount = 4;
-        else if (focusMinutes >= 25) amount = 2;
+    async earnFromPomodoro(assignee, focusMinutes, factor = null) {
+        const baseAmount = Utils.getPomodoroBaseReward(focusMinutes);
+        const amount = factor == null ? 0 : Utils.roundCoin(baseAmount * factor / 100);
         try {
-            const result = await API.earnCoins({
-                assignee,
-                amount,
-                reason: 'pomodoro',
-                detail: `${focusMinutes}分钟专注`,
-            });
-            if (assignee === this.assignee) this.balance = result.balance;
-            if (assignee === this.shopAssignee) this.shopBalance = result.balance;
-            this.updateHeaderCoins();
+            if (amount > 0) {
+                const result = await API.earnCoins({
+                    assignee,
+                    amount,
+                    reason: 'pomodoro',
+                    detail: `${focusMinutes}分钟专注 · ${factor}%`,
+                });
+                if (assignee === this.assignee) this.balance = result.balance;
+                if (assignee === this.shopAssignee) this.shopBalance = result.balance;
+                this.updateHeaderCoins();
+            }
 
             try {
                 const growResult = await API.growTree({ assignee, minutes: focusMinutes });
+                if (growResult.coinDrop > 0) {
+                    if (assignee === this.assignee) this.balance = Utils.roundCoin(this.balance + growResult.coinDrop);
+                    if (assignee === this.shopAssignee) this.shopBalance = Utils.roundCoin(this.shopBalance + growResult.coinDrop);
+                    this.updateHeaderCoins();
+                }
+
+                let msg = '';
+                if (amount > 0) {
+                    msg = `+${Utils.formatCoinBalance(amount)} 喵喵币 · ${focusMinutes}分钟 × ${factor}%`;
+                } else {
+                    msg = '跳过评分，本轮番茄钟不结算喵喵币';
+                }
+
                 if (growResult.tree) {
                     const catItem = this.catalog.find(c => c.type === growResult.tree.tree_type);
                     const name = catItem ? catItem.name : '植物';
                     const label = this.getGrowthLabel(growResult.tree.growth_minutes);
-                    let msg = `+${amount} 喵喵币 · ${name} 成长了！(${label})`;
+                    msg += ` · ${name} 成长了！(${label})`;
                     if (growResult.coinDrop > 0) {
-                        msg += ` · 🍃 掉落 +${growResult.coinDrop} 币！`;
-                        this.updateHeaderCoins();
+                        msg += ` · 🍃 掉落 +${Utils.formatCoinBalance(growResult.coinDrop)} 币！`;
                     }
-                    App.showToast(msg, 'success');
+                    App.showToast(msg, amount > 0 || growResult.coinDrop > 0 ? 'success' : 'info');
                 } else {
-                    App.showToast(`+${amount} 喵喵币！`, 'success');
+                    App.showToast(msg, amount > 0 ? 'success' : 'info');
                 }
             } catch (e) {
-                App.showToast(`+${amount} 喵喵币！`, 'success');
+                if (amount > 0) {
+                    App.showToast(`+${Utils.formatCoinBalance(amount)} 喵喵币 · ${focusMinutes}分钟 × ${factor}%`, 'success');
+                } else {
+                    App.showToast('跳过评分，本轮番茄钟不结算喵喵币', 'info');
+                }
             }
         } catch (e) {
             App.showToast('获取币失败', 'error');
