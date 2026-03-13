@@ -4982,11 +4982,10 @@ form {
   -ms-overflow-style: none;
   /* Fog-colored background — no black edges when zoomed out */
   background: radial-gradient(ellipse at center,
-    rgba(140,165,190,0.6) 0%,
-    rgba(160,180,200,0.85) 30%,
-    rgba(175,195,215,0.95) 60%,
-    #b4c8dc 100%
-  );
+      rgba(140, 165, 190, 0.6) 0%,
+      rgba(160, 180, 200, 0.85) 30%,
+      rgba(175, 195, 215, 0.95) 60%,
+      #b4c8dc 100%);
 }
 
 .island-viewport::-webkit-scrollbar {
@@ -4996,8 +4995,8 @@ form {
 /* World — deep tropical ocean with 3D perspective */
 .island-world {
   position: relative;
-  width: 1400px;
-  height: 1050px;
+  width: 1800px;
+  height: 1350px;
   user-select: none;
   transform-style: preserve-3d;
   transition: transform 0.25s ease-out;
@@ -5406,17 +5405,17 @@ form {
 
 .hut-structure {
   position: relative;
-  width: 88px;
+  width: 120px;
   margin: 0 auto;
 }
 
 /* Chimney + smoke */
 .hut-chimney {
   position: relative;
-  width: 14px;
-  height: 18px;
+  width: 18px;
+  height: 22px;
   background: linear-gradient(180deg, #7B3F0E, #5C2E08);
-  margin: 0 0 0 60px;
+  margin: 0 0 0 80px;
   border-radius: 3px 3px 0 0;
   border: 1px solid rgba(0, 0, 0, 0.15);
 }
@@ -5467,9 +5466,9 @@ form {
 .hut-roof {
   width: 0;
   height: 0;
-  border-left: 50px solid transparent;
-  border-right: 50px solid transparent;
-  border-bottom: 38px solid #A0522D;
+  border-left: 68px solid transparent;
+  border-right: 68px solid transparent;
+  border-bottom: 48px solid #A0522D;
   margin: 0 auto;
   position: relative;
   filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.2));
@@ -5479,10 +5478,10 @@ form {
 .hut-roof::after {
   content: '';
   position: absolute;
-  top: 8px;
-  left: -30px;
-  right: -30px;
-  height: 30px;
+  top: 10px;
+  left: -44px;
+  right: -44px;
+  height: 38px;
   background: repeating-linear-gradient(-30deg,
       transparent,
       transparent 3px,
@@ -5512,8 +5511,8 @@ form {
 
 /* Wall — visible wood planks */
 .hut-wall {
-  width: 72px;
-  height: 44px;
+  width: 100px;
+  height: 55px;
   background:
     repeating-linear-gradient(180deg,
       #F5DEB3 0px,
@@ -6075,47 +6074,55 @@ form {
 }
 
 .fog-overlay.fog-top {
-  top: -300px; left: -300px; right: -300px; height: 420px;
+  top: -300px;
+  left: -300px;
+  right: -300px;
+  height: 420px;
   background: linear-gradient(180deg,
-    #b4c8dc 0%,
-    rgba(180,200,220,0.98) 50%,
-    rgba(180,200,220,0.85) 70%,
-    rgba(180,200,220,0.4) 85%,
-    transparent 100%
-  );
+      #b4c8dc 0%,
+      rgba(180, 200, 220, 0.98) 50%,
+      rgba(180, 200, 220, 0.85) 70%,
+      rgba(180, 200, 220, 0.4) 85%,
+      transparent 100%);
 }
 
 .fog-overlay.fog-bottom {
-  bottom: -300px; left: -300px; right: -300px; height: 420px;
+  bottom: -300px;
+  left: -300px;
+  right: -300px;
+  height: 420px;
   background: linear-gradient(0deg,
-    #b4c8dc 0%,
-    rgba(180,200,220,0.98) 50%,
-    rgba(180,200,220,0.85) 70%,
-    rgba(180,200,220,0.4) 85%,
-    transparent 100%
-  );
+      #b4c8dc 0%,
+      rgba(180, 200, 220, 0.98) 50%,
+      rgba(180, 200, 220, 0.85) 70%,
+      rgba(180, 200, 220, 0.4) 85%,
+      transparent 100%);
 }
 
 .fog-overlay.fog-left {
-  top: -300px; bottom: -300px; left: -300px; width: 420px;
+  top: -300px;
+  bottom: -300px;
+  left: -300px;
+  width: 420px;
   background: linear-gradient(90deg,
-    #b4c8dc 0%,
-    rgba(180,200,220,0.98) 50%,
-    rgba(180,200,220,0.85) 70%,
-    rgba(180,200,220,0.4) 85%,
-    transparent 100%
-  );
+      #b4c8dc 0%,
+      rgba(180, 200, 220, 0.98) 50%,
+      rgba(180, 200, 220, 0.85) 70%,
+      rgba(180, 200, 220, 0.4) 85%,
+      transparent 100%);
 }
 
 .fog-overlay.fog-right {
-  top: -300px; bottom: -300px; right: -300px; width: 420px;
+  top: -300px;
+  bottom: -300px;
+  right: -300px;
+  width: 420px;
   background: linear-gradient(270deg,
-    #b4c8dc 0%,
-    rgba(180,200,220,0.98) 50%,
-    rgba(180,200,220,0.85) 70%,
-    rgba(180,200,220,0.4) 85%,
-    transparent 100%
-  );
+      #b4c8dc 0%,
+      rgba(180, 200, 220, 0.98) 50%,
+      rgba(180, 200, 220, 0.85) 70%,
+      rgba(180, 200, 220, 0.4) 85%,
+      transparent 100%);
 }
 
 /* Animated fog particles inside fog overlays */
@@ -6182,8 +6189,8 @@ form {
 }
 
 .harbor-building {
-  width: 50px;
-  height: 45px;
+  width: 70px;
+  height: 55px;
   background: linear-gradient(180deg, #6B4E12, #8B6914);
   border-radius: 4px 4px 0 0;
   position: relative;
@@ -6193,10 +6200,10 @@ form {
 .harbor-building::before {
   content: '⚓';
   position: absolute;
-  top: 8px;
+  top: 10px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 20px;
+  font-size: 26px;
 }
 
 .harbor-building::after {

@@ -476,7 +476,7 @@ const GardenView = {
                         </div>
 
                         <!-- Harbor (click to open harbor panel) -->
-                        <div class="island-harbor" style="left:82%;top:76%" id="harbor-building" title="港口 — 点击管理船只和探索">
+                        <div class="island-harbor" style="left:88%;top:88%" id="harbor-building" title="港口 — 点击管理船只和探索">
                             <div class="harbor-building"></div>
                             <div class="harbor-label">⚓ 港口</div>
                             <div style="position:absolute;bottom:-18px;left:-15px;font-size:22px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));animation:boatBob 3s ease-in-out infinite">⛵</div>
