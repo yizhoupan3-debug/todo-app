@@ -5437,98 +5437,140 @@ form {
   letter-spacing: 0.5px;
 }
 
-/* ─── Dock/Pier ─── */
+/* ─── Dock/Pier (Premium) ─── */
 .island-dock {
   position: absolute;
   z-index: 10;
   cursor: pointer;
   text-align: center;
-  transition: transform 0.2s;
+  transition: transform 0.3s cubic-bezier(.34, 1.56, .64, 1);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
 }
 
 .island-dock:hover {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
 .dock-planks {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  width: 60px;
+  width: 68px;
 }
 
 .dock-plank {
   width: 100%;
-  height: 6px;
-  background: linear-gradient(90deg, #8B6914, #A0782C, #8B6914);
+  height: 7px;
+  background:
+    repeating-linear-gradient(90deg,
+      #A07828 0px, #B08838 4px, #9A7020 4px, #9A7020 5px);
   border-radius: 1px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  box-shadow: inset 0 -1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .dock-post {
   position: absolute;
-  bottom: 0;
-  left: -4px;
-  width: 6px;
-  height: 22px;
-  background: #6B4E12;
+  bottom: -4px;
+  left: -5px;
+  width: 8px;
+  height: 26px;
+  background: linear-gradient(180deg, #7B5E18, #5A4210);
   border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 .dock-post.right {
   left: auto;
-  right: -4px;
+  right: -5px;
+}
+
+/* Rope detail on posts */
+.dock-post::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 1px;
+  width: 5px;
+  height: 3px;
+  border: 1px solid rgba(160, 130, 60, 0.5);
+  border-radius: 50%;
 }
 
 .dock-label {
   font-size: 10px;
   color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  margin-top: 4px;
-  font-weight: 600;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9), 0 0 6px rgba(0, 0, 0, 0.3);
+  margin-top: 6px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
-/* ─── Ambient Particles ─── */
+@keyframes boatBob {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+
+  50% {
+    transform: translateY(-4px) rotate(2deg);
+  }
+}
+
+/* ─── Ambient Particles (Premium) ─── */
 .ambient-particle {
   position: absolute;
-  font-size: 14px;
+  font-size: 16px;
   pointer-events: none;
   z-index: 12;
-  opacity: 0.6;
+  opacity: 0.7;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.15));
 }
 
 .ambient-particle.p1 {
-  animation: particleDrift1 18s ease-in-out infinite;
+  animation: particleDrift1 16s ease-in-out infinite;
 }
 
 .ambient-particle.p2 {
-  animation: particleDrift2 22s ease-in-out infinite;
+  animation: particleDrift2 20s ease-in-out infinite;
 }
 
 .ambient-particle.p3 {
-  animation: particleDrift3 25s ease-in-out infinite;
+  animation: particleDrift3 24s ease-in-out infinite;
 }
 
 .ambient-particle.p4 {
-  animation: particleDrift4 20s ease-in-out infinite;
+  animation: particleDrift4 18s ease-in-out infinite;
+}
+
+.ambient-particle.p5 {
+  animation: particleDrift5 28s ease-in-out infinite;
+  font-size: 8px;
 }
 
 @keyframes particleDrift1 {
   0% {
-    left: 20%;
-    top: 30%;
+    left: 15%;
+    top: 25%;
     transform: scale(1);
     opacity: 0;
   }
 
-  10% {
-    opacity: 0.6;
+  8% {
+    opacity: 0.7;
   }
 
-  50% {
-    left: 60%;
-    top: 15%;
-    transform: scale(1.2) rotate(30deg);
+  30% {
+    left: 40%;
+    top: 12%;
+    transform: scale(1.15) rotate(20deg);
+  }
+
+  60% {
+    left: 65%;
+    top: 22%;
+    transform: scale(1.3) rotate(-10deg);
     opacity: 0.5;
   }
 
@@ -5537,8 +5579,8 @@ form {
   }
 
   100% {
-    left: 80%;
-    top: 40%;
+    left: 85%;
+    top: 35%;
     transform: scale(1) rotate(0);
     opacity: 0;
   }
@@ -5546,50 +5588,68 @@ form {
 
 @keyframes particleDrift2 {
   0% {
-    left: 70%;
-    top: 60%;
+    left: 75%;
+    top: 65%;
     transform: rotate(0);
     opacity: 0;
   }
 
-  10% {
-    opacity: 0.5;
+  8% {
+    opacity: 0.6;
+  }
+
+  25% {
+    left: 55%;
+    top: 45%;
+    transform: rotate(-15deg) scale(1.1);
   }
 
   50% {
     left: 30%;
-    top: 35%;
-    transform: rotate(-20deg);
-    opacity: 0.4;
+    top: 30%;
+    transform: rotate(-25deg) scale(1.2);
+    opacity: 0.45;
   }
 
-  90% {
+  75% {
+    left: 18%;
+    top: 48%;
+    transform: rotate(-10deg) scale(1.1);
+  }
+
+  92% {
     opacity: 0.5;
   }
 
   100% {
-    left: 10%;
-    top: 55%;
-    transform: rotate(0);
+    left: 8%;
+    top: 58%;
+    transform: rotate(0) scale(1);
     opacity: 0;
   }
 }
 
 @keyframes particleDrift3 {
   0% {
-    left: 40%;
-    top: 65%;
+    left: 35%;
+    top: 70%;
     opacity: 0;
   }
 
-  15% {
-    opacity: 0.5;
+  10% {
+    opacity: 0.55;
   }
 
-  50% {
-    left: 75%;
-    top: 45%;
-    transform: rotate(45deg);
+  30% {
+    left: 55%;
+    top: 55%;
+    transform: rotate(25deg) scale(1.1);
+  }
+
+  60% {
+    left: 78%;
+    top: 40%;
+    transform: rotate(50deg) scale(1.25);
     opacity: 0.4;
   }
 
@@ -5598,38 +5658,80 @@ form {
   }
 
   100% {
-    left: 55%;
-    top: 20%;
+    left: 60%;
+    top: 15%;
+    transform: rotate(0);
     opacity: 0;
   }
 }
 
 @keyframes particleDrift4 {
   0% {
-    left: 80%;
-    top: 20%;
+    left: 85%;
+    top: 18%;
     opacity: 0;
   }
 
-  15% {
-    opacity: 0.4;
+  12% {
+    opacity: 0.5;
   }
 
-  50% {
-    left: 45%;
-    top: 50%;
-    transform: rotate(-30deg);
-    opacity: 0.3;
+  35% {
+    left: 60%;
+    top: 40%;
+    transform: rotate(-20deg) scale(1.15);
   }
 
-  85% {
-    opacity: 0.4;
+  65% {
+    left: 38%;
+    top: 55%;
+    transform: rotate(-35deg) scale(1.2);
+    opacity: 0.35;
+  }
+
+  88% {
+    opacity: 0.45;
   }
 
   100% {
-    left: 20%;
-    top: 70%;
+    left: 15%;
+    top: 72%;
+    transform: rotate(0) scale(1);
     opacity: 0;
+  }
+}
+
+@keyframes particleDrift5 {
+  0% {
+    left: 50%;
+    top: 45%;
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  15% {
+    opacity: 0.35;
+  }
+
+  40% {
+    left: 30%;
+    top: 30%;
+    transform: scale(1.2);
+    opacity: 0.25;
+  }
+
+  70% {
+    left: 65%;
+    top: 20%;
+    transform: scale(1);
+    opacity: 0.3;
+  }
+
+  100% {
+    left: 45%;
+    top: 55%;
+    opacity: 0;
+    transform: scale(0.8);
   }
 }
 
@@ -5641,20 +5743,42 @@ form {
   font-weight: 600;
 }
 
-/* Interactive Plots */
+/* ─── Sunlight overlay ─── */
+.island-land::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse 60% 50% at 30% 25%,
+      rgba(255, 255, 200, 0.08) 0%,
+      transparent 70%);
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* ─── Island-land 3D depth shadow ─── */
+.island-land {
+  box-shadow:
+    inset 0 -20px 40px rgba(0, 0, 0, 0.06),
+    inset 0 20px 30px rgba(255, 255, 255, 0.04);
+}
+
+/* Interactive Plots (terrain-blended) */
 .iplot {
   position: absolute;
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), box-shadow 0.25s;
   transform: translate(-50%, -50%);
   z-index: 5;
-  border-radius: 12px;
+  border-radius: 14px;
 }
 
 .iplot:hover {
@@ -5663,21 +5787,23 @@ form {
 }
 
 .iplot.wasteland {
-  background: rgba(121, 85, 72, 0.25);
-  border: 1.5px dashed rgba(121, 85, 72, 0.5);
+  background: rgba(121, 85, 72, 0.2);
+  border: 1.5px dashed rgba(121, 85, 72, 0.35);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .iplot.wasteland:hover {
-  background: rgba(121, 85, 72, 0.4);
+  background: rgba(121, 85, 72, 0.35);
   border-color: var(--primary);
+  box-shadow: 0 0 12px rgba(121, 85, 72, 0.25);
 }
 
 .iplot-img {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
-  transition: all 0.3s;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35));
+  transition: all 0.3s cubic-bezier(.34, 1.56, .64, 1);
 }
 
 .iplot.wasteland .iplot-img {
@@ -5704,17 +5830,20 @@ form {
 }
 
 .iplot.cleared {
-  background: rgba(34, 197, 94, 0.08);
-  border: 1.5px dashed rgba(34, 197, 94, 0.25);
+  background: rgba(34, 197, 94, 0.06);
+  border: 1.5px dashed rgba(34, 197, 94, 0.2);
+  box-shadow: inset 0 2px 6px rgba(34, 197, 94, 0.05);
 }
 
 .iplot.cleared.plantable {
   border-color: var(--primary);
   animation: readyPulse 1.5s ease-in-out infinite;
+  background: rgba(34, 197, 94, 0.1);
 }
 
 .iplot.cleared.plantable:hover {
-  background: rgba(34, 197, 94, 0.2);
+  background: rgba(34, 197, 94, 0.22);
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.2);
 }
 
 .iplot-empty {
@@ -5757,9 +5886,20 @@ form {
 }
 
 .iplot.stage-mature .iplot-img {
-  width: 56px;
-  height: 56px;
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 10px rgba(255, 193, 7, 0.2));
+  width: 58px;
+  height: 58px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25)) drop-shadow(0 0 14px rgba(255, 193, 7, 0.25));
+  animation: matureGlow 5s ease-in-out infinite alternate;
+}
+
+@keyframes matureGlow {
+  0% {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25)) drop-shadow(0 0 10px rgba(255, 193, 7, 0.15));
+  }
+
+  100% {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.25)) drop-shadow(0 0 18px rgba(255, 193, 7, 0.35));
+  }
 }
 
 .iplot-bar {

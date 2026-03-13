@@ -438,6 +438,7 @@ const GardenView = {
                             <div class="dock-post"></div>
                             <div class="dock-post right"></div>
                             <div class="dock-label">⚓ 码头</div>
+                            <div style="position:absolute;bottom:-18px;left:-15px;font-size:22px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));animation:boatBob 3s ease-in-out infinite">⛵</div>
                         </div>
 
                         <!-- ═══ Dense Jungle Edge Trees ═══ -->
@@ -497,11 +498,12 @@ const GardenView = {
                         <div class="deco-flower" style="left:78%;top:92%;font-size:10px;animation:none;opacity:0.45">⭐</div>
                         <div class="deco-flower" style="left:45%;top:94%;font-size:9px;animation:none;opacity:0.4">🐚</div>
 
-                        <!-- Ambient particles (butterflies/leaves) -->
+                        <!-- Ambient particles (butterflies/leaves/fireflies) -->
                         <div class="ambient-particle p2">🍃</div>
                         <div class="ambient-particle p4">🍃</div>
                         <div class="ambient-particle p1">🦋</div>
                         <div class="ambient-particle p3">🦋</div>
+                        <div class="ambient-particle p5">✨</div>
 
                         <!-- Interactive Plots -->
                         ${this.plots.map((plot, i) => {
