@@ -8,37 +8,47 @@
     <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
   </defs>
   <ellipse cx="50" cy="114" rx="26" ry="7" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
-  <!-- Stems — multiple stalks -->
-  <path d="M34 112 Q32 80 30 48" stroke="url(#sG)" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <path d="M50 112 Q48 78 46 44" stroke="#558B2F" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <path d="M66 112 Q68 80 70 48" stroke="url(#sG)" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <!-- Leaves -->
-  <path d="M34 88 Q22 82 16 86 Q24 92 34 88Z" fill="#558B2F"/>
-  <path d="M50 82 Q60 74 68 78 Q62 82 50 82Z" fill="#689F38"/>
-  <path d="M66 90 Q76 84 82 88 Q76 94 66 90Z" fill="#558B2F"/>
-  <!-- Flower spikes -->
-  <g transform="translate(30,44)">
-    <ellipse cx="0" cy="-5" rx="4.5" ry="5.5" fill="#7B1FA2"/>
-    <ellipse cx="0" cy="-14" rx="4" ry="5" fill="#9C27B0"/>
-    <ellipse cx="0" cy="-22" rx="3.5" ry="4.5" fill="#AB47BC"/>
-    <ellipse cx="0" cy="-29" rx="3" ry="4" fill="#CE93D8"/>
-    <ellipse cx="0" cy="-35" rx="2.5" ry="3.5" fill="#E1BEE7"/>
-    <ellipse cx="-1" cy="-10" rx="2" ry="2.5" fill="#E1BEE7" opacity="0.15"/>
+  <!-- Stems — slightly curved, not parallel -->
+  <path d="M30 112 Q28 80 32 44" stroke="url(#sG)" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M50 112 Q46 78 44 40" stroke="#558B2F" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M70 112 Q72 80 68 44" stroke="url(#sG)" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Leaves — organic -->
+  <path d="M30 88 Q18 80 12 86 Q20 92 30 88Z" fill="#558B2F"/>
+  <path d="M50 80 Q62 72 70 76 Q62 82 50 80Z" fill="#689F38"/>
+  <path d="M70 90 Q80 82 86 88 Q78 94 70 90Z" fill="#558B2F"/>
+  <!-- Flower spikes — tapering clusters along stem, not perfect circles -->
+  <g>
+    <!-- Left spike -->
+    <path d="M30 42 Q26 34 28 26 Q32 34 30 42Z" fill="#7B1FA2" opacity="0.9"/>
+    <path d="M30 34 Q24 26 26 18 Q30 24 30 34Z" fill="#8E24AA" opacity="0.85"/>
+    <path d="M30 28 Q26 20 28 12 Q32 18 30 28Z" fill="#9C27B0" opacity="0.8"/>
+    <path d="M30 22 Q28 14 30 8 Q32 14 30 22Z" fill="#AB47BC" opacity="0.75"/>
+    <path d="M30 16 Q28 10 30 4 Q32 10 30 16Z" fill="#CE93D8" opacity="0.7"/>
+    <ellipse cx="30" cy="38" rx="5" ry="4" fill="#6A1B9A"/>
+    <ellipse cx="30" cy="30" rx="4.5" ry="3.5" fill="#7B1FA2"/>
+    <ellipse cx="30" cy="22" rx="4" ry="3" fill="#9C27B0"/>
+    <ellipse cx="30" cy="14" rx="3.5" ry="2.5" fill="#AB47BC"/>
+    <ellipse cx="30" cy="8" rx="2.5" ry="2" fill="#CE93D8"/>
   </g>
-  <g transform="translate(46,40)">
-    <ellipse cx="0" cy="-5" rx="4.5" ry="5.5" fill="#8E24AA"/>
-    <ellipse cx="0" cy="-14" rx="4" ry="5" fill="#AB47BC"/>
-    <ellipse cx="0" cy="-22" rx="3.5" ry="4.5" fill="#CE93D8"/>
-    <ellipse cx="0" cy="-29" rx="3" ry="4" fill="#E1BEE7"/>
-    <ellipse cx="0" cy="-35" rx="2.5" ry="3.5" fill="#F3E5F5"/>
-    <ellipse cx="-1" cy="-10" rx="2" ry="2.5" fill="#E1BEE7" opacity="0.15"/>
+  <g>
+    <!-- Middle spike — tallest -->
+    <ellipse cx="45" cy="34" rx="5.5" ry="4.5" fill="#6A1B9A"/>
+    <ellipse cx="45" cy="26" rx="5" ry="4" fill="#7B1FA2"/>
+    <ellipse cx="45" cy="18" rx="4.5" ry="3.5" fill="#8E24AA"/>
+    <ellipse cx="45" cy="10" rx="4" ry="3" fill="#9C27B0"/>
+    <ellipse cx="45" cy="4" rx="3.5" ry="2.5" fill="#AB47BC"/>
+    <ellipse cx="45" cy="-1" rx="2.5" ry="2" fill="#CE93D8"/>
   </g>
-  <g transform="translate(70,44)">
-    <ellipse cx="0" cy="-5" rx="4.5" ry="5.5" fill="#7B1FA2"/>
-    <ellipse cx="0" cy="-14" rx="4" ry="5" fill="#9C27B0"/>
-    <ellipse cx="0" cy="-22" rx="3.5" ry="4.5" fill="#AB47BC"/>
-    <ellipse cx="0" cy="-29" rx="3" ry="4" fill="#CE93D8"/>
-    <ellipse cx="0" cy="-35" rx="2.5" ry="3.5" fill="#E1BEE7"/>
-    <ellipse cx="-1" cy="-10" rx="2" ry="2.5" fill="#E1BEE7" opacity="0.15"/>
+  <g>
+    <!-- Right spike -->
+    <ellipse cx="66" cy="38" rx="5" ry="4" fill="#6A1B9A"/>
+    <ellipse cx="66" cy="30" rx="4.5" ry="3.5" fill="#7B1FA2"/>
+    <ellipse cx="66" cy="22" rx="4" ry="3" fill="#9C27B0"/>
+    <ellipse cx="66" cy="14" rx="3.5" ry="2.5" fill="#AB47BC"/>
+    <ellipse cx="66" cy="8" rx="2.5" ry="2" fill="#CE93D8"/>
   </g>
+  <!-- Tiny highlights on buds -->
+  <ellipse cx="28" cy="36" rx="2" ry="1.5" fill="#E1BEE7" opacity="0.12"/>
+  <ellipse cx="43" cy="32" rx="2.2" ry="1.5" fill="#E1BEE7" opacity="0.1"/>
+  <ellipse cx="64" cy="36" rx="2" ry="1.5" fill="#E1BEE7" opacity="0.1"/>
 </svg>

@@ -5,44 +5,45 @@
       <stop offset="50%" stop-color="#558B2F"/>
       <stop offset="100%" stop-color="#33691E"/>
     </linearGradient>
-    <radialGradient id="cG" cx="45%" cy="30%">
+    <linearGradient id="cG" x1="0.3" y1="0" x2="0.7" y2="1">
       <stop offset="0%" stop-color="#FFF9C4"/>
-      <stop offset="40%" stop-color="#FFD54F"/>
+      <stop offset="30%" stop-color="#FFEE58"/>
       <stop offset="100%" stop-color="#F9A825"/>
-    </radialGradient>
-    <radialGradient id="hG" cx="45%" cy="40%">
-      <stop offset="0%" stop-color="#A1887F"/>
-      <stop offset="100%" stop-color="#4E342E"/>
-    </radialGradient>
+    </linearGradient>
     <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
   </defs>
   <ellipse cx="50" cy="114" rx="28" ry="8" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
-  <!-- Stalk -->
-  <path d="M50 112 Q48 80 46 30" stroke="url(#sG)" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <path d="M50 112 Q49 82 47 32" stroke="#7CB342" stroke-width="1.5" fill="none" opacity="0.15"/>
-  <!-- Leaves — big arching -->
-  <path d="M46 86 Q18 72 8 82 Q16 92 46 86Z" fill="#558B2F"/>
-  <path d="M46 86 Q22 74 14 84" fill="#7CB342" opacity="0.25"/>
-  <path d="M46 74 Q72 62 82 70 Q74 78 46 74Z" fill="#689F38"/>
-  <path d="M46 74 Q68 64 76 72" fill="#8BC34A" opacity="0.2"/>
-  <path d="M46 60 Q20 50 10 58 Q18 66 46 60Z" fill="#558B2F" opacity="0.9"/>
-  <path d="M46 50 Q68 40 78 48 Q70 56 46 50Z" fill="#689F38" opacity="0.9"/>
-  <!-- Corn ear -->
-  <path d="M46 30 Q36 28 32 16 Q34 4 46 2 Q58 4 60 16 Q56 28 46 30Z" fill="url(#cG)"/>
-  <path d="M46 30 Q38 28 36 18 Q38 8 46 6 Q46 18 46 30Z" fill="#FFCA28" opacity="0.3"/>
-  <!-- Corn rows -->
-  <path d="M38 8 Q38 18 36 24" stroke="#F9A825" stroke-width="0.8" fill="none" opacity="0.4"/>
-  <path d="M42 4 Q42 14 40 26" stroke="#F9A825" stroke-width="0.8" fill="none" opacity="0.35"/>
-  <path d="M46 2 Q46 14 46 28" stroke="#F9A825" stroke-width="0.8" fill="none" opacity="0.3"/>
-  <path d="M50 4 Q50 14 52 26" stroke="#F9A825" stroke-width="0.8" fill="none" opacity="0.35"/>
-  <path d="M54 8 Q54 18 56 24" stroke="#F9A825" stroke-width="0.8" fill="none" opacity="0.4"/>
-  <!-- Husk -->
-  <path d="M46 30 Q30 26 28 18 Q36 28 46 30Z" fill="#689F38"/>
-  <path d="M46 30 Q62 26 64 18 Q56 28 46 30Z" fill="#558B2F"/>
-  <!-- Silk -->
-  <path d="M46 4 Q42 -2 38 -4" stroke="url(#hG)" stroke-width="1" fill="none" stroke-linecap="round"/>
-  <path d="M48 2 Q50 -4 52 -6" stroke="url(#hG)" stroke-width="1" fill="none" stroke-linecap="round"/>
-  <path d="M50 4 Q54 -2 58 -2" stroke="url(#hG)" stroke-width="1" fill="none" stroke-linecap="round"/>
-  <!-- Highlight -->
-  <ellipse cx="42" cy="14" rx="3" ry="5" fill="#FFF9C4" opacity="0.15"/>
+  <!-- Stalk — thick -->
+  <path d="M50 112 Q48 80 46 28" stroke="url(#sG)" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M50 112 Q49 82 47 30" stroke="#7CB342" stroke-width="1.5" fill="none" opacity="0.12"/>
+  <!-- Big arching leaves -->
+  <path d="M46 86 Q12 68 4 82 Q14 94 46 86Z" fill="#558B2F"/>
+  <path d="M46 86 Q16 70 10 84" fill="#7CB342" opacity="0.2"/>
+  <path d="M48 72 Q78 56 88 68 Q78 78 48 72Z" fill="#689F38"/>
+  <path d="M48 72 Q74 58 82 70" fill="#8BC34A" opacity="0.18"/>
+  <path d="M46 56 Q14 44 6 56 Q14 64 46 56Z" fill="#558B2F" opacity="0.9"/>
+  <path d="M48 44 Q76 34 86 44 Q78 52 48 44Z" fill="#689F38" opacity="0.9"/>
+  <!-- Corn ear — elongated, not round -->
+  <path d="M40 26 Q36 22 34 8 Q36 -4 46 -8 Q54 -4 56 8 Q54 22 50 26Z" fill="url(#cG)"/>
+  <path d="M42 24 Q38 20 36 10 Q38 0 46 -4 Q46 10 42 24Z" fill="#FFCA28" opacity="0.25"/>
+  <!-- Kernel rows -->
+  <line x1="38" y1="20" x2="36" y2="-2" stroke="#F9A825" stroke-width="0.7" opacity="0.35"/>
+  <line x1="42" y1="22" x2="40" y2="-4" stroke="#F9A825" stroke-width="0.7" opacity="0.3"/>
+  <line x1="46" y1="24" x2="46" y2="-6" stroke="#F9A825" stroke-width="0.7" opacity="0.3"/>
+  <line x1="50" y1="22" x2="52" y2="-4" stroke="#F9A825" stroke-width="0.7" opacity="0.3"/>
+  <line x1="54" y1="20" x2="54" y2="-2" stroke="#F9A825" stroke-width="0.7" opacity="0.35"/>
+  <!-- Kernel bumps -->
+  <circle cx="40" cy="4" r="2.2" fill="#FFD54F" opacity="0.4"/>
+  <circle cx="44" cy="8" r="2.2" fill="#FFCA28" opacity="0.35"/>
+  <circle cx="48" cy="4" r="2.2" fill="#FFD54F" opacity="0.4"/>
+  <circle cx="44" cy="14" r="2" fill="#FFCA28" opacity="0.3"/>
+  <circle cx="48" cy="12" r="2" fill="#FFD54F" opacity="0.35"/>
+  <!-- Husk — wrapping around ear -->
+  <path d="M40 26 Q28 20 26 8 Q34 18 40 26Z" fill="#689F38"/>
+  <path d="M50 26 Q60 20 62 8 Q54 18 50 26Z" fill="#558B2F"/>
+  <path d="M40 26 Q32 24 30 14 Q36 20 40 26Z" fill="#7CB342" opacity="0.4"/>
+  <!-- Silk tassels -->
+  <path d="M44 -6 Q40 -14 36 -16" stroke="#A1887F" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <path d="M46 -8 Q48 -16 50 -18" stroke="#BCAAA4" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <path d="M50 -6 Q54 -14 58 -14" stroke="#A1887F" stroke-width="1.2" fill="none" stroke-linecap="round"/>
 </svg>

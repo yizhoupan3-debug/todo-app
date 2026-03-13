@@ -14,25 +14,28 @@
   </defs>
   <ellipse cx="50" cy="114" rx="30" ry="8" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
   <!-- Vine -->
-  <path d="M50 112 Q40 96 32 88 Q24 82 20 76" stroke="url(#sG)" stroke-width="5" fill="none" stroke-linecap="round"/>
-  <path d="M32 88 Q42 82 50 76 Q58 72 64 68" stroke="#388E3C" stroke-width="4" fill="none" stroke-linecap="round"/>
-  <!-- Leaves -->
-  <path d="M28 82 Q14 72 10 78 Q16 86 28 82Z" fill="#558B2F"/>
-  <path d="M38 76 Q44 66 54 68 Q48 76 38 76Z" fill="#689F38"/>
-  <path d="M56 72 Q66 62 74 66 Q68 72 56 72Z" fill="#558B2F"/>
-  <path d="M64 68 Q72 58 80 62 Q74 68 64 68Z" fill="#689F38"/>
-  <!-- Pumpkin — big round -->
-  <path d="M50 108 Q22 108 14 82 Q10 62 26 50 Q38 42 50 40 Q62 42 74 50 Q90 62 86 82 Q78 108 50 108Z" fill="url(#pG)"/>
-  <!-- Ridges -->
-  <path d="M50 40 Q50 70 50 108" stroke="#E65100" stroke-width="1.5" fill="none" opacity="0.25"/>
-  <path d="M34 46 Q32 70 34 104" stroke="#E65100" stroke-width="1.2" fill="none" opacity="0.2"/>
-  <path d="M66 46 Q68 70 66 104" stroke="#E65100" stroke-width="1.2" fill="none" opacity="0.2"/>
-  <!-- Depth -->
-  <path d="M50 108 Q28 108 20 82 Q16 66 30 52 Q50 48 50 108Z" fill="#FB8C00" opacity="0.35"/>
-  <path d="M50 108 Q72 108 80 82 Q84 66 70 52 Q50 48 50 108Z" fill="#BF360C" opacity="0.15"/>
-  <!-- Stem -->
-  <path d="M50 40 Q50 32 52 28" stroke="#5D4037" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <path d="M52 30 Q56 24 62 22" stroke="#689F38" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <!-- Highlight -->
-  <ellipse cx="36" cy="62" rx="6" ry="10" fill="#FFE082" opacity="0.12" transform="rotate(-5 36 62)"/>
+  <path d="M50 112 Q38 96 28 86 Q22 82 18 76" stroke="url(#sG)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M28 86 Q40 80 54 74 Q62 70 68 66" stroke="#388E3C" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <!-- Leaves — asymmetric -->
+  <path d="M24 82 Q10 72 8 80 Q14 88 24 82Z" fill="#558B2F"/>
+  <path d="M38 78 Q46 66 56 70 Q48 78 38 78Z" fill="#689F38"/>
+  <path d="M58 72 Q68 60 78 64 Q70 72 58 72Z" fill="#558B2F"/>
+  <path d="M66 66 Q74 56 82 60 Q74 68 66 66Z" fill="#689F38"/>
+  <!-- Pumpkin — wider, flatter, with pronounced ribs -->
+  <path d="M50 104 Q18 104 10 78 Q6 58 22 46 Q36 38 50 36 Q64 38 78 46 Q94 58 90 78 Q82 104 50 104Z" fill="url(#pG)"/>
+  <!-- Deep ribs — prominent -->
+  <path d="M50 36 Q48 60 50 104" stroke="#BF360C" stroke-width="2.5" fill="none" opacity="0.2"/>
+  <path d="M30 42 Q26 62 28 100" stroke="#BF360C" stroke-width="2" fill="none" opacity="0.18"/>
+  <path d="M70 42 Q74 62 72 100" stroke="#BF360C" stroke-width="2" fill="none" opacity="0.18"/>
+  <path d="M18 56 Q14 72 16 98" stroke="#BF360C" stroke-width="1.5" fill="none" opacity="0.12"/>
+  <path d="M82 56 Q86 72 84 98" stroke="#BF360C" stroke-width="1.5" fill="none" opacity="0.12"/>
+  <!-- Depth — left/right shading -->
+  <path d="M50 104 Q24 104 16 78 Q12 62 26 48 Q50 44 50 104Z" fill="#FB8C00" opacity="0.3"/>
+  <path d="M50 104 Q76 104 84 78 Q88 62 74 48 Q50 44 50 104Z" fill="#BF360C" opacity="0.12"/>
+  <!-- Stem — chunky -->
+  <path d="M48 38 Q46 28 48 22" stroke="#5D4037" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M48 24 Q54 18 62 16" stroke="#689F38" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M50 26 Q44 20 40 18" stroke="#558B2F" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- Highlight — soft -->
+  <ellipse cx="34" cy="58" rx="5" ry="12" fill="#FFE082" opacity="0.08" transform="rotate(-8 34 58)"/>
 </svg>
