@@ -1,38 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <radialGradient id="bG" cx="40%" cy="30%">
-      <stop offset="0%" stop-color="#FCE4EC"/>
-      <stop offset="30%" stop-color="#F8BBD0"/>
-      <stop offset="100%" stop-color="#E91E63"/>
-    </radialGradient>
-    <linearGradient id="tG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#5D4037"/>
-      <stop offset="40%" stop-color="#8D6E63"/>
-      <stop offset="60%" stop-color="#A1887F"/>
-      <stop offset="100%" stop-color="#5D4037"/>
-    </linearGradient>
-    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
   </defs>
   <ellipse cx="50" cy="114" rx="34" ry="9" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
-  <!-- Trunk -->
-  <path d="M44 112 Q44 90 46 68 Q48 66 52 66 Q54 66 55 68 Q56 90 56 112Z" fill="url(#tG)"/>
-  <path d="M47 110 Q47 92 48 70 Q50 92 50 110Z" fill="#BCAAA4" opacity="0.1"/>
-  <!-- Branches -->
-  <path d="M45 86 Q28 78 18 86" stroke="#795548" stroke-width="4" fill="none" stroke-linecap="round"/>
-  <path d="M55 78 Q72 70 82 76" stroke="#795548" stroke-width="4" fill="none" stroke-linecap="round"/>
-  <!-- Blossom canopy — massive organic blob -->
-  <path d="M50 8 Q18 8 6 28 Q-2 46 12 56 Q6 62 14 68 Q22 76 36 72 Q32 80 50 80 Q68 80 64 72 Q78 76 86 68 Q94 62 88 56 Q102 46 94 28 Q82 8 50 8Z" fill="url(#bG)"/>
-  <!-- Depth layers -->
-  <path d="M50 10 Q26 12 14 30 Q8 42 18 52 Q30 60 50 56 Q50 30 50 10Z" fill="#F48FB1" opacity="0.45"/>
-  <path d="M50 10 Q74 12 86 30 Q92 42 82 52 Q70 60 50 56 Q50 30 50 10Z" fill="#C2185B" opacity="0.15"/>
-  <!-- Sparkles / petals -->
-  <circle cx="28" cy="32" r="3" fill="#fff" opacity="0.3"/>
-  <circle cx="66" cy="28" r="2.5" fill="#fff" opacity="0.25"/>
-  <circle cx="40" cy="16" r="2" fill="#fff" opacity="0.3"/>
-  <circle cx="20" cy="50" r="2.5" fill="#FCE4EC" opacity="0.3"/>
-  <circle cx="78" cy="46" r="2" fill="#FCE4EC" opacity="0.25"/>
-  <circle cx="50" cy="22" r="2" fill="#fff" opacity="0.2"/>
+  <!-- Trunk — elegant, dark -->
+  <path d="M44 112 Q42 94 44 72 Q46 70 52 70 Q54 70 56 72 Q56 94 56 112Z" fill="#6D4C41"/>
+  <path d="M48 110 Q48 96 48 74" stroke="#8D6E63" stroke-width="1" fill="none" opacity="0.12"/>
+  <!-- Branches — graceful, spreading -->
+  <path d="M44 84 Q24 70 8 62" stroke="#795548" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M56 78 Q76 64 92 58" stroke="#795548" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M50 72 Q50 54 50 40" stroke="#795548" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M8 62 Q4 52 2 44" stroke="#8D6E63" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M8 62 Q14 52 20 46" stroke="#8D6E63" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M92 58 Q96 48 98 40" stroke="#8D6E63" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M92 58 Q86 48 82 42" stroke="#8D6E63" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M50 40 Q40 30 34 24" stroke="#8D6E63" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M50 40 Q60 30 66 24" stroke="#8D6E63" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <!-- Blossom clusters — soft pink circles scattered along branches -->
+  <circle cx="2" cy="40" r="10" fill="#F48FB1"/>
+  <circle cx="20" cy="40" r="11" fill="#F8BBD0"/>
+  <circle cx="8" cy="56" r="9" fill="#F06292"/>
+  <circle cx="34" cy="20" r="11" fill="#F8BBD0"/>
+  <circle cx="50" cy="32" r="11" fill="#F48FB1"/>
+  <circle cx="66" cy="20" r="11" fill="#F8BBD0"/>
+  <circle cx="82" cy="36" r="11" fill="#F48FB1"/>
+  <circle cx="98" cy="36" r="10" fill="#F8BBD0"/>
+  <circle cx="92" cy="52" r="9" fill="#F06292"/>
+  <circle cx="50" cy="16" r="9" fill="#F8BBD0"/>
+  <circle cx="14" cy="48" r="8" fill="#F48FB1"/>
+  <circle cx="26" cy="30" r="8" fill="#F06292"/>
+  <circle cx="74" cy="28" r="8" fill="#F8BBD0"/>
+  <circle cx="40" cy="36" r="8" fill="#F48FB1"/>
+  <circle cx="60" cy="34" r="8" fill="#F06292"/>
+  <!-- White sparkles within blossoms -->
+  <circle cx="30" cy="22" r="2" fill="#fff" opacity="0.3"/>
+  <circle cx="54" cy="18" r="1.5" fill="#fff" opacity="0.25"/>
+  <circle cx="78" cy="30" r="1.8" fill="#fff" opacity="0.25"/>
+  <circle cx="10" cy="42" r="1.5" fill="#fff" opacity="0.2"/>
+  <circle cx="90" cy="40" r="1.5" fill="#fff" opacity="0.2"/>
   <!-- Falling petals -->
-  <ellipse cx="14" cy="76" rx="3" ry="2" fill="#F8BBD0" opacity="0.4" transform="rotate(-20 14 76)"/>
-  <ellipse cx="86" cy="72" rx="2.5" ry="1.5" fill="#F8BBD0" opacity="0.35" transform="rotate(15 86 72)"/>
+  <ellipse cx="16" cy="76" rx="3" ry="1.5" fill="#F8BBD0" opacity="0.45" transform="rotate(-20 16 76)"/>
+  <ellipse cx="84" cy="72" rx="2.5" ry="1.2" fill="#F48FB1" opacity="0.4" transform="rotate(15 84 72)"/>
+  <ellipse cx="36" cy="84" rx="2" ry="1" fill="#F8BBD0" opacity="0.35" transform="rotate(-30 36 84)"/>
 </svg>

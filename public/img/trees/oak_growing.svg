@@ -1,20 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <radialGradient id="cG" cx="38%" cy="30%">
-      <stop offset="0%" stop-color="#A5D6A7"/>
-      <stop offset="100%" stop-color="#1B5E20"/>
-    </radialGradient>
-    <linearGradient id="tG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#4E342E"/>
-      <stop offset="50%" stop-color="#795548"/>
-      <stop offset="100%" stop-color="#4E342E"/>
-    </linearGradient>
-    <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="2"/></filter>
   </defs>
   <ellipse cx="50" cy="112" rx="26" ry="7" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
-  <path d="M44 110 Q44 94 46 76 Q48 74 52 74 Q54 74 55 76 Q56 94 56 110Z" fill="url(#tG)"/>
-  <path d="M44 90 Q30 84 24 90" stroke="#6D4C41" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-  <path d="M50 30 Q22 30 14 46 Q8 56 24 62 Q40 68 50 66 Q60 68 76 62 Q92 56 86 46 Q78 30 50 30Z" fill="url(#cG)"/>
-  <path d="M50 32 Q30 34 20 46 Q16 54 30 60 Q50 64 50 32Z" fill="#388E3C" opacity="0.35"/>
-  <circle cx="34" cy="42" r="3" fill="#C8E6C9" opacity="0.2"/>
+  <path d="M46 110 Q44 96 46 82 Q48 80 52 80 Q54 80 55 82 Q56 96 54 110Z" fill="#5D4037"/>
+  <path d="M46 92 Q32 82 22 78" stroke="#4E342E" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M54 86 Q66 76 76 74" stroke="#4E342E" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M50 82 Q50 68 50 58" stroke="#5D4037" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle cx="22" cy="72" r="10" fill="#43A047"/>
+  <circle cx="50" cy="52" r="10" fill="#388E3C"/>
+  <circle cx="76" cy="68" r="10" fill="#2E7D32"/>
+  <circle cx="36" cy="62" r="8" fill="#66BB6A"/>
+  <circle cx="62" cy="60" r="8" fill="#43A047"/>
 </svg>
