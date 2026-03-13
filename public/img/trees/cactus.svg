@@ -1,15 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="112" rx="20" ry="6" fill="#5D4037" opacity="0.25"/>
-  <path d="M48 110 Q45 95 42 75 Q38 55 50 30 Q62 55 58 75 Q55 95 52 110Z" fill="#4CAF50"/>
-  <path d="M48 110 Q46 100 45 85 Q42 65 50 42 Q50 65 50 85 Q50 100 52 110Z" fill="#388E3C"/>
-  <path d="M50 42 Q42 48 38 60" stroke="#2E7D32" stroke-width="1.5" fill="none"/>
-  <path d="M50 50 Q56 54 62 65" stroke="#2E7D32" stroke-width="1.5" fill="none"/>
-  <path d="M50 60 Q44 65 40 75" stroke="#2E7D32" stroke-width="1.5" fill="none"/>
-  <path d="M50 70 Q55 72 58 82" stroke="#2E7D32" stroke-width="1.5" fill="none"/>
-  <circle cx="38" cy="65" r="2" fill="#FFEB3B"/>
-  <path d="M36 64 L38 60 L40 64 L37 66Z" fill="#FFEB3B"/>
-  <circle cx="60" cy="72" r="2" fill="#FFEB3B"/>
-  <path d="M58 71 L60 67 L62 71 L59 73Z" fill="#FFEB3B"/>
-  <circle cx="45" cy="85" r="2" fill="#FFEB3B"/>
-  <path d="M43 84 L45 80 L47 84 L44 86Z" fill="#FFEB3B"/>
+  <defs>
+    <linearGradient id="cG" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#66BB6A"/>
+      <stop offset="50%" stop-color="#4CAF50"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </linearGradient>
+    <radialGradient id="flG" cx="40%" cy="30%">
+      <stop offset="0%" stop-color="#FFF9C4"/>
+      <stop offset="100%" stop-color="#FDD835"/>
+    </radialGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+  </defs>
+  <ellipse cx="50" cy="114" rx="22" ry="7" fill="#3E2723" opacity="0.18" filter="url(#sh)"/>
+  <!-- Body -->
+  <path d="M48 110 Q44 94 40 74 Q36 52 50 26 Q64 52 60 74 Q56 94 52 110Z" fill="url(#cG)"/>
+  <path d="M48 110 Q46 98 44 84 Q40 62 50 36 Q50 62 50 84 Q50 98 52 110Z" fill="#388E3C" opacity="0.5"/>
+  <!-- Light ridge -->
+  <path d="M50 110 Q50 80 50 30" stroke="#81C784" stroke-width="1" fill="none" opacity="0.2"/>
+  <!-- Ridges / spines -->
+  <path d="M50 38 Q40 46 36 58" stroke="#2E7D32" stroke-width="1.5" fill="none" opacity="0.4"/>
+  <path d="M50 48 Q58 54 64 66" stroke="#2E7D32" stroke-width="1.5" fill="none" opacity="0.4"/>
+  <path d="M50 58 Q42 64 38 76" stroke="#2E7D32" stroke-width="1.5" fill="none" opacity="0.35"/>
+  <path d="M50 68 Q56 72 60 82" stroke="#2E7D32" stroke-width="1.5" fill="none" opacity="0.35"/>
+  <!-- Flowers -->
+  <circle cx="36" cy="62" r="3" fill="url(#flG)"/>
+  <path d="M34 61 L36 57 L38 61 L35 63Z" fill="#FDD835"/>
+  <circle cx="62" cy="70" r="3" fill="url(#flG)"/>
+  <path d="M60 69 L62 65 L64 69 L61 71Z" fill="#FDD835"/>
+  <circle cx="44" cy="84" r="2.5" fill="url(#flG)"/>
+  <path d="M42 83 L44 79 L46 83 L43 85Z" fill="#FDD835"/>
+  <!-- Spines -->
+  <line x1="38" y1="50" x2="34" y2="47" stroke="#E8F5E9" stroke-width="0.7" opacity="0.5"/>
+  <line x1="60" y1="56" x2="64" y2="53" stroke="#E8F5E9" stroke-width="0.7" opacity="0.5"/>
+  <line x1="40" y1="70" x2="36" y2="68" stroke="#E8F5E9" stroke-width="0.7" opacity="0.4"/>
+  <line x1="58" y1="80" x2="62" y2="78" stroke="#E8F5E9" stroke-width="0.7" opacity="0.4"/>
 </svg>

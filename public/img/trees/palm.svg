@@ -1,16 +1,43 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="112" rx="26" ry="8" fill="#5D4037" opacity="0.25"/>
-  <path d="M50 110 Q48 70 50 25" stroke="#A1887F" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <path d="M50 28 Q55 35 60 30" stroke="#795548" stroke-width="2" fill="none"/>
-  <g transform="translate(50,22)">
-    <path d="M0 0 Q-14 -20 -30 -8" stroke="none" fill="#4CAF50"/>
-    <path d="M0 0 Q14 -20 30 -8" stroke="none" fill="#66BB6A"/>
-    <path d="M0 0 Q-20 -14 -26 4" stroke="none" fill="#388E3C"/>
-    <path d="M0 0 Q20 -14 26 4" stroke="none" fill="#43A047"/>
-    <path d="M0 0 Q-8 -24 -14 -18" stroke="none" fill="#81C784"/>
-    <path d="M0 0 Q8 -24 14 -18" stroke="none" fill="#81C784"/>
-    <path d="M0 0 Q0 -26 4 -22" stroke="none" fill="#A5D6A7"/>
+  <defs>
+    <linearGradient id="trG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6D4C41"/>
+      <stop offset="30%" stop-color="#A1887F"/>
+      <stop offset="70%" stop-color="#BCAAA4"/>
+      <stop offset="100%" stop-color="#6D4C41"/>
+    </linearGradient>
+    <radialGradient id="lfG" cx="40%" cy="30%">
+      <stop offset="0%" stop-color="#81C784"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </radialGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+  </defs>
+  <ellipse cx="50" cy="114" rx="28" ry="8" fill="#3E2723" opacity="0.18" filter="url(#sh)"/>
+  <!-- Trunk -->
+  <path d="M50 112 Q48 68 50 22" stroke="url(#trG)" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M50 112 Q49 70 50 24" stroke="#BCAAA4" stroke-width="1.5" fill="none" opacity="0.15"/>
+  <!-- Bark rings -->
+  <path d="M47 50 Q50 48 53 50" stroke="#5D4037" stroke-width="0.8" fill="none" opacity="0.3"/>
+  <path d="M47 70 Q50 68 53 70" stroke="#5D4037" stroke-width="0.8" fill="none" opacity="0.25"/>
+  <path d="M47 90 Q50 88 53 90" stroke="#5D4037" stroke-width="0.8" fill="none" opacity="0.2"/>
+  <!-- Fronds -->
+  <g transform="translate(50,20)">
+    <path d="M0 0 Q-16 -22 -34 -10" fill="url(#lfG)"/>
+    <path d="M0 0 Q16 -22 34 -10" fill="#4CAF50"/>
+    <path d="M0 0 Q-22 -16 -30 4" fill="#388E3C"/>
+    <path d="M0 0 Q22 -16 30 4" fill="#43A047"/>
+    <path d="M0 0 Q-10 -26 -18 -20" fill="#66BB6A"/>
+    <path d="M0 0 Q10 -26 18 -20" fill="#81C784"/>
+    <path d="M0 0 Q0 -28 5 -24" fill="#A5D6A7"/>
+    <!-- Frond veins -->
+    <path d="M0 0 Q-10 -12 -22 -6" stroke="#1B5E20" stroke-width="0.6" fill="none" opacity="0.3"/>
+    <path d="M0 0 Q10 -12 22 -6" stroke="#1B5E20" stroke-width="0.6" fill="none" opacity="0.3"/>
   </g>
-  <ellipse cx="30" cy="95" rx="6" ry="3" fill="#8BC34A" opacity="0.4"/>
-  <ellipse cx="70" cy="100" rx="5" ry="2.5" fill="#8BC34A" opacity="0.3"/>
+  <!-- Coconuts -->
+  <circle cx="48" cy="22" r="3.5" fill="#8D6E63"/>
+  <circle cx="54" cy="24" r="3" fill="#795548"/>
+  <circle cx="47" cy="21" r="1.2" fill="#BCAAA4" opacity="0.3"/>
+  <!-- Ground foliage -->
+  <ellipse cx="30" cy="96" rx="7" ry="3" fill="#8BC34A" opacity="0.35"/>
+  <ellipse cx="72" cy="100" rx="6" ry="2.5" fill="#8BC34A" opacity="0.3"/>
 </svg>

@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
   <defs>
-    <!-- Rich gold gradients -->
     <radialGradient id="outerRim" cx="38%" cy="35%" r="60%">
       <stop offset="0%" stop-color="#F2D44F"/>
       <stop offset="50%" stop-color="#D4A017"/>
@@ -20,105 +19,89 @@
       <stop offset="50%" stop-color="#D4A017"/>
       <stop offset="100%" stop-color="#9B7209"/>
     </linearGradient>
-    <!-- Diagonal stripe pattern for outer rim -->
+    <linearGradient id="embossLight" x1="0.3" y1="0" x2="0.7" y2="1">
+      <stop offset="0%" stop-color="#FFE878"/>
+      <stop offset="100%" stop-color="#C89A0E"/>
+    </linearGradient>
     <pattern id="stripes" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <rect width="4" height="8" fill="#B8880C" opacity="0.35"/>
+      <rect width="4" height="8" fill="#8B6B0A" opacity="0.3"/>
     </pattern>
-    <!-- Shadow -->
     <filter id="coinShadow">
       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#4A3500" flood-opacity="0.4"/>
     </filter>
-    <filter id="emblemShadow">
-      <feDropShadow dx="0.5" dy="1" stdDeviation="0.8" flood-color="#6B4E00" flood-opacity="0.5"/>
+    <filter id="emblemGlow">
+      <feDropShadow dx="0.5" dy="1" stdDeviation="1" flood-color="#6B4E00" flood-opacity="0.6"/>
     </filter>
   </defs>
 
-  <!-- ========== COIN STRUCTURE ========== -->
-
-  <!-- Outer rim base -->
+  <!-- ===== COIN BODY ===== -->
+  <!-- Outer rim -->
   <circle cx="100" cy="100" r="96" fill="url(#outerRim)" filter="url(#coinShadow)"/>
-  <!-- Diagonal stripes on rim -->
   <circle cx="100" cy="100" r="96" fill="url(#stripes)"/>
-  <!-- Rim edge highlight -->
-  <circle cx="100" cy="100" r="96" fill="none" stroke="#9B7209" stroke-width="2"/>
-  <circle cx="100" cy="100" r="94" fill="none" stroke="#FFE566" stroke-width="0.8" opacity="0.3"/>
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#8B6B0A" stroke-width="2"/>
 
-  <!-- Groove / channel between rim and inner disc -->
-  <circle cx="100" cy="100" r="76" fill="url(#groove)"/>
-  <circle cx="100" cy="100" r="76" fill="none" stroke="#6B4E00" stroke-width="2"/>
-  <circle cx="100" cy="100" r="74.5" fill="none" stroke="#D4A017" stroke-width="0.6" opacity="0.4"/>
+  <!-- Groove -->
+  <circle cx="100" cy="100" r="78" fill="url(#groove)"/>
+  <circle cx="100" cy="100" r="78" fill="none" stroke="#6B4E00" stroke-width="2.5"/>
 
-  <!-- Inner raised disc -->
-  <circle cx="100" cy="100" r="68" fill="url(#innerDisc)"/>
-  <circle cx="100" cy="100" r="68" fill="none" stroke="#9B7209" stroke-width="1.5"/>
-  <circle cx="100" cy="100" r="66.5" fill="none" stroke="#FFE566" stroke-width="0.5" opacity="0.35"/>
+  <!-- Inner disc -->
+  <circle cx="100" cy="100" r="70" fill="url(#innerDisc)"/>
+  <circle cx="100" cy="100" r="70" fill="none" stroke="#9B7209" stroke-width="1.5"/>
 
-  <!-- ========== CAT EMBLEM ========== -->
-  <g filter="url(#emblemShadow)">
-    <!-- Cat ears - sharp pointed triangles -->
-    <polygon points="72,62 86,42 64,30" fill="url(#emboss)" stroke="#8B6B0A" stroke-width="1.5" stroke-linejoin="round"/>
-    <polygon points="128,62 114,42 136,30" fill="url(#emboss)" stroke="#8B6B0A" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- ===== CAT EMBLEM (larger, centered) ===== -->
+  <g filter="url(#emblemGlow)">
 
-    <!-- Inner ear highlights -->
-    <polygon points="74,58 84,44 67,35" fill="#C89A0E" opacity="0.5"/>
-    <polygon points="126,58 116,44 133,35" fill="#C89A0E" opacity="0.5"/>
+    <!-- Cat ears - big, sharp, prominent -->
+    <!-- Left ear -->
+    <polygon points="62,60 80,36 52,22" fill="url(#emboss)" stroke="#8B6B0A" stroke-width="2" stroke-linejoin="round"/>
+    <!-- Right ear -->
+    <polygon points="138,60 120,36 148,22" fill="url(#emboss)" stroke="#8B6B0A" stroke-width="2" stroke-linejoin="round"/>
 
-    <!-- Cat head outline connecting ears -->
+    <!-- Head bridge connecting ears -->
     <path d="
-      M 72,62
-      C 72,54, 78,48, 86,42
-      Q 92,52, 100,55
-      Q 108,52, 114,42
-      C 122,48, 128,54, 128,62
-    " fill="url(#emboss)" stroke="#8B6B0A" stroke-width="1.5" stroke-linejoin="round"/>
+      M 62,60
+      C 66,50, 74,42, 80,36
+      Q 88,48, 100,50
+      Q 112,48, 120,36
+      C 126,42, 134,50, 138,60
+    " fill="url(#emboss)" stroke="#8B6B0A" stroke-width="2" stroke-linejoin="round"/>
 
-    <!-- Central circle (eye/emblem) -->
-    <circle cx="100" cy="82" r="20" fill="url(#groove)" stroke="#8B6B0A" stroke-width="2.5"/>
-    <circle cx="100" cy="82" r="16" fill="url(#innerDisc)" stroke="#9B7209" stroke-width="1"/>
-    <!-- Inner dot / pupil -->
-    <circle cx="100" cy="82" r="7" fill="url(#groove)" stroke="#8B6B0A" stroke-width="1.5"/>
-    
-    <!-- Eye highlight -->
-    <circle cx="96" cy="78" r="3" fill="#FFE878" opacity="0.4"/>
+    <!-- Central eye ring (large) -->
+    <circle cx="100" cy="78" r="22" fill="url(#groove)" stroke="#8B6B0A" stroke-width="3"/>
+    <circle cx="100" cy="78" r="17" fill="url(#innerDisc)" stroke="#9B7209" stroke-width="1.2"/>
+    <!-- Pupil -->
+    <circle cx="100" cy="78" r="8" fill="url(#groove)" stroke="#8B6B0A" stroke-width="2"/>
+    <!-- Eye shine -->
+    <circle cx="96" cy="74" r="3" fill="#FFE878" opacity="0.45"/>
 
-    <!-- Jagged teeth / crown below the circle -->
+    <!-- Jagged teeth / jaw - wider, more symmetrical -->
     <path d="
-      M 70,100
-      L 76,88
-      L 82,100
-      L 88,88
-      L 94,100
-      L 100,88
-      L 106,100
-      L 112,88
-      L 118,100
-      L 124,88
-      L 130,100
-      Q 130,132, 100,140
-      Q 70,132, 70,100
+      M 58,98
+      L 66,82  L 74,98
+      L 82,82  L 90,98
+      L 100,82 L 110,98
+      L 118,82 L 126,98
+      L 134,82 L 142,98
+      Q 142,136, 100,146
+      Q 58,136, 58,98
       Z
-    " fill="url(#emboss)" stroke="#8B6B0A" stroke-width="1.5" stroke-linejoin="round"/>
+    " fill="url(#emboss)" stroke="#8B6B0A" stroke-width="2" stroke-linejoin="round"/>
 
-    <!-- Jaw highlight -->
+    <!-- Jaw inner highlight -->
     <path d="
-      M 78,104
-      L 83,94
-      L 88,104
-      L 93,94
-      L 98,104
-      L 103,94
-      L 108,104
-      L 113,94
-      L 118,104
-      Q 118,126, 100,132
-      Q 82,126, 78,104
+      M 66,102
+      L 72,90  L 78,102
+      L 86,90  L 94,102
+      L 102,90 L 110,102
+      L 118,90 L 124,102
+      L 130,90 L 136,102
+      Q 134,130, 100,138
+      Q 66,130, 66,102
       Z
-    " fill="#D4A017" opacity="0.3"/>
+    " fill="#D4A017" opacity="0.25"/>
   </g>
 
-  <!-- ========== HIGHLIGHTS ========== -->
-  <!-- Top-left coin shine -->
-  <ellipse cx="65" cy="50" rx="30" ry="14" fill="white" opacity="0.12" transform="rotate(-35 65 50)"/>
-  <!-- Small rim shine -->
-  <ellipse cx="50" cy="38" rx="12" ry="4" fill="white" opacity="0.15" transform="rotate(-40 50 38)"/>
+  <!-- ===== HIGHLIGHTS ===== -->
+  <ellipse cx="65" cy="48" rx="30" ry="14" fill="white" opacity="0.12" transform="rotate(-35 65 48)"/>
+  <ellipse cx="48" cy="35" rx="10" ry="4" fill="white" opacity="0.18" transform="rotate(-40 48 35)"/>
 </svg>

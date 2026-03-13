@@ -1,22 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="112" rx="22" ry="7" fill="#5D4037" opacity="0.25"/>
-  <!-- Stem -->
-  <path d="M50 110 Q48 88 46 60" stroke="#558B2F" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="stG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#33691E"/>
+      <stop offset="50%" stop-color="#689F38"/>
+      <stop offset="100%" stop-color="#33691E"/>
+    </linearGradient>
+    <radialGradient id="pG" cx="40%" cy="30%">
+      <stop offset="0%" stop-color="#FF8A65"/>
+      <stop offset="50%" stop-color="#FF5722"/>
+      <stop offset="100%" stop-color="#D84315"/>
+    </radialGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+  </defs>
+  <ellipse cx="50" cy="114" rx="24" ry="7" fill="#3E2723" opacity="0.18" filter="url(#sh)"/>
+  <path d="M50 112 Q48 88 46 58" stroke="url(#stG)" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M50 112 Q49 90 47 60" stroke="#8BC34A" stroke-width="1" fill="none" opacity="0.2"/>
   <!-- Leaves -->
-  <ellipse cx="36" cy="90" rx="10" ry="5" fill="#689F38" transform="rotate(-25 36 90)"/>
-  <ellipse cx="60" cy="82" rx="9" ry="4" fill="#7CB342" transform="rotate(20 60 82)"/>
-  <ellipse cx="34" cy="72" rx="8" ry="4" fill="#8BC34A" transform="rotate(-15 34 72)"/>
-  <!-- Flower petals -->
-  <g transform="translate(46, 38)">
-    <ellipse cx="0" cy="-12" rx="8" ry="14" fill="#FF5722" transform="rotate(0 0 0)"/>
-    <ellipse cx="0" cy="-12" rx="8" ry="14" fill="#FF7043" transform="rotate(72 0 0)"/>
-    <ellipse cx="0" cy="-12" rx="8" ry="14" fill="#FF5722" transform="rotate(144 0 0)"/>
-    <ellipse cx="0" cy="-12" rx="8" ry="14" fill="#FF7043" transform="rotate(216 0 0)"/>
-    <ellipse cx="0" cy="-12" rx="8" ry="14" fill="#FF5722" transform="rotate(288 0 0)"/>
+  <ellipse cx="34" cy="90" rx="11" ry="5.5" fill="#558B2F" transform="rotate(-25 34 90)"/>
+  <ellipse cx="35" cy="89" rx="7" ry="3" fill="#7CB342" opacity="0.35" transform="rotate(-25 35 89)"/>
+  <ellipse cx="62" cy="82" rx="10" ry="4.5" fill="#689F38" transform="rotate(20 62 82)"/>
+  <ellipse cx="32" cy="72" rx="9" ry="4" fill="#558B2F" transform="rotate(-15 32 72)"/>
+  <!-- Hibiscus petals -->
+  <g transform="translate(46, 36)">
+    <ellipse cx="0" cy="-13" rx="9" ry="15" fill="url(#pG)" transform="rotate(0 0 0)"/>
+    <ellipse cx="0" cy="-13" rx="9" ry="15" fill="#FF7043" transform="rotate(72 0 0)"/>
+    <ellipse cx="0" cy="-13" rx="9" ry="15" fill="url(#pG)" transform="rotate(144 0 0)"/>
+    <ellipse cx="0" cy="-13" rx="9" ry="15" fill="#FF7043" transform="rotate(216 0 0)"/>
+    <ellipse cx="0" cy="-13" rx="9" ry="15" fill="url(#pG)" transform="rotate(288 0 0)"/>
     <!-- Stamen -->
-    <circle cx="0" cy="0" r="5" fill="#FFEB3B"/>
-    <circle cx="0" cy="-4" r="1.5" fill="#FF6F00"/>
-    <circle cx="3" cy="1" r="1.2" fill="#FF6F00"/>
-    <circle cx="-3" cy="1" r="1.2" fill="#FF6F00"/>
+    <circle cx="0" cy="0" r="6" fill="#FFEB3B"/>
+    <circle cx="0" cy="0" r="3.5" fill="#FFF9C4" opacity="0.35"/>
+    <circle cx="0" cy="-4" r="1.8" fill="#FF6F00" opacity="0.7"/>
+    <circle cx="3" cy="1" r="1.4" fill="#FF6F00" opacity="0.6"/>
+    <circle cx="-3" cy="1" r="1.4" fill="#FF6F00" opacity="0.6"/>
+    <!-- Petal highlights -->
+    <ellipse cx="-4" cy="-14" rx="3" ry="5" fill="#FFAB91" opacity="0.2" transform="rotate(0 0 0)"/>
+    <ellipse cx="-4" cy="-14" rx="3" ry="5" fill="#FFAB91" opacity="0.2" transform="rotate(144 0 0)"/>
   </g>
 </svg>

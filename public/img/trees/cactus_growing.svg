@@ -1,7 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="110" rx="16" ry="5" fill="#5D4037" opacity="0.25"/>
-  <path d="M49 108 Q47 95 46 82 Q44 68 50 50 Q56 68 54 82 Q53 95 51 108Z" fill="#4CAF50"/>
-  <path d="M49 108 Q48 98 47 88 Q45 72 50 55 Q50 72 50 88 Q50 98 51 108Z" fill="#388E3C"/>
-  <path d="M50 58 Q44 62 42 72" stroke="#2E7D32" stroke-width="1" fill="none"/>
-  <path d="M50 65 Q55 68 58 76" stroke="#2E7D32" stroke-width="1" fill="none"/>
+  <defs>
+    <linearGradient id="cG" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#66BB6A"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </linearGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>
+  <ellipse cx="50" cy="112" rx="18" ry="5" fill="#3E2723" opacity="0.15" filter="url(#sh)"/>
+  <path d="M49 108 Q46 94 44 80 Q42 66 50 46 Q58 66 56 80 Q54 94 51 108Z" fill="url(#cG)"/>
+  <path d="M49 108 Q48 98 46 86 Q44 70 50 52 Q50 70 50 86 Q50 98 51 108Z" fill="#388E3C" opacity="0.45"/>
+  <path d="M50 54 Q44 60 42 70" stroke="#2E7D32" stroke-width="1" fill="none" opacity="0.35"/>
+  <path d="M50 64 Q55 68 58 76" stroke="#2E7D32" stroke-width="1" fill="none" opacity="0.3"/>
 </svg>

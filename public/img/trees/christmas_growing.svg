@@ -1,11 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="110" rx="20" ry="7" fill="#5D4037" opacity="0.25"/>
-  <rect x="47" y="92" width="6" height="18" rx="2" fill="#6D4C41"/>
-  <polygon points="50,25 28,55 72,55" fill="#2E7D32"/>
-  <polygon points="50,38 30,68 70,68" fill="#388E3C"/>
-  <polygon points="50,50 32,82 68,82" fill="#43A047"/>
-  <polygon points="50,62 34,95 66,95" fill="#4CAF50"/>
-  <circle cx="40" cy="50" r="2" fill="#F44336"/>
-  <circle cx="58" cy="62" r="2" fill="#F44336"/>
-  <circle cx="48" cy="75" r="2" fill="#FFEB3B"/>
+  <defs>
+    <linearGradient id="trG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#5D4037"/>
+      <stop offset="50%" stop-color="#8D6E63"/>
+      <stop offset="100%" stop-color="#5D4037"/>
+    </linearGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>
+  <ellipse cx="50" cy="112" rx="22" ry="7" fill="#3E2723" opacity="0.15" filter="url(#sh)"/>
+  <rect x="46" y="88" width="8" height="22" rx="3" fill="url(#trG)"/>
+  <polygon points="50,22 28,50 72,50" fill="#2E7D32"/>
+  <polygon points="50,35 25,65 75,65" fill="#388E3C"/>
+  <polygon points="50,48 28,82 72,82" fill="#43A047"/>
+  <polygon points="50,58 30,92 70,92" fill="#4CAF50"/>
+  <circle cx="38" cy="45" r="2.5" fill="#E53935"/>
+  <circle cx="58" cy="58" r="2.5" fill="#FDD835"/>
+  <circle cx="45" cy="72" r="2.5" fill="#E53935"/>
+  <circle cx="60" cy="78" r="2" fill="#FDD835"/>
+  <polygon points="50,17 51.5,21 48.5,21" fill="#FFC107"/>
 </svg>

@@ -1,7 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="105" rx="20" ry="8" fill="#5D4037" opacity="0.25"/>
-  <rect x="47" y="80" width="6" height="25" rx="2" fill="#8D6E63"/>
-  <ellipse cx="42" cy="72" rx="10" ry="12" fill="#66BB6A" transform="rotate(-10 42 72)"/>
-  <ellipse cx="58" cy="70" rx="8" ry="10" fill="#81C784" transform="rotate(10 58 70)"/>
-  <ellipse cx="50" cy="65" rx="6" ry="8" fill="#A5D6A7"/>
+  <defs>
+    <radialGradient id="lG" cx="40%" cy="35%">
+      <stop offset="0%" stop-color="#C5E1A5"/>
+      <stop offset="60%" stop-color="#81C784"/>
+      <stop offset="100%" stop-color="#4CAF50"/>
+    </radialGradient>
+    <linearGradient id="tG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6D4C41"/>
+      <stop offset="50%" stop-color="#A1887F"/>
+      <stop offset="100%" stop-color="#6D4C41"/>
+    </linearGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>
+  <ellipse cx="50" cy="108" rx="22" ry="7" fill="#3E2723" opacity="0.15" filter="url(#sh)"/>
+  <rect x="46" y="78" width="8" height="28" rx="3" fill="url(#tG)"/>
+  <ellipse cx="42" cy="70" rx="11" ry="14" fill="url(#lG)" transform="rotate(-10 42 70)"/>
+  <ellipse cx="58" cy="68" rx="9" ry="12" fill="#66BB6A" transform="rotate(10 58 68)"/>
+  <ellipse cx="50" cy="63" rx="7" ry="10" fill="#A5D6A7"/>
+  <ellipse cx="40" cy="64" rx="4" ry="5" fill="#C8E6C9" opacity="0.3" transform="rotate(-8 40 64)"/>
 </svg>
