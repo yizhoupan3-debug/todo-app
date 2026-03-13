@@ -7593,255 +7593,165 @@ form {
   opacity: 0.7;
 }
 
-/* ═══ NEW GARDEN LAYOUT: Rectangular Zones ═══ */
+/* ═══ BOOM BEACH ISLAND STYLES ═══ */
 
-.garden-viewport-wrapper {
+/* Viewport — Boom Beach ocean background */
+.island-viewport {
   position: relative;
-  overflow: hidden;
-}
-
-.garden-world {
   width: 100%;
   height: calc(100vh - 160px);
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: auto;
+  cursor: grab;
   scrollbar-width: none;
   -ms-overflow-style: none;
-}
-
-.garden-world::-webkit-scrollbar { display: none; }
-
-/* ── Zone base ── */
-.zone {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-}
-
-/* ── Fog Zones ── */
-.zone-fog-top,
-.zone-fog-bottom {
-  height: 80px;
-  background: linear-gradient(180deg,
-    rgba(160, 175, 195, 0.98) 0%,
-    rgba(170, 185, 205, 0.9) 40%,
-    rgba(180, 195, 215, 0.7) 70%,
-    transparent 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255,255,255,0.5);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 4px;
-}
-
-.zone-fog-bottom {
-  background: linear-gradient(0deg,
-    rgba(160, 175, 195, 0.98) 0%,
-    rgba(170, 185, 205, 0.9) 40%,
-    rgba(180, 195, 215, 0.7) 70%,
-    transparent 100%);
-}
-
-/* ── Forest Zone ── */
-.zone-forest {
-  height: 320px;
-  min-height: 280px;
-  position: relative;
   background:
+    radial-gradient(ellipse at center, rgba(0,180,220,0.15) 0%, transparent 60%),
     linear-gradient(180deg,
-      #1a3a1a 0%,
-      #1e4420 15%,
-      #234e25 30%,
-      #2a5a2c 50%,
-      #326832 70%,
-      #3a7535 85%,
-      #438240 100%);
-  border-bottom: 3px solid rgba(0,0,0,0.15);
+      #0A7EA4 0%, #0B6A8A 20%, #0A5B79 40%,
+      #094E6A 60%, #0D4A5E 80%, #0A3D55 100%);
 }
 
-.zone-forest::before {
-  content: '';
+.island-viewport::-webkit-scrollbar { display: none; }
+
+/* World — isometric perspective */
+.island-world {
+  position: relative;
+  width: 1200px;
+  height: 960px;
+  user-select: none;
+  transform: perspective(1200px) rotateX(8deg);
+  transform-origin: center 40%;
+  transition: transform 0.25s ease-out;
+}
+
+/* Island SVG shape */
+.island-shape {
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 60px 40px at 15% 20%, rgba(0,0,0,0.15) 0%, transparent 70%),
-    radial-gradient(ellipse 80px 50px at 45% 60%, rgba(0,0,0,0.1) 0%, transparent 70%),
-    radial-gradient(ellipse 70px 45px at 75% 30%, rgba(0,0,0,0.12) 0%, transparent 70%),
-    radial-gradient(ellipse 50px 35px at 85% 70%, rgba(0,0,0,0.08) 0%, transparent 60%);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  height: auto;
   pointer-events: none;
+  z-index: 1;
 }
 
-.forest-tree {
+/* ── Island land (interactive overlay) ── */
+.island-land {
   position: absolute;
-  cursor: pointer;
-  transition: transform 0.2s, filter 0.2s;
+  left: 14%;
+  top: 22%;
+  width: 64%;
+  height: 52%;
   z-index: 5;
 }
 
-.forest-tree:hover {
-  transform: scale(1.15);
-  filter: brightness(1.2) !important;
+/* ── Boom Beach House ── */
+.boom-house {
+  position: absolute;
   z-index: 10;
 }
 
-.forest-tree:hover .tree-cost-tag {
-  opacity: 1;
-  transform: translateX(-50%) translateY(-4px);
-}
-
-.forest-tree img {
-  display: block;
-}
-
-.tree-cost-tag {
-  position: absolute;
-  bottom: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.7);
-  color: #FFD700;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 8px;
-  white-space: nowrap;
-  opacity: 0;
-  transition: all 0.2s;
-  pointer-events: none;
-}
-
-/* ── House Zone ── */
-.zone-house {
-  height: 160px;
-  background: linear-gradient(180deg, #438240 0%, #4a8a42 30%, #5a9a50 60%, #6aaa5a 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  border-bottom: 3px solid rgba(0,0,0,0.1);
-}
-
-.nice-house {
-  width: 160px;
+.boom-house svg {
+  width: 120px;
   height: auto;
-  filter: drop-shadow(0 6px 16px rgba(0,0,0,0.35));
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.35));
 }
 
-.house-label {
-  font-size: 13px;
+.hut-label {
+  text-align: center;
+  font-size: 11px;
   font-weight: 700;
-  color: rgba(255,255,255,0.9);
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
   margin-top: 2px;
 }
 
-.expedition-badge {
+/* ── Harbor ── */
+.boom-harbor {
   position: absolute;
-  top: 8px;
-  right: 12px;
-  background: rgba(0,0,0,0.5);
-  backdrop-filter: blur(6px);
-  border-radius: 10px;
-  padding: 6px 12px;
-  color: #fff;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* ── Farmland Zone ── */
-.zone-farmland {
-  min-height: 220px;
-  background:
-    repeating-linear-gradient(90deg, rgba(139,115,85,0.06) 0px, rgba(139,115,85,0.06) 1px, transparent 1px, transparent 60px),
-    repeating-linear-gradient(0deg, rgba(139,115,85,0.06) 0px, rgba(139,115,85,0.06) 1px, transparent 1px, transparent 60px),
-    linear-gradient(180deg, #6aaa5a 0%, #7ab66a 10%, #8BC47A 30%, #96CC86 50%, #A0D490 70%, #AAD89A 100%);
-  padding: 16px;
-  border-bottom: 3px solid rgba(0,0,0,0.1);
-}
-
-.farmland-grid {
-  position: relative;
-  width: 100%;
-  height: 200px;
-}
-
-/* ── Beach Zone ── */
-.zone-beach {
-  height: 100px;
-  background:
-    linear-gradient(180deg,
-      #C4AE68 0%,
-      #D4BE7A 20%,
-      #E0CC8A 40%,
-      #ECD89A 60%,
-      #D4BE7A 80%,
-      #B8A058 100%);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 40px;
-}
-
-.harbor-dock {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  z-index: 10;
   cursor: pointer;
   transition: transform 0.2s;
 }
 
-.harbor-dock:hover {
-  transform: scale(1.1);
-}
+.boom-harbor:hover { transform: scale(1.15); }
 
-.dock-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: #5a3a1a;
-  text-shadow: 0 1px 2px rgba(255,255,255,0.3);
-}
-
-.dock-boat {
-  font-size: 28px;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+.harbor-icon {
+  font-size: 32px;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));
   animation: boatBob 3s ease-in-out infinite;
+  display: block;
 }
 
-/* ── Fog Edge Overlays (left/right) ── */
-.fog-edge {
+/* ── Forest tree buttons ── */
+.forest-tree-btn {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 80px;
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
+  z-index: 8;
+}
+
+.forest-tree-btn:hover {
+  transform: scale(1.2);
+  filter: brightness(1.3) drop-shadow(0 4px 8px rgba(0,0,0,0.4));
+  z-index: 15;
+}
+
+/* ── Decorative palms ── */
+.deco-palm {
+  position: absolute;
   pointer-events: none;
-  z-index: 20;
+  z-index: 6;
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
 }
 
-.fog-edge-left {
+/* ── Ocean shimmer ── */
+.ocean-shimmer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 200px 100px at 20% 30%, rgba(255,255,255,0.08) 0%, transparent 70%),
+    radial-gradient(ellipse 300px 150px at 70% 60%, rgba(255,255,255,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 150px 80px at 40% 80%, rgba(255,255,255,0.05) 0%, transparent 60%);
+  animation: shimmer 8s ease-in-out infinite alternate;
+  z-index: 0;
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* ── Expedition float badge ── */
+.expedition-float {
+  position: absolute;
+  z-index: 30;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(6px);
+  border-radius: 10px;
+  padding: 8px 14px;
+  color: #fff;
+  font-size: 13px;
+}
+
+/* ── Fog vignette on viewport ── */
+.island-viewport::before {
+  content: '';
+  position: sticky;
+  display: block;
+  top: 0;
   left: 0;
-  background: linear-gradient(90deg,
-    rgba(160, 175, 195, 0.95) 0%,
-    rgba(170, 185, 205, 0.7) 40%,
-    rgba(180, 195, 215, 0.3) 70%,
-    transparent 100%);
-}
-
-.fog-edge-right {
-  right: 0;
-  background: linear-gradient(270deg,
-    rgba(160, 175, 195, 0.95) 0%,
-    rgba(170, 185, 205, 0.7) 40%,
-    rgba(180, 195, 215, 0.3) 70%,
-    transparent 100%);
-}
-
-@keyframes boatBob {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(-6px) rotate(3deg); }
+  width: 100%;
+  height: 0;
+  z-index: 20;
+  pointer-events: none;
+  box-shadow:
+    inset 0 60px 80px -20px rgba(160,175,195,0.7),
+    inset 0 -60px 80px -20px rgba(160,175,195,0.7),
+    inset 60px 0 80px -20px rgba(160,175,195,0.5),
+    inset -60px 0 80px -20px rgba(160,175,195,0.5);
 }
