@@ -203,11 +203,11 @@ const GardenView = {
 
     /* Update only the dynamic parts of the garden view (plots, HUD, stats bar) */
     _updateDynamicContent() {
-        // Must match the PP in render()
+        // Must match the PP in render() — % coords map to SVG viewBox
         const PP = [
-            [15, 10], [35, 8],  [55, 12], [75, 10],
-            [10, 35], [30, 32], [50, 35], [70, 33], [88, 36],
-            [15, 58], [35, 55], [55, 58], [75, 56],
+            [22, 57], [38, 55], [54, 57], [70, 59],
+            [18, 66], [34, 64], [50, 66], [66, 65], [80, 67],
+            [26, 75], [42, 73], [58, 75], [74, 74],
         ];
 
         // Update plots
@@ -331,11 +331,11 @@ const GardenView = {
         const totalCount = this.islands.length;
         const activeExp = this.expeditions.find(e => e.status === 'sailing');
 
-        // Farmland plot positions (% of island-land)
+        // Farmland plot positions — % coords map to SVG viewBox (1000x800)
         const PP = [
-            [15, 10], [35, 8],  [55, 12], [75, 10],
-            [10, 35], [30, 32], [50, 35], [70, 33], [88, 36],
-            [15, 58], [35, 55], [55, 58], [75, 56],
+            [22, 57], [38, 55], [54, 57], [70, 59],
+            [18, 66], [34, 64], [50, 66], [66, 65], [80, 67],
+            [26, 75], [42, 73], [58, 75], [74, 74],
         ];
 
         el.innerHTML = `
@@ -470,7 +470,7 @@ const GardenView = {
                     <div class="island-land" id="island-land">
 
                         <!-- ═══ House (center of island) ═══ -->
-                        <div class="boom-house" style="left:42%;top:18%">
+                        <div class="boom-house" style="left:43%;top:47%">
                             <svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
                                 <rect x="145" y="18" width="16" height="40" rx="2" fill="#8B6914"/>
                                 <rect x="143" y="14" width="20" height="8" rx="2" fill="#A07018"/>
@@ -503,24 +503,24 @@ const GardenView = {
                             <div class="hut-label">\u{1F3E0} 小屋</div>
                         </div>
 
-                        <!-- ═══ Harbor (right side) ═══ -->
-                        <div class="boom-harbor" id="harbor-building" style="left:82%;top:52%" title="港口 — 点击管理">
+                        <!-- ═══ Harbor (right side, aligned w/ SVG dock) ═══ -->
+                        <div class="boom-harbor" id="harbor-building" style="left:86%;top:54%" title="港口 — 点击管理">
                             <span class="harbor-icon">\u26F5</span>
                             <div class="hut-label">\u2693 港口</div>
                         </div>
 
-                        <!-- ═══ Forest trees (clickable, along the back) ═══ -->
-                        <div class="forest-tree-btn" style="left:12%;top:-6%" data-cost="15" title="\u{1FA93} 砍伐 15 喵喵币"><img src="/img/trees/palm.svg" style="width:42px"></div>
-                        <div class="forest-tree-btn" style="left:28%;top:-10%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/oak.svg" style="width:46px"></div>
-                        <div class="forest-tree-btn" style="left:48%;top:-12%" data-cost="25" title="\u{1FA93} 砍伐 25 喵喵币"><img src="/img/trees/pine.svg" style="width:50px"></div>
-                        <div class="forest-tree-btn" style="left:65%;top:-10%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/oak.svg" style="width:44px"></div>
-                        <div class="forest-tree-btn" style="left:82%;top:-5%" data-cost="15" title="\u{1FA93} 砍伐 15 喵喵币"><img src="/img/trees/pine.svg" style="width:40px"></div>
+                        <!-- ═══ Forest trees (in canopy area, y=32-40%) ═══ -->
+                        <div class="forest-tree-btn" style="left:20%;top:34%" data-cost="15" title="\u{1FA93} 砍伐 15 喵喵币"><img src="/img/trees/palm.svg" style="width:42px"></div>
+                        <div class="forest-tree-btn" style="left:32%;top:31%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/oak.svg" style="width:46px"></div>
+                        <div class="forest-tree-btn" style="left:48%;top:29%" data-cost="25" title="\u{1FA93} 砍伐 25 喵喵币"><img src="/img/trees/pine.svg" style="width:50px"></div>
+                        <div class="forest-tree-btn" style="left:63%;top:31%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/oak.svg" style="width:44px"></div>
+                        <div class="forest-tree-btn" style="left:76%;top:35%" data-cost="15" title="\u{1FA93} 砍伐 15 喵喵币"><img src="/img/trees/pine.svg" style="width:40px"></div>
 
-                        <!-- ═══ Beach palms (decorative) ═══ -->
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:-5%;top:75%;width:55px;opacity:0.85">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:90%;top:70%;width:50px;opacity:0.8">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:30%;top:85%;width:45px;opacity:0.75">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:65%;top:88%;width:48px;opacity:0.7">
+                        <!-- ═══ Beach palms (on sand, y=76-87%) ═══ -->
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:12%;top:78%;width:55px;opacity:0.85">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:85%;top:76%;width:50px;opacity:0.8">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:35%;top:85%;width:45px;opacity:0.75">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:62%;top:87%;width:48px;opacity:0.7">
 
                         <!-- Ambient -->
                         <div class="ambient-particle p1" style="font-size:11px">\u{1F54A}\uFE0F</div>
@@ -536,6 +536,14 @@ const GardenView = {
                     </div>
 
                     ${activeExp ? '<div class="expedition-float">' + (this.assignee === '潘潘' ? '\u{1F431}' : '\u{1F430}') + ' 探索中... \u26F5</div>' : ''}
+
+                    <!-- Zoom controls -->
+                    <div class="zoom-controls">
+                        <button id="zoom-in-btn" class="zoom-btn">+</button>
+                        <span id="zoom-level-text">100%</span>
+                        <button id="zoom-out-btn" class="zoom-btn">−</button>
+                        <button id="zoom-reset-btn" class="zoom-btn" style="font-size:10px">⟲</button>
+                    </div>
                 </div>
             </div>
 
