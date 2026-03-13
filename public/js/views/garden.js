@@ -175,6 +175,12 @@ const GardenView = {
                     </button>
                 </div>
                 <div class="island-hud-right">
+                    <div class="zoom-controls">
+                        <button class="hud-btn zoom-btn" id="zoom-out-btn" title="缩小">−</button>
+                        <span class="zoom-level" id="zoom-level-text">100%</span>
+                        <button class="hud-btn zoom-btn" id="zoom-in-btn" title="放大">+</button>
+                        <button class="hud-btn zoom-btn" id="zoom-reset-btn" title="重置" style="font-size:12px">↺</button>
+                    </div>
                     <button class="hud-btn" id="garden-history-btn" title="记录">📊</button>
                 </div>
             </div>
@@ -503,11 +509,18 @@ const GardenView = {
             <img src="${imgSrc}" alt="" class="iplot-img"><div class="iplot-bar"><div class="iplot-bar-fill" style="width:${pct}%"></div></div></div>`;
     },
 
+    _zoom: 1,
+    _minZoom: 0.4,
+    _maxZoom: 2.5,
+
     initDrag() {
         const vp = document.getElementById('island-viewport');
         const world = document.getElementById('island-world');
         if (!vp || !world) return;
         let drag = false, sx, sy, sl, st;
+
+        // Apply 3D isometric perspective
+        this._applyTransform(world);
 
         // Center island
         requestAnimationFrame(() => {
@@ -515,8 +528,9 @@ const GardenView = {
             vp.scrollTop = (world.offsetHeight - vp.offsetHeight) / 2.5;
         });
 
+        // ─── Mouse drag ───
         vp.addEventListener('mousedown', e => {
-            if (e.target.closest('.iplot,.island-hut')) return;
+            if (e.target.closest('.iplot,.island-hut,.zoom-controls')) return;
             drag = true; sx = e.pageX; sy = e.pageY; sl = vp.scrollLeft; st = vp.scrollTop;
             vp.style.cursor = 'grabbing';
         });
@@ -527,16 +541,91 @@ const GardenView = {
         });
         document.addEventListener('mouseup', () => { drag = false; if (vp) vp.style.cursor = 'grab'; });
 
+        // ─── Scroll-wheel zoom ───
+        vp.addEventListener('wheel', e => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.08 : 0.08;
+            this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._zoom + delta));
+            this._applyTransform(world);
+            this._updateZoomDisplay();
+        }, { passive: false });
+
+        // ─── Touch: drag + pinch-to-zoom ───
+        let lastPinchDist = 0;
+        let pinching = false;
+
         vp.addEventListener('touchstart', e => {
-            if (e.target.closest('.iplot,.island-hut') || e.touches.length !== 1) return;
-            drag = true; sx = e.touches[0].pageX; sy = e.touches[0].pageY; sl = vp.scrollLeft; st = vp.scrollTop;
+            if (e.touches.length === 2) {
+                // Pinch start
+                pinching = true;
+                drag = false;
+                lastPinchDist = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                );
+            } else if (e.touches.length === 1 && !pinching) {
+                if (e.target.closest('.iplot,.island-hut,.zoom-controls')) return;
+                drag = true;
+                sx = e.touches[0].pageX; sy = e.touches[0].pageY;
+                sl = vp.scrollLeft; st = vp.scrollTop;
+            }
         }, { passive: true });
+
         vp.addEventListener('touchmove', e => {
-            if (!drag || e.touches.length !== 1) return;
-            vp.scrollLeft = sl - (e.touches[0].pageX - sx);
-            vp.scrollTop = st - (e.touches[0].pageY - sy);
+            if (pinching && e.touches.length === 2) {
+                const dist = Math.hypot(
+                    e.touches[0].pageX - e.touches[1].pageX,
+                    e.touches[0].pageY - e.touches[1].pageY
+                );
+                const pinchDelta = (dist - lastPinchDist) * 0.005;
+                this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._zoom + pinchDelta));
+                this._applyTransform(world);
+                this._updateZoomDisplay();
+                lastPinchDist = dist;
+            } else if (drag && e.touches.length === 1) {
+                vp.scrollLeft = sl - (e.touches[0].pageX - sx);
+                vp.scrollTop = st - (e.touches[0].pageY - sy);
+            }
         }, { passive: true });
-        vp.addEventListener('touchend', () => { drag = false; });
+
+        vp.addEventListener('touchend', e => {
+            if (e.touches.length < 2) pinching = false;
+            if (e.touches.length === 0) drag = false;
+        });
+
+        // ─── Zoom button events ───
+        document.getElementById('zoom-in-btn')?.addEventListener('click', () => {
+            this._zoom = Math.min(this._maxZoom, this._zoom + 0.15);
+            this._applyTransform(world);
+            this._updateZoomDisplay();
+        });
+        document.getElementById('zoom-out-btn')?.addEventListener('click', () => {
+            this._zoom = Math.max(this._minZoom, this._zoom - 0.15);
+            this._applyTransform(world);
+            this._updateZoomDisplay();
+        });
+        document.getElementById('zoom-reset-btn')?.addEventListener('click', () => {
+            this._zoom = 1;
+            this._applyTransform(world);
+            this._updateZoomDisplay();
+            // Re-center
+            requestAnimationFrame(() => {
+                vp.scrollLeft = (world.offsetWidth - vp.offsetWidth) / 2;
+                vp.scrollTop = (world.offsetHeight - vp.offsetHeight) / 2.5;
+            });
+        });
+    },
+
+    _applyTransform(world) {
+        if (!world) world = document.getElementById('island-world');
+        if (!world) return;
+        world.style.transform = `scale(${this._zoom}) perspective(1200px) rotateX(28deg)`;
+        world.style.transformOrigin = 'center center';
+    },
+
+    _updateZoomDisplay() {
+        const el = document.getElementById('zoom-level-text');
+        if (el) el.textContent = Math.round(this._zoom * 100) + '%';
     },
 
     renderPlantingToolbar() {
