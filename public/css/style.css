@@ -4980,6 +4980,13 @@ form {
   cursor: grab;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Fog-colored background — no black edges when zoomed out */
+  background: radial-gradient(ellipse at center,
+    rgba(140,165,190,0.6) 0%,
+    rgba(160,180,200,0.85) 30%,
+    rgba(175,195,215,0.95) 60%,
+    #b4c8dc 100%
+  );
 }
 
 .island-viewport::-webkit-scrollbar {
@@ -6068,51 +6075,47 @@ form {
 }
 
 .fog-overlay.fog-top {
-  top: -10px;
-  left: 0;
-  right: 0;
-  height: 120px;
+  top: -300px; left: -300px; right: -300px; height: 420px;
   background: linear-gradient(180deg,
-      rgba(180, 200, 220, 0.95) 0%,
-      rgba(180, 200, 220, 0.7) 30%,
-      rgba(180, 200, 220, 0.3) 60%,
-      transparent 100%);
+    #b4c8dc 0%,
+    rgba(180,200,220,0.98) 50%,
+    rgba(180,200,220,0.85) 70%,
+    rgba(180,200,220,0.4) 85%,
+    transparent 100%
+  );
 }
 
 .fog-overlay.fog-bottom {
-  bottom: -10px;
-  left: 0;
-  right: 0;
-  height: 120px;
+  bottom: -300px; left: -300px; right: -300px; height: 420px;
   background: linear-gradient(0deg,
-      rgba(180, 200, 220, 0.95) 0%,
-      rgba(180, 200, 220, 0.7) 30%,
-      rgba(180, 200, 220, 0.3) 60%,
-      transparent 100%);
+    #b4c8dc 0%,
+    rgba(180,200,220,0.98) 50%,
+    rgba(180,200,220,0.85) 70%,
+    rgba(180,200,220,0.4) 85%,
+    transparent 100%
+  );
 }
 
 .fog-overlay.fog-left {
-  top: 0;
-  bottom: 0;
-  left: -10px;
-  width: 120px;
+  top: -300px; bottom: -300px; left: -300px; width: 420px;
   background: linear-gradient(90deg,
-      rgba(180, 200, 220, 0.95) 0%,
-      rgba(180, 200, 220, 0.7) 30%,
-      rgba(180, 200, 220, 0.3) 60%,
-      transparent 100%);
+    #b4c8dc 0%,
+    rgba(180,200,220,0.98) 50%,
+    rgba(180,200,220,0.85) 70%,
+    rgba(180,200,220,0.4) 85%,
+    transparent 100%
+  );
 }
 
 .fog-overlay.fog-right {
-  top: 0;
-  bottom: 0;
-  right: -10px;
-  width: 120px;
+  top: -300px; bottom: -300px; right: -300px; width: 420px;
   background: linear-gradient(270deg,
-      rgba(180, 200, 220, 0.95) 0%,
-      rgba(180, 200, 220, 0.7) 30%,
-      rgba(180, 200, 220, 0.3) 60%,
-      transparent 100%);
+    #b4c8dc 0%,
+    rgba(180,200,220,0.98) 50%,
+    rgba(180,200,220,0.85) 70%,
+    rgba(180,200,220,0.4) 85%,
+    transparent 100%
+  );
 }
 
 /* Animated fog particles inside fog overlays */
