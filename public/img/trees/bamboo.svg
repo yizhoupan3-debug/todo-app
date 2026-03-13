@@ -1,20 +1,46 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="112" rx="22" ry="7" fill="#5D4037" opacity="0.25"/>
-  <!-- Bamboo stalks -->
-  <path d="M42 110 Q42 70 42 20" stroke="#558B2F" stroke-width="5" fill="none" stroke-linecap="round"/>
-  <path d="M55 110 Q55 75 55 30" stroke="#689F38" stroke-width="5" fill="none" stroke-linecap="round"/>
-  <path d="M48 110 Q48 72 48 25" stroke="#4CAF50" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="b1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#33691E"/>
+      <stop offset="50%" stop-color="#558B2F"/>
+      <stop offset="100%" stop-color="#33691E"/>
+    </linearGradient>
+    <linearGradient id="b2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#388E3C"/>
+      <stop offset="50%" stop-color="#689F38"/>
+      <stop offset="100%" stop-color="#388E3C"/>
+    </linearGradient>
+    <linearGradient id="b3" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2E7D32"/>
+      <stop offset="50%" stop-color="#4CAF50"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </linearGradient>
+    <radialGradient id="lfG" cx="40%" cy="30%">
+      <stop offset="0%" stop-color="#C5E1A5"/>
+      <stop offset="100%" stop-color="#7CB342"/>
+    </radialGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+  </defs>
+  <ellipse cx="50" cy="114" rx="24" ry="7" fill="#3E2723" opacity="0.18" filter="url(#sh)"/>
+  <!-- Stalks -->
+  <path d="M42 112 Q42 70 42 18" stroke="url(#b1)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M55 112 Q55 75 55 28" stroke="url(#b2)" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M48 112 Q48 72 48 23" stroke="url(#b3)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- Highlight strips -->
+  <path d="M42 112 Q42 70 42 18" stroke="#8BC34A" stroke-width="1.2" fill="none" opacity="0.15"/>
+  <path d="M55 112 Q55 75 55 28" stroke="#8BC34A" stroke-width="1.2" fill="none" opacity="0.12"/>
   <!-- Joints -->
-  <rect x="39" y="40" width="8" height="3" rx="1" fill="#33691E" opacity="0.4"/>
-  <rect x="39" y="70" width="8" height="3" rx="1" fill="#33691E" opacity="0.4"/>
-  <rect x="52" y="50" width="8" height="3" rx="1" fill="#33691E" opacity="0.4"/>
-  <rect x="52" y="80" width="8" height="3" rx="1" fill="#33691E" opacity="0.4"/>
-  <rect x="45" y="55" width="8" height="2" rx="1" fill="#33691E" opacity="0.3"/>
-  <rect x="45" y="85" width="8" height="2" rx="1" fill="#33691E" opacity="0.3"/>
+  <rect x="38" y="38" width="9" height="3.5" rx="1.5" fill="#1B5E20" opacity="0.4"/>
+  <rect x="38" y="68" width="9" height="3.5" rx="1.5" fill="#1B5E20" opacity="0.35"/>
+  <rect x="51" y="48" width="9" height="3.5" rx="1.5" fill="#1B5E20" opacity="0.4"/>
+  <rect x="51" y="78" width="9" height="3.5" rx="1.5" fill="#1B5E20" opacity="0.35"/>
+  <rect x="44" y="53" width="8" height="3" rx="1.5" fill="#1B5E20" opacity="0.3"/>
+  <rect x="44" y="83" width="8" height="3" rx="1.5" fill="#1B5E20" opacity="0.3"/>
   <!-- Leaves -->
-  <ellipse cx="30" cy="28" rx="12" ry="4" fill="#8BC34A" transform="rotate(-30 30 28)"/>
-  <ellipse cx="66" cy="36" rx="11" ry="3.5" fill="#7CB342" transform="rotate(25 66 36)"/>
-  <ellipse cx="28" cy="52" rx="10" ry="3.5" fill="#9CCC65" transform="rotate(-20 28 52)"/>
-  <ellipse cx="64" cy="58" rx="10" ry="3" fill="#8BC34A" transform="rotate(20 64 58)"/>
-  <ellipse cx="34" cy="75" rx="9" ry="3" fill="#7CB342" transform="rotate(-15 34 75)"/>
+  <ellipse cx="28" cy="26" rx="13" ry="4.5" fill="url(#lfG)" transform="rotate(-30 28 26)"/>
+  <ellipse cx="29" cy="25" rx="8" ry="2" fill="#E8F5E9" opacity="0.2" transform="rotate(-30 29 25)"/>
+  <ellipse cx="68" cy="34" rx="12" ry="4" fill="#7CB342" transform="rotate(25 68 34)"/>
+  <ellipse cx="26" cy="50" rx="11" ry="4" fill="#8BC34A" transform="rotate(-20 26 50)"/>
+  <ellipse cx="66" cy="56" rx="11" ry="3.5" fill="#7CB342" transform="rotate(20 66 56)"/>
+  <ellipse cx="32" cy="74" rx="10" ry="3.5" fill="#9CCC65" transform="rotate(-15 32 74)"/>
 </svg>

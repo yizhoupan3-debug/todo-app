@@ -1,19 +1,34 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="112" rx="22" ry="7" fill="#5D4037" opacity="0.25"/>
+  <defs>
+    <radialGradient id="lfG" cx="40%" cy="30%">
+      <stop offset="0%" stop-color="#C8E6C9"/>
+      <stop offset="50%" stop-color="#66BB6A"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </radialGradient>
+    <radialGradient id="flG" cx="50%" cy="40%">
+      <stop offset="0%" stop-color="#E1BEE7"/>
+      <stop offset="100%" stop-color="#AB47BC"/>
+    </radialGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+  </defs>
+  <ellipse cx="50" cy="114" rx="24" ry="7" fill="#3E2723" opacity="0.18" filter="url(#sh)"/>
   <!-- Stems -->
-  <path d="M50 110 Q48 90 46 70" stroke="#2E7D32" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <path d="M46 100 Q36 95 28 88" stroke="#2E7D32" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <path d="M52 95 Q60 90 68 84" stroke="#2E7D32" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <!-- Leaves - mint has rounded paired leaves -->
-  <ellipse cx="46" cy="70" rx="8" ry="6" fill="#66BB6A"/>
-  <ellipse cx="46" cy="70" rx="6" ry="4" fill="#81C784"/>
-  <ellipse cx="38" cy="60" rx="7" ry="5" fill="#4CAF50"/>
-  <ellipse cx="56" cy="62" rx="7" ry="5" fill="#66BB6A"/>
-  <ellipse cx="30" cy="52" rx="6" ry="4.5" fill="#81C784"/>
-  <ellipse cx="62" cy="55" rx="6" ry="4" fill="#4CAF50"/>
-  <ellipse cx="28" cy="88" rx="8" ry="6" fill="#66BB6A"/>
-  <ellipse cx="68" cy="84" rx="7" ry="5" fill="#81C784"/>
-  <!-- Tiny flower -->
-  <circle cx="34" cy="46" r="3" fill="#CE93D8"/>
-  <circle cx="34" cy="46" r="1.5" fill="#E1BEE7"/>
+  <path d="M50 112 Q48 92 46 70" stroke="#2E7D32" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M46 102 Q34 96 26 86" stroke="#2E7D32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M52 96 Q62 90 70 82" stroke="#2E7D32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Leaves -->
+  <ellipse cx="46" cy="68" rx="9" ry="7" fill="url(#lfG)"/>
+  <ellipse cx="47" cy="67" rx="5" ry="3.5" fill="#E8F5E9" opacity="0.2"/>
+  <ellipse cx="36" cy="58" rx="8" ry="6" fill="#4CAF50"/>
+  <ellipse cx="56" cy="60" rx="8" ry="5.5" fill="#66BB6A"/>
+  <ellipse cx="28" cy="50" rx="7" ry="5" fill="#81C784"/>
+  <ellipse cx="64" cy="53" rx="7" ry="4.5" fill="#4CAF50"/>
+  <ellipse cx="26" cy="86" rx="9" ry="7" fill="url(#lfG)"/>
+  <ellipse cx="70" cy="82" rx="8" ry="6" fill="#66BB6A"/>
+  <!-- Paired leaf pattern -->
+  <path d="M46 68 L44 65" stroke="#1B5E20" stroke-width="0.6" fill="none" opacity="0.3"/>
+  <path d="M36 58 L33 56" stroke="#1B5E20" stroke-width="0.6" fill="none" opacity="0.3"/>
+  <!-- Flower -->
+  <circle cx="32" cy="44" r="4" fill="url(#flG)"/>
+  <circle cx="32" cy="44" r="2" fill="#E1BEE7" opacity="0.4"/>
 </svg>

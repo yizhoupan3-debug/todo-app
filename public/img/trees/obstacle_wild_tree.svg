@@ -1,13 +1,32 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="108" rx="22" ry="8" fill="#5D4037" opacity="0.3"/>
-  <rect x="46" y="75" width="8" height="33" rx="2" fill="#795548"/>
-  <path d="M46 88 Q35 84 32 90" stroke="#6D4C41" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <path d="M54 82 Q62 78 66 84" stroke="#6D4C41" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-  <circle cx="50" cy="60" r="16" fill="#6D4C41" opacity="0.6"/>
-  <circle cx="38" cy="65" r="10" fill="#795548" opacity="0.5"/>
-  <circle cx="60" cy="62" r="10" fill="#795548" opacity="0.5"/>
-  <circle cx="50" cy="50" r="8" fill="#8D6E63" opacity="0.4"/>
-  <!-- Dead leaves -->
-  <path d="M35 58 Q30 55 33 60" stroke="#A1887F" stroke-width="1" fill="none"/>
-  <path d="M62 55 Q67 52 65 58" stroke="#A1887F" stroke-width="1" fill="none"/>
+  <defs>
+    <linearGradient id="tG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#5D4037"/>
+      <stop offset="50%" stop-color="#795548"/>
+      <stop offset="100%" stop-color="#5D4037"/>
+    </linearGradient>
+    <radialGradient id="cG" cx="44%" cy="38%">
+      <stop offset="0%" stop-color="#8D6E63"/>
+      <stop offset="100%" stop-color="#4E342E"/>
+    </radialGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+  </defs>
+  <ellipse cx="50" cy="110" rx="24" ry="8" fill="#3E2723" opacity="0.2" filter="url(#sh)"/>
+  <!-- Trunk -->
+  <rect x="45" y="73" width="10" height="36" rx="3" fill="url(#tG)"/>
+  <rect x="47" y="75" width="3" height="32" rx="1.5" fill="#8D6E63" opacity="0.12"/>
+  <!-- Branches -->
+  <path d="M45 88 Q33 82 30 90" stroke="#6D4C41" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M55 80 Q64 76 68 82" stroke="#6D4C41" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Dead canopy -->
+  <circle cx="50" cy="58" r="18" fill="url(#cG)"/>
+  <circle cx="36" cy="64" r="11" fill="#6D4C41" opacity="0.6"/>
+  <circle cx="62" cy="61" r="11" fill="#6D4C41" opacity="0.55"/>
+  <circle cx="50" cy="48" r="9" fill="#795548" opacity="0.5"/>
+  <!-- Dead / bare twigs -->
+  <path d="M34 56 Q28 52 32 58" stroke="#8D6E63" stroke-width="1.2" fill="none" opacity="0.4"/>
+  <path d="M64 53 Q70 50 67 56" stroke="#8D6E63" stroke-width="1.2" fill="none" opacity="0.4"/>
+  <!-- Sparse dead leaves -->
+  <circle cx="42" cy="52" r="2" fill="#A1887F" opacity="0.3"/>
+  <circle cx="58" cy="56" r="1.5" fill="#A1887F" opacity="0.25"/>
 </svg>

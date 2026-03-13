@@ -1,8 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="105" rx="28" ry="12" fill="#78909C" opacity="0.3"/>
-  <path d="M30 95 Q35 70 50 65 Q65 70 70 95 Q60 100 50 102 Q40 100 30 95Z" fill="#90A4AE"/>
-  <path d="M35 90 Q42 72 50 68 Q50 80 42 92Z" fill="#78909C"/>
-  <circle cx="42" cy="80" r="3" fill="#B0BEC5" opacity="0.5"/>
-  <circle cx="55" cy="85" r="2" fill="#B0BEC5" opacity="0.4"/>
-  <path d="M38 92 Q40 88 44 90" stroke="#607D8B" stroke-width="1" fill="none"/>
+  <defs>
+    <radialGradient id="rG" cx="40%" cy="30%">
+      <stop offset="0%" stop-color="#B0BEC5"/>
+      <stop offset="50%" stop-color="#90A4AE"/>
+      <stop offset="100%" stop-color="#607D8B"/>
+    </radialGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+  </defs>
+  <ellipse cx="50" cy="106" rx="30" ry="12" fill="#455A64" opacity="0.2" filter="url(#sh)"/>
+  <!-- Rock body -->
+  <path d="M28 95 Q33 68 50 62 Q67 68 72 95 Q62 102 50 104 Q38 102 28 95Z" fill="url(#rG)"/>
+  <!-- Face shading -->
+  <path d="M33 92 Q40 70 50 65 Q50 78 42 94Z" fill="#78909C" opacity="0.5"/>
+  <path d="M60 90 Q56 74 50 65 Q60 72 65 92Z" fill="#607D8B" opacity="0.3"/>
+  <!-- Highlights -->
+  <ellipse cx="40" cy="74" rx="5" ry="4" fill="#CFD8DC" opacity="0.35" transform="rotate(-10 40 74)"/>
+  <circle cx="55" cy="80" r="3" fill="#ECEFF1" opacity="0.2"/>
+  <!-- Cracks -->
+  <path d="M36 92 Q39 86 44 89" stroke="#546E7A" stroke-width="1" fill="none" opacity="0.5"/>
+  <path d="M52 88 Q56 82 58 86" stroke="#546E7A" stroke-width="0.8" fill="none" opacity="0.4"/>
+  <!-- Moss patches -->
+  <ellipse cx="33" cy="96" rx="4" ry="2" fill="#8BC34A" opacity="0.3"/>
+  <ellipse cx="62" cy="94" rx="3" ry="1.5" fill="#9CCC65" opacity="0.25"/>
 </svg>

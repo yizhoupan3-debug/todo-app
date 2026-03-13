@@ -1,8 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="105" rx="25" ry="8" fill="#5D4037" opacity="0.2"/>
-  <path d="M35 105 Q32 90 38 95 Q34 80 42 85 Q40 70 50 75 Q55 68 55 80 Q62 75 60 88 Q68 82 65 95 Q70 90 68 105Z" fill="#8BC34A" opacity="0.7"/>
-  <path d="M42 100 Q40 88 45 92 Q43 78 50 82 Q50 90 48 98Z" fill="#7CB342"/>
-  <path d="M55 98 Q58 85 52 88 Q55 75 55 82 Q58 90 56 100Z" fill="#689F38"/>
-  <circle cx="45" cy="85" r="2" fill="#CDDC39" opacity="0.5"/>
-  <circle cx="55" cy="78" r="1.5" fill="#CDDC39" opacity="0.4"/>
+  <defs>
+    <radialGradient id="wG" cx="50%" cy="50%">
+      <stop offset="0%" stop-color="#AED581"/>
+      <stop offset="100%" stop-color="#689F38"/>
+    </radialGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>
+  <ellipse cx="50" cy="106" rx="27" ry="9" fill="#3E2723" opacity="0.15" filter="url(#sh)"/>
+  <!-- Weed mass -->
+  <path d="M35 105 Q32 88 38 93 Q34 78 42 83 Q40 68 50 73 Q55 66 55 78 Q62 73 60 86 Q68 80 65 93 Q70 88 68 105Z" fill="url(#wG)" opacity="0.8"/>
+  <!-- Inner detail -->
+  <path d="M42 100 Q40 86 45 90 Q43 76 50 80 Q50 88 48 98Z" fill="#7CB342"/>
+  <path d="M55 98 Q58 83 52 86 Q55 73 55 80 Q58 88 56 100Z" fill="#558B2F"/>
+  <!-- Tiny flowers -->
+  <circle cx="44" cy="82" r="2.5" fill="#CDDC39" opacity="0.6"/>
+  <circle cx="45" cy="81" r="1" fill="#FFF9C4" opacity="0.3"/>
+  <circle cx="56" cy="76" r="2" fill="#CDDC39" opacity="0.5"/>
+  <circle cx="57" cy="75" r="0.8" fill="#FFF9C4" opacity="0.2"/>
+  <!-- Leaf veins -->
+  <path d="M42 88 Q44 84 46 86" stroke="#33691E" stroke-width="0.6" fill="none" opacity="0.3"/>
+  <path d="M55 84 Q53 80 54 82" stroke="#33691E" stroke-width="0.6" fill="none" opacity="0.25"/>
 </svg>

@@ -1,11 +1,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
-  <ellipse cx="50" cy="110" rx="16" ry="5" fill="#5D4037" opacity="0.2"/>
-  <!-- Single bamboo stalk -->
-  <path d="M50 108 Q50 85 50 55" stroke="#558B2F" stroke-width="4" fill="none" stroke-linecap="round"/>
-  <!-- Joints -->
-  <rect x="47" y="70" width="7" height="2" rx="1" fill="#33691E" opacity="0.4"/>
-  <rect x="47" y="90" width="7" height="2" rx="1" fill="#33691E" opacity="0.4"/>
-  <!-- Leaves -->
-  <ellipse cx="38" cy="60" rx="8" ry="3" fill="#8BC34A" transform="rotate(-25 38 60)"/>
-  <ellipse cx="60" cy="68" rx="7" ry="2.5" fill="#7CB342" transform="rotate(20 60 68)"/>
+  <defs>
+    <linearGradient id="bG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#33691E"/>
+      <stop offset="50%" stop-color="#558B2F"/>
+      <stop offset="100%" stop-color="#33691E"/>
+    </linearGradient>
+    <filter id="sh"><feGaussianBlur stdDeviation="2"/></filter>
+  </defs>
+  <ellipse cx="50" cy="112" rx="18" ry="5" fill="#3E2723" opacity="0.15" filter="url(#sh)"/>
+  <path d="M50 108 Q50 86 50 54" stroke="url(#bG)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M50 108 Q50 88 50 56" stroke="#8BC34A" stroke-width="1" fill="none" opacity="0.15"/>
+  <rect x="46" y="68" width="8" height="3" rx="1.5" fill="#1B5E20" opacity="0.35"/>
+  <rect x="46" y="88" width="8" height="3" rx="1.5" fill="#1B5E20" opacity="0.3"/>
+  <ellipse cx="36" cy="58" rx="9" ry="3.5" fill="#7CB342" transform="rotate(-25 36 58)"/>
+  <ellipse cx="62" cy="66" rx="8" ry="3" fill="#8BC34A" transform="rotate(20 62 66)"/>
 </svg>
