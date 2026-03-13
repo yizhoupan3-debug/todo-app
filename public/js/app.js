@@ -8,19 +8,23 @@ const App = {
     _refreshTimer: null, // Socket debounce timer
 
     init() {
-        // Init Socket.io with debounced refresh
-        this.socket = io();
-        const debouncedRefresh = () => {
-            clearTimeout(this._refreshTimer);
-            this._refreshTimer = setTimeout(() => this.refreshCurrentView(), 150);
-        };
-        this.socket.on('task:created', debouncedRefresh);
-        this.socket.on('task:updated', debouncedRefresh);
-        this.socket.on('task:deleted', debouncedRefresh);
-        this.socket.on('task:imported', (data) => {
-            this.showToast(`📥 另一设备导入了 ${data.count} 个任务`, 'info');
-            debouncedRefresh();
-        });
+        // Init Socket.io with debounced refresh (safe — won't crash if server is down)
+        try {
+            this.socket = io();
+            const debouncedRefresh = () => {
+                clearTimeout(this._refreshTimer);
+                this._refreshTimer = setTimeout(() => this.refreshCurrentView(), 150);
+            };
+            this.socket.on('task:created', debouncedRefresh);
+            this.socket.on('task:updated', debouncedRefresh);
+            this.socket.on('task:deleted', debouncedRefresh);
+            this.socket.on('task:imported', (data) => {
+                this.showToast(`📥 另一设备导入了 ${data.count} 个任务`, 'info');
+                debouncedRefresh();
+            });
+        } catch (e) {
+            console.warn('Socket.io unavailable — real-time updates disabled.', e);
+        }
 
         // Init modules
         DailyView.init();
