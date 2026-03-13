@@ -405,35 +405,68 @@ const GardenView = {
 
                         <!-- ═══ ZONE 2: Dense Forest (y=350-800) ═══ -->
                         <rect x="50" y="350" width="900" height="450" rx="30" fill="url(#forestG)"/>
-                        <!-- Tree canopy mass — 4 rows of circles for depth -->
-                        <g opacity="0.9">
-                            <circle cx="100" cy="400" r="35" fill="#1A3A1A"/><circle cx="180" cy="390" r="40" fill="#1E4420"/>
-                            <circle cx="270" cy="385" r="38" fill="#225020"/><circle cx="360" cy="380" r="42" fill="#1A3A1A"/>
-                            <circle cx="450" cy="375" r="45" fill="#1E4420"/><circle cx="540" cy="378" r="40" fill="#225020"/>
-                            <circle cx="630" cy="383" r="38" fill="#1A3A1A"/><circle cx="720" cy="388" r="42" fill="#1E4420"/>
-                            <circle cx="810" cy="395" r="36" fill="#225020"/><circle cx="900" cy="402" r="34" fill="#1A3A1A"/>
+                        <!-- Tree canopy mass — 6 dense layers for impenetrable forest -->
+                        <!-- Layer 1: Deepest canopy (darkest) -->
+                        <g opacity="0.95">
+                            <circle cx="80" cy="370" r="38" fill="#0F2F12"/><circle cx="150" cy="365" r="42" fill="#122E15"/>
+                            <circle cx="225" cy="360" r="40" fill="#0F2F12"/><circle cx="300" cy="358" r="44" fill="#152E18"/>
+                            <circle cx="380" cy="355" r="46" fill="#0F2F12"/><circle cx="460" cy="352" r="48" fill="#122E15"/>
+                            <circle cx="540" cy="355" r="44" fill="#152E18"/><circle cx="620" cy="358" r="46" fill="#0F2F12"/>
+                            <circle cx="700" cy="362" r="42" fill="#122E15"/><circle cx="780" cy="368" r="40" fill="#152E18"/>
+                            <circle cx="860" cy="374" r="38" fill="#0F2F12"/><circle cx="940" cy="380" r="35" fill="#122E15"/>
                         </g>
-                        <g opacity="0.85">
-                            <circle cx="130" cy="460" r="32" fill="#2A5528"/><circle cx="220" cy="450" r="36" fill="#1E4420"/>
-                            <circle cx="310" cy="445" r="34" fill="#2A5528"/><circle cx="400" cy="440" r="38" fill="#225020"/>
-                            <circle cx="490" cy="438" r="40" fill="#1E4420"/><circle cx="580" cy="442" r="36" fill="#2A5528"/>
-                            <circle cx="670" cy="448" r="34" fill="#225020"/><circle cx="760" cy="455" r="38" fill="#1E4420"/>
-                            <circle cx="850" cy="462" r="32" fill="#2A5528"/>
+                        <!-- Layer 2 -->
+                        <g opacity="0.92">
+                            <circle cx="110" cy="410" r="36" fill="#1A3A1A"/><circle cx="185" cy="405" r="40" fill="#1E4420"/>
+                            <circle cx="260" cy="400" r="38" fill="#1A3A1A"/><circle cx="340" cy="396" r="42" fill="#1E4420"/>
+                            <circle cx="420" cy="393" r="44" fill="#1A3A1A"/><circle cx="500" cy="390" r="46" fill="#1E4420"/>
+                            <circle cx="580" cy="393" r="42" fill="#225020"/><circle cx="660" cy="398" r="40" fill="#1A3A1A"/>
+                            <circle cx="740" cy="403" r="44" fill="#1E4420"/><circle cx="820" cy="408" r="38" fill="#225020"/>
+                            <circle cx="900" cy="415" r="36" fill="#1A3A1A"/>
                         </g>
-                        <g opacity="0.8">
-                            <circle cx="160" cy="530" r="30" fill="#3A7530"/><circle cx="250" cy="520" r="34" fill="#2A5528"/>
-                            <circle cx="340" cy="515" r="32" fill="#3A7530"/><circle cx="430" cy="510" r="36" fill="#2A5528"/>
-                            <circle cx="520" cy="508" r="38" fill="#3A7530"/><circle cx="610" cy="512" r="34" fill="#2A5528"/>
-                            <circle cx="700" cy="518" r="32" fill="#3A7530"/><circle cx="790" cy="525" r="30" fill="#2A5528"/>
+                        <!-- Layer 3 — understory fill -->
+                        <g opacity="0.88">
+                            <circle cx="90" cy="450" r="34" fill="#1E4420"/><circle cx="165" cy="445" r="38" fill="#225020"/>
+                            <circle cx="245" cy="440" r="36" fill="#1E4420"/><circle cx="325" cy="436" r="40" fill="#2A5528"/>
+                            <circle cx="405" cy="433" r="42" fill="#225020"/><circle cx="485" cy="430" r="44" fill="#1E4420"/>
+                            <circle cx="565" cy="433" r="40" fill="#2A5528"/><circle cx="645" cy="438" r="38" fill="#225020"/>
+                            <circle cx="725" cy="442" r="42" fill="#1E4420"/><circle cx="805" cy="448" r="36" fill="#2A5528"/>
+                            <circle cx="885" cy="454" r="34" fill="#225020"/>
                         </g>
-                        <g opacity="0.75">
-                            <circle cx="200" cy="600" r="28" fill="#4A9A2E"/><circle cx="300" cy="590" r="32" fill="#3A7530"/>
-                            <circle cx="400" cy="585" r="30" fill="#4A9A2E"/><circle cx="500" cy="582" r="34" fill="#3A7530"/>
-                            <circle cx="600" cy="588" r="30" fill="#4A9A2E"/><circle cx="700" cy="595" r="32" fill="#3A7530"/>
-                            <circle cx="800" cy="602" r="28" fill="#4A9A2E"/>
+                        <!-- Layer 4 -->
+                        <g opacity="0.82">
+                            <circle cx="120" cy="500" r="32" fill="#2A5528"/><circle cx="200" cy="492" r="36" fill="#2E6028"/>
+                            <circle cx="280" cy="488" r="34" fill="#2A5528"/><circle cx="360" cy="484" r="38" fill="#306832"/>
+                            <circle cx="440" cy="480" r="40" fill="#2A5528"/><circle cx="520" cy="478" r="42" fill="#2E6028"/>
+                            <circle cx="600" cy="482" r="38" fill="#306832"/><circle cx="680" cy="486" r="36" fill="#2A5528"/>
+                            <circle cx="760" cy="492" r="40" fill="#2E6028"/><circle cx="840" cy="498" r="34" fill="#306832"/>
+                            <circle cx="920" cy="505" r="30" fill="#2A5528"/>
                         </g>
-                        <!-- Forest edge (transition to grass) -->
-                        <path d="M50,750 Q200,700 350,720 Q500,690 650,710 Q800,700 950,750 L950,800 L50,800Z" fill="#4A9A2E" opacity="0.5"/>
+                        <!-- Layer 5 — transitional -->
+                        <g opacity="0.78">
+                            <circle cx="150" cy="560" r="30" fill="#3A7530"/><circle cx="240" cy="552" r="34" fill="#2E6028"/>
+                            <circle cx="330" cy="546" r="32" fill="#3A7530"/><circle cx="420" cy="542" r="36" fill="#2E6028"/>
+                            <circle cx="510" cy="540" r="38" fill="#3A7530"/><circle cx="600" cy="544" r="34" fill="#2E6028"/>
+                            <circle cx="690" cy="548" r="32" fill="#3A7530"/><circle cx="780" cy="556" r="30" fill="#2E6028"/>
+                            <circle cx="870" cy="562" r="28" fill="#3A7530"/>
+                        </g>
+                        <!-- Layer 6 — forest edge (lightest) -->
+                        <g opacity="0.72">
+                            <circle cx="180" cy="620" r="28" fill="#4A9A2E"/><circle cx="280" cy="612" r="32" fill="#3A7530"/>
+                            <circle cx="380" cy="606" r="30" fill="#4A9A2E"/><circle cx="480" cy="602" r="34" fill="#459830"/>
+                            <circle cx="580" cy="608" r="30" fill="#4A9A2E"/><circle cx="680" cy="614" r="32" fill="#3A7530"/>
+                            <circle cx="780" cy="620" r="28" fill="#4A9A2E"/><circle cx="880" cy="628" r="26" fill="#3A7530"/>
+                        </g>
+                        <!-- Conifer silhouettes scattered in canopy -->
+                        <g opacity="0.4" fill="#0A2210">
+                            <polygon points="100,350 115,390 85,390"/><polygon points="300,345 318,395 282,395"/>
+                            <polygon points="500,340 520,398 480,398"/><polygon points="700,348 717,392 683,392"/>
+                            <polygon points="200,400 216,445 184,445"/><polygon points="600,395 618,448 582,448"/>
+                            <polygon points="400,390 420,452 380,452"/><polygon points="850,405 864,445 836,445"/>
+                        </g>
+                        <!-- Forest edge (organic transition to grass) -->
+                        <path d="M50,720 Q120,690 200,705 Q280,680 360,700 Q440,675 520,690 Q600,678 680,695 Q760,685 840,710 Q920,700 950,730 L950,800 L50,800Z" fill="#4A9A2E" opacity="0.5"/>
+                        <path d="M50,740 Q180,710 300,725 Q420,700 540,715 Q660,705 780,720 Q900,712 950,745 L950,800 L50,800Z" fill="#5AB838" opacity="0.3"/>
 
                         <!-- ═══ ZONE 3: Grass Island (y=800-1350) ═══ -->
                         <rect x="30" y="800" width="940" height="550" rx="30" fill="url(#grassG)"/>
@@ -526,26 +559,53 @@ const GardenView = {
                             <div class="hut-label">\u{1F3E0} 小屋</div>
                         </div>
 
-                        <!-- ═══ Choppable Forest Trees (y=18-38%, arrow shape, increasing cost) ═══ -->
-                        <!-- Back row (deepest, most expensive) -->
-                        <div class="forest-tree-btn" style="left:40%;top:20%" data-cost="50" title="\u{1FA93} 砍伐 50 喵喵币"><img src="/img/trees/pine.svg" style="width:52px"></div>
-                        <div class="forest-tree-btn" style="left:52%;top:19%" data-cost="50" title="\u{1FA93} 砍伐 50 喵喵币"><img src="/img/trees/oak.svg" style="width:50px"></div>
-                        <!-- Second row -->
-                        <div class="forest-tree-btn" style="left:30%;top:24%" data-cost="35" title="\u{1FA93} 砍伐 35 喵喵币"><img src="/img/trees/oak.svg" style="width:48px"></div>
-                        <div class="forest-tree-btn" style="left:45%;top:23%" data-cost="35" title="\u{1FA93} 砍伐 35 喵喵币"><img src="/img/trees/pine.svg" style="width:46px"></div>
-                        <div class="forest-tree-btn" style="left:60%;top:24%" data-cost="35" title="\u{1FA93} 砍伐 35 喵喵币"><img src="/img/trees/palm.svg" style="width:48px"></div>
-                        <!-- Third row -->
-                        <div class="forest-tree-btn" style="left:20%;top:28%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/pine.svg" style="width:44px"></div>
-                        <div class="forest-tree-btn" style="left:35%;top:27%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/oak.svg" style="width:42px"></div>
-                        <div class="forest-tree-btn" style="left:50%;top:27%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/palm.svg" style="width:44px"></div>
-                        <div class="forest-tree-btn" style="left:65%;top:28%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/pine.svg" style="width:42px"></div>
-                        <!-- Front row (cheapest) — widest spread -->
-                        <div class="forest-tree-btn" style="left:12%;top:33%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/palm.svg" style="width:40px"></div>
-                        <div class="forest-tree-btn" style="left:27%;top:32%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/oak.svg" style="width:38px"></div>
-                        <div class="forest-tree-btn" style="left:42%;top:31%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/pine.svg" style="width:40px"></div>
-                        <div class="forest-tree-btn" style="left:57%;top:32%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/oak.svg" style="width:38px"></div>
-                        <div class="forest-tree-btn" style="left:72%;top:33%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/palm.svg" style="width:40px"></div>
-                        <div class="forest-tree-btn" style="left:85%;top:35%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/pine.svg" style="width:36px"></div>
+                        <!-- ═══ Choppable Forest Trees (y=18-40%, 6 rows, 12 species, arrow→wide) ═══ -->
+                        <!-- Row 1: Deepest (y≈18-20%, most expensive, narrowest) -->
+                        <div class="forest-tree-btn" style="left:38%;top:18%" data-cost="100" title="\u{1FA93} 砍伐 100 喵喵币"><img src="/img/trees/pine.svg" style="width:58px"></div>
+                        <div class="forest-tree-btn" style="left:50%;top:17%" data-cost="100" title="\u{1FA93} 砍伐 100 喵喵币"><img src="/img/trees/sakura.svg" style="width:56px"></div>
+                        <div class="forest-tree-btn" style="left:62%;top:18%" data-cost="100" title="\u{1FA93} 砍伐 100 喵喵币"><img src="/img/trees/oak.svg" style="width:54px"></div>
+
+                        <!-- Row 2 (y≈22-23%) -->
+                        <div class="forest-tree-btn" style="left:28%;top:22%" data-cost="60" title="\u{1FA93} 砍伐 60 喵喵币"><img src="/img/trees/maple.svg" style="width:52px"></div>
+                        <div class="forest-tree-btn" style="left:40%;top:21%" data-cost="60" title="\u{1FA93} 砍伐 60 喵喵币"><img src="/img/trees/bamboo.svg" style="width:50px"></div>
+                        <div class="forest-tree-btn" style="left:52%;top:21%" data-cost="60" title="\u{1FA93} 砍伐 60 喵喵币"><img src="/img/trees/orange_tree.svg" style="width:48px"></div>
+                        <div class="forest-tree-btn" style="left:64%;top:22%" data-cost="60" title="\u{1FA93} 砍伐 60 喵喵币"><img src="/img/trees/christmas.svg" style="width:50px"></div>
+                        <div class="forest-tree-btn" style="left:76%;top:23%" data-cost="60" title="\u{1FA93} 砍伐 60 喵喵币"><img src="/img/trees/peach.svg" style="width:48px"></div>
+
+                        <!-- Row 3 (y≈26-27%) -->
+                        <div class="forest-tree-btn" style="left:18%;top:26%" data-cost="35" title="\u{1FA93} 砍伐 35 喵喵币"><img src="/img/trees/mushroom.svg" style="width:44px"></div>
+                        <div class="forest-tree-btn" style="left:30%;top:25%" data-cost="35" title="\u{1FA93} 砍伐 35 喵喵币"><img src="/img/trees/oak.svg" style="width:48px"></div>
+                        <div class="forest-tree-btn" style="left:42%;top:25%" data-cost="35" title="\u{1FA93} 砍伐 35 喵喵币"><img src="/img/trees/pine.svg" style="width:46px"></div>
+                        <div class="forest-tree-btn" style="left:54%;top:25%" data-cost="35" title="\u{1FA93} 砍伐 35 喵喵币"><img src="/img/trees/sakura.svg" style="width:44px"></div>
+                        <div class="forest-tree-btn" style="left:66%;top:26%" data-cost="35" title="\u{1FA93} 砍伐 35 喵喵币"><img src="/img/trees/bamboo.svg" style="width:46px"></div>
+                        <div class="forest-tree-btn" style="left:78%;top:27%" data-cost="35" title="\u{1FA93} 砍伐 35 喵喵币"><img src="/img/trees/maple.svg" style="width:42px"></div>
+
+                        <!-- Row 4 (y≈29-31%) -->
+                        <div class="forest-tree-btn" style="left:10%;top:30%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/palm.svg" style="width:42px"></div>
+                        <div class="forest-tree-btn" style="left:22%;top:29%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/peach.svg" style="width:40px"></div>
+                        <div class="forest-tree-btn" style="left:34%;top:29%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/orange_tree.svg" style="width:42px"></div>
+                        <div class="forest-tree-btn" style="left:46%;top:28%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/christmas.svg" style="width:44px"></div>
+                        <div class="forest-tree-btn" style="left:58%;top:29%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/mushroom.svg" style="width:38px"></div>
+                        <div class="forest-tree-btn" style="left:70%;top:30%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/pine.svg" style="width:42px"></div>
+                        <div class="forest-tree-btn" style="left:82%;top:31%" data-cost="20" title="\u{1FA93} 砍伐 20 喵喵币"><img src="/img/trees/sakura.svg" style="width:40px"></div>
+
+                        <!-- Row 5 (y≈33-35%) -->
+                        <div class="forest-tree-btn" style="left:6%;top:34%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/obstacle_wild_tree.svg" style="width:38px"></div>
+                        <div class="forest-tree-btn" style="left:16%;top:33%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/corn.svg" style="width:36px"></div>
+                        <div class="forest-tree-btn" style="left:27%;top:33%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/oak.svg" style="width:38px"></div>
+                        <div class="forest-tree-btn" style="left:38%;top:32%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/maple.svg" style="width:40px"></div>
+                        <div class="forest-tree-btn" style="left:49%;top:32%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/bamboo.svg" style="width:36px"></div>
+                        <div class="forest-tree-btn" style="left:60%;top:33%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/palm.svg" style="width:38px"></div>
+                        <div class="forest-tree-btn" style="left:71%;top:34%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/peach.svg" style="width:36px"></div>
+                        <div class="forest-tree-btn" style="left:82%;top:35%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/orange_tree.svg" style="width:34px"></div>
+                        <div class="forest-tree-btn" style="left:92%;top:36%" data-cost="10" title="\u{1FA93} 砍伐 10 喵喵币"><img src="/img/trees/pine.svg" style="width:32px"></div>
+
+                        <!-- Row 6: Forest edge (y≈37-40%, cheapest, scattered) -->
+                        <div class="forest-tree-btn" style="left:8%;top:38%" data-cost="5" title="\u{1FA93} 砍伐 5 喵喵币"><img src="/img/trees/mushroom.svg" style="width:30px"></div>
+                        <div class="forest-tree-btn" style="left:24%;top:37%" data-cost="5" title="\u{1FA93} 砍伐 5 喵喵币"><img src="/img/trees/corn.svg" style="width:32px"></div>
+                        <div class="forest-tree-btn" style="left:44%;top:37%" data-cost="5" title="\u{1FA93} 砍伐 5 喵喵币"><img src="/img/trees/obstacle_wild_tree.svg" style="width:34px"></div>
+                        <div class="forest-tree-btn" style="left:64%;top:38%" data-cost="5" title="\u{1FA93} 砍伐 5 喵喵币"><img src="/img/trees/bamboo.svg" style="width:30px"></div>
+                        <div class="forest-tree-btn" style="left:84%;top:39%" data-cost="5" title="\u{1FA93} 砍伐 5 喵喵币"><img src="/img/trees/mushroom.svg" style="width:28px"></div>
 
                         <!-- ═══ Harbor (center of beach/dock area y=76%) ═══ -->
                         <div class="boom-harbor" id="harbor-building" style="left:48%;top:76%" title="港口 — 点击管理">
@@ -1295,6 +1355,36 @@ const GardenView = {
     },
 
     // ═══ Backpack Overlay ═══
+    _backpackSearch: '',
+
+    _getPlantRarity(price) {
+        if (price >= 100) return { tier: 'SSR', cls: 'rarity-ssr', label: '传说' };
+        if (price >= 50)  return { tier: 'SR',  cls: 'rarity-sr',  label: '稀有' };
+        if (price >= 20)  return { tier: 'R',   cls: 'rarity-r',   label: '精良' };
+        return { tier: 'N', cls: 'rarity-n', label: '普通' };
+    },
+
+    _formatPlantedDate(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr.replace(' ', 'T'));
+        const m = d.getMonth() + 1;
+        const day = d.getDate();
+        return `${m}月${day}日`;
+    },
+
+    _getFilteredPlants() {
+        let plants = this._backpackPlants || [];
+        if (this._backpackSearch) {
+            const q = this._backpackSearch.toLowerCase();
+            plants = plants.filter(p => {
+                const catItem = this.catalog.find(c => c.type === p.tree_type);
+                const name = (catItem?.name || p.tree_type).toLowerCase();
+                return name.includes(q);
+            });
+        }
+        return plants;
+    },
+
     async showBackpack(assignee) {
         document.querySelector('.backpack-overlay')?.remove();
 
@@ -1309,6 +1399,13 @@ const GardenView = {
 
         this._backpackPlants = plants;
         this._backpackSort = { by: 'price', order: 'asc' };
+        this._backpackSearch = '';
+
+        // Compute summary stats
+        const totalValue = plants.reduce((s, p) => s + p.price, 0);
+        const matureCount = plants.filter(p => p.growth_minutes >= 150).length;
+        const maturePct = plants.length ? Math.round(matureCount / plants.length * 100) : 0;
+        const typesCount = new Set(plants.map(p => p.tree_type)).size;
 
         const overlay = document.createElement('div');
         overlay.className = 'backpack-overlay';
@@ -1318,12 +1415,36 @@ const GardenView = {
                     <h3>\u{1F392} 背包</h3>
                     <button class="backpack-close" id="backpack-close">✕</button>
                 </div>
+                <div class="backpack-summary">
+                    <div class="backpack-stat">
+                        <span class="backpack-stat-num">${plants.length}</span>
+                        <span class="backpack-stat-label">植物</span>
+                    </div>
+                    <div class="backpack-stat">
+                        <span class="backpack-stat-num">${typesCount}</span>
+                        <span class="backpack-stat-label">种类</span>
+                    </div>
+                    <div class="backpack-stat">
+                        <span class="backpack-stat-num">${totalValue}</span>
+                        <span class="backpack-stat-label">总价值</span>
+                    </div>
+                    <div class="backpack-stat">
+                        <span class="backpack-stat-num">${maturePct}%</span>
+                        <span class="backpack-stat-label">成熟率</span>
+                    </div>
+                </div>
                 <div class="backpack-tabs">
                     <button class="backpack-tab active" data-tab="plants">\u{1F331} 植物 <span class="backpack-tab-count">${plants.length}</span></button>
                 </div>
-                <div class="backpack-sort-bar">
-                    <button class="backpack-sort-btn active" data-sort="price">按价格 <span class="sort-arrow">▲</span></button>
-                    <button class="backpack-sort-btn" data-sort="maturity">按成熟度 <span class="sort-arrow">▲</span></button>
+                <div class="backpack-toolbar">
+                    <div class="backpack-search">
+                        <span class="backpack-search-icon">\u{1F50D}</span>
+                        <input type="text" class="backpack-search-input" id="backpack-search" placeholder="搜索植物..." autocomplete="off">
+                    </div>
+                    <div class="backpack-sort-bar">
+                        <button class="backpack-sort-btn active" data-sort="price">价格 <span class="sort-arrow">▲</span></button>
+                        <button class="backpack-sort-btn" data-sort="maturity">成熟度 <span class="sort-arrow">▲</span></button>
+                    </div>
                 </div>
                 <div class="backpack-content" id="backpack-content">
                     ${this._renderBackpackPlants(plants, 'price', 'asc')}
@@ -1334,14 +1455,23 @@ const GardenView = {
         requestAnimationFrame(() => overlay.classList.add('active'));
 
         // Close
-        document.getElementById('backpack-close')?.addEventListener('click', () => {
+        const closeOverlay = () => {
             overlay.classList.remove('active');
             setTimeout(() => overlay.remove(), 200);
-        });
-        overlay.addEventListener('click', e => {
-            if (e.target === overlay) {
-                overlay.classList.remove('active');
-                setTimeout(() => overlay.remove(), 200);
+        };
+        document.getElementById('backpack-close')?.addEventListener('click', closeOverlay);
+        overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
+
+        // Search input
+        const searchInput = document.getElementById('backpack-search');
+        searchInput?.addEventListener('input', () => {
+            this._backpackSearch = searchInput.value.trim();
+            const content = document.getElementById('backpack-content');
+            if (content) {
+                const filtered = this._getFilteredPlants();
+                content.innerHTML = this._renderBackpackPlants(
+                    filtered, this._backpackSort.by, this._backpackSort.order
+                );
             }
         });
 
@@ -1350,16 +1480,13 @@ const GardenView = {
             btn.addEventListener('click', () => {
                 const sortBy = btn.dataset.sort;
                 if (this._backpackSort.by === sortBy) {
-                    // Toggle order
                     this._backpackSort.order = this._backpackSort.order === 'asc' ? 'desc' : 'asc';
                 } else {
                     this._backpackSort.by = sortBy;
                     this._backpackSort.order = 'asc';
                 }
-                // Update active state
                 overlay.querySelectorAll('.backpack-sort-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                // Update arrow
                 overlay.querySelectorAll('.backpack-sort-btn').forEach(b => {
                     const arrow = b.querySelector('.sort-arrow');
                     if (b === btn) {
@@ -1368,20 +1495,40 @@ const GardenView = {
                         arrow.textContent = '▲';
                     }
                 });
-                // Re-render
                 const content = document.getElementById('backpack-content');
                 if (content) {
+                    const filtered = this._getFilteredPlants();
                     content.innerHTML = this._renderBackpackPlants(
-                        this._backpackPlants, this._backpackSort.by, this._backpackSort.order
+                        filtered, this._backpackSort.by, this._backpackSort.order
                     );
                 }
             });
+        });
+
+        // Go-to-shop button in empty state
+        overlay.addEventListener('click', e => {
+            if (e.target.closest('.backpack-goto-shop')) {
+                closeOverlay();
+                App.switchView('shop');
+            }
         });
     },
 
     _renderBackpackPlants(plants, sortBy, sortOrder) {
         if (!plants.length) {
-            return '<div class="backpack-empty">\u{1F331} 还没有植物哦，去商城购买吧！</div>';
+            const isSearch = this._backpackSearch;
+            if (isSearch) {
+                return `<div class="backpack-empty">
+                    <div class="backpack-empty-icon">\u{1F50D}</div>
+                    <div class="backpack-empty-text">没有找到 "${this._backpackSearch}" 相关的植物</div>
+                </div>`;
+            }
+            return `<div class="backpack-empty">
+                <div class="backpack-empty-icon">\u{1F33F}</div>
+                <div class="backpack-empty-text">背包空空如也~</div>
+                <div class="backpack-empty-sub">去商城购买植物，种在花园里吧！</div>
+                <button class="backpack-goto-shop">\u{1F6D2} 前往商城</button>
+            </div>`;
         }
 
         const sorted = [...plants].sort((a, b) => {
@@ -1394,7 +1541,7 @@ const GardenView = {
             return sortOrder === 'asc' ? va - vb : vb - va;
         });
 
-        return '<div class="backpack-grid">' + sorted.map(plant => {
+        return '<div class="backpack-grid">' + sorted.map((plant, idx) => {
             const catItem = this.catalog.find(c => c.type === plant.tree_type);
             const gm = plant.growth_minutes || 0;
             const stage = this.getGrowthStage(gm);
@@ -1403,10 +1550,14 @@ const GardenView = {
             const imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.svg';
             const name = catItem?.name || plant.tree_type;
             const icon = catItem?.icon || '\u{1F331}';
+            const rarity = this._getPlantRarity(plant.price);
+            const plantedDate = this._formatPlantedDate(plant.planted_at);
+            const delay = Math.min(idx * 40, 400); // stagger up to 400ms
 
-            return `<div class="backpack-plant-card">
+            return `<div class="backpack-plant-card ${rarity.cls}" style="animation-delay:${delay}ms">
                 <div class="backpack-plant-img-wrap">
                     <img src="${imgSrc}" alt="${name}" class="backpack-plant-img">
+                    <span class="backpack-rarity-badge ${rarity.cls}">${rarity.tier}</span>
                 </div>
                 <div class="backpack-plant-info">
                     <div class="backpack-plant-name">${icon} ${name}</div>
@@ -1414,8 +1565,11 @@ const GardenView = {
                         <span class="backpack-plant-price">${Utils.coinSvg('cat-coin-icon','width:14px;height:14px')} ${plant.price}</span>
                         <span class="backpack-plant-stage stage-${stage}">${stageLabel}</span>
                     </div>
-                    <div class="backpack-plant-bar"><div class="backpack-plant-bar-fill" style="width:${pct}%"></div></div>
-                    <div class="backpack-plant-location">\u{1F3DD}\uFE0F ${plant.island_name}</div>
+                    <div class="backpack-plant-bar"><div class="backpack-plant-bar-fill stage-bar-${stage}" style="width:${pct}%"></div></div>
+                    <div class="backpack-plant-bottom">
+                        <span class="backpack-plant-location">\u{1F3DD}\uFE0F ${plant.island_name}</span>
+                        ${plantedDate ? `<span class="backpack-plant-date">\u{1F4C5} ${plantedDate}</span>` : ''}
+                    </div>
                 </div>
             </div>`;
         }).join('') + '</div>';
