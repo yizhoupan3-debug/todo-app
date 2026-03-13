@@ -208,7 +208,21 @@ router.put('/:id', (req, res) => {
     `).get(id);
 
         if (!task) return res.status(404).json({ error: 'Task not found' });
-        res.json(task);
+
+        // ── Award coins when task completed ──
+        let coinsEarned = 0;
+        if (fields.status === 'done') {
+            const TASK_REWARD = 2;
+            try {
+                db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
+                    .run(TASK_REWARD, task.assignee);
+                db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                    .run(task.assignee, TASK_REWARD, 'task_done', task.title);
+                coinsEarned = TASK_REWARD;
+            } catch (e) { /* ignore coin errors */ }
+        }
+
+        res.json({ ...task, coinsEarned });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -274,3 +274,25 @@ if (plotCount.count === 0) {
 }
 
 module.exports = db;
+
+// ── Coin earning system migrations ──
+
+// Migrate: checkin_streaks table for tracking consecutive days
+db.exec(`
+  CREATE TABLE IF NOT EXISTS checkin_streaks (
+    assignee TEXT NOT NULL CHECK(assignee IN ('潘潘','蒲蒲')),
+    type TEXT NOT NULL DEFAULT 'water',
+    current_streak INTEGER NOT NULL DEFAULT 0,
+    last_date TEXT,
+    reward_3_claimed TEXT,
+    reward_7_claimed TEXT,
+    UNIQUE(assignee, type)
+  );
+`);
+
+// Migrate: add last_harvested column to trees if missing
+try {
+  db.prepare("SELECT last_harvested FROM trees LIMIT 1").get();
+} catch (e) {
+  db.exec("ALTER TABLE trees ADD COLUMN last_harvested TEXT DEFAULT NULL");
+}

@@ -236,14 +236,70 @@ router.post('/trees/grow', (req, res) => {
     }
 });
 
+// ── Harvest Coins from Mature Plants ("收菜") ──
+const PLANT_TIERS = {
+    // tier 1: cheap plants → 1 coin
+    sprout: 1, rice: 1, strawberry: 1, sunflower: 1, corn: 1, mushroom: 1,
+    // tier 2: mid plants → 1~2 coins
+    tulip: 2, daisy: 2, hibiscus: 2, sakura: 2, chrysanthemum: 2, true_lavender: 2,
+    pumpkin: 2, bamboo: 2,
+    // tier 3: expensive plants → 1~3 coins
+    pine: 3, oak: 3, peach: 3, mint: 3, orange_tree: 3, lotus: 3,
+    palm: 3, christmas: 3, maple: 3, cactus: 3, rose: 3, peony: 3,
+    grape: 3, clover: 3, lavender: 3,
+};
+
+router.post('/harvest', (req, res) => {
+    try {
+        const { assignee, tree_id } = req.body;
+        if (!assignee || !tree_id) {
+            return res.status(400).json({ error: 'assignee, tree_id required' });
+        }
+
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+        const harvest = db.transaction(() => {
+            const tree = db.prepare('SELECT * FROM trees WHERE id = ? AND assignee = ?')
+                .get(tree_id, assignee);
+            if (!tree) throw new Error('NOT_FOUND');
+            if (tree.status !== 'grown') throw new Error('NOT_GROWN');
+            if (tree.last_harvested === today) throw new Error('ALREADY_HARVESTED');
+
+            // Determine reward based on plant tier
+            const maxReward = PLANT_TIERS[tree.tree_type] || 1;
+            const reward = Math.floor(Math.random() * maxReward) + 1; // 1 to maxReward
+
+            db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
+                .run(reward, assignee);
+            db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                .run(assignee, reward, 'harvest', tree.tree_type);
+            db.prepare('UPDATE trees SET last_harvested = ? WHERE id = ?')
+                .run(today, tree.id);
+
+            const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
+                .get(assignee);
+            return { reward, balance, tree_type: tree.tree_type };
+        });
+
+        const result = harvest();
+        res.json(result);
+    } catch (err) {
+        if (err.message === 'NOT_FOUND') return res.status(404).json({ error: '植物不存在' });
+        if (err.message === 'NOT_GROWN') return res.status(400).json({ error: '植物还没成熟呢 🌱' });
+        if (err.message === 'ALREADY_HARVESTED') return res.status(400).json({ error: '今天已经收过啦 😸' });
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ═══════════════════════════════════════════
 // ══ Multi-island Exploration System ════════
 // ═══════════════════════════════════════════
 
 const BOAT_CATALOG = {
-    raft:     { name: '小木筏', cost: 200, icon: '🛶', duration: 60 },
-    sailboat: { name: '帆船',   cost: 500, icon: '⛵', duration: 300 },
-    galleon:  { name: '大帆船', cost: 1000, icon: '🚢', duration: 720 },
+    raft: { name: '小木筏', cost: 200, icon: '🛶', duration: 60 },
+    sailboat: { name: '帆船', cost: 500, icon: '⛵', duration: 300 },
+    galleon: { name: '大帆船', cost: 1000, icon: '🚢', duration: 720 },
 };
 
 const CHARACTER_MAP = { '潘潘': '小八', '蒲蒲': '乌撒奇' };

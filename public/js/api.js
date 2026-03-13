@@ -148,4 +148,8 @@ const API = {
     clearPlot(data) {
         return this.request('/garden/plots/clear', { method: 'POST', body: data });
     },
+
+    harvestTree(data) {
+        return this.request('/garden/harvest', { method: 'POST', body: data });
+    },
 };

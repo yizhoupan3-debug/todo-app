@@ -128,7 +128,24 @@ router.post('/pomodoro', (req, res) => {
 
         const session = db.prepare('SELECT * FROM pomodoro_sessions WHERE id = ?')
             .get(result.lastInsertRowid);
-        res.status(201).json(session);
+
+        // ── Award coins based on focus duration ──
+        let coinsEarned = 0;
+        const mins = parseInt(focus_minutes);
+        if (mins >= 60) coinsEarned = 8;
+        else if (mins >= 45) coinsEarned = 5;
+        else if (mins >= 25) coinsEarned = 3;
+
+        if (coinsEarned > 0) {
+            try {
+                db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
+                    .run(coinsEarned, assignee);
+                db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                    .run(assignee, coinsEarned, 'pomodoro', `${mins}min 专注`);
+            } catch (e) { /* ignore */ }
+        }
+
+        res.status(201).json({ ...session, coinsEarned });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -45,6 +45,15 @@ const Pomodoro = {
         document.getElementById('pomodoro-stop').addEventListener('click', () => this.stop());
         document.getElementById('pomodoro-next').addEventListener('click', () => this.nextRound());
         document.getElementById('pomodoro-finish').addEventListener('click', () => this.close());
+
+        // Ambient sound toggle in timer screen
+        document.getElementById('pomodoro-ambient-toggle').addEventListener('click', () => {
+            const panel = document.getElementById('pomodoro-timer-sounds');
+            const isHidden = panel.classList.toggle('hidden');
+            if (!isHidden) {
+                AmbientSound.buildSoundGrid('pomodoro-timer-sounds');
+            }
+        });
     },
 
     open() {

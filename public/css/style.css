@@ -1578,7 +1578,7 @@ textarea:focus {
   cursor: pointer;
   transition: all var(--transition);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   animation: cardSlideIn 0.35s ease-out both;
 }
 
@@ -3725,9 +3725,14 @@ form {
   cursor: pointer;
   padding: 4px;
   border-radius: var(--radius-sm);
-  opacity: 0.5;
+  opacity: 0.7;
   transition: opacity 0.2s, transform 0.2s;
   flex-shrink: 0;
+  min-width: 28px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .task-pomodoro-btn:hover {
@@ -3961,6 +3966,41 @@ form {
   margin-bottom: 8px;
   padding: 12px;
   border-radius: var(--radius-md);
+}
+
+/* Ambient sound controls in timer screen */
+#pomodoro-ambient-toggle {
+  padding: 10px 16px;
+  font-size: 1.1rem;
+}
+
+.pomodoro-timer-sounds {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.pomodoro-timer-sounds.hidden {
+  display: none;
+}
+
+.pomodoro-timer-sounds .sound-grid {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.pomodoro-timer-sounds .sound-toggle {
+  padding: 8px 4px;
+}
+
+.pomodoro-timer-sounds .sound-icon {
+  font-size: 1.2rem;
+}
+
+.pomodoro-timer-sounds .sound-name {
+  font-size: 10px;
 }
 
 /* ===== STATS MODULE ===== */
