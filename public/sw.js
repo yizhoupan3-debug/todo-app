@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v11'; // Bump on each deploy
+const CACHE_VERSION = 'v12'; // Bump on each deploy
 const CACHE_NAME = `panpu-todo-${CACHE_VERSION}`;
 
 const STATIC_ASSETS = [
