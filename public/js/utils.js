@@ -17,6 +17,6 @@ const Utils = {
      * @param {string} [style=''] — inline style override
      */
     coinSvg(cls = 'cat-coin-icon', style = '') {
-        return `<img class="${cls}" ${style ? `style="${style}"` : ''} src="/img/meow-coin.png" alt="喵喵币">`;
+        return `<img class="${cls}" ${style ? `style="${style}"` : ''} src="/img/meow-coin.png?v=2" alt="喵喵币">`;
     },
 };
