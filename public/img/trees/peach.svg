@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
     <radialGradient id="cG" cx="38%" cy="30%">
-      <stop offset="0%" stop-color="#F8BBD0"/>
-      <stop offset="35%" stop-color="#F48FB1"/>
-      <stop offset="100%" stop-color="#C2185B"/>
+      <stop offset="0%" stop-color="#C8E6C9"/>
+      <stop offset="40%" stop-color="#66BB6A"/>
+      <stop offset="100%" stop-color="#1B5E20"/>
     </radialGradient>
     <linearGradient id="tG" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#4E342E"/>
@@ -12,38 +12,40 @@
       <stop offset="100%" stop-color="#4E342E"/>
     </linearGradient>
     <radialGradient id="fG" cx="40%" cy="30%">
-      <stop offset="0%" stop-color="#FFAB91"/>
-      <stop offset="50%" stop-color="#FF7043"/>
+      <stop offset="0%" stop-color="#FFCC80"/>
+      <stop offset="50%" stop-color="#FFAB91"/>
       <stop offset="100%" stop-color="#E64A19"/>
     </radialGradient>
     <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
   </defs>
   <ellipse cx="50" cy="114" rx="32" ry="9" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
-  <!-- Trunk — slightly curved -->
-  <path d="M46 112 Q44 88 46 66 Q48 64 52 64 Q54 64 55 66 Q54 88 56 112Z" fill="url(#tG)"/>
-  <!-- Branches — asymmetric spreading -->
-  <path d="M44 84 Q26 76 12 82" stroke="#6D4C41" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-  <path d="M56 78 Q74 68 88 74" stroke="#6D4C41" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-  <path d="M44 72 Q36 64 28 66" stroke="#6D4C41" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <!-- Blossom canopy — wider, more spreading, less mushroom-like -->
-  <path d="M50 6 Q20 4 4 22 Q-6 40 8 52 Q2 58 10 66 Q18 74 32 72 Q28 80 42 80 Q44 82 50 82 Q56 82 58 80 Q72 80 68 72 Q82 74 90 66 Q98 58 92 52 Q106 40 96 22 Q80 4 50 6Z" fill="url(#cG)"/>
-  <!-- Blossom clusters — make it look like individual flower clusters -->
-  <circle cx="22" cy="32" r="10" fill="#F48FB1" opacity="0.3"/>
-  <circle cx="40" cy="18" r="9" fill="#F8BBD0" opacity="0.25"/>
-  <circle cx="60" cy="20" r="9" fill="#F48FB1" opacity="0.25"/>
-  <circle cx="78" cy="34" r="10" fill="#F8BBD0" opacity="0.3"/>
-  <circle cx="50" cy="40" r="8" fill="#F8BBD0" opacity="0.2"/>
-  <!-- Light petal spots -->
-  <circle cx="28" cy="26" r="3" fill="#fff" opacity="0.2"/>
-  <circle cx="66" cy="22" r="2.5" fill="#fff" opacity="0.18"/>
-  <circle cx="44" cy="12" r="2" fill="#fff" opacity="0.22"/>
-  <circle cx="18" cy="48" r="2.5" fill="#FCE4EC" opacity="0.2"/>
-  <circle cx="82" cy="44" r="2" fill="#FCE4EC" opacity="0.18"/>
-  <!-- Peaches hanging below canopy -->
-  <circle cx="18" cy="72" r="6.5" fill="url(#fG)"/>
-  <circle cx="16" cy="70" r="2" fill="#FFCCBC" opacity="0.15"/>
-  <circle cx="82" cy="68" r="6" fill="url(#fG)"/>
-  <circle cx="80" cy="66" r="2" fill="#FFCCBC" opacity="0.15"/>
-  <circle cx="50" cy="76" r="5.5" fill="url(#fG)"/>
-  <circle cx="48" cy="74" r="1.8" fill="#FFCCBC" opacity="0.12"/>
+  <!-- Trunk -->
+  <path d="M44 112 Q44 90 46 66 Q48 64 52 64 Q54 64 55 66 Q56 90 56 112Z" fill="url(#tG)"/>
+  <!-- Branches -->
+  <path d="M44 82 Q24 72 12 80" stroke="#6D4C41" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M56 76 Q76 64 88 72" stroke="#6D4C41" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+  <path d="M44 70 Q36 62 30 66" stroke="#6D4C41" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- GREEN leaf canopy (not all pink!) -->
+  <path d="M50 6 Q14 6 2 28 Q-4 46 14 54 Q6 62 18 68 Q30 76 44 72 Q36 80 50 80 Q64 80 56 72 Q70 76 82 68 Q94 62 86 54 Q104 46 98 28 Q86 6 50 6Z" fill="url(#cG)"/>
+  <path d="M50 8 Q22 10 10 28 Q4 44 18 52 Q38 60 50 56 Q50 30 50 8Z" fill="#388E3C" opacity="0.35"/>
+  <!-- Pink blossom clusters scattered IN the canopy -->
+  <circle cx="22" cy="28" r="5" fill="#F48FB1" opacity="0.6"/>
+  <circle cx="38" cy="18" r="4.5" fill="#F8BBD0" opacity="0.5"/>
+  <circle cx="60" cy="16" r="5" fill="#F48FB1" opacity="0.55"/>
+  <circle cx="76" cy="28" r="4.5" fill="#F8BBD0" opacity="0.5"/>
+  <circle cx="30" cy="44" r="4" fill="#F48FB1" opacity="0.5"/>
+  <circle cx="50" cy="36" r="4.5" fill="#F8BBD0" opacity="0.45"/>
+  <circle cx="68" cy="40" r="4" fill="#F48FB1" opacity="0.5"/>
+  <circle cx="16" cy="52" r="3.5" fill="#F8BBD0" opacity="0.4"/>
+  <circle cx="84" cy="48" r="3.5" fill="#F48FB1" opacity="0.4"/>
+  <!-- Peaches — with cleft line, hanging below branches -->
+  <path d="M16 72 Q10 68 12 62 Q16 58 20 62 Q24 66 22 72 Q20 74 16 72Z" fill="url(#fG)"/>
+  <path d="M16 72 Q18 68 18 62" stroke="#BF360C" stroke-width="0.6" fill="none" opacity="0.3"/>
+  <path d="M82 66 Q76 62 78 56 Q82 52 86 56 Q90 60 88 66 Q86 68 82 66Z" fill="url(#fG)"/>
+  <path d="M82 66 Q84 62 84 56" stroke="#BF360C" stroke-width="0.6" fill="none" opacity="0.3"/>
+  <path d="M48 74 Q44 70 46 64 Q50 60 54 64 Q58 68 56 74 Q52 76 48 74Z" fill="url(#fG)"/>
+  <path d="M52 74 Q52 70 52 64" stroke="#BF360C" stroke-width="0.6" fill="none" opacity="0.3"/>
+  <!-- Highlights -->
+  <circle cx="32" cy="22" r="2.5" fill="#E8F5E9" opacity="0.18"/>
+  <circle cx="66" cy="20" r="2" fill="#E8F5E9" opacity="0.15"/>
 </svg>

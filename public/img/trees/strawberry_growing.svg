@@ -7,13 +7,18 @@
     </linearGradient>
     <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
   </defs>
-  <ellipse cx="50" cy="112" rx="20" ry="6" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
-  <path d="M50 108 Q49 96 48 82" stroke="url(#sG)" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <path d="M48 82 Q38 74 32 78 Q36 82 48 82Z" fill="#388E3C"/>
-  <path d="M48 82 Q54 74 60 76 Q56 80 48 82Z" fill="#43A047"/>
-  <path d="M48 80 Q36 74 34 60 Q34 50 48 46 Q62 50 62 60 Q60 74 48 80Z" fill="#E53935"/>
-  <path d="M48 80 Q40 76 38 64 Q38 54 48 50 Q48 65 48 80Z" fill="#EF5350" opacity="0.3"/>
-  <ellipse cx="44" cy="58" rx="1.5" ry="1" fill="#FFF9C4" opacity="0.5"/>
-  <ellipse cx="52" cy="62" rx="1.5" ry="1" fill="#FFF9C4" opacity="0.5"/>
-  <ellipse cx="48" cy="70" rx="1.5" ry="1" fill="#FFF9C4" opacity="0.45"/>
+  <ellipse cx="50" cy="112" rx="22" ry="6" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
+  <path d="M50 108 Q44 102 38 96" stroke="url(#sG)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M50 108 Q56 102 62 96" stroke="#2E7D32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M38 96 Q28 88 22 90 Q26 96 38 96Z" fill="#388E3C"/>
+  <path d="M62 96 Q72 88 78 90 Q74 96 62 96Z" fill="#43A047"/>
+  <path d="M50 82 Q40 76 36 80 Q38 84 50 82Z" fill="#558B2F"/>
+  <!-- Heart-shaped strawberry -->
+  <path d="M50 64 Q42 58 38 64 Q34 72 38 78 Q44 84 50 88 Q56 84 62 78 Q66 72 62 64 Q58 58 50 64Z" fill="#E53935"/>
+  <path d="M50 64 Q44 60 40 66 Q38 72 42 78 Q50 84 50 64Z" fill="#EF5350" opacity="0.3"/>
+  <path d="M50 64 Q46 58 42 62 Q44 64 50 64Z" fill="#2E7D32"/>
+  <path d="M50 64 Q54 58 58 62 Q56 64 50 64Z" fill="#388E3C"/>
+  <circle cx="46" cy="70" r="0.8" fill="#FFF9C4" opacity="0.5"/>
+  <circle cx="54" cy="72" r="0.8" fill="#FFF9C4" opacity="0.5"/>
+  <circle cx="50" cy="78" r="0.8" fill="#FFF9C4" opacity="0.45"/>
 </svg>

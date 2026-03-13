@@ -7,10 +7,16 @@
     </linearGradient>
     <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
   </defs>
-  <ellipse cx="50" cy="112" rx="20" ry="6" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
-  <path d="M50 108 Q44 96 38 88" stroke="url(#sG)" stroke-width="4" fill="none" stroke-linecap="round"/>
-  <path d="M42 92 Q34 84 28 86 Q32 92 42 92Z" fill="#558B2F"/>
-  <path d="M50 100 Q28 100 22 82 Q20 68 34 60 Q44 54 50 52 Q56 54 66 60 Q80 68 78 82 Q72 100 50 100Z" fill="#FF9800"/>
-  <path d="M50 100 Q34 100 28 82 Q26 70 38 62 Q50 58 50 100Z" fill="#FB8C00" opacity="0.3"/>
-  <path d="M50 52 Q50 46 52 42" stroke="#5D4037" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="50" cy="112" rx="22" ry="7" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
+  <!-- Ground vine -->
+  <path d="M24 106 Q38 100 50 98 Q62 100 76 106" stroke="url(#sG)" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M50 98 Q48 94 46 88" stroke="#388E3C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M30 104 Q20 96 18 100 Q22 106 30 104Z" fill="#558B2F"/>
+  <path d="M70 104 Q78 96 80 100 Q76 106 70 104Z" fill="#689F38"/>
+  <!-- Smaller oblate pumpkin -->
+  <path d="M50 94 Q30 94 26 80 Q24 70 34 64 Q44 60 50 58 Q56 60 66 64 Q76 70 74 80 Q70 94 50 94Z" fill="#FF9800"/>
+  <path d="M50 58 Q50 74 50 94" stroke="#BF360C" stroke-width="2" fill="none" opacity="0.2"/>
+  <path d="M38 62 Q36 74 36 90" stroke="#BF360C" stroke-width="1.5" fill="none" opacity="0.15"/>
+  <path d="M62 62 Q64 74 64 90" stroke="#BF360C" stroke-width="1.5" fill="none" opacity="0.15"/>
+  <path d="M48 60 Q46 52 48 46" stroke="#5D4037" stroke-width="3" fill="none" stroke-linecap="round"/>
 </svg>

@@ -12,30 +12,32 @@
     </linearGradient>
     <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
   </defs>
-  <ellipse cx="50" cy="114" rx="30" ry="8" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
-  <!-- Vine -->
-  <path d="M50 112 Q38 96 28 86 Q22 82 18 76" stroke="url(#sG)" stroke-width="5" fill="none" stroke-linecap="round"/>
-  <path d="M28 86 Q40 80 54 74 Q62 70 68 66" stroke="#388E3C" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-  <!-- Leaves — asymmetric -->
-  <path d="M24 82 Q10 72 8 80 Q14 88 24 82Z" fill="#558B2F"/>
-  <path d="M38 78 Q46 66 56 70 Q48 78 38 78Z" fill="#689F38"/>
-  <path d="M58 72 Q68 60 78 64 Q70 72 58 72Z" fill="#558B2F"/>
-  <path d="M66 66 Q74 56 82 60 Q74 68 66 66Z" fill="#689F38"/>
-  <!-- Pumpkin — wider, flatter, with pronounced ribs -->
-  <path d="M50 104 Q18 104 10 78 Q6 58 22 46 Q36 38 50 36 Q64 38 78 46 Q94 58 90 78 Q82 104 50 104Z" fill="url(#pG)"/>
-  <!-- Deep ribs — prominent -->
-  <path d="M50 36 Q48 60 50 104" stroke="#BF360C" stroke-width="2.5" fill="none" opacity="0.2"/>
-  <path d="M30 42 Q26 62 28 100" stroke="#BF360C" stroke-width="2" fill="none" opacity="0.18"/>
-  <path d="M70 42 Q74 62 72 100" stroke="#BF360C" stroke-width="2" fill="none" opacity="0.18"/>
-  <path d="M18 56 Q14 72 16 98" stroke="#BF360C" stroke-width="1.5" fill="none" opacity="0.12"/>
-  <path d="M82 56 Q86 72 84 98" stroke="#BF360C" stroke-width="1.5" fill="none" opacity="0.12"/>
-  <!-- Depth — left/right shading -->
-  <path d="M50 104 Q24 104 16 78 Q12 62 26 48 Q50 44 50 104Z" fill="#FB8C00" opacity="0.3"/>
-  <path d="M50 104 Q76 104 84 78 Q88 62 74 48 Q50 44 50 104Z" fill="#BF360C" opacity="0.12"/>
-  <!-- Stem — chunky -->
-  <path d="M48 38 Q46 28 48 22" stroke="#5D4037" stroke-width="4" fill="none" stroke-linecap="round"/>
-  <path d="M48 24 Q54 18 62 16" stroke="#689F38" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <path d="M50 26 Q44 20 40 18" stroke="#558B2F" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-  <!-- Highlight — soft -->
-  <ellipse cx="34" cy="58" rx="5" ry="12" fill="#FFE082" opacity="0.08" transform="rotate(-8 34 58)"/>
+  <ellipse cx="50" cy="114" rx="32" ry="9" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
+  <!-- Ground vine — sprawling -->
+  <path d="M10 108 Q30 102 50 100 Q70 102 90 108" stroke="url(#sG)" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M50 100 Q48 96 46 90" stroke="#388E3C" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Big lobed leaves on ground -->
+  <path d="M18 106 Q6 94 4 100 Q8 108 18 106Z" fill="#558B2F"/>
+  <path d="M80 106 Q88 94 92 100 Q88 108 80 106Z" fill="#689F38"/>
+  <path d="M36 98 Q24 88 20 94 Q26 100 36 98Z" fill="#558B2F"/>
+  <path d="M64 98 Q76 88 80 94 Q74 100 64 98Z" fill="#689F38"/>
+  <!-- Pumpkin body — OBLATE (wider than tall), with rib segments -->
+  <!-- Individual rib sections to create the pumpkin shape -->
+  <path d="M50 90 Q26 90 20 74 Q18 62 28 56 Q38 52 50 50 Q50 66 50 90Z" fill="url(#pG)"/>
+  <path d="M50 90 Q74 90 80 74 Q82 62 72 56 Q62 52 50 50 Q50 66 50 90Z" fill="#FB8C00"/>
+  <path d="M50 90 Q34 90 28 76 Q26 64 34 58 Q50 54 50 90Z" fill="#F57C00" opacity="0.4"/>
+  <path d="M50 90 Q66 90 72 76 Q74 64 66 58 Q50 54 50 90Z" fill="#E65100" opacity="0.15"/>
+  <!-- Rib grooves — prominent dark lines -->
+  <path d="M50 50 Q50 68 50 90" stroke="#BF360C" stroke-width="2.5" fill="none" opacity="0.22"/>
+  <path d="M36 54 Q32 68 30 86" stroke="#BF360C" stroke-width="2" fill="none" opacity="0.18"/>
+  <path d="M64 54 Q68 68 70 86" stroke="#BF360C" stroke-width="2" fill="none" opacity="0.18"/>
+  <path d="M24 62 Q22 72 22 84" stroke="#BF360C" stroke-width="1.5" fill="none" opacity="0.12"/>
+  <path d="M76 62 Q78 72 78 84" stroke="#BF360C" stroke-width="1.5" fill="none" opacity="0.12"/>
+  <!-- Stem — chunky, centered -->
+  <path d="M48 52 Q46 42 48 36" stroke="#5D4037" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- Tendril curls -->
+  <path d="M48 38 Q42 30 38 28 Q36 32 40 36" stroke="#689F38" stroke-width="1.5" fill="none"/>
+  <path d="M50 40 Q56 32 60 30 Q62 34 58 38" stroke="#558B2F" stroke-width="1.5" fill="none"/>
+  <!-- Highlight -->
+  <ellipse cx="36" cy="64" rx="4" ry="8" fill="#FFE082" opacity="0.08" transform="rotate(-5 36 64)"/>
 </svg>
