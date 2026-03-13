@@ -12,28 +12,30 @@
       <stop offset="0%" stop-color="#43A047"/>
       <stop offset="100%" stop-color="#388E3C"/>
     </linearGradient>
-    <linearGradient id="trG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#5D4037"/>
-      <stop offset="50%" stop-color="#8D6E63"/>
-      <stop offset="100%" stop-color="#5D4037"/>
+    <linearGradient id="tG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#4E342E"/>
+      <stop offset="40%" stop-color="#795548"/>
+      <stop offset="60%" stop-color="#795548"/>
+      <stop offset="100%" stop-color="#4E342E"/>
     </linearGradient>
-    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
   </defs>
-  <ellipse cx="50" cy="114" rx="28" ry="8" fill="#3E2723" opacity="0.18" filter="url(#sh)"/>
+  <ellipse cx="50" cy="114" rx="30" ry="9" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
   <!-- Trunk -->
-  <rect x="45" y="84" width="10" height="28" rx="3" fill="url(#trG)"/>
-  <rect x="47" y="86" width="3" height="24" rx="1.5" fill="#BCAAA4" opacity="0.12"/>
-  <!-- Tiers -->
-  <polygon points="50,6 18,52 82,52" fill="url(#t1)"/>
-  <polygon points="50,24 22,68 78,68" fill="url(#t2)"/>
-  <polygon points="50,40 26,86 74,86" fill="url(#t3)"/>
-  <!-- Snow / depth highlights -->
-  <polygon points="50,6 44,18 56,18" fill="#1B5E20" opacity="0.35"/>
-  <path d="M30 45 Q40 42 50 46" stroke="#C8E6C9" stroke-width="0.8" fill="none" opacity="0.3"/>
-  <path d="M35 62 Q48 58 62 63" stroke="#C8E6C9" stroke-width="0.8" fill="none" opacity="0.25"/>
-  <path d="M38 78 Q50 74 60 79" stroke="#C8E6C9" stroke-width="0.8" fill="none" opacity="0.2"/>
+  <path d="M44 112 Q44 98 46 86 Q48 84 52 84 Q54 84 55 86 Q56 98 56 112Z" fill="url(#tG)"/>
+  <path d="M47 110 Q47 100 48 88 Q50 100 50 110Z" fill="#A1887F" opacity="0.1"/>
+  <!-- Tiers — wider and more solid -->
+  <path d="M50 4 L12 48 L88 48 Z" fill="url(#t1)"/>
+  <path d="M50 22 L10 66 L90 66 Z" fill="url(#t2)"/>
+  <path d="M50 40 L8 86 L92 86 Z" fill="url(#t3)"/>
+  <!-- Snow/light streaks -->
+  <path d="M26 42 Q38 38 50 42 Q62 38 74 42" stroke="#E8F5E9" stroke-width="1" fill="none" opacity="0.2"/>
+  <path d="M20 60 Q40 55 60 60 Q72 56 82 60" stroke="#E8F5E9" stroke-width="1" fill="none" opacity="0.18"/>
+  <path d="M18 78 Q40 72 62 78 Q76 74 84 78" stroke="#E8F5E9" stroke-width="1" fill="none" opacity="0.15"/>
+  <!-- Depth shadow -->
+  <path d="M50 4 L45 14 L55 14 Z" fill="#1B5E20" opacity="0.3"/>
   <!-- Light spots -->
-  <circle cx="38" cy="48" r="2.5" fill="#C8E6C9" opacity="0.3"/>
-  <circle cx="56" cy="62" r="2.5" fill="#C8E6C9" opacity="0.3"/>
-  <circle cx="44" cy="76" r="2" fill="#C8E6C9" opacity="0.25"/>
+  <circle cx="36" cy="42" r="3" fill="#C8E6C9" opacity="0.25"/>
+  <circle cx="60" cy="58" r="3" fill="#C8E6C9" opacity="0.22"/>
+  <circle cx="42" cy="74" r="2.5" fill="#C8E6C9" opacity="0.2"/>
 </svg>

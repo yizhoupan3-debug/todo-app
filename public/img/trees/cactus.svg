@@ -1,37 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <linearGradient id="cG" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#66BB6A"/>
-      <stop offset="50%" stop-color="#4CAF50"/>
-      <stop offset="100%" stop-color="#2E7D32"/>
+    <linearGradient id="cG" x1="0.3" y1="0" x2="0.7" y2="1">
+      <stop offset="0%" stop-color="#81C784"/>
+      <stop offset="50%" stop-color="#43A047"/>
+      <stop offset="100%" stop-color="#1B5E20"/>
     </linearGradient>
-    <radialGradient id="flG" cx="40%" cy="30%">
+    <radialGradient id="fG" cx="50%" cy="40%">
       <stop offset="0%" stop-color="#FFF9C4"/>
-      <stop offset="100%" stop-color="#FDD835"/>
+      <stop offset="100%" stop-color="#F9A825"/>
     </radialGradient>
-    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
   </defs>
-  <ellipse cx="50" cy="114" rx="22" ry="7" fill="#3E2723" opacity="0.18" filter="url(#sh)"/>
-  <!-- Body -->
-  <path d="M48 110 Q44 94 40 74 Q36 52 50 26 Q64 52 60 74 Q56 94 52 110Z" fill="url(#cG)"/>
-  <path d="M48 110 Q46 98 44 84 Q40 62 50 36 Q50 62 50 84 Q50 98 52 110Z" fill="#388E3C" opacity="0.5"/>
-  <!-- Light ridge -->
-  <path d="M50 110 Q50 80 50 30" stroke="#81C784" stroke-width="1" fill="none" opacity="0.2"/>
-  <!-- Ridges / spines -->
-  <path d="M50 38 Q40 46 36 58" stroke="#2E7D32" stroke-width="1.5" fill="none" opacity="0.4"/>
-  <path d="M50 48 Q58 54 64 66" stroke="#2E7D32" stroke-width="1.5" fill="none" opacity="0.4"/>
-  <path d="M50 58 Q42 64 38 76" stroke="#2E7D32" stroke-width="1.5" fill="none" opacity="0.35"/>
-  <path d="M50 68 Q56 72 60 82" stroke="#2E7D32" stroke-width="1.5" fill="none" opacity="0.35"/>
+  <ellipse cx="50" cy="114" rx="24" ry="7" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
+  <!-- Body — big thick cactus -->
+  <path d="M38 112 Q28 92 24 68 Q20 40 50 14 Q80 40 76 68 Q72 92 62 112Z" fill="url(#cG)"/>
+  <!-- Depth -->
+  <path d="M42 110 Q34 92 30 68 Q28 46 50 20 Q50 50 50 80 Q50 96 50 112Z" fill="#2E7D32" opacity="0.35"/>
+  <!-- Center ridge highlight -->
+  <path d="M50 112 Q50 80 50 18" stroke="#A5D6A7" stroke-width="1.5" fill="none" opacity="0.15"/>
+  <!-- Ridges -->
+  <path d="M50 28 Q36 42 30 62" stroke="#1B5E20" stroke-width="2" fill="none" opacity="0.3"/>
+  <path d="M50 40 Q62 52 70 70" stroke="#1B5E20" stroke-width="2" fill="none" opacity="0.3"/>
+  <path d="M50 52 Q38 62 34 78" stroke="#1B5E20" stroke-width="1.5" fill="none" opacity="0.25"/>
+  <path d="M50 64 Q60 72 66 86" stroke="#1B5E20" stroke-width="1.5" fill="none" opacity="0.25"/>
   <!-- Flowers -->
-  <circle cx="36" cy="62" r="3" fill="url(#flG)"/>
-  <path d="M34 61 L36 57 L38 61 L35 63Z" fill="#FDD835"/>
-  <circle cx="62" cy="70" r="3" fill="url(#flG)"/>
-  <path d="M60 69 L62 65 L64 69 L61 71Z" fill="#FDD835"/>
-  <circle cx="44" cy="84" r="2.5" fill="url(#flG)"/>
-  <path d="M42 83 L44 79 L46 83 L43 85Z" fill="#FDD835"/>
+  <circle cx="32" cy="56" r="4.5" fill="url(#fG)"/>
+  <path d="M28 54 L32 48 L36 54 L30 57Z" fill="#FDD835" opacity="0.8"/>
+  <circle cx="68" cy="66" r="4" fill="url(#fG)"/>
+  <path d="M64 64 L68 58 L72 64 L66 67Z" fill="#FDD835" opacity="0.8"/>
+  <circle cx="40" cy="84" r="3.5" fill="url(#fG)"/>
+  <path d="M37 82 L40 77 L43 82 L38 85Z" fill="#FDD835" opacity="0.7"/>
   <!-- Spines -->
-  <line x1="38" y1="50" x2="34" y2="47" stroke="#E8F5E9" stroke-width="0.7" opacity="0.5"/>
-  <line x1="60" y1="56" x2="64" y2="53" stroke="#E8F5E9" stroke-width="0.7" opacity="0.5"/>
-  <line x1="40" y1="70" x2="36" y2="68" stroke="#E8F5E9" stroke-width="0.7" opacity="0.4"/>
-  <line x1="58" y1="80" x2="62" y2="78" stroke="#E8F5E9" stroke-width="0.7" opacity="0.4"/>
+  <line x1="34" y1="44" x2="28" y2="40" stroke="#E8F5E9" stroke-width="0.8" opacity="0.4"/>
+  <line x1="64" y1="50" x2="70" y2="46" stroke="#E8F5E9" stroke-width="0.8" opacity="0.4"/>
+  <line x1="36" y1="68" x2="30" y2="66" stroke="#E8F5E9" stroke-width="0.7" opacity="0.35"/>
+  <line x1="62" y1="80" x2="68" y2="78" stroke="#E8F5E9" stroke-width="0.7" opacity="0.3"/>
 </svg>

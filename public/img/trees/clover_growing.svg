@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <linearGradient id="stG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#2E7D32"/>
-      <stop offset="50%" stop-color="#4CAF50"/>
-      <stop offset="100%" stop-color="#2E7D32"/>
+    <linearGradient id="sG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1B5E20"/>
+      <stop offset="50%" stop-color="#43A047"/>
+      <stop offset="100%" stop-color="#1B5E20"/>
     </linearGradient>
-    <filter id="sh"><feGaussianBlur stdDeviation="2"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
   </defs>
-  <ellipse cx="50" cy="112" rx="18" ry="6" fill="#3E2723" opacity="0.15" filter="url(#sh)"/>
-  <path d="M50 108 Q50 96 50 80" stroke="url(#stG)" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <g transform="translate(50, 65)">
-    <ellipse cx="-9" cy="5" rx="10" ry="8" fill="#4CAF50" transform="rotate(-8 -9 5)"/>
-    <ellipse cx="9" cy="5" rx="10" ry="8" fill="#66BB6A" transform="rotate(8 9 5)"/>
-    <ellipse cx="-7" cy="-5" rx="9" ry="7" fill="#81C784" transform="rotate(-4 -7 -5)"/>
-    <ellipse cx="7" cy="-5" rx="9" ry="7" fill="#A5D6A7" transform="rotate(4 7 -5)"/>
-    <path d="M-3 4 Q0 -4 3 4 Q0 0 -3 4Z" fill="#C8E6C9" opacity="0.3"/>
+  <ellipse cx="50" cy="112" rx="20" ry="6" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
+  <path d="M50 108 Q50 96 50 80" stroke="url(#sG)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <g transform="translate(50,62)">
+    <path d="M0 6 Q-14 6 -18 -4 Q-14 -12 0 -10 Q0 -2 0 6Z" fill="#388E3C"/>
+    <path d="M0 6 Q14 6 18 -4 Q14 -12 0 -10 Q0 -2 0 6Z" fill="#4CAF50"/>
+    <path d="M0 -10 Q-14 -12 -16 -20 Q-12 -28 0 -26 Q0 -18 0 -10Z" fill="#66BB6A"/>
+    <path d="M0 -10 Q14 -12 16 -20 Q12 -28 0 -26 Q0 -18 0 -10Z" fill="#81C784"/>
+    <path d="M0 4 Q0 -6 0 -24" stroke="#1B5E20" stroke-width="0.7" fill="none" opacity="0.25"/>
   </g>
 </svg>

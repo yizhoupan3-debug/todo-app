@@ -1,34 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <radialGradient id="capG" cx="42%" cy="35%">
-      <stop offset="0%" stop-color="#EF5350"/>
-      <stop offset="50%" stop-color="#E53935"/>
+    <radialGradient id="capG" cx="40%" cy="30%">
+      <stop offset="0%" stop-color="#EF9A9A"/>
+      <stop offset="30%" stop-color="#E53935"/>
       <stop offset="100%" stop-color="#B71C1C"/>
     </radialGradient>
-    <linearGradient id="stmG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#D7CCC8"/>
-      <stop offset="50%" stop-color="#EFEBE9"/>
-      <stop offset="100%" stop-color="#D7CCC8"/>
+    <linearGradient id="stG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#BCAAA4"/>
+      <stop offset="40%" stop-color="#EFEBE9"/>
+      <stop offset="60%" stop-color="#EFEBE9"/>
+      <stop offset="100%" stop-color="#BCAAA4"/>
     </linearGradient>
-    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
   </defs>
-  <ellipse cx="50" cy="114" rx="24" ry="7" fill="#3E2723" opacity="0.18" filter="url(#sh)"/>
-  <!-- Stem -->
-  <path d="M46 112 Q44 96 44 80 Q44 74 50 73 Q56 74 56 80 Q56 96 54 112Z" fill="url(#stmG)"/>
-  <path d="M48 112 Q47 97 47 82 Q47 76 50 75 Q50 82 50 97 Q50 104 52 112Z" fill="#BCAAA4" opacity="0.25"/>
-  <!-- Cap -->
-  <ellipse cx="50" cy="66" rx="28" ry="17" fill="url(#capG)"/>
-  <ellipse cx="50" cy="66" rx="23" ry="13" fill="#EF5350" opacity="0.5"/>
-  <!-- Spots -->
-  <circle cx="36" cy="62" r="4.5" fill="#FFEBEE" opacity="0.85"/>
-  <circle cx="37" cy="61" r="2" fill="#fff" opacity="0.25"/>
-  <circle cx="55" cy="56" r="4" fill="#FFEBEE" opacity="0.85"/>
-  <circle cx="56" cy="55" r="1.8" fill="#fff" opacity="0.2"/>
-  <circle cx="64" cy="64" r="3.5" fill="#FFEBEE" opacity="0.8"/>
-  <circle cx="43" cy="72" r="3" fill="#FFEBEE" opacity="0.75"/>
-  <circle cx="59" cy="74" r="2.5" fill="#FFEBEE" opacity="0.7"/>
+  <ellipse cx="50" cy="114" rx="28" ry="8" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
+  <!-- Stem — fat mushroom stem -->
+  <path d="M38 112 Q36 98 38 82 Q40 76 50 74 Q60 76 62 82 Q64 98 62 112Z" fill="url(#stG)"/>
+  <path d="M42 110 Q41 98 42 84 Q44 78 50 76 Q50 86 48 98 Q48 106 50 112Z" fill="#D7CCC8" opacity="0.2"/>
+  <!-- Cap — massive dome -->
+  <path d="M50 68 Q12 68 8 48 Q6 32 26 22 Q38 14 50 12 Q62 14 74 22 Q94 32 92 48 Q88 68 50 68Z" fill="url(#capG)"/>
   <!-- Cap underside -->
-  <path d="M26 74 Q50 84 74 74" stroke="#C62828" stroke-width="1.5" fill="none" opacity="0.3"/>
-  <!-- Highlight -->
-  <ellipse cx="40" cy="58" rx="6" ry="4" fill="#FFCDD2" opacity="0.15" transform="rotate(-10 40 58)"/>
+  <path d="M16 62 Q50 78 84 62" stroke="#B71C1C" stroke-width="2" fill="none" opacity="0.2"/>
+  <!-- Depth -->
+  <path d="M50 68 Q20 68 14 48 Q12 34 30 24 Q50 20 50 68Z" fill="#EF5350" opacity="0.35"/>
+  <path d="M50 68 Q80 68 86 48 Q88 34 70 24 Q50 20 50 68Z" fill="#C62828" opacity="0.15"/>
+  <!-- Spots -->
+  <circle cx="30" cy="36" r="6" fill="#FFEBEE" opacity="0.85"/>
+  <circle cx="28" cy="34" r="2.5" fill="#fff" opacity="0.2"/>
+  <circle cx="58" cy="28" r="5.5" fill="#FFEBEE" opacity="0.85"/>
+  <circle cx="56" cy="26" r="2.2" fill="#fff" opacity="0.18"/>
+  <circle cx="72" cy="42" r="5" fill="#FFEBEE" opacity="0.8"/>
+  <circle cx="40" cy="54" r="4.5" fill="#FFEBEE" opacity="0.75"/>
+  <circle cx="64" cy="56" r="4" fill="#FFEBEE" opacity="0.7"/>
+  <!-- Cap highlight -->
+  <path d="M34 22 Q44 16 56 16" fill="#FFCDD2" opacity="0.12"/>
 </svg>

@@ -1,21 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <radialGradient id="capG" cx="42%" cy="35%">
-      <stop offset="0%" stop-color="#EF5350"/>
+    <radialGradient id="capG" cx="40%" cy="30%">
+      <stop offset="0%" stop-color="#EF9A9A"/>
       <stop offset="100%" stop-color="#C62828"/>
     </radialGradient>
-    <linearGradient id="stmG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#D7CCC8"/>
+    <linearGradient id="stG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#BCAAA4"/>
       <stop offset="50%" stop-color="#EFEBE9"/>
-      <stop offset="100%" stop-color="#D7CCC8"/>
+      <stop offset="100%" stop-color="#BCAAA4"/>
     </linearGradient>
-    <filter id="sh"><feGaussianBlur stdDeviation="2"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
   </defs>
-  <ellipse cx="50" cy="112" rx="18" ry="5" fill="#3E2723" opacity="0.15" filter="url(#sh)"/>
-  <path d="M47 108 Q46 98 47 88 Q48 85 50 84 Q52 85 53 88 Q54 98 53 108Z" fill="url(#stmG)"/>
-  <ellipse cx="50" cy="80" rx="18" ry="11" fill="url(#capG)"/>
-  <ellipse cx="50" cy="80" rx="14" ry="8" fill="#EF5350" opacity="0.4"/>
-  <circle cx="43" cy="78" r="3" fill="#FFEBEE" opacity="0.8"/>
-  <circle cx="57" cy="76" r="2.5" fill="#FFEBEE" opacity="0.75"/>
-  <circle cx="50" cy="83" r="2" fill="#FFEBEE" opacity="0.7"/>
+  <ellipse cx="50" cy="112" rx="18" ry="6" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
+  <path d="M42 110 Q40 100 42 90 Q44 86 50 84 Q56 86 58 90 Q60 100 58 110Z" fill="url(#stG)"/>
+  <path d="M50 80 Q24 80 20 64 Q18 52 34 44 Q44 38 50 36 Q56 38 66 44 Q82 52 80 64 Q76 80 50 80Z" fill="url(#capG)"/>
+  <path d="M50 80 Q30 80 26 64 Q24 54 38 46 Q50 42 50 80Z" fill="#EF5350" opacity="0.3"/>
+  <circle cx="36" cy="54" r="4" fill="#FFEBEE" opacity="0.8"/>
+  <circle cx="56" cy="48" r="3.5" fill="#FFEBEE" opacity="0.75"/>
+  <circle cx="64" cy="60" r="3" fill="#FFEBEE" opacity="0.7"/>
+  <circle cx="44" cy="68" r="3" fill="#FFEBEE" opacity="0.65"/>
 </svg>

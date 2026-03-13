@@ -1,23 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <radialGradient id="blG" cx="40%" cy="35%">
+    <radialGradient id="bG" cx="40%" cy="30%">
       <stop offset="0%" stop-color="#FCE4EC"/>
-      <stop offset="100%" stop-color="#F48FB1"/>
+      <stop offset="100%" stop-color="#E91E63"/>
     </radialGradient>
     <linearGradient id="tG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#6D4C41"/>
+      <stop offset="0%" stop-color="#5D4037"/>
       <stop offset="50%" stop-color="#A1887F"/>
-      <stop offset="100%" stop-color="#6D4C41"/>
+      <stop offset="100%" stop-color="#5D4037"/>
     </linearGradient>
-    <filter id="sh"><feGaussianBlur stdDeviation="2"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
   </defs>
-  <ellipse cx="50" cy="112" rx="24" ry="7" fill="#3E2723" opacity="0.15" filter="url(#sh)"/>
-  <rect x="46" y="74" width="8" height="36" rx="3" fill="url(#tG)"/>
-  <path d="M46 90 Q36 86 33 92" stroke="#795548" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-  <circle cx="50" cy="56" r="20" fill="url(#blG)"/>
-  <circle cx="37" cy="62" r="11" fill="#F48FB1"/>
-  <circle cx="63" cy="60" r="11" fill="#F48FB1"/>
-  <circle cx="50" cy="43" r="9" fill="#FCE4EC"/>
-  <circle cx="42" cy="52" r="2" fill="#fff" opacity="0.35"/>
-  <circle cx="56" cy="48" r="1.5" fill="#fff" opacity="0.25"/>
+  <ellipse cx="50" cy="112" rx="26" ry="7" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
+  <path d="M46 110 Q46 92 47 76 Q49 74 51 74 Q53 74 54 76 Q55 92 54 110Z" fill="url(#tG)"/>
+  <path d="M46 92 Q34 86 28 90" stroke="#795548" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M50 36 Q24 36 18 50 Q14 60 28 66 Q44 72 50 70 Q56 72 72 66 Q86 60 82 50 Q76 36 50 36Z" fill="url(#bG)"/>
+  <path d="M50 38 Q32 40 24 50 Q20 58 32 64 Q50 68 50 38Z" fill="#F48FB1" opacity="0.4"/>
+  <circle cx="34" cy="48" r="2.5" fill="#fff" opacity="0.25"/>
+  <circle cx="62" cy="44" r="2" fill="#fff" opacity="0.2"/>
 </svg>
