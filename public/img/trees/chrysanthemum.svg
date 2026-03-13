@@ -1,49 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <linearGradient id="stG" x1="0" y1="0" x2="1" y2="0">
+    <linearGradient id="sG" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#33691E"/>
       <stop offset="50%" stop-color="#689F38"/>
       <stop offset="100%" stop-color="#33691E"/>
     </linearGradient>
-    <radialGradient id="pG" cx="42%" cy="30%">
-      <stop offset="0%" stop-color="#FFE082"/>
-      <stop offset="50%" stop-color="#FFC107"/>
-      <stop offset="100%" stop-color="#FF8F00"/>
-    </radialGradient>
-    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
   </defs>
-  <ellipse cx="50" cy="114" rx="24" ry="7" fill="#3E2723" opacity="0.18" filter="url(#sh)"/>
-  <path d="M50 112 Q49 86 48 56" stroke="url(#stG)" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-  <ellipse cx="36" cy="88" rx="10" ry="5" fill="#558B2F" transform="rotate(-30 36 88)"/>
-  <ellipse cx="37" cy="87" rx="7" ry="3" fill="#7CB342" opacity="0.3" transform="rotate(-30 37 87)"/>
-  <ellipse cx="62" cy="80" rx="10" ry="4.5" fill="#689F38" transform="rotate(25 62 80)"/>
-  <!-- Chrysanthemum -->
-  <g transform="translate(48, 34)">
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="url(#pG)" transform="rotate(0 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="#FFD54F" transform="rotate(24 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="url(#pG)" transform="rotate(48 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="#FFD54F" transform="rotate(72 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="#FFCA28" transform="rotate(96 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="url(#pG)" transform="rotate(120 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="#FFD54F" transform="rotate(144 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="url(#pG)" transform="rotate(168 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="#FFCA28" transform="rotate(192 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="url(#pG)" transform="rotate(216 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="#FFD54F" transform="rotate(240 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="url(#pG)" transform="rotate(264 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="#FFCA28" transform="rotate(288 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="url(#pG)" transform="rotate(312 0 0)"/>
-    <ellipse cx="0" cy="-13" rx="2.8" ry="11" fill="#FFD54F" transform="rotate(336 0 0)"/>
-    <!-- Inner -->
-    <ellipse cx="0" cy="-8" rx="2.2" ry="7" fill="#FFB300" transform="rotate(12 0 0)"/>
-    <ellipse cx="0" cy="-8" rx="2.2" ry="7" fill="#FFB300" transform="rotate(60 0 0)"/>
-    <ellipse cx="0" cy="-8" rx="2.2" ry="7" fill="#FFB300" transform="rotate(108 0 0)"/>
-    <ellipse cx="0" cy="-8" rx="2.2" ry="7" fill="#FFB300" transform="rotate(156 0 0)"/>
-    <ellipse cx="0" cy="-8" rx="2.2" ry="7" fill="#FFB300" transform="rotate(204 0 0)"/>
-    <ellipse cx="0" cy="-8" rx="2.2" ry="7" fill="#FFB300" transform="rotate(252 0 0)"/>
-    <ellipse cx="0" cy="-8" rx="2.2" ry="7" fill="#FFB300" transform="rotate(300 0 0)"/>
-    <ellipse cx="0" cy="-8" rx="2.2" ry="7" fill="#FFB300" transform="rotate(348 0 0)"/>
-    <circle cx="0" cy="0" r="5" fill="#FF8F00"/>
-    <circle cx="-1" cy="-1" r="2" fill="#FFE082" opacity="0.3"/>
+  <ellipse cx="50" cy="114" rx="28" ry="8" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
+  <!-- Stem -->
+  <path d="M50 112 Q48 86 46 54" stroke="url(#sG)" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+  <!-- Big leaves -->
+  <path d="M46 92 Q24 78 10 86 Q20 96 46 92Z" fill="#558B2F"/>
+  <path d="M46 80 Q66 66 80 74 Q70 84 46 80Z" fill="#689F38"/>
+  <path d="M46 68 Q26 56 14 64 Q24 74 46 68Z" fill="#558B2F"/>
+  <!-- Chrysanthemum — dense layered petals using bezier -->
+  <g transform="translate(46 28)">
+    <!-- Outer ring -->
+    <path d="M0 0 Q-4 -16 -10 -12 Q-12 -6 -6 -2 Q-2 0 0 0Z" fill="#FFB300"/>
+    <path d="M0 0 Q4 -16 10 -12 Q12 -6 6 -2 Q2 0 0 0Z" fill="#FFC107"/>
+    <path d="M0 0 Q-12 -10 -14 -4 Q-12 2 -6 4 Q-2 2 0 0Z" fill="#FFCA28"/>
+    <path d="M0 0 Q12 -10 14 -4 Q12 2 6 4 Q2 2 0 0Z" fill="#FFB300"/>
+    <path d="M0 0 Q0 -18 4 -16 Q6 -8 2 -2Z" fill="#FFD54F"/>
+    <path d="M0 0 Q-8 -14 -14 -8 Q-12 -2 -6 2 Q-2 0 0 0Z" fill="#FFC107"/>
+    <path d="M0 0 Q8 -14 14 -8 Q12 -2 6 2 Q2 0 0 0Z" fill="#FFCA28"/>
+    <path d="M0 0 Q-6 -18 -2 -18 Q4 -16 2 -4Z" fill="#FFB300"/>
+    <path d="M0 0 Q-14 -14 -18 -6 Q-16 2 -8 4 Q-2 2 0 0Z" fill="#FFC107"/>
+    <path d="M0 0 Q14 -14 18 -6 Q16 2 8 4 Q2 2 0 0Z" fill="#FFD54F"/>
+    <!-- Inner ring -->
+    <path d="M0 -2 Q-4 -12 -6 -8 Q-6 -4 -2 -2Z" fill="#FF8F00"/>
+    <path d="M0 -2 Q4 -12 6 -8 Q6 -4 2 -2Z" fill="#FF8F00"/>
+    <path d="M0 -2 Q0 -14 2 -12 Q2 -6 0 -2Z" fill="#FFA000"/>
+    <path d="M0 -2 Q-6 -10 -8 -6 Q-6 -2 -2 0Z" fill="#FF8F00"/>
+    <path d="M0 -2 Q6 -10 8 -6 Q6 -2 2 0Z" fill="#FFA000"/>
+    <!-- Center -->
+    <circle cx="0" cy="0" r="4.5" fill="#E65100"/>
+    <circle cx="-1" cy="-1" r="1.5" fill="#FF6F00" opacity="0.3"/>
   </g>
 </svg>

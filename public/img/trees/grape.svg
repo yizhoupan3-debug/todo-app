@@ -1,55 +1,55 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
     <linearGradient id="vG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#4E342E"/>
+      <stop offset="0%" stop-color="#3E2723"/>
       <stop offset="50%" stop-color="#6D4C41"/>
-      <stop offset="100%" stop-color="#4E342E"/>
+      <stop offset="100%" stop-color="#3E2723"/>
     </linearGradient>
-    <radialGradient id="gG" cx="40%" cy="30%">
-      <stop offset="0%" stop-color="#CE93D8"/>
-      <stop offset="50%" stop-color="#9C27B0"/>
-      <stop offset="100%" stop-color="#6A1B9A"/>
+    <radialGradient id="gG" cx="38%" cy="28%">
+      <stop offset="0%" stop-color="#E1BEE7"/>
+      <stop offset="40%" stop-color="#9C27B0"/>
+      <stop offset="100%" stop-color="#4A148C"/>
     </radialGradient>
-    <radialGradient id="lfG" cx="40%" cy="30%">
-      <stop offset="0%" stop-color="#A5D6A7"/>
+    <radialGradient id="lfG" cx="35%" cy="25%">
+      <stop offset="0%" stop-color="#C8E6C9"/>
       <stop offset="100%" stop-color="#2E7D32"/>
     </radialGradient>
-    <filter id="sh"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="3"/></filter>
   </defs>
-  <ellipse cx="50" cy="114" rx="24" ry="7" fill="#3E2723" opacity="0.18" filter="url(#sh)"/>
-  <!-- Vine trunk -->
-  <path d="M50 112 Q44 90 40 64 Q38 48 42 32" stroke="url(#vG)" stroke-width="5.5" fill="none" stroke-linecap="round"/>
-  <path d="M42 44 Q50 36 58 40 Q65 48 62 58" stroke="#795548" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-  <!-- Bark texture -->
-  <path d="M50 112 Q45 92 42 68" stroke="#8D6E63" stroke-width="1" fill="none" opacity="0.15"/>
-  <!-- Leaves -->
-  <path d="M33 56 Q22 46 26 34 Q30 40 33 56Z" fill="url(#lfG)"/>
-  <path d="M33 56 Q20 52 16 40 Q24 46 33 56Z" fill="#4CAF50" opacity="0.6"/>
-  <path d="M62 48 Q72 36 70 26 Q66 34 62 48Z" fill="url(#lfG)"/>
-  <path d="M62 48 Q76 40 78 30 Q72 38 62 48Z" fill="#4CAF50" opacity="0.6"/>
-  <path d="M46 72 Q36 65 30 52 Q38 62 46 72Z" fill="#66BB6A"/>
-  <!-- Grape clusters -->
-  <g transform="translate(57, 66)">
-    <circle cx="0" cy="0" r="4.5" fill="url(#gG)"/>
-    <circle cx="0" cy="0" r="2" fill="#E1BEE7" opacity="0.15"/>
-    <circle cx="7.5" cy="2" r="4.5" fill="#9C27B0"/>
-    <circle cx="7" cy="1" r="1.8" fill="#E1BEE7" opacity="0.12"/>
-    <circle cx="3.5" cy="6.5" r="4.5" fill="#8E24AA"/>
-    <circle cx="-4.5" cy="3" r="4" fill="#6A1B9A"/>
-    <circle cx="10.5" cy="6.5" r="4" fill="#AB47BC"/>
-    <circle cx="0" cy="10" r="4" fill="url(#gG)"/>
-    <circle cx="6.5" cy="11" r="3.5" fill="#9C27B0"/>
-    <circle cx="3" cy="14" r="3.5" fill="#8E24AA"/>
-  </g>
-  <!-- Small cluster -->
-  <g transform="translate(30, 82)">
-    <circle cx="0" cy="0" r="4" fill="url(#gG)"/>
-    <circle cx="6.5" cy="2" r="4" fill="#9C27B0"/>
-    <circle cx="3" cy="5.5" r="3.5" fill="#8E24AA"/>
-    <circle cx="-2.5" cy="4" r="3.5" fill="#6A1B9A"/>
-    <circle cx="1" cy="8.5" r="3" fill="url(#gG)"/>
-  </g>
+  <ellipse cx="50" cy="114" rx="28" ry="8" fill="#3E2723" opacity="0.15" filter="url(#s)"/>
+  <!-- Vine trunk — thick, winding -->
+  <path d="M50 112 Q40 90 32 72 Q26 58 32 40" stroke="url(#vG)" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M32 52 Q46 42 56 40 Q66 42 72 50" stroke="#795548" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- Bark highlight -->
+  <path d="M50 112 Q42 92 36 72" stroke="#8D6E63" stroke-width="1.5" fill="none" opacity="0.1"/>
+  <!-- Leaves — big organic shapes -->
+  <path d="M28 62 Q8 46 6 56 Q10 66 28 62Z" fill="url(#lfG)"/>
+  <path d="M28 62 Q12 50 10 58" fill="#E8F5E9" opacity="0.12"/>
+  <path d="M62 44 Q80 28 86 38 Q80 48 62 44Z" fill="url(#lfG)"/>
+  <path d="M38 46 Q20 34 18 44 Q24 50 38 46Z" fill="#66BB6A"/>
+  <path d="M72 50 Q86 40 90 48 Q84 56 72 50Z" fill="#81C784"/>
   <!-- Tendrils -->
-  <path d="M42 32 Q40 26 44 22 Q48 26 46 30" stroke="#9CCC65" stroke-width="1" fill="none"/>
-  <path d="M62 40 Q66 34 64 28 Q60 32 62 36" stroke="#9CCC65" stroke-width="1" fill="none"/>
+  <path d="M32 40 Q28 30 34 26 Q38 30 36 36" stroke="#8BC34A" stroke-width="1.2" fill="none"/>
+  <path d="M72 50 Q76 42 74 36 Q70 40 72 46" stroke="#8BC34A" stroke-width="1.2" fill="none"/>
+  <!-- Grape cluster 1 — big triangle arrangement -->
+  <g transform="translate(58 64)">
+    <circle cx="0" cy="0" r="5.5" fill="url(#gG)"/>
+    <circle cx="-1" cy="-1.5" r="2" fill="#E1BEE7" opacity="0.1"/>
+    <circle cx="9" cy="2" r="5.5" fill="#8E24AA"/>
+    <circle cx="4.5" cy="8" r="5.5" fill="url(#gG)"/>
+    <circle cx="-5" cy="4" r="5" fill="#6A1B9A"/>
+    <circle cx="13" cy="8" r="5" fill="#AB47BC"/>
+    <circle cx="0" cy="12" r="5" fill="#9C27B0"/>
+    <circle cx="9" cy="14" r="4.5" fill="url(#gG)"/>
+    <circle cx="4" cy="18" r="4.5" fill="#8E24AA"/>
+  </g>
+  <!-- Grape cluster 2 — smaller -->
+  <g transform="translate(22 80)">
+    <circle cx="0" cy="0" r="5" fill="url(#gG)"/>
+    <circle cx="8" cy="2" r="5" fill="#9C27B0"/>
+    <circle cx="4" cy="7" r="5" fill="#8E24AA"/>
+    <circle cx="-4" cy="4" r="4.5" fill="#6A1B9A"/>
+    <circle cx="0" cy="11" r="4" fill="url(#gG)"/>
+    <circle cx="7" cy="10" r="4" fill="#AB47BC"/>
+  </g>
 </svg>
