@@ -1,24 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <linearGradient id="sG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#558B2F"/>
-      <stop offset="50%" stop-color="#8BC34A"/>
-      <stop offset="100%" stop-color="#558B2F"/>
-    </linearGradient>
-    <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="2"/></filter>
   </defs>
-  <ellipse cx="50" cy="112" rx="20" ry="6" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
-  <path d="M42 110 Q38 88 42 56" stroke="url(#sG)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-  <path d="M58 110 Q62 90 58 58" stroke="#7CB342" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-  <path d="M42 84 Q28 74 20 78 Q26 84 42 84Z" fill="#558B2F"/>
-  <path d="M58 78 Q70 68 78 72 Q72 78 58 78Z" fill="#689F38"/>
-  <!-- Grain clusters drooping -->
-  <path d="M42 56 Q30 44 22 48" stroke="#CDDC39" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <circle cx="26" cy="46" r="3" fill="#FFEE58"/>
-  <circle cx="32" cy="44" r="2.5" fill="#FDD835"/>
-  <circle cx="24" cy="50" r="2" fill="#FFD54F"/>
-  <path d="M58 58 Q70 46 78 50" stroke="#CDDC39" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <circle cx="74" cy="48" r="3" fill="#FFEE58"/>
-  <circle cx="68" cy="46" r="2.5" fill="#FDD835"/>
-  <circle cx="76" cy="52" r="2" fill="#FFD54F"/>
+  <ellipse cx="50" cy="112" rx="22" ry="6" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
+  <!-- Two young stalks -->
+  <path d="M38 110 Q36 86 38 60" stroke="#8BC34A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <path d="M62 110 Q64 86 62 60" stroke="#7CB342" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Leaves -->
+  <path d="M38 88 Q22 80 16 84 Q22 90 38 88Z" fill="#558B2F"/>
+  <path d="M62 84 Q76 76 84 80 Q78 86 62 84Z" fill="#689F38"/>
+  <path d="M38 72 Q24 64 18 68 Q24 74 38 72Z" fill="#7CB342"/>
+  <!-- Small panicles starting to form -->
+  <path d="M38 60 Q30 50 24 48" stroke="#CDDC39" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="24" cy="48" rx="1.8" ry="3" fill="#C5E1A5" transform="rotate(-15 24 48)"/>
+  <ellipse cx="30" cy="50" rx="1.5" ry="2.5" fill="#DCEDC8" transform="rotate(-10 30 50)"/>
+  <path d="M62 60 Q70 50 76 48" stroke="#CDDC39" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="76" cy="48" rx="1.8" ry="3" fill="#C5E1A5" transform="rotate(15 76 48)"/>
+  <ellipse cx="70" cy="50" rx="1.5" ry="2.5" fill="#DCEDC8" transform="rotate(10 70 50)"/>
 </svg>

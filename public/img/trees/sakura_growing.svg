@@ -1,21 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
   <defs>
-    <radialGradient id="bG" cx="40%" cy="30%">
-      <stop offset="0%" stop-color="#FCE4EC"/>
-      <stop offset="100%" stop-color="#E91E63"/>
-    </radialGradient>
-    <linearGradient id="tG" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#5D4037"/>
-      <stop offset="50%" stop-color="#A1887F"/>
-      <stop offset="100%" stop-color="#5D4037"/>
-    </linearGradient>
-    <filter id="s"><feGaussianBlur stdDeviation="2.5"/></filter>
+    <filter id="s"><feGaussianBlur stdDeviation="2"/></filter>
   </defs>
   <ellipse cx="50" cy="112" rx="26" ry="7" fill="#3E2723" opacity="0.13" filter="url(#s)"/>
-  <path d="M46 110 Q46 92 47 76 Q49 74 51 74 Q53 74 54 76 Q55 92 54 110Z" fill="url(#tG)"/>
-  <path d="M46 92 Q34 86 28 90" stroke="#795548" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <path d="M50 36 Q24 36 18 50 Q14 60 28 66 Q44 72 50 70 Q56 72 72 66 Q86 60 82 50 Q76 36 50 36Z" fill="url(#bG)"/>
-  <path d="M50 38 Q32 40 24 50 Q20 58 32 64 Q50 68 50 38Z" fill="#F48FB1" opacity="0.4"/>
-  <circle cx="34" cy="48" r="2.5" fill="#fff" opacity="0.25"/>
-  <circle cx="62" cy="44" r="2" fill="#fff" opacity="0.2"/>
+  <path d="M46 110 Q44 96 46 82 Q48 80 52 80 Q54 80 55 82 Q56 96 54 110Z" fill="#6D4C41"/>
+  <path d="M46 92 Q30 80 20 78" stroke="#795548" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M54 86 Q68 74 78 72" stroke="#795548" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M50 82 Q50 68 50 58" stroke="#795548" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <circle cx="20" cy="72" r="10" fill="#F48FB1"/>
+  <circle cx="50" cy="52" r="10" fill="#F8BBD0"/>
+  <circle cx="78" cy="66" r="10" fill="#F06292"/>
+  <circle cx="36" cy="62" r="8" fill="#F8BBD0"/>
+  <circle cx="64" cy="60" r="8" fill="#F48FB1"/>
+  <circle cx="36" cy="52" r="1.5" fill="#fff" opacity="0.25"/>
+  <circle cx="60" cy="50" r="1.2" fill="#fff" opacity="0.2"/>
+  <ellipse cx="26" cy="84" rx="2" ry="1" fill="#F8BBD0" opacity="0.35" transform="rotate(-15 26 84)"/>
 </svg>
