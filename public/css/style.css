@@ -5735,13 +5735,6 @@ form {
   }
 }
 
-.hut-label {
-  font-size: 11px;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  margin-top: 4px;
-  font-weight: 600;
-}
 
 /* ─── Sunlight overlay ─── */
 .island-land::before {

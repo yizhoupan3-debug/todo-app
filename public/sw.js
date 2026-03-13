@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v10'; // Bump on each deploy
+const CACHE_VERSION = 'v11'; // Bump on each deploy
 const CACHE_NAME = `panpu-todo-${CACHE_VERSION}`;
 
 const STATIC_ASSETS = [
@@ -23,8 +23,14 @@ const STATIC_ASSETS = [
     '/img/all.png',
     '/img/taofa.png',
     '/img/cat-coin.png',
+    '/img/icon-48.png',
+    '/img/icon-96.png',
+    '/img/icon-144.png',
+    '/img/icon-180.png',
     '/img/icon-192.png',
     '/img/icon-512.png',
+    '/img/icon-maskable-192.png',
+    '/img/icon-maskable-512.png',
 ];
 
 // Install — pre-cache static assets for offline use
