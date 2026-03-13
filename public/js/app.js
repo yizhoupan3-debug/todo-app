@@ -74,14 +74,14 @@ const App = {
         // Checkin from sidebar
         document.getElementById('nav-checkin').addEventListener('click', () => this.switchView('checkin'));
 
-        // Garden from sidebar
-        document.getElementById('nav-garden').addEventListener('click', () => this.switchView('garden'));
-
-        // Shop from sidebar
-        document.getElementById('nav-shop').addEventListener('click', () => this.switchView('shop'));
+        // Garden and Shop: handled by bindNavigation() via data-view attributes
 
         // Header coin button — show rules popup
-        document.getElementById('header-coin-btn')?.addEventListener('click', () => this._showCoinRules());
+        document.getElementById('header-coin-btn')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            this._showCoinRules();
+        });
 
         // Load initial coin balance
         this._refreshHeaderCoins();
@@ -406,8 +406,8 @@ const App = {
             case 'monthly': MonthlyView.refresh(); break;
             case 'stats': StatsView.load(); break;
             case 'checkin': CheckinView._reloadCurrentPage(); break;
-            case 'garden': GardenView.open(); break;
-            case 'shop': GardenView.openShop(); break;
+            case 'garden': GardenView.refreshData(); break;
+            case 'shop': GardenView.refreshShopData(); break;
         }
         // Also refresh header coins
         this._refreshHeaderCoins();
@@ -425,7 +425,11 @@ const App = {
         }
         API.getCoins(coinUser).then(d => {
             const el = document.getElementById('header-coins');
-            if (el) el.textContent = d.balance;
+            if (el) {
+                // Format: integer shows as-is, decimal shows 1 decimal place
+                const bal = d.balance;
+                el.textContent = Number.isInteger(bal) ? bal : bal.toFixed(1);
+            }
         }).catch(() => { });
     },
 
@@ -436,28 +440,32 @@ const App = {
         overlay.innerHTML = `
             <div class="coin-rules-modal">
                 <div class="coin-rules-header">
-                    <img src="/img/meow-coin.png" class="cat-coin-icon large" alt="喵喵币">
+                ${Utils.coinSvg('cat-coin-icon large')}
                     <h3>喵喵币获取规则</h3>
                     <button class="coin-rules-close">✕</button>
                 </div>
                 <div class="coin-rules-body">
-                    <div class="coin-rule-item">
-                        <span class="coin-rule-icon">✅</span>
-                        <div><strong>完成任务</strong><br>每完成一个任务获得 1 喵喵币</div>
-                    </div>
-                    <div class="coin-rule-item">
-                        <span class="coin-rule-icon">📅</span>
-                        <div><strong>每日打卡</strong><br>连续打卡可获得额外奖励</div>
-                    </div>
-                    <div class="coin-rule-item">
-                        <span class="coin-rule-icon">🌳</span>
-                        <div><strong>植物成长</strong><br>专注种树，植物成长时获得喵喵币</div>
-                    </div>
-                    <div class="coin-rule-item">
-                        <span class="coin-rule-icon">🛒</span>
-                        <div><strong>商城消费</strong><br>在商城中购买植物、装饰等</div>
-                    </div>
+                <div class="coin-rule-item">
+                    <span class="coin-rule-icon">✅</span>
+                    <div><strong>完成任务</strong><br>每完成一个任务获得 <b>1.5</b> 喵喵币</div>
                 </div>
+                <div class="coin-rule-item">
+                    <span class="coin-rule-icon">📅</span>
+                    <div><strong>每日打卡</strong><br>每项达标 <b>0.5</b> 币，连续3天 <b>+2</b>，连续7天 <b>+5</b>（然后重置）</div>
+                </div>
+                <div class="coin-rule-item">
+                    <span class="coin-rule-icon">🍅</span>
+                    <div><strong>番茄钟</strong><br>15分钟 <b>1</b> · 25分 <b>2</b> · 45分 <b>4</b> · 60分 <b>6</b> 币<br>专注自评 1～5★ 额外 <b>0.2～1.0</b> 币</div>
+                </div>
+                <div class="coin-rule-item">
+                    <span class="coin-rule-icon">🌳</span>
+                    <div><strong>植物成长</strong><br>专注种树，植物成长时随机掉落喵喵币</div>
+                </div>
+                <div class="coin-rule-item">
+                    <span class="coin-rule-icon">🛒</span>
+                    <div><strong>商城消费</strong><br>在商城中购买植物、装饰等</div>
+                </div>
+            </div>
                 <div class="coin-rules-footer">
                     <button class="coin-rules-goto-garden">🌴 去花园</button>
                     <button class="coin-rules-goto-shop">🛒 去商城</button>

@@ -296,3 +296,44 @@ try {
 } catch (e) {
   db.exec("ALTER TABLE trees ADD COLUMN last_harvested TEXT DEFAULT NULL");
 }
+
+// Migrate: coin_accounts.balance from INTEGER to REAL for decimal support
+try {
+  // Check current type — if INTEGER, migrate
+  const info = db.pragma('table_info(coin_accounts)');
+  const balCol = info.find(c => c.name === 'balance');
+  if (balCol && balCol.type === 'INTEGER') {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS coin_accounts_new (
+        assignee TEXT PRIMARY KEY CHECK(assignee IN ('潘潘','蒲蒲')),
+        balance REAL NOT NULL DEFAULT 0
+      );
+      INSERT OR REPLACE INTO coin_accounts_new SELECT assignee, CAST(balance AS REAL) FROM coin_accounts;
+      DROP TABLE coin_accounts;
+      ALTER TABLE coin_accounts_new RENAME TO coin_accounts;
+    `);
+  }
+} catch (e) { /* already migrated or fresh */ }
+
+// Migrate: coin_transactions.amount from INTEGER to REAL
+try {
+  const info = db.pragma('table_info(coin_transactions)');
+  const amtCol = info.find(c => c.name === 'amount');
+  if (amtCol && amtCol.type === 'INTEGER') {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS coin_transactions_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        assignee TEXT NOT NULL CHECK(assignee IN ('潘潘','蒲蒲')),
+        amount REAL NOT NULL,
+        reason TEXT NOT NULL,
+        detail TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+      );
+      INSERT INTO coin_transactions_new SELECT * FROM coin_transactions;
+      DROP TABLE coin_transactions;
+      ALTER TABLE coin_transactions_new RENAME TO coin_transactions;
+      CREATE INDEX IF NOT EXISTS idx_coin_tx_assignee ON coin_transactions(assignee);
+    `);
+  }
+} catch (e) { /* already migrated or fresh */ }
+

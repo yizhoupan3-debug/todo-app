@@ -138,7 +138,92 @@ const GardenView = {
         wild_tree: { img: '/img/trees/obstacle_wild_tree.svg', name: '野树', cost: 15 },
     },
 
+    _staticRendered: false,
+
     init() { },
+
+    /* Lightweight refresh: re-fetch data + update dynamic DOM only (no full re-render) */
+    async refreshData() {
+        const el = document.getElementById('view-garden');
+        if (!el) return;
+
+        // If never rendered, do full open
+        if (!this._staticRendered) { await this.open(); return; }
+
+        // Re-fetch data silently
+        try {
+            const { balance } = await API.getCoins(this.assignee);
+            this.balance = balance;
+        } catch (e) { /* keep old */ }
+
+        try {
+            if (this.currentIsland) {
+                this.plots = await fetch(`/api/garden/plots/${encodeURIComponent(this.assignee)}/${this.currentIsland.id}`).then(r => r.json());
+            } else {
+                this.plots = await API.getPlots(this.assignee);
+            }
+        } catch (e) { /* keep old */ }
+
+        // Update only dynamic parts
+        this._updateDynamicContent();
+    },
+
+    async refreshShopData() {
+        const el = document.getElementById('view-shop');
+        if (!el || !el.innerHTML.trim()) { await this.openShop(); return; }
+        try {
+            const { balance } = await API.getCoins(this.shopAssignee);
+            this.shopBalance = balance;
+        } catch (e) { /* keep old */ }
+        // Update balance display only
+        const balEl = el.querySelector('.garden-balance strong');
+        if (balEl) balEl.textContent = this.shopBalance;
+    },
+
+    /* Update only the dynamic parts of the garden view (plots, HUD, stats bar) */
+    _updateDynamicContent() {
+        const PP = [
+            [22, 18], [36, 14], [50, 12], [64, 16], [78, 20],
+            [16, 32], [30, 28], [44, 26], [58, 28], [72, 32], [86, 34],
+            [12, 46], [26, 42], [40, 40], [54, 42], [68, 44], [82, 48],
+            [18, 58], [32, 56], [46, 54], [60, 56], [74, 60],
+            [28, 70], [48, 68], [62, 72],
+        ];
+
+        // Update plots
+        const land = document.getElementById('island-land');
+        if (land) {
+            land.querySelectorAll('.iplot').forEach(p => p.remove());
+            const plotsHtml = this.plots.map((plot, i) => {
+                const p = PP[i] || [50, 50];
+                return this.renderIslandPlot(plot, p[0], p[1]);
+            }).join('');
+            land.insertAdjacentHTML('beforeend', plotsHtml);
+            // Re-bind plot clicks
+            land.querySelectorAll('.iplot').forEach(plotEl => {
+                plotEl.addEventListener('click', async () => {
+                    const plotId = parseInt(plotEl.dataset.plotId);
+                    const plot = this.plots.find(p => p.id === plotId);
+                    if (!plot) return;
+                    if (plot.status === 'wasteland') await this.clearPlot(plotId, plot.obstacle_type);
+                    else if (plot.status === 'cleared' && this.selectedTree) await this.plantOnPlot(plotId);
+                });
+            });
+        }
+
+        // Update HUD balance
+        const balEl = document.querySelector('.island-hud .garden-balance strong');
+        if (balEl) balEl.textContent = this.balance;
+
+        // Update stats bar
+        const clearedCount = this.plots.filter(p => p.status !== 'wasteland').length;
+        const plantedCount = this.plots.filter(p => p.status === 'planted').length;
+        const typesCollected = new Set(this.plots.filter(p => p.tree_type).map(p => p.tree_type)).size;
+        const statsBar = document.querySelector('.island-stats-bar');
+        if (statsBar) {
+            statsBar.innerHTML = `<span>🌱 ${plantedCount} 种植</span><span>📦 ${typesCollected} 种类</span><span>⛏️ ${clearedCount} 开垦</span>`;
+        }
+    },
 
     getGrowthStage(minutes) {
         if (minutes >= 150) return 'mature';
@@ -233,7 +318,7 @@ const GardenView = {
                         🗺️ <span>${discoveredCount}/${totalCount}</span>
                     </button>
                     <div class="garden-balance">
-                    <img src="/img/meow-coin.png" alt="喵喵币" class="cat-coin-icon">
+                    ${Utils.coinSvg()}
                     <strong>${this.balance}</strong> 喵喵币
                 </div>
                 </div>
@@ -566,6 +651,7 @@ const GardenView = {
 
         this.bindGardenEvents();
         this.initDrag();
+        this._staticRendered = true;
     },
 
     renderIslandPlot(plot, x, y) {
@@ -736,6 +822,7 @@ const GardenView = {
             btn.addEventListener('click', async () => {
                 this.assignee = btn.dataset.person;
                 this.currentIsland = null;
+                this._staticRendered = false;
                 await this.open();
             });
         });
@@ -970,7 +1057,7 @@ const GardenView = {
         el.innerHTML = `
             <div class="shop-view-header">
                 <div class="garden-balance">
-                    <img src="/img/meow-coin.png" alt="喵喵币" class="cat-coin-icon">
+                    ${Utils.coinSvg()}
                     <strong>${this.shopBalance}</strong> 喵喵币
                 </div>
                 <div class="filter-pills">
@@ -987,7 +1074,7 @@ const GardenView = {
                     <div class="shop-card ${this.shopBalance >= item.cost ? '' : 'locked'}" data-type="${item.type}" data-cost="${item.cost}">
                         <img class="shop-card-img" src="${item.stages.mature}" alt="${item.name}">
                         <div class="shop-card-name">${item.name}</div>
-                        <div class="shop-card-price">${item.cost === 0 ? '免费' : `<img src="/img/meow-coin.png" class="cat-coin-icon" style="width:16px;height:16px"> ${item.cost}`}</div>
+                        <div class="shop-card-price">${item.cost === 0 ? '免费' : `${Utils.coinSvg('cat-coin-icon', 'width:16px;height:16px')} ${item.cost}`}</div>
                     </div>
                 `).join('')}
             </div>
@@ -1028,7 +1115,7 @@ const GardenView = {
                     </div>
                 </div>
                 <div class="tree-detail-footer">
-                    <div class="tree-detail-cost">${item.cost === 0 ? '免费' : `<img src="/img/meow-coin.png" class="cat-coin-icon" style="width:20px;height:20px"> ${item.cost} 喵喵币`}</div>
+                    <div class="tree-detail-cost">${item.cost === 0 ? '免费' : `${Utils.coinSvg('cat-coin-icon', 'width:20px;height:20px')} ${item.cost} 喵喵币`}</div>
                     <button class="shop-buy-btn ${canBuy ? '' : 'disabled'}" id="tree-detail-buy" ${canBuy ? '' : 'disabled'}>
                         ${item.cost === 0 ? '🌱 去种植' : canBuy ? '🛒 购买并种植' : '🔒 喵喵币不足'}
                     </button>
@@ -1085,9 +1172,10 @@ const GardenView = {
     },
 
     async earnFromPomodoro(assignee, focusMinutes) {
-        let amount = 10;
-        if (focusMinutes >= 60) amount = 30;
-        else if (focusMinutes >= 45) amount = 20;
+        let amount = 1;
+        if (focusMinutes >= 60) amount = 6;
+        else if (focusMinutes >= 45) amount = 4;
+        else if (focusMinutes >= 25) amount = 2;
         try {
             const result = await API.earnCoins({
                 assignee,
@@ -1105,7 +1193,12 @@ const GardenView = {
                     const catItem = this.catalog.find(c => c.type === growResult.tree.tree_type);
                     const name = catItem ? catItem.name : '植物';
                     const label = this.getGrowthLabel(growResult.tree.growth_minutes);
-                    App.showToast(`+${amount} 喵喵币 · ${name} 成长了！(${label})`, 'success');
+                    let msg = `+${amount} 喵喵币 · ${name} 成长了！(${label})`;
+                    if (growResult.coinDrop > 0) {
+                        msg += ` · 🍃 掉落 +${growResult.coinDrop} 币！`;
+                        this.updateHeaderCoins();
+                    }
+                    App.showToast(msg, 'success');
                 } else {
                     App.showToast(`+${amount} 喵喵币！`, 'success');
                 }

@@ -212,7 +212,7 @@ router.put('/:id', (req, res) => {
         // ── Award coins when task completed ──
         let coinsEarned = 0;
         if (fields.status === 'done') {
-            const TASK_REWARD = 2;
+            const TASK_REWARD = 1.5;
             try {
                 db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
                     .run(TASK_REWARD, task.assignee);

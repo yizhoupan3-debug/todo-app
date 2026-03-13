@@ -70,7 +70,9 @@ router.post('/', (req, res) => {
         // Get goal for this type
         const goalRow = db.prepare('SELECT goal FROM checkin_goals WHERE type = ? AND assignee = ?')
             .get(checkinType, assignee);
-        const goal = goalRow ? goalRow.goal : 2000;
+        // Default goal by type
+        const defaultGoals = { water: 2000, wakeup: 1, skincare: 1, steps: 10000 };
+        const goal = goalRow ? goalRow.goal : (defaultGoals[checkinType] || 1);
 
         if (total >= goal) {
             // Daily goal reached — check if already rewarded today
@@ -80,17 +82,16 @@ router.post('/', (req, res) => {
             const alreadyRewardedToday = streak && streak.last_date === today;
 
             if (!alreadyRewardedToday) {
-                // +1 daily reward
-                coinsEarned = 1;
+                // +0.5 daily reward
+                coinsEarned = 0.5;
                 db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
-                    .run(1, assignee);
+                    .run(0.5, assignee);
                 db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                    .run(assignee, 1, 'checkin_daily', `${checkinType} 达标`);
+                    .run(assignee, 0.5, 'checkin_daily', `${checkinType} 达标`);
 
                 // Update streak
                 let newStreak = 1;
                 if (streak) {
-                    // Check if yesterday was the last streak date
                     const yesterday = new Date(today);
                     yesterday.setDate(yesterday.getDate() - 1);
                     const yesterdayStr = yesterday.toISOString().slice(0, 10);
@@ -111,26 +112,31 @@ router.post('/', (req, res) => {
                 const updatedStreak = db.prepare('SELECT * FROM checkin_streaks WHERE assignee = ? AND type = ?')
                     .get(assignee, checkinType);
                 if (newStreak >= 3 && newStreak % 3 === 0 && updatedStreak.reward_3_claimed !== today) {
-                    streakBonus += 5;
-                    db.prepare('UPDATE coin_accounts SET balance = balance + 5 WHERE assignee = ?').run(assignee);
+                    streakBonus += 2;
+                    db.prepare('UPDATE coin_accounts SET balance = balance + 2 WHERE assignee = ?').run(assignee);
                     db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                        .run(assignee, 5, 'checkin_streak_3', `${checkinType} 连续${newStreak}天`);
+                        .run(assignee, 2, 'checkin_streak_3', `${checkinType} 连续${newStreak}天`);
                     db.prepare('UPDATE checkin_streaks SET reward_3_claimed = ? WHERE assignee = ? AND type = ?')
                         .run(today, assignee, checkinType);
                 }
 
-                // 7-day streak bonus
+                // 7-day streak bonus + reset
                 if (newStreak >= 7 && newStreak % 7 === 0 && updatedStreak.reward_7_claimed !== today) {
-                    streakBonus += 15;
-                    db.prepare('UPDATE coin_accounts SET balance = balance + 15 WHERE assignee = ?').run(assignee);
+                    streakBonus += 5;
+                    db.prepare('UPDATE coin_accounts SET balance = balance + 5 WHERE assignee = ?').run(assignee);
                     db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                        .run(assignee, 15, 'checkin_streak_7', `${checkinType} 连续${newStreak}天`);
+                        .run(assignee, 5, 'checkin_streak_7', `${checkinType} 连续${newStreak}天`);
                     db.prepare('UPDATE checkin_streaks SET reward_7_claimed = ? WHERE assignee = ? AND type = ?')
                         .run(today, assignee, checkinType);
+
+                    // Reset streak after 7-day cycle
+                    db.prepare('UPDATE checkin_streaks SET current_streak = 0 WHERE assignee = ? AND type = ?')
+                        .run(assignee, checkinType);
+                    currentStreak = 0;
                 }
             }
 
-            if (streak) currentStreak = streak.current_streak;
+            if (streak && !currentStreak) currentStreak = streak.current_streak;
         }
 
         res.json({ record, total, coinsEarned: coinsEarned + streakBonus, currentStreak, streakBonus });
@@ -164,7 +170,9 @@ router.get('/goal', (req, res) => {
     try {
         const row = db.prepare('SELECT goal FROM checkin_goals WHERE type = ? AND assignee = ?')
             .get(type || 'water', assignee);
-        res.json({ goal: row ? row.goal : 2000 });
+        const defaultGoals = { water: 2000, wakeup: 1, skincare: 1, steps: 10000 };
+        const t = type || 'water';
+        res.json({ goal: row ? row.goal : (defaultGoals[t] || 1) });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

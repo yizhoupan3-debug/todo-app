@@ -218,7 +218,7 @@ router.post('/trees/grow', (req, res) => {
                     "SELECT * FROM trees WHERE assignee = ? ORDER BY planted_at DESC LIMIT 1"
                 ).get(assignee);
             }
-            if (!tree) return null;
+            if (!tree) return { tree: null, coinDrop: 0 };
 
             const newMinutes = (tree.growth_minutes || 0) + minutes;
             const newStatus = newMinutes >= 150 ? 'grown' : 'growing';
@@ -226,11 +226,39 @@ router.post('/trees/grow', (req, res) => {
             db.prepare('UPDATE trees SET growth_minutes = ?, status = ? WHERE id = ?')
                 .run(newMinutes, newStatus, tree.id);
 
-            return db.prepare('SELECT * FROM trees WHERE id = ?').get(tree.id);
+            // Random coin drop based on plant price tier
+            let coinDrop = 0;
+            const price = PLANT_CATALOG[tree.tree_type] || 0;
+            let dropChance, minDrop, maxDrop;
+
+            if (price >= 80) {
+                // Expensive plants: 50% chance, 0.5-2.0 coins
+                dropChance = 0.50; minDrop = 0.5; maxDrop = 2.0;
+            } else if (price >= 30) {
+                // Mid-tier plants: 35% chance, 0.3-1.0 coins
+                dropChance = 0.35; minDrop = 0.3; maxDrop = 1.0;
+            } else if (price >= 10) {
+                // Cheap plants: 20% chance, 0.2-0.5 coins
+                dropChance = 0.20; minDrop = 0.2; maxDrop = 0.5;
+            } else {
+                // Free/sprout: 10% chance, 0.1-0.2 coins
+                dropChance = 0.10; minDrop = 0.1; maxDrop = 0.2;
+            }
+
+            if (Math.random() < dropChance) {
+                coinDrop = Math.round((minDrop + Math.random() * (maxDrop - minDrop)) * 10) / 10;
+                db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
+                    .run(coinDrop, assignee);
+                db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                    .run(assignee, coinDrop, 'plant_drop', `${tree.tree_type} 掉落`);
+            }
+
+            const updatedTree = db.prepare('SELECT * FROM trees WHERE id = ?').get(tree.id);
+            return { tree: updatedTree, coinDrop };
         });
 
-        const tree = grow();
-        res.json({ tree });
+        const result = grow();
+        res.json(result);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

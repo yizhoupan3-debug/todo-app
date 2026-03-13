@@ -170,13 +170,13 @@ const Pomodoro = {
             } catch (e) {
                 console.error('Pomodoro save error:', e);
             }
-            App.showToast('🎉 专注时间结束！开始休息', 'success');
-            // Earn coins
+            // Earn base coins
             GardenView.earnFromPomodoro(
                 (this.currentTask && this.currentTask.assignee) || '潘潘',
                 this.focusMin
             );
-            this.startRest();
+            // Show focus self-rating dialog
+            this.showFocusRating();
         } else if (this.phase === 'rest') {
             this.playNotification();
             this.phase = 'complete';
@@ -231,5 +231,67 @@ const Pomodoro = {
         } catch (e) {
             console.error('Pomodoro session save error:', e);
         }
+    },
+
+    showFocusRating() {
+        // Create rating overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'focus-rating-overlay';
+        overlay.innerHTML = `
+            <div class="focus-rating-card">
+                <h3>🎯 专注完成！</h3>
+                <p>你觉得这次的专注度如何？</p>
+                <div class="focus-rating-stars">
+                    ${[1, 2, 3, 4, 5].map(s => `<button class="focus-star" data-stars="${s}">${'★'.repeat(s)}${'☆'.repeat(5 - s)}</button>`).join('')}
+                </div>
+                <div class="focus-rating-labels">
+                    <span>走神了</span>
+                    <span>非常专注</span>
+                </div>
+                <div class="focus-rating-hint">评分可获得 0.2~1.0 额外喵喵币</div>
+                <button class="focus-skip-btn" id="focus-skip-btn" style="margin-top:10px;padding:6px 16px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);cursor:pointer;font-size:12px">跳过评分</button>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        requestAnimationFrame(() => overlay.classList.add('active'));
+
+        const dismissAndStartRest = () => {
+            if (!overlay.parentNode) return; // already removed
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.remove(), 300);
+            this.startRest();
+        };
+
+        // Star rating clicks
+        overlay.querySelectorAll('.focus-star').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const stars = parseInt(btn.dataset.stars);
+                const bonus = stars * 0.2;
+                const assignee = (this.currentTask && this.currentTask.assignee) || '潘潘';
+
+                try {
+                    await API.earnCoins({
+                        assignee,
+                        amount: bonus,
+                        reason: 'focus_rating',
+                        detail: `专注自评 ${stars}★`
+                    });
+                } catch (e) { /* ignore */ }
+
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.remove(), 300);
+
+                App.showToast(`⭐ 专注评分 ${stars}★ · +${bonus.toFixed(1)} 喵喵币`, 'success');
+                this.startRest();
+            });
+        });
+
+        // Skip button fallback
+        overlay.querySelector('#focus-skip-btn')?.addEventListener('click', dismissAndStartRest);
+
+        // Click outside card fallback
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) dismissAndStartRest();
+        });
     }
 };
