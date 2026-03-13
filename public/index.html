@@ -20,6 +20,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" href="/css/style.css" as="style">
+  <!-- Instant theme restore: runs BEFORE CSS to prevent flash of wrong theme -->
+  <script>
+    (function() {
+      try {
+        var m = localStorage.getItem('panpu-mode');
+        var t = localStorage.getItem('panpu-theme');
+        var d = document.documentElement;
+        if (m) d.setAttribute('data-mode', m);
+        if (t) d.setAttribute('data-theme', t);
+      } catch(e) {}
+    })();
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="/css/style.css">
