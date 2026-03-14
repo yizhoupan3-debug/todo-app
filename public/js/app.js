@@ -15,7 +15,9 @@ const App = {
     init() {
         // Init Socket.io with debounced refresh (safe — won't crash if server is down)
         try {
-            this.socket = io();
+            this.socket = io(API.getSocketURL(), {
+                transports: ['websocket', 'polling'],
+            });
             const debouncedRefresh = () => {
                 clearTimeout(this._refreshTimer);
                 this._refreshTimer = setTimeout(() => this.refreshCurrentView(), 150);

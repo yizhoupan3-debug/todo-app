@@ -184,7 +184,7 @@ const GardenView = {
 
         try {
             if (this.currentIsland) {
-                this.plots = await fetch(`/api/garden/plots/${encodeURIComponent(this.assignee)}/${this.currentIsland.id}`).then(r => r.json());
+                this.plots = await API.fetch(`/garden/plots/${encodeURIComponent(this.assignee)}/${this.currentIsland.id}`).then(r => r.json());
             } else {
                 this.plots = await API.getPlots(this.assignee);
             }

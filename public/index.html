@@ -19,7 +19,7 @@
   <meta name="msapplication-TileColor" content="#ffcfd0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" href="/css/style.css?v=38" as="style">
+  <link rel="preload" href="/css/style.css?v=39" as="style">
   <!-- Instant theme restore: runs BEFORE CSS to prevent flash of wrong theme -->
   <script>
     (function() {
@@ -34,7 +34,7 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css?v=38">
+  <link rel="stylesheet" href="/css/style.css?v=39">
   <script src="https://unpkg.com/lucide@0.577.0/dist/umd/lucide.min.js" defer></script>
   <script>
     // SW registration + controlled reload only when an existing worker is replaced.
@@ -112,6 +112,17 @@
         <div class="settings-section">
           <div class="settings-section-title"><i data-lucide="download" class="lucide-inline"></i> 导入</div>
           <button class="settings-action-btn" id="btn-import-ics">导入 ICS 日历</button>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title"><i data-lucide="database" class="lucide-inline"></i> 数据同步</div>
+          <div class="settings-help-text">留空使用当前设备本地后端；填写阿里云地址后，本机也会直接读写同一份线上数据。</div>
+          <input class="settings-text-input" id="backend-origin-input" type="text" placeholder="https://your-server.example.com">
+          <div class="settings-inline-actions">
+            <button class="settings-action-btn" id="btn-save-backend-origin">保存并切换</button>
+            <button class="settings-action-btn" id="btn-clear-backend-origin">恢复本地</button>
+          </div>
+          <div class="settings-status-text" id="backend-origin-status"></div>
         </div>
 
         <!-- Theme -->
@@ -844,24 +855,24 @@
   <div class="toast-container" id="toast-container"></div>
 
   <script src="/socket.io/socket.io.js" defer></script>
-  <script src="/js/utils.js?v=38" defer></script>
-  <script src="/js/api.js?v=38" defer></script>
-  <script src="/js/views/daily.js?v=38" defer></script>
-  <script src="/js/views/monthly.js?v=38" defer></script>
-  <script src="/js/views/checkin.js?v=38" defer></script>
-  <script src="/js/views/stats.js?v=38" defer></script>
-  <script src="/js/views/garden.js?v=38" defer></script>
-  <script src="/js/views/garden-island.js?v=38" defer></script>
-  <script src="/js/views/garden-shop.js?v=38" defer></script>
-  <script src="/js/components/task-modal.js?v=38" defer></script>
-  <script src="/js/components/ics-import.js?v=38" defer></script>
-  <script src="/js/components/pomodoro.js?v=38" defer></script>
-  <script src="/js/ambient.js?v=38" defer></script>
-  <script src="/js/app.js?v=38" defer></script>
-  <script src="/js/app-theme.js?v=38" defer></script>
-  <script src="/js/app-persona-nav.js?v=38" defer></script>
-  <script src="/js/app-coins.js?v=38" defer></script>
-  <script src="/js/widget-installer.js?v=38" defer></script>
+  <script src="/js/utils.js?v=39" defer></script>
+  <script src="/js/api.js?v=39" defer></script>
+  <script src="/js/views/daily.js?v=39" defer></script>
+  <script src="/js/views/monthly.js?v=39" defer></script>
+  <script src="/js/views/checkin.js?v=39" defer></script>
+  <script src="/js/views/stats.js?v=39" defer></script>
+  <script src="/js/views/garden.js?v=39" defer></script>
+  <script src="/js/views/garden-island.js?v=39" defer></script>
+  <script src="/js/views/garden-shop.js?v=39" defer></script>
+  <script src="/js/components/task-modal.js?v=39" defer></script>
+  <script src="/js/components/ics-import.js?v=39" defer></script>
+  <script src="/js/components/pomodoro.js?v=39" defer></script>
+  <script src="/js/ambient.js?v=39" defer></script>
+  <script src="/js/app.js?v=39" defer></script>
+  <script src="/js/app-theme.js?v=39" defer></script>
+  <script src="/js/app-persona-nav.js?v=39" defer></script>
+  <script src="/js/app-coins.js?v=39" defer></script>
+  <script src="/js/widget-installer.js?v=39" defer></script>
 </body>
 
 </html>

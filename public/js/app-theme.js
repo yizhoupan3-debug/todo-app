@@ -33,6 +33,8 @@ Object.assign(App, {
             });
         });
 
+        this.initBackendSettings();
+
         const isMac = /Mac|iPhone|iPad/.test(navigator.userAgent);
         const platformBtns = document.querySelectorAll('.platform-btn');
         if (!isMac) {
@@ -75,5 +77,37 @@ Object.assign(App, {
         localStorage.setItem('panpu-theme', theme);
         document.querySelectorAll('.theme-swatch').forEach(s =>
             s.classList.toggle('active', s.dataset.theme === theme));
+    },
+
+    initBackendSettings() {
+        const input = document.getElementById('backend-origin-input');
+        const saveBtn = document.getElementById('btn-save-backend-origin');
+        const clearBtn = document.getElementById('btn-clear-backend-origin');
+        const status = document.getElementById('backend-origin-status');
+        if (!input || !saveBtn || !clearBtn || !status || typeof API === 'undefined') return;
+
+        const renderStatus = () => {
+            const origin = API.getBackendOrigin();
+            input.value = origin;
+            status.textContent = origin
+                ? `当前共享后端：${origin}`
+                : '当前使用本地后端';
+        };
+
+        saveBtn.addEventListener('click', () => {
+            const nextOrigin = API.setBackendOrigin(input.value);
+            status.textContent = nextOrigin
+                ? `已切到共享后端：${nextOrigin}，页面即将刷新`
+                : '已恢复本地后端，页面即将刷新';
+            setTimeout(() => window.location.reload(), 120);
+        });
+
+        clearBtn.addEventListener('click', () => {
+            API.setBackendOrigin('');
+            status.textContent = '已恢复本地后端，页面即将刷新';
+            setTimeout(() => window.location.reload(), 120);
+        });
+
+        renderStatus();
     },
 });

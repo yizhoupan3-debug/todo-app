@@ -173,7 +173,7 @@ Object.assign(GardenView, {
 
         let plants = [];
         try {
-            const data = await fetch(`/api/garden/backpack/${encodeURIComponent(assignee)}`).then(r => r.json());
+            const data = await API.fetch(`/garden/backpack/${encodeURIComponent(assignee)}`).then(r => r.json());
             plants = data.plants || [];
         } catch (e) {
             App.showToast('加载背包失败', 'error');

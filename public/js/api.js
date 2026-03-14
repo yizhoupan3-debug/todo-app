@@ -2,10 +2,56 @@
  * API client — wraps all fetch calls to the backend.
  */
 const API = {
-    baseURL: '/api',
+    backendOriginKey: 'panpu-backend-origin',
 
-    async request(path, options = {}) {
-        const url = this.baseURL + path;
+    normalizeOrigin(origin) {
+        const value = String(origin || '').trim();
+        if (!value) return '';
+        const withProtocol = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+        return withProtocol.replace(/\/+$/, '');
+    },
+
+    getBackendOrigin() {
+        try {
+            const raw = localStorage.getItem(this.backendOriginKey);
+            const normalized = this.normalizeOrigin(raw);
+            if (!normalized) return '';
+            if (normalized === window.location.origin) return '';
+            return normalized;
+        } catch (e) {
+            return '';
+        }
+    },
+
+    setBackendOrigin(origin) {
+        const normalized = this.normalizeOrigin(origin);
+        try {
+            if (!normalized || normalized === window.location.origin) {
+                localStorage.removeItem(this.backendOriginKey);
+                return '';
+            }
+            localStorage.setItem(this.backendOriginKey, normalized);
+            return normalized;
+        } catch (e) {
+            return normalized;
+        }
+    },
+
+    getBaseURL() {
+        const origin = this.getBackendOrigin();
+        return origin ? `${origin}/api` : '/api';
+    },
+
+    getSocketURL() {
+        return this.getBackendOrigin() || undefined;
+    },
+
+    resolveURL(path) {
+        return this.getBaseURL() + path;
+    },
+
+    async fetch(path, options = {}) {
+        const url = this.resolveURL(path);
         const config = {
             headers: { 'Content-Type': 'application/json' },
             ...options,
@@ -16,7 +62,11 @@ const API = {
         if (config.body instanceof FormData) {
             delete config.headers['Content-Type'];
         }
-        const res = await fetch(url, config);
+        return fetch(url, config);
+    },
+
+    async request(path, options = {}) {
+        const res = await this.fetch(path, options);
         if (!res.ok) {
             const err = await res.json().catch(() => ({ error: res.statusText }));
             throw new Error(err.error || 'Request failed');

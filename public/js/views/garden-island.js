@@ -17,7 +17,7 @@ Object.assign(GardenView, {
 
         // Load islands
         try {
-            this.islands = await fetch(`/api/garden/islands/${encodeURIComponent(this.assignee)}`).then(r => r.json());
+            this.islands = await API.fetch(`/garden/islands/${encodeURIComponent(this.assignee)}`).then(r => r.json());
             if (!this.currentIsland) {
                 this.currentIsland = this.islands.find(i => i.island_type === 'starter') || this.islands[0];
             }
@@ -28,7 +28,7 @@ Object.assign(GardenView, {
         // Load plots for current island
         try {
             if (this.currentIsland) {
-                this.plots = await fetch(`/api/garden/plots/${encodeURIComponent(this.assignee)}/${this.currentIsland.id}`).then(r => r.json());
+                this.plots = await API.fetch(`/garden/plots/${encodeURIComponent(this.assignee)}/${this.currentIsland.id}`).then(r => r.json());
             } else {
                 this.plots = await API.getPlots(this.assignee);
             }
@@ -38,11 +38,11 @@ Object.assign(GardenView, {
 
         // Load boats & expeditions
         try {
-            const boatData = await fetch(`/api/garden/boats/${encodeURIComponent(this.assignee)}`).then(r => r.json());
+            const boatData = await API.fetch(`/garden/boats/${encodeURIComponent(this.assignee)}`).then(r => r.json());
             this.boats = boatData.boats || [];
         } catch (e) { this.boats = []; }
         try {
-            this.expeditions = await fetch(`/api/garden/expeditions/${encodeURIComponent(this.assignee)}`).then(r => r.json());
+            this.expeditions = await API.fetch(`/garden/expeditions/${encodeURIComponent(this.assignee)}`).then(r => r.json());
         } catch (e) { this.expeditions = []; }
 
         this.render();
@@ -650,9 +650,8 @@ Object.assign(GardenView, {
         const catItem = this.catalog.find(c => c.type === plot?.tree_type);
         if (!confirm(`确定要铲除 ${catItem?.name || '这株植物'} 吗？\n（不会返还喵喵币）`)) return;
         try {
-            const res = await fetch('/api/garden/plots/remove', {
+            const res = await API.fetch('/garden/plots/remove', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ assignee: this.assignee, plot_id: plotId })
             });
             const data = await res.json();
@@ -675,9 +674,8 @@ Object.assign(GardenView, {
     async executeMoveToPlot(targetPlotId) {
         if (!this._movingPlotId) return;
         try {
-            const res = await fetch('/api/garden/plots/move', {
+            const res = await API.fetch('/garden/plots/move', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     assignee: this.assignee,
                     from_plot_id: this._movingPlotId,
@@ -696,9 +694,8 @@ Object.assign(GardenView, {
     async speedupPlot(plotId) {
         this.closePlotMenu();
         try {
-            const res = await fetch('/api/garden/plots/speedup', {
+            const res = await API.fetch('/garden/plots/speedup', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ assignee: this.assignee, plot_id: plotId })
             });
             const data = await res.json();
@@ -749,11 +746,11 @@ Object.assign(GardenView, {
 
     async showHarborPanel() {
         try {
-            const bd = await fetch(`/api/garden/boats/${encodeURIComponent(this.assignee)}`).then(r => r.json());
+            const bd = await API.fetch(`/garden/boats/${encodeURIComponent(this.assignee)}`).then(r => r.json());
             this.boats = bd.boats || [];
         } catch (e) { /* keep */ }
         try {
-            this.expeditions = await fetch(`/api/garden/expeditions/${encodeURIComponent(this.assignee)}`).then(r => r.json());
+            this.expeditions = await API.fetch(`/garden/expeditions/${encodeURIComponent(this.assignee)}`).then(r => r.json());
         } catch (e) { /* keep */ }
 
         document.querySelector('.harbor-panel')?.remove();
@@ -791,7 +788,7 @@ Object.assign(GardenView, {
 
     async buyBoat(type) {
         try {
-            const r = await fetch('/api/garden/boats/buy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assignee: this.assignee, boat_type: type }) }).then(r => { if (!r.ok) throw r; return r.json(); });
+            const r = await API.fetch('/garden/boats/buy', { method: 'POST', body: JSON.stringify({ assignee: this.assignee, boat_type: type }) }).then(r => { if (!r.ok) throw r; return r.json(); });
             App.syncCoins({ assignee: this.assignee, balance: r.balance });
             App.showToast(`🚢 购买成功！${r.boat.name}`, 'success');
             await this.open();
@@ -803,7 +800,7 @@ Object.assign(GardenView, {
 
     async startExpedition(boatId) {
         try {
-            const r = await fetch('/api/garden/expeditions/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assignee: this.assignee, boat_id: boatId }) }).then(r => { if (!r.ok) throw r; return r.json(); });
+            const r = await API.fetch('/garden/expeditions/start', { method: 'POST', body: JSON.stringify({ assignee: this.assignee, boat_id: boatId }) }).then(r => { if (!r.ok) throw r; return r.json(); });
             App.showToast(`⛵ ${r.character} 出发探索 ${r.targetIsland.name}！`, 'success');
             await this.open();
         } catch (e) {
