@@ -176,7 +176,11 @@ const App = {
         });
         this._safeInit('persona', () => this._initPersona());
         this._safeInit('theme', () => this.initTheme());
-        this._safeInit('header-coins-render', () => this._renderHeaderCoins(0));
+        this._safeInit('header-coins-render', () => {
+            const coinUser = this._getHeaderCoinUser?.();
+            const initialBalance = this._getCachedCoinBalance?.(coinUser) ?? 0;
+            this._renderHeaderCoins(initialBalance);
+        });
         this._safeInit('navigation', () => this.bindNavigation());
         this._safeInit('date-nav', () => this.bindDateNav());
         this._safeInit('love-counter', () => this.initLoveCounter());

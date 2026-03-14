@@ -39,6 +39,13 @@ Object.assign(App, {
         this._writeCoinCache(cache);
     },
 
+    _getCachedCoinBalance(assignee) {
+        if (!assignee) return 0;
+        const cache = this._readCoinCache();
+        if (!(assignee in cache)) return 0;
+        return this._normalizeCoinBalance(cache[assignee]);
+    },
+
     _getHeaderCoinUser() {
         if (this.currentView === 'garden' && typeof GardenView !== 'undefined') {
             return GardenView.assignee;
