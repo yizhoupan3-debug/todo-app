@@ -2,6 +2,12 @@ const express = require('express');
 const db = require('../db');
 
 const router = express.Router();
+const WAKEUP_REWARD_DEADLINE_HOUR = 9;
+
+function isWakeupRewardEligible(checkinType, now = new Date()) {
+    if (checkinType !== 'wakeup') return true;
+    return now.getHours() < WAKEUP_REWARD_DEADLINE_HOUR;
+}
 
 // GET /api/checkin — get records for a date + assignee
 router.get('/', (req, res) => {
@@ -74,7 +80,9 @@ router.post('/', (req, res) => {
         const defaultGoals = { water: 2000, wakeup: 1, skincare: 1, steps: 10000 };
         const goal = goalRow ? goalRow.goal : (defaultGoals[checkinType] || 1);
 
-        if (total >= goal) {
+        const rewardEligible = isWakeupRewardEligible(checkinType, now);
+
+        if (total >= goal && rewardEligible) {
             // Daily goal reached — check if already rewarded today
             const streak = db.prepare('SELECT * FROM checkin_streaks WHERE assignee = ? AND type = ?')
                 .get(assignee, checkinType);
@@ -139,7 +147,17 @@ router.post('/', (req, res) => {
             if (streak && !currentStreak) currentStreak = streak.current_streak;
         }
 
-        res.json({ record, total, coinsEarned: coinsEarned + streakBonus, currentStreak, streakBonus });
+        res.json({
+            record,
+            total,
+            coinsEarned: coinsEarned + streakBonus,
+            currentStreak,
+            streakBonus,
+            rewardEligible,
+            rewardBlockedReason: checkinType === 'wakeup' && !rewardEligible
+                ? `起床打卡需在 ${WAKEUP_REWARD_DEADLINE_HOUR}:00 前才有喵喵币`
+                : null,
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
