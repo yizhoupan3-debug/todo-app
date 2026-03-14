@@ -1,12 +1,20 @@
-const CACHE_VERSION = 'v36'; // Bump on each deploy
+const CACHE_VERSION = 'v37'; // Bump on each deploy
 const CACHE_NAME = `panpu-todo-${CACHE_VERSION}`;
 
 const STATIC_ASSETS = [
     '/',
     '/index.html',
     '/css/style.css',
+    '/css/base.css',
+    '/css/checkin.css',
+    '/css/pomodoro-stats.css',
+    '/css/garden.css',
     '/js/utils.js',
     '/js/app.js',
+    '/js/app-theme.js',
+    '/js/app-persona-nav.js',
+    '/js/app-coins.js',
+    '/js/widget-installer.js',
     '/js/api.js',
     '/js/ambient.js',
     '/js/views/daily.js',
@@ -14,6 +22,8 @@ const STATIC_ASSETS = [
     '/js/views/checkin.js',
     '/js/views/stats.js',
     '/js/views/garden.js',
+    '/js/views/garden-island.js',
+    '/js/views/garden-shop.js',
     '/js/components/task-modal.js',
     '/js/components/ics-import.js',
     '/js/components/pomodoro.js',
