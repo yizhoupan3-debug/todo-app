@@ -1,4 +1,6 @@
 Object.assign(App, {
+    _coinCacheStorageKey: 'panpu-coin-balance-cache',
+
     refreshCurrentView() {
         switch (this.currentView) {
             case 'daily': DailyView.refresh(); break;
@@ -13,6 +15,28 @@ Object.assign(App, {
 
     _normalizeCoinBalance(balance) {
         return Math.round((Number(balance) || 0) * 10) / 10;
+    },
+
+    _readCoinCache() {
+        try {
+            const raw = localStorage.getItem(this._coinCacheStorageKey);
+            return raw ? JSON.parse(raw) : {};
+        } catch (e) {
+            return {};
+        }
+    },
+
+    _writeCoinCache(cache) {
+        try {
+            localStorage.setItem(this._coinCacheStorageKey, JSON.stringify(cache));
+        } catch (e) { /* ignore cache write errors */ }
+    },
+
+    _setCachedCoinBalance(assignee, balance) {
+        if (!assignee) return;
+        const cache = this._readCoinCache();
+        cache[assignee] = this._normalizeCoinBalance(balance);
+        this._writeCoinCache(cache);
     },
 
     _getHeaderCoinUser() {
@@ -68,6 +92,7 @@ Object.assign(App, {
             : this._normalizeCoinBalance(balance);
 
         this._renderHeaderCoins(nextBalance);
+        this._setCachedCoinBalance(assignee, nextBalance);
 
         if (animate && normalizedDelta > 0) {
             this._animateHeaderCoinGain(normalizedDelta);
@@ -82,7 +107,9 @@ Object.assign(App, {
     _refreshHeaderCoins() {
         const coinUser = this._getHeaderCoinUser();
         API.getCoins(coinUser).then(d => {
-            this._renderHeaderCoins(this._normalizeCoinBalance(d.balance));
+            const balance = this._normalizeCoinBalance(d.balance);
+            this._setCachedCoinBalance(coinUser, balance);
+            this._renderHeaderCoins(balance);
         }).catch(e => { console.warn('Header coin sync failed:', e); });
     },
 

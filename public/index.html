@@ -28,9 +28,30 @@
       try {
         var m = localStorage.getItem('panpu-mode');
         var t = localStorage.getItem('panpu-theme');
+        var p = localStorage.getItem('panpu-persona');
+        var lp = localStorage.getItem('panpu-last-persona');
+        var rawCoinCache = localStorage.getItem('panpu-coin-balance-cache');
+        var validPersona = ['潘潘', '蒲蒲', 'all'].indexOf(p) !== -1 ? p : '潘潘';
+        var validLastPersona = ['潘潘', '蒲蒲'].indexOf(lp) !== -1 ? lp : '潘潘';
+        var scopedPersona = validPersona === 'all' ? validLastPersona : validPersona;
         var d = document.documentElement;
         if (m) d.setAttribute('data-mode', m);
         if (t) d.setAttribute('data-theme', t);
+        window.__PANPU_BOOT_PERSONA__ = validPersona;
+        window.__PANPU_BOOT_LAST_PERSONA__ = validLastPersona;
+        window.__PANPU_BOOT_STATE__ = {
+          persona: validPersona,
+          lastPersona: validLastPersona,
+          scopedPersona: scopedPersona,
+          coinCache: rawCoinCache ? JSON.parse(rawCoinCache) : {}
+        };
+        window.__PANPU_APPLY_ASSIGNEE_FILTER__ = function(rootSelector, assignee, buttonSelector) {
+          var root = typeof rootSelector === 'string' ? document.querySelector(rootSelector) : rootSelector;
+          if (!root) return;
+          root.querySelectorAll(buttonSelector || '[data-assignee]').forEach(function(btn) {
+            btn.classList.toggle('active', btn.dataset.assignee === assignee);
+          });
+        };
       } catch(e) {}
     })();
   </script>
@@ -38,6 +59,14 @@
     window.__PANPU_ASSET_VERSION__ = '__ASSET_VERSION__';
     window.__PANPU_DEFAULT_BACKEND_ORIGIN__ = 'http://43.99.80.200';
   </script>
+  <style>
+    #persona-toggle[data-booting="true"] {
+      visibility: hidden;
+    }
+    #header-coin-btn[data-booting="true"] {
+      visibility: hidden;
+    }
+  </style>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
   <!-- CSS loaded in parallel (no @import waterfall) -->
@@ -207,11 +236,71 @@
           <button class="date-nav-btn today-btn" id="btn-today">今天</button>
         </div>
       </div>
-      <button class="persona-toggle" id="persona-toggle" title="切换角色">
+      <button class="persona-toggle" id="persona-toggle" title="切换角色" data-booting="true">
         <img class="persona-toggle-img" id="persona-toggle-img" src="/img/panpan.png" alt="">
         <span class="persona-toggle-name" id="persona-toggle-name">潘潘</span>
       </button>
-      <button class="header-coin-btn" id="header-coin-btn" title="喵喵币"></button>
+      <script>
+        (function() {
+          var btn = document.getElementById('persona-toggle');
+          var img = document.getElementById('persona-toggle-img');
+          var name = document.getElementById('persona-toggle-name');
+          if (!btn || !img || !name) return;
+
+          var persona = window.__PANPU_BOOT_PERSONA__;
+          if (!persona || ['潘潘', '蒲蒲', 'all'].indexOf(persona) === -1) persona = '潘潘';
+
+          var map = {
+            '潘潘': { src: '/img/panpan.png', label: '潘潘', cls: 'persona-panpan' },
+            '蒲蒲': { src: '/img/pupu.png', label: '蒲蒲', cls: 'persona-pupu' },
+            'all': { src: '/img/all.png', label: '全部', cls: 'persona-all' }
+          };
+          var current = map[persona] || map['潘潘'];
+          img.src = current.src;
+          name.textContent = current.label;
+          btn.className = 'persona-toggle ' + current.cls;
+          btn.removeAttribute('data-booting');
+        })();
+      </script>
+      <button class="header-coin-btn" id="header-coin-btn" title="喵喵币" data-booting="true"></button>
+      <script>
+        (function() {
+          var boot = window.__PANPU_BOOT_STATE__ || {};
+          var dateEl = document.getElementById('date-display');
+          var loveEl = document.getElementById('love-days');
+          var coinBtn = document.getElementById('header-coin-btn');
+
+          if (dateEl) {
+            var now = new Date();
+            var weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            dateEl.textContent = (now.getMonth() + 1) + '月' + now.getDate() + '日 ' + weekdays[now.getDay()];
+          }
+
+          if (loveEl) {
+            var startDate = new Date(2024, 3, 1);
+            var diffDays = Math.floor((Date.now() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+            loveEl.textContent = String(Math.max(0, diffDays));
+          }
+
+          if (!coinBtn) return;
+          if (boot.persona === 'all') {
+            coinBtn.style.display = 'none';
+            coinBtn.removeAttribute('data-booting');
+            return;
+          }
+
+          var cache = boot.coinCache || {};
+          var balance = cache[boot.scopedPersona];
+          var format = function(value) {
+            var n = Number(value);
+            if (!isFinite(n)) return '0';
+            return Number.isInteger(n) ? String(n) : n.toFixed(1);
+          };
+          coinBtn.innerHTML = '<img class="cat-coin-icon" src="/img/meow-coin.png?v=__ASSET_VERSION__" alt="喵喵币"> <span id="header-coins">' +
+            format(balance) + '</span> <span class="coin-label">喵喵币</span>';
+          coinBtn.removeAttribute('data-booting');
+        })();
+      </script>
       <button class="header-icon-btn" id="btn-ambient" title="环境音">
         <i data-lucide="volume-2"></i> <span class="ambient-badge"></span>
       </button>
@@ -243,6 +332,9 @@
             <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
           </button>
         </div>
+        <script>
+          window.__PANPU_APPLY_ASSIGNEE_FILTER__('.daily-person-filter', (window.__PANPU_BOOT_STATE__ || {}).persona || 'all');
+        </script>
       </div>
       <div class="task-columns">
         <div class="task-column" id="col-todo">
@@ -280,6 +372,9 @@
             <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
           </button>
         </div>
+        <script>
+          window.__PANPU_APPLY_ASSIGNEE_FILTER__('.monthly-person-filter', (window.__PANPU_BOOT_STATE__ || {}).persona || 'all');
+        </script>
         <div class="monthly-status-filter">
           <button class="filter-pill small active" data-status="all">全部</button>
           <button class="filter-pill small" data-status="todo">未完成</button>
@@ -300,6 +395,9 @@
             <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
           </button>
         </div>
+        <script>
+          window.__PANPU_APPLY_ASSIGNEE_FILTER__('.checkin-person-toggle', (window.__PANPU_BOOT_STATE__ || {}).scopedPersona || '潘潘', '.checkin-person-btn');
+        </script>
 
         <!-- Landing: checkin item cards -->
         <div class="checkin-landing" id="checkin-landing">
@@ -519,6 +617,9 @@
               <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
             </button>
           </div>
+          <script>
+            window.__PANPU_APPLY_ASSIGNEE_FILTER__('.stats-person-filter', (window.__PANPU_BOOT_STATE__ || {}).scopedPersona || '潘潘');
+          </script>
           <div class="stats-range-toggle">
             <button class="stats-range-btn active" data-range="week">近7天</button>
             <button class="stats-range-btn" data-range="month">近30天</button>

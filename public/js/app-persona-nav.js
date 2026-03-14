@@ -1,7 +1,7 @@
 Object.assign(App, {
     _initPersona() {
-        const saved = localStorage.getItem('panpu-persona');
-        const savedLast = localStorage.getItem('panpu-last-persona');
+        const saved = window.__PANPU_BOOT_PERSONA__ ?? localStorage.getItem('panpu-persona');
+        const savedLast = window.__PANPU_BOOT_LAST_PERSONA__ ?? localStorage.getItem('panpu-last-persona');
         if (savedLast && ['潘潘', '蒲蒲'].includes(savedLast)) {
             this.lastPersona = savedLast;
         }

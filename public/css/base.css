@@ -2279,7 +2279,7 @@ textarea:focus {
   -webkit-backdrop-filter: var(--glass-blur);
   border-radius: var(--radius-xl);
   width: 100%;
-  max-width: 480px;
+  max-width: 420px;
   max-height: 85vh;
   overflow-y: auto;
   box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.05);
@@ -2308,27 +2308,29 @@ textarea:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px 12px;
+  padding: 18px 22px 14px;
   position: sticky;
   top: 0;
   background: var(--modal-bg);
   z-index: 1;
+  border-bottom: 1px solid var(--border);
 }
 
 .modal-header h3 {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .modal-close {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   transition: all var(--transition);
 }
 
@@ -2340,24 +2342,60 @@ textarea:focus {
 
 /* ===== FORM ===== */
 form {
-  padding: 12px 24px 24px;
+  padding: 14px 22px 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .form-group label {
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: var(--primary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  text-transform: none;
+  letter-spacing: 0.03em;
+}
+
+/* Refined inputs */
+#task-modal input[type="text"],
+#task-modal input[type="date"],
+#task-modal input[type="time"],
+#task-modal input[type="number"],
+#task-modal select,
+#task-modal textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  color: var(--text);
+  font-size: 0.88rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#task-modal input[type="text"]:focus,
+#task-modal input[type="date"]:focus,
+#task-modal input[type="time"]:focus,
+#task-modal select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+#task-modal input[type="text"]::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+#task-modal select {
+  cursor: pointer;
 }
 
 /* ── NLP Date Pill ── */
@@ -2439,7 +2477,7 @@ form {
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
 .checkbox-label {
@@ -2473,19 +2511,21 @@ form {
 .form-actions {
   display: flex;
   gap: 8px;
-  justify-content: flex-end;
-  padding-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
 }
 
 .btn {
   padding: 10px 20px;
   border-radius: var(--radius-sm);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
   transition: all var(--transition);
 }
 
 .btn-primary {
+  flex: 1;
   background: linear-gradient(135deg, var(--primary), var(--primary-light));
   color: white;
   box-shadow: var(--shadow-glow);
