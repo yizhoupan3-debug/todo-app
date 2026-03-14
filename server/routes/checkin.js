@@ -65,6 +65,11 @@ router.post('/', (req, res) => {
     const today = date || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const checkinType = type || 'water';
 
+    const VALID_TYPES = ['water', 'wakeup', 'goout', 'skincare', 'steps'];
+    if (!VALID_TYPES.includes(checkinType)) {
+        return res.status(400).json({ error: `invalid type: ${checkinType}. Valid: ${VALID_TYPES.join(', ')}` });
+    }
+
     try {
         const result = db.prepare(`
             INSERT INTO checkin_records (type, amount, assignee, date)
@@ -112,7 +117,7 @@ router.post('/', (req, res) => {
                 if (streak) {
                     const yesterday = new Date(today);
                     yesterday.setDate(yesterday.getDate() - 1);
-                    const yesterdayStr = yesterday.toISOString().slice(0, 10);
+                    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
                     if (streak.last_date === yesterdayStr) {
                         newStreak = streak.current_streak + 1;
                     }

@@ -119,19 +119,35 @@ app.get('*', (req, res) => {
 
 // Auto-complete timer — check every 60 seconds
 const db = require('./db');
+const { TASK_REWARD } = require('./routes/garden-shared');
 setInterval(() => {
     try {
         const now = new Date();
         const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-        const result = db.prepare(`
-            UPDATE tasks SET status = 'done', updated_at = datetime('now', 'localtime')
+        // Find tasks to auto-complete (need their info for coin rewards)
+        const tasksToComplete = db.prepare(`
+            SELECT id, assignee, title FROM tasks
             WHERE auto_complete = 1 AND status = 'todo' AND due_date = ? AND due_time IS NOT NULL AND due_time <= ?
-        `).run(todayStr, timeStr);
+        `).all(todayStr, timeStr);
 
-        if (result.changes > 0) {
-            console.log(`⏰ 自动完成了 ${result.changes} 个任务`);
+        if (tasksToComplete.length > 0) {
+            const completeAndReward = db.transaction(() => {
+                for (const task of tasksToComplete) {
+                    db.prepare(`UPDATE tasks SET status = 'done', updated_at = datetime('now', 'localtime') WHERE id = ?`)
+                        .run(task.id);
+                    // Award coins — same as manual completion in tasks.js PUT route
+                    try {
+                        db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
+                            .run(TASK_REWARD, task.assignee);
+                        db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                            .run(task.assignee, TASK_REWARD, 'task_done', task.title);
+                    } catch (e) { console.error('Auto-complete coin reward error:', e.message); }
+                }
+            });
+            completeAndReward();
+            console.log(`⏰ 自动完成了 ${tasksToComplete.length} 个任务 (+${TASK_REWARD} 币/个)`);
             io.emit('task:updated', { autoCompleted: true });
         }
     } catch (err) {

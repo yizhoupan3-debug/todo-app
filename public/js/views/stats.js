@@ -3,7 +3,7 @@
  */
 const StatsView = {
     currentRange: 'week', // 'week' | 'month'
-    currentAssignee: '潘潘',
+    currentAssignee: null, // initialized from App.activePersona in open()/load()
     data: null,
 
     init() {
@@ -50,6 +50,12 @@ const StatsView = {
     },
 
     async load() {
+        // Initialize from global persona if not yet set
+        if (!this.currentAssignee) {
+            this.currentAssignee = App.activePersona || '潘潘';
+            document.querySelectorAll('.stats-person-filter .filter-pill').forEach(b =>
+                b.classList.toggle('active', b.dataset.assignee === this.currentAssignee));
+        }
         try {
             this.data = await API.getStats({
                 range: this.currentRange,
