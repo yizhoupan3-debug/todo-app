@@ -506,9 +506,12 @@ router.get('/expeditions/:assignee', (req, res) => {
                         const insertPlot = db.prepare(
                             'INSERT INTO garden_plots (assignee, x, y, status, obstacle_type, island_id) VALUES (?, ?, ?, ?, ?, ?)'
                         );
+                        const forestRows = Math.max(1, Math.ceil((Number(island.grid_h) || 4) * 0.5));
                         for (let y = 0; y < island.grid_h; y++) {
                             for (let x = 0; x < island.grid_w; x++) {
-                                const obs = obstacles[Math.floor(Math.random() * obstacles.length)];
+                                const obs = y < forestRows
+                                    ? 'wild_tree'
+                                    : obstacles[Math.floor(Math.random() * obstacles.length)];
                                 insertPlot.run(exp.assignee, x, y, 'wasteland', obs, island.id);
                             }
                         }

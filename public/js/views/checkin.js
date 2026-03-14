@@ -273,10 +273,14 @@ const CheckinView = {
             });
             this.todayTotal = result.total;
             this.loadWaterData();
+            if (result.coinsEarned > 0) {
+                App.syncCoins({ assignee: this.currentAssignee, delta: result.coinsEarned, animate: true });
+            }
             const glass = document.getElementById('glass-container');
             glass.classList.add('glass-pulse');
             setTimeout(() => glass.classList.remove('glass-pulse'), 600);
-            App.showToast(`💧 +${amount}ml`, 'success');
+            const coinMsg = result.coinsEarned > 0 ? ` · +${result.coinsEarned} 喵喵币` : '';
+            App.showToast(`💧 +${amount}ml${coinMsg}`, 'success');
         } catch (err) {
             App.showToast('记录失败', 'error');
         }
@@ -377,12 +381,16 @@ const CheckinView = {
 
     async stampWakeup() {
         try {
-            await API.addCheckin({
+            const result = await API.addCheckin({
                 type: 'wakeup',
                 amount: 1,
                 assignee: this.currentAssignee
             });
-            App.showToast('⏰ 起床打卡成功！', 'success');
+            if (result.coinsEarned > 0) {
+                App.syncCoins({ assignee: this.currentAssignee, delta: result.coinsEarned, animate: true });
+            }
+            const coinMsg = result.coinsEarned > 0 ? ` · +${result.coinsEarned} 喵喵币` : '';
+            App.showToast(`⏰ 起床打卡成功！${coinMsg}`, 'success');
             this.loadWakeupData();
             this.loadWakeupCard();
         } catch (err) {
@@ -442,12 +450,16 @@ const CheckinView = {
 
     async stampSkincare() {
         try {
-            await API.addCheckin({
+            const result = await API.addCheckin({
                 type: 'skincare',
                 amount: 1,
                 assignee: this.currentAssignee
             });
-            App.showToast('🧴 护肤打卡成功！', 'success');
+            if (result.coinsEarned > 0) {
+                App.syncCoins({ assignee: this.currentAssignee, delta: result.coinsEarned, animate: true });
+            }
+            const coinMsg = result.coinsEarned > 0 ? ` · +${result.coinsEarned} 喵喵币` : '';
+            App.showToast(`🧴 护肤打卡成功！${coinMsg}`, 'success');
             this.loadSkincareData();
             this.loadSkincareCard();
         } catch (err) {
@@ -547,7 +559,11 @@ const CheckinView = {
             this.stepsTotal = result.total;
             this.loadStepsData();
             this.loadStepsCard();
-            App.showToast(`🚶 +${amount}步`, 'success');
+            if (result.coinsEarned > 0) {
+                App.syncCoins({ assignee: this.currentAssignee, delta: result.coinsEarned, animate: true });
+            }
+            const coinMsg = result.coinsEarned > 0 ? ` · +${result.coinsEarned} 喵喵币` : '';
+            App.showToast(`🚶 +${amount}步${coinMsg}`, 'success');
         } catch (err) {
             App.showToast('记录失败', 'error');
         }

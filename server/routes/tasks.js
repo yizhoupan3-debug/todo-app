@@ -199,6 +199,9 @@ router.put('/:id', (req, res) => {
     values.push(id);
 
     try {
+        const prevTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
+        if (!prevTask) return res.status(404).json({ error: 'Task not found' });
+
         db.prepare(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`).run(...values);
 
         const task = db.prepare(`
@@ -211,7 +214,7 @@ router.put('/:id', (req, res) => {
 
         // ── Award coins when task completed ──
         let coinsEarned = 0;
-        if (fields.status === 'done') {
+        if (fields.status === 'done' && prevTask.status !== 'done') {
             const TASK_REWARD = 1.5;
             try {
                 db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')

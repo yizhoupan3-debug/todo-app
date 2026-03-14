@@ -245,6 +245,51 @@ const GardenView = {
         `).join('');
     },
 
+    getPlotLayout(plot, index = 0) {
+        const island = this.currentIsland || {};
+        const gridW = Math.max(1, Number(island.grid_w) || 6);
+        const gridH = Math.max(1, Number(island.grid_h) || 4);
+        const x = Math.max(0, Number(plot?.x) || 0);
+        const y = Math.max(0, Number(plot?.y) || 0);
+        const xRatio = gridW === 1 ? 0.5 : x / Math.max(1, gridW - 1);
+        const yRatio = gridH === 1 ? 0.5 : y / Math.max(1, gridH - 1);
+
+        const rowTemplates = [
+            { top: 44, left: 12, right: 72, curve: 2.8, scale: 0.84 },
+            { top: 54, left: 8, right: 74, curve: 2.1, scale: 0.9 },
+            { top: 67, left: 18, right: 67, curve: 1.1, scale: 0.96 },
+            { top: 79, left: 26, right: 63, curve: 0.4, scale: 1.02 },
+            { top: 86, left: 32, right: 60, curve: -0.2, scale: 1.04 },
+        ];
+
+        const rowPos = yRatio * (rowTemplates.length - 1);
+        const lowerIndex = Math.floor(rowPos);
+        const upperIndex = Math.min(rowTemplates.length - 1, lowerIndex + 1);
+        const mix = rowPos - lowerIndex;
+        const lerp = (a, b) => a + (b - a) * mix;
+        const lower = rowTemplates[lowerIndex];
+        const upper = rowTemplates[upperIndex];
+        const row = {
+            top: lerp(lower.top, upper.top),
+            left: lerp(lower.left, upper.left),
+            right: lerp(lower.right, upper.right),
+            curve: lerp(lower.curve, upper.curve),
+            scale: lerp(lower.scale, upper.scale),
+        };
+
+        const left = row.left + (row.right - row.left) * xRatio;
+        const top = row.top + Math.sin(xRatio * Math.PI) * row.curve + ((x + index) % 2 === 0 ? -0.45 : 0.45);
+        const zone = yRatio <= 0.38 ? 'forest' : yRatio >= 0.78 ? 'front' : 'field';
+
+        return {
+            left,
+            top,
+            scale: row.scale,
+            zone,
+            zIndex: Math.round(7 + yRatio * 12),
+        };
+    },
+
     _getViewportBounds(world) {
         if (!world) return { left: 0, right: 0, top: 0, bottom: 0 };
         const land = document.getElementById('island-land');
@@ -322,7 +367,6 @@ const GardenView = {
 
     /* Update only the dynamic parts of the garden view (plots, HUD, stats bar) */
     _updateDynamicContent() {
-        const PP = this.getIslandPlotPositions();
         this.closePlotMenu();
 
         // Update plots
@@ -330,8 +374,7 @@ const GardenView = {
         if (land) {
             land.querySelectorAll('.iplot').forEach(p => p.remove());
             const plotsHtml = this.plots.map((plot, i) => {
-                const p = PP[i] || [50, 50];
-                return this.renderIslandPlot(plot, p[0], p[1]);
+                return this.renderIslandPlot(plot, this.getPlotLayout(plot, i));
             }).join('');
             land.insertAdjacentHTML('beforeend', plotsHtml);
             land.querySelectorAll('.iplot').forEach(plotEl => {
@@ -446,8 +489,6 @@ const GardenView = {
         const discoveredCount = this.islands.filter(i => i.discovered).length;
         const totalCount = this.islands.length;
         const activeExp = this.expeditions.find(e => e.status === 'sailing');
-
-        const PP = this.getIslandPlotPositions();
 
         el.innerHTML = `
             <div class="island-hud">
@@ -617,8 +658,6 @@ const GardenView = {
                             <div class="hut-label">\u{1F3E0} 小屋</div>
                         </div>
 
-                        ${this.renderForestButtons()}
-
                         <div class="boom-harbor" id="harbor-building" style="left:92%;top:79%" title="港口 — 点击管理">
                             <span class="harbor-icon">\u26F5</span>
                             <div class="hut-label">\u2693 港口</div>
@@ -636,10 +675,7 @@ const GardenView = {
                         <div class="ambient-particle p2">\u{1F343}</div>
                         <div class="ambient-particle p4">\u{1F98B}</div>
 
-                        ${this.plots.map((plot, i) => {
-            const p = PP[i] || [50, 60];
-            return this.renderIslandPlot(plot, p[0], p[1]);
-        }).join('')}
+                        ${this.plots.map((plot, i) => this.renderIslandPlot(plot, this.getPlotLayout(plot, i))).join('')}
                     </div>
 
                 </div>
@@ -666,15 +702,18 @@ const GardenView = {
         this._staticRendered = true;
     },
 
-    renderIslandPlot(plot, x, y) {
+    renderIslandPlot(plot, layout) {
+        const { left, top, zone, scale, zIndex } = layout || {};
+        const style = `left:${left ?? 50}%;top:${top ?? 60}%;--plot-scale:${scale ?? 1};z-index:${zIndex ?? 8}`;
+        const zoneClass = zone ? `zone-${zone}` : '';
         if (plot.status === 'wasteland') {
             const obs = this.obstacleMap[plot.obstacle_type] || this.obstacleMap.rock;
-            return `<div class="iplot wasteland" data-plot-id="${plot.id}" style="left:${x}%;top:${y}%" title="${obs.name} · 开荒 ${obs.cost} 喵喵币">
+            return `<div class="iplot wasteland ${zoneClass}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="${obs.name} · 开荒 ${obs.cost} 喵喵币">
                 <img src="${obs.img}" alt="${obs.name}" class="iplot-img"><span class="iplot-cost">⛏️${obs.cost}</span></div>`;
         }
         if (plot.status === 'cleared') {
             const sel = this.selectedTree;
-            return `<div class="iplot cleared ${sel ? 'plantable' : ''}" data-plot-id="${plot.id}" style="left:${x}%;top:${y}%" title="空地">
+            return `<div class="iplot cleared ${zoneClass} ${sel ? 'plantable' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="空地">
                 <div class="iplot-empty">${sel ? '🌱' : ''}</div></div>`;
         }
         const catItem = this.catalog.find(c => c.type === plot.tree_type);
@@ -682,7 +721,7 @@ const GardenView = {
         const stage = this.getGrowthStage(gm);
         const pct = Math.min(100, Math.round(gm / 150 * 100));
         let imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.svg';
-        return `<div class="iplot planted stage-${stage}" data-plot-id="${plot.id}" style="left:${x}%;top:${y}%" title="${catItem?.name || plot.tree_type} · ${this.getGrowthLabel(gm)}">
+        return `<div class="iplot planted ${zoneClass} stage-${stage}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="${catItem?.name || plot.tree_type} · ${this.getGrowthLabel(gm)}">
             <img src="${imgSrc}" alt="" class="iplot-img"><div class="iplot-bar"><div class="iplot-bar-fill" style="width:${pct}%"></div></div></div>`;
     },
 
@@ -1041,8 +1080,8 @@ const GardenView = {
             });
             const data = await res.json();
             if (!res.ok) { Utils.toast(data.error || '收取失败'); return; }
+            App.syncCoins({ assignee: this.assignee, balance: data.balance, delta: data.reward, animate: data.reward > 0 });
             Utils.toast(`💰 收获 ${data.reward} 喵喵币！`, 'success');
-            this.balance = data.balance;
             await this.refreshData();
         } catch (e) { Utils.toast('网络错误'); }
     },
@@ -1107,8 +1146,8 @@ const GardenView = {
             });
             const data = await res.json();
             if (!res.ok) { Utils.toast(data.error || '加速失败'); return; }
+            App.syncCoins({ assignee: this.assignee, balance: data.balance });
             Utils.toast(`⏩ 加速成功！花费 ${data.cost} 喵喵币`, 'success');
-            this.balance = data.balance;
             this._staticRendered = false;
             await this.open();
         } catch (e) { Utils.toast('网络错误'); }
@@ -1198,8 +1237,7 @@ const GardenView = {
     async buyBoat(type) {
         try {
             const r = await fetch('/api/garden/boats/buy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ assignee: this.assignee, boat_type: type }) }).then(r => { if (!r.ok) throw r; return r.json(); });
-            this.balance = r.balance;
-            this.updateHeaderCoins();
+            App.syncCoins({ assignee: this.assignee, balance: r.balance });
             App.showToast(`🚢 购买成功！${r.boat.name}`, 'success');
             await this.open();
         } catch (e) {
@@ -1229,8 +1267,7 @@ const GardenView = {
 
         try {
             const result = await API.clearPlot({ assignee: this.assignee, plot_id: plotId });
-            this.balance = result.balance;
-            this.updateHeaderCoins();
+            App.syncCoins({ assignee: this.assignee, balance: result.balance });
             App.showToast(`⛏️ 开荒成功！-${result.cost} 喵喵币`, 'success');
             await this.open();
         } catch (e) {
@@ -1252,9 +1289,8 @@ const GardenView = {
                 tree_type: item.type,
                 plot_id: plotId,
             });
-            this.balance = result.balance;
+            App.syncCoins({ assignee: this.assignee, balance: result.balance });
             this.selectedTree = null;
-            this.updateHeaderCoins();
             App.showToast(`🌱 种下了${item.name}！`, 'success');
             await this.open();
         } catch (e) {
@@ -1662,17 +1698,13 @@ const GardenView = {
                     reason: 'pomodoro',
                     detail: `${focusMinutes}分钟专注 · ${factor}%`,
                 });
-                if (assignee === this.assignee) this.balance = result.balance;
-                if (assignee === this.shopAssignee) this.shopBalance = result.balance;
-                this.updateHeaderCoins();
+                App.syncCoins({ assignee, balance: result.balance, delta: amount, animate: true });
             }
 
             try {
                 const growResult = await API.growTree({ assignee, minutes: focusMinutes });
                 if (growResult.coinDrop > 0) {
-                    if (assignee === this.assignee) this.balance = Utils.roundCoin(this.balance + growResult.coinDrop);
-                    if (assignee === this.shopAssignee) this.shopBalance = Utils.roundCoin(this.shopBalance + growResult.coinDrop);
-                    this.updateHeaderCoins();
+                    App.syncCoins({ assignee, delta: growResult.coinDrop, animate: true });
                 }
 
                 let msg = '';
@@ -1715,9 +1747,7 @@ const GardenView = {
                 reason: 'checkin',
                 detail: type,
             });
-            if (assignee === this.assignee) this.balance = result.balance;
-            if (assignee === this.shopAssignee) this.shopBalance = result.balance;
-            this.updateHeaderCoins();
+            App.syncCoins({ assignee, balance: result.balance, delta: amount, animate: true });
             App.showToast(`+${amount} 喵喵币！`, 'success');
         } catch (e) {
             App.showToast('打卡奖励获取失败', 'error');

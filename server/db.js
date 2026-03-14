@@ -269,7 +269,7 @@ if (plotCount.count === 0) {
           if (isCenter) {
             insertPlot.run(island.assignee, x, y, 'cleared', null, island.id);
           } else {
-            const obs = obstacles[Math.floor(Math.random() * obstacles.length)];
+            const obs = y < 2 ? 'wild_tree' : obstacles[Math.floor(Math.random() * obstacles.length)];
             insertPlot.run(island.assignee, x, y, 'wasteland', obs, island.id);
           }
         }
@@ -363,5 +363,29 @@ try {
       db.prepare('INSERT INTO app_meta (key, value) VALUES (?, ?)').run(grantKey, '1');
     });
     ensureInitialCoins();
+  }
+} catch (e) { /* ignore migration failures */ }
+
+// One-time migration: convert island upper rows into forest wasteland so the forest layer is truly cuttable.
+try {
+  const migrationKey = 'forest_plot_obstacles_v1';
+  const alreadyDone = db.prepare('SELECT value FROM app_meta WHERE key = ?').get(migrationKey);
+  if (!alreadyDone) {
+    const islands = db.prepare('SELECT id, grid_h FROM islands').all();
+    const updateForestPlots = db.prepare(`
+      UPDATE garden_plots
+      SET obstacle_type = 'wild_tree'
+      WHERE island_id = ?
+        AND status = 'wasteland'
+        AND y < ?
+    `);
+    const migrateForestPlots = db.transaction(() => {
+      for (const island of islands) {
+        const forestRows = Math.max(1, Math.ceil((Number(island.grid_h) || 4) * 0.5));
+        updateForestPlots.run(island.id, forestRows);
+      }
+      db.prepare('INSERT INTO app_meta (key, value) VALUES (?, ?)').run(migrationKey, '1');
+    });
+    migrateForestPlots();
   }
 } catch (e) { /* ignore migration failures */ }

@@ -164,10 +164,14 @@ const DailyView = {
                 try {
                     const updated = await API.updateTask(taskId, { status: nextStatus });
                     App.socket.emit('task:updated', updated);
+                    if (nextStatus === 'done' && updated.coinsEarned > 0) {
+                        App.syncCoins({ assignee: task.assignee, delta: updated.coinsEarned, animate: true });
+                    }
                     // Full re-render to move card to correct column
                     this.loadTasks();
                     if (nextStatus === 'done') {
-                        App.showToast('✅ 任务完成！', 'success');
+                        const rewardMsg = updated.coinsEarned > 0 ? ` +${updated.coinsEarned} 喵喵币` : '';
+                        App.showToast(`✅ 任务完成！${rewardMsg}`, 'success');
                     }
                 } catch (err) {
                     // Rollback optimistic update

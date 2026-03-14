@@ -6081,14 +6081,28 @@ form {
   justify-content: center;
   cursor: pointer;
   transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), box-shadow 0.25s;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(var(--plot-scale, 1));
   z-index: 5;
   border-radius: 14px;
 }
 
 .iplot:hover {
-  transform: translate(-50%, -50%) scale(1.12);
+  transform: translate(-50%, -50%) scale(calc(var(--plot-scale, 1) * 1.12));
   z-index: 15;
+}
+
+.iplot.zone-forest.wasteland {
+  background: rgba(30, 72, 34, 0.16);
+  border-color: rgba(78, 128, 74, 0.34);
+}
+
+.iplot.zone-forest.cleared {
+  background: rgba(92, 150, 74, 0.14);
+  border-color: rgba(130, 205, 112, 0.28);
+}
+
+.iplot.zone-front {
+  filter: saturate(1.03) brightness(1.02);
 }
 
 .iplot.wasteland {
