@@ -27,6 +27,7 @@ const MonthlyView = {
         document.querySelectorAll('.monthly-person-filter .filter-pill').forEach(btn => {
             btn.addEventListener('click', () => {
                 const assignee = btn.dataset.assignee;
+                App.setPersona(assignee, { refresh: false });
                 this.localAssignee = assignee;
                 document.querySelectorAll('.monthly-person-filter .filter-pill').forEach(b =>
                     b.classList.toggle('active', b.dataset.assignee === assignee));

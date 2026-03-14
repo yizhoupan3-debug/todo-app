@@ -15,9 +15,7 @@ const CheckinView = {
         // Person toggle
         document.querySelectorAll('.checkin-person-btn').forEach(btn => {
             btn.addEventListener('click', () => {
-                this.currentAssignee = btn.dataset.assignee;
-                document.querySelectorAll('.checkin-person-btn').forEach(b =>
-                    b.classList.toggle('active', b.dataset.assignee === this.currentAssignee));
+                App.setPersona(btn.dataset.assignee, { refresh: false });
                 this._reloadCurrentPage();
             });
         });

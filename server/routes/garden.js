@@ -66,7 +66,7 @@ router.get('/coins/history/:assignee', (req, res) => {
 router.get('/plots/:assignee', (req, res) => {
     try {
         const plots = db.prepare(
-            `SELECT gp.*, t.tree_type, t.growth_minutes, t.status as tree_status, t.planted_at
+            `SELECT gp.*, t.tree_type, t.growth_minutes, t.status as tree_status, t.planted_at, t.last_harvested
              FROM garden_plots gp
              LEFT JOIN trees t ON gp.tree_id = t.id
              WHERE gp.assignee = ?
@@ -531,7 +531,7 @@ router.get('/expeditions/:assignee', (req, res) => {
 router.get('/plots/:assignee/:islandId', (req, res) => {
     try {
         const plots = db.prepare(
-            `SELECT gp.*, t.tree_type, t.growth_minutes, t.status as tree_status, t.planted_at
+            `SELECT gp.*, t.tree_type, t.growth_minutes, t.status as tree_status, t.planted_at, t.last_harvested
              FROM garden_plots gp
              LEFT JOIN trees t ON gp.tree_id = t.id
              WHERE gp.assignee = ? AND gp.island_id = ?

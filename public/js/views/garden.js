@@ -141,7 +141,6 @@ const GardenView = {
     _staticRendered: false,
     _backpackSort: { by: 'price', order: 'asc' },
     _plotMenuCleanup: null,
-    _forestHintShown: false,
 
     init() { },
 
@@ -202,47 +201,6 @@ const GardenView = {
         const balEl = el.querySelector('.garden-balance strong');
         if (balEl) balEl.textContent = Utils.formatCoinBalance(this.shopBalance);
         this.updateHeaderCoins();
-    },
-
-    getIslandPlotPositions() {
-        return [
-            [20, 66], [34, 62], [49, 61], [64, 63],
-            [18, 73], [32, 69], [47, 68], [62, 69], [77, 72],
-            [26, 79], [41, 76], [56, 75], [71, 78],
-        ];
-    },
-
-    getForestButtonLayout() {
-        return [
-            { left: 10, top: 40, cost: 120, img: '/img/trees/pine.svg', width: 80, tilt: -3 },
-            { left: 20, top: 37, cost: 110, img: '/img/trees/oak.svg', width: 76, tilt: 2 },
-            { left: 31, top: 39, cost: 105, img: '/img/trees/pine.svg', width: 70, tilt: -1 },
-            { left: 43, top: 36, cost: 120, img: '/img/trees/sakura.svg', width: 74, tilt: 2 },
-            { left: 55, top: 37, cost: 100, img: '/img/trees/oak.svg', width: 72, tilt: -2 },
-            { left: 67, top: 39, cost: 90, img: '/img/trees/maple.svg', width: 62, tilt: 3 },
-            { left: 79, top: 41, cost: 90, img: '/img/trees/bamboo.svg', width: 52, tilt: -2 },
-            { left: 8, top: 48, cost: 75, img: '/img/trees/bamboo.svg', width: 58, tilt: -4 },
-            { left: 19, top: 50, cost: 65, img: '/img/trees/orange_tree.svg', width: 56, tilt: 2 },
-            { left: 31, top: 47, cost: 70, img: '/img/trees/christmas.svg', width: 60, tilt: -3 },
-            { left: 43, top: 49, cost: 60, img: '/img/trees/peach.svg', width: 56, tilt: 1 },
-            { left: 55, top: 46, cost: 70, img: '/img/trees/pine.svg', width: 62, tilt: -2 },
-            { left: 67, top: 48, cost: 60, img: '/img/trees/oak.svg', width: 58, tilt: 4 },
-            { left: 79, top: 49, cost: 45, img: '/img/trees/bamboo.svg', width: 50, tilt: -2 },
-            { left: 13, top: 56, cost: 25, img: '/img/trees/obstacle_wild_tree.svg', width: 48, tilt: -2 },
-            { left: 26, top: 58, cost: 18, img: '/img/trees/mushroom.svg', width: 42, tilt: 3 },
-            { left: 39, top: 55, cost: 35, img: '/img/trees/oak.svg', width: 52, tilt: -1 },
-            { left: 52, top: 56, cost: 20, img: '/img/trees/palm.svg', width: 52, tilt: 2 },
-            { left: 65, top: 54, cost: 20, img: '/img/trees/bamboo.svg', width: 48, tilt: -3 },
-            { left: 77, top: 53, cost: 20, img: '/img/trees/maple.svg', width: 46, tilt: 2 },
-        ];
-    },
-
-    renderForestButtons() {
-        return this.getForestButtonLayout().map(tree => `
-            <div class="forest-tree-btn" style="left:${tree.left}%;top:${tree.top}%;--tree-tilt:${tree.tilt || 0}deg" data-cost="${tree.cost}" title="🪓 砍伐 ${tree.cost} 喵喵币">
-                <img src="${tree.img}" alt="" style="width:${tree.width}px">
-            </div>
-        `).join('');
     },
 
     getPlotLayout(plot, index = 0) {
@@ -361,8 +319,48 @@ const GardenView = {
 
         document.getElementById('cancel-plant-btn')?.addEventListener('click', () => {
             this.selectedTree = null;
-            this.render();
+            this._updateDynamicContent();
         });
+    },
+
+    _bindPlotInteractions(scope = document) {
+        scope.querySelectorAll('.iplot').forEach(plotEl => {
+            plotEl.onclick = async (e) => {
+                e.stopPropagation();
+                const plotId = parseInt(plotEl.dataset.plotId, 10);
+                const plot = this.plots.find(p => p.id === plotId);
+                if (!plot) return;
+                if (this._movingPlotId && plot.status === 'cleared') {
+                    await this.executeMoveToPlot(plotId);
+                    return;
+                }
+                if (plot.status === 'wasteland') await this.clearPlot(plotId, plot.obstacle_type);
+                else if (plot.status === 'cleared' && this.selectedTree) await this.plantOnPlot(plotId);
+                else if (plot.status === 'planted') this.showPlotMenu(plotId, plotEl);
+            };
+        });
+    },
+
+    _patchPlot(plotId, patch) {
+        this.plots = this.plots.map(plot => {
+            if (plot.id !== plotId) return plot;
+            const nextPatch = typeof patch === 'function' ? patch(plot) : patch;
+            return nextPatch ? { ...plot, ...nextPatch } : plot;
+        });
+    },
+
+    _flashPlot(plotId, className) {
+        const plotEl = document.querySelector(`.iplot[data-plot-id="${plotId}"]`);
+        if (!plotEl) return;
+        plotEl.classList.remove(className);
+        void plotEl.offsetWidth;
+        plotEl.classList.add(className);
+        setTimeout(() => plotEl.classList.remove(className), 900);
+    },
+
+    _todayString() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     },
 
     /* Update only the dynamic parts of the garden view (plots, HUD, stats bar) */
@@ -377,20 +375,7 @@ const GardenView = {
                 return this.renderIslandPlot(plot, this.getPlotLayout(plot, i));
             }).join('');
             land.insertAdjacentHTML('beforeend', plotsHtml);
-            land.querySelectorAll('.iplot').forEach(plotEl => {
-                plotEl.addEventListener('click', async (e) => {
-                    e.stopPropagation();
-                    const plotId = parseInt(plotEl.dataset.plotId);
-                    const plot = this.plots.find(p => p.id === plotId);
-                    if (!plot) return;
-                    if (this._movingPlotId && plot.status === 'cleared') {
-                        await this.executeMoveToPlot(plotId); return;
-                    }
-                    if (plot.status === 'wasteland') await this.clearPlot(plotId, plot.obstacle_type);
-                    else if (plot.status === 'cleared' && this.selectedTree) await this.plantOnPlot(plotId);
-                    else if (plot.status === 'planted') this.showPlotMenu(plotId, plotEl);
-                });
-            });
+            this._bindPlotInteractions(land);
         }
 
         // Update HUD balance
@@ -698,6 +683,7 @@ const GardenView = {
         `;
 
         this.bindGardenEvents();
+        this._bindPlotInteractions(el);
         this.initDrag();
         this._staticRendered = true;
     },
@@ -752,7 +738,7 @@ const GardenView = {
 
         // ─── Mouse drag ───
         vp.addEventListener('mousedown', e => {
-            if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls,.forest-tree-btn,.plot-menu')) return;
+            if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls,.plot-menu')) return;
             this.closePlotMenu();
             dragState.active = true;
             dragState.sx = e.pageX;
@@ -808,7 +794,7 @@ const GardenView = {
                     e.touches[0].pageY - e.touches[1].pageY
                 );
             } else if (e.touches.length === 1 && !pinching) {
-                if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls,.forest-tree-btn,.plot-menu')) return;
+                if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls,.plot-menu')) return;
                 this.closePlotMenu();
                 dragState.active = true;
                 dragState.sx = e.touches[0].pageX;
@@ -886,7 +872,7 @@ const GardenView = {
         return `
             <div class="planting-toolbar">
                 <img src="${item.stages.mature}" alt="" style="width:32px;height:40px">
-                <span>正在种植: <strong>${item.name}</strong></span>
+                <span>正在种植: <strong>${item.name}</strong> · 点击空地立即种下</span>
                 <button class="btn-cancel-plant" id="cancel-plant-btn">✕ 取消</button>
             </div>
         `;
@@ -896,6 +882,7 @@ const GardenView = {
         // Person filter
         document.querySelectorAll('#view-garden .filter-pill').forEach(btn => {
             btn.addEventListener('click', async () => {
+                App.setPersona(btn.dataset.person, { refresh: false });
                 this.assignee = btn.dataset.person;
                 this.currentIsland = null;
                 this._staticRendered = false;
@@ -930,42 +917,7 @@ const GardenView = {
         // Cancel planting
         document.getElementById('cancel-plant-btn')?.addEventListener('click', () => {
             this.selectedTree = null;
-            this.render();
-        });
-
-        // Plot clicks
-        document.querySelectorAll('.iplot').forEach(plotEl => {
-            plotEl.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const plotId = parseInt(plotEl.dataset.plotId);
-                const plot = this.plots.find(p => p.id === plotId);
-                if (!plot) return;
-
-                // Moving mode — select target
-                if (this._movingPlotId && plot.status === 'cleared') {
-                    await this.executeMoveToPlot(plotId);
-                    return;
-                }
-
-                if (plot.status === 'wasteland') {
-                    await this.clearPlot(plotId, plot.obstacle_type);
-                } else if (plot.status === 'cleared' && this.selectedTree) {
-                    await this.plantOnPlot(plotId);
-                } else if (plot.status === 'planted') {
-                    this.showPlotMenu(plotId, plotEl);
-                }
-            });
-        });
-
-        document.querySelectorAll('.forest-tree-btn').forEach(treeEl => {
-            treeEl.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.closePlotMenu();
-                if (!this._forestHintShown) {
-                    this._forestHintShown = true;
-                    App.showToast('🌲 深林层目前是地形层，开垦和种植请点前方荒地地块', 'info');
-                }
-            });
+            this._updateDynamicContent();
         });
 
         // Close menu when clicking outside
@@ -986,7 +938,8 @@ const GardenView = {
 
         const catItem = this.catalog.find(c => c.type === plot.tree_type);
         const gm = plot.growth_minutes || 0;
-        const isMature = gm >= 150;
+        const harvestedToday = plot.last_harvested === this._todayString();
+        const canCollect = gm >= 150 && !harvestedToday;
 
         const menu = document.createElement('div');
         menu.className = 'plot-menu';
@@ -994,14 +947,14 @@ const GardenView = {
             <div class="plot-menu-header">
                 <span>${catItem?.icon || '🌱'}</span>
                 <strong>${catItem?.name || plot.tree_type}</strong>
-                <small>${this.getGrowthLabel(gm)}</small>
+                <small>${harvestedToday ? '今日已收' : this.getGrowthLabel(gm)}</small>
             </div>
             <div class="plot-menu-actions">
-                <button class="pm-btn pm-collect ${isMature ? '' : 'disabled'}" data-action="collect" title="收取金币">
+                <button class="pm-btn pm-collect ${canCollect ? '' : 'disabled'}" data-action="collect" title="收取金币">
                     💰
-                    <span>收取</span>
+                    <span>${harvestedToday ? '已收' : '收取'}</span>
                 </button>
-                <button class="pm-btn pm-speedup ${isMature ? 'disabled' : ''}" data-action="speedup" title="花费 5 喵喵币加速">
+                <button class="pm-btn pm-speedup ${gm >= 150 ? 'disabled' : ''}" data-action="speedup" title="花费 5 喵喵币加速">
                     ⏩
                     <span>加速<br><small>5币</small></span>
                 </button>
@@ -1073,17 +1026,14 @@ const GardenView = {
         const plot = this.plots.find(p => p.id === plotId);
         if (!plot || !plot.tree_id) return;
         try {
-            const res = await fetch('/api/garden/harvest', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ assignee: this.assignee, tree_id: plot.tree_id })
-            });
-            const data = await res.json();
-            if (!res.ok) { Utils.toast(data.error || '收取失败'); return; }
+            const data = await API.harvestTree({ assignee: this.assignee, tree_id: plot.tree_id });
             App.syncCoins({ assignee: this.assignee, balance: data.balance, delta: data.reward, animate: data.reward > 0 });
+            this.balance = data.balance;
+            this._patchPlot(plotId, { last_harvested: this._todayString() });
+            this._updateDynamicContent();
+            this._flashPlot(plotId, 'plot-harvested');
             Utils.toast(`💰 收获 ${data.reward} 喵喵币！`, 'success');
-            await this.refreshData();
-        } catch (e) { Utils.toast('网络错误'); }
+        } catch (e) { Utils.toast(e.message || '收取失败'); }
     },
 
     async removePlot(plotId) {
@@ -1268,8 +1218,21 @@ const GardenView = {
         try {
             const result = await API.clearPlot({ assignee: this.assignee, plot_id: plotId });
             App.syncCoins({ assignee: this.assignee, balance: result.balance });
-            App.showToast(`⛏️ 开荒成功！-${result.cost} 喵喵币`, 'success');
-            await this.open();
+            this.balance = result.balance;
+            this._patchPlot(plotId, {
+                status: 'cleared',
+                obstacle_type: null,
+                tree_id: null,
+                tree_type: null,
+                growth_minutes: 0,
+                tree_status: null,
+                planted_at: null,
+                last_harvested: null,
+            });
+            this._updateDynamicContent();
+            this._flashPlot(plotId, 'plot-cleared');
+            const followup = this.selectedTree ? ' 现在点这块空地就能种下去。' : ' 现在它已经是可种植空地了。';
+            App.showToast(`⛏️ 开荒成功！-${result.cost} 喵喵币。${followup}`, 'success');
         } catch (e) {
             App.showToast(e.message || '开荒失败', 'error');
         }
@@ -1290,9 +1253,21 @@ const GardenView = {
                 plot_id: plotId,
             });
             App.syncCoins({ assignee: this.assignee, balance: result.balance });
+            this.balance = result.balance;
+            this._patchPlot(plotId, {
+                status: 'planted',
+                tree_id: result.tree.id,
+                tree_type: result.tree.tree_type,
+                growth_minutes: result.tree.growth_minutes || 0,
+                tree_status: result.tree.status,
+                planted_at: result.tree.planted_at,
+                last_harvested: result.tree.last_harvested || null,
+                obstacle_type: null,
+            });
             this.selectedTree = null;
+            this._updateDynamicContent();
+            this._flashPlot(plotId, 'plot-planted');
             App.showToast(`🌱 种下了${item.name}！`, 'success');
-            await this.open();
         } catch (e) {
             App.showToast(e.message || '种植失败', 'error');
         }
@@ -1429,6 +1404,7 @@ const GardenView = {
                 overlay.remove();
                 this.selectedTree = treeType;
                 this.assignee = this.shopAssignee;
+                App.setPersona(this.shopAssignee, { refresh: false });
                 App.switchView('garden');
                 App.showToast('👆 点击空地种植', 'info');
             });
@@ -1439,6 +1415,7 @@ const GardenView = {
         // Person filter
         document.querySelectorAll('#view-shop .filter-pill').forEach(btn => {
             btn.addEventListener('click', async () => {
+                App.setPersona(btn.dataset.person, { refresh: false });
                 this.shopAssignee = btn.dataset.person;
                 await this.openShop();
             });
@@ -1738,19 +1715,4 @@ const GardenView = {
         }
     },
 
-    async earnFromCheckin(assignee, type) {
-        const amount = 5;
-        try {
-            const result = await API.earnCoins({
-                assignee,
-                amount,
-                reason: 'checkin',
-                detail: type,
-            });
-            App.syncCoins({ assignee, balance: result.balance, delta: amount, animate: true });
-            App.showToast(`+${amount} 喵喵币！`, 'success');
-        } catch (e) {
-            App.showToast('打卡奖励获取失败', 'error');
-        }
-    },
 };

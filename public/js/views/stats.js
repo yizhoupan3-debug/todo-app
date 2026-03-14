@@ -20,6 +20,7 @@ const StatsView = {
         // Person filter
         document.querySelectorAll('.stats-person-filter .filter-pill').forEach(btn => {
             btn.addEventListener('click', () => {
+                App.setPersona(btn.dataset.assignee, { refresh: false });
                 document.querySelectorAll('.stats-person-filter .filter-pill').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.currentAssignee = btn.dataset.assignee;

@@ -5,6 +5,7 @@ const App = {
     currentView: 'daily', // 'daily' | 'monthly' | 'checkin' | 'stats' | 'garden' | 'shop'
     currentAssignee: 'all', // 'all' | '潘潘' | '蒲蒲'
     activePersona: '潘潘', // '潘潘' | '蒲蒲' — the global persona toggle (no 'all')
+    lastPersona: '潘潘',
     socket: null,
     _refreshTimer: null, // Socket debounce timer
     _headerCoinBalance: 0,
@@ -99,7 +100,7 @@ const App = {
 
         // Persona toggle click — cycle 潘潘→蒲蒲→全部
         document.getElementById('persona-toggle')?.addEventListener('click', () => {
-            const order = ['潘潘', '蒲蒲', 'all'];
+            const order = this._viewSupportsAllAssignee() ? ['潘潘', '蒲蒲', 'all'] : ['潘潘', '蒲蒲'];
             const idx = order.indexOf(this.activePersona);
             this.setPersona(order[(idx + 1) % order.length]);
         });
@@ -256,8 +257,13 @@ const App = {
     // ===== Global Persona Toggle =====
     _initPersona() {
         const saved = localStorage.getItem('panpu-persona');
+        const savedLast = localStorage.getItem('panpu-last-persona');
+        if (savedLast && ['潘潘', '蒲蒲'].includes(savedLast)) {
+            this.lastPersona = savedLast;
+        }
         if (saved && ['潘潘', '蒲蒲', 'all'].includes(saved)) {
             this.activePersona = saved;
+            if (saved !== 'all') this.lastPersona = saved;
         } else {
             this.activePersona = '潘潘';
         }
@@ -266,16 +272,25 @@ const App = {
         this._updatePersonaToggleUI();
     },
 
-    setPersona(persona) {
-        this.activePersona = persona;
-        localStorage.setItem('panpu-persona', persona);
+    _viewSupportsAllAssignee(view = this.currentView) {
+        return view === 'daily' || view === 'monthly';
+    },
+
+    setPersona(persona, { refresh = true } = {}) {
+        const nextPersona = (!this._viewSupportsAllAssignee() && persona === 'all')
+            ? this.lastPersona
+            : persona;
+        this.activePersona = nextPersona;
+        if (nextPersona !== 'all') this.lastPersona = nextPersona;
+        localStorage.setItem('panpu-persona', this.activePersona);
+        localStorage.setItem('panpu-last-persona', this.lastPersona);
 
         // Sync all views
-        this._applyPersonaToViews(persona);
+        this._applyPersonaToViews(this.activePersona);
         this._updatePersonaToggleUI();
 
         // Refresh current view
-        this.refreshCurrentView();
+        if (refresh) this.refreshCurrentView();
 
         // Re-sync filter pills in daily/monthly views
         if (typeof DailyView !== 'undefined') DailyView.syncPersonPills();
@@ -284,24 +299,37 @@ const App = {
             document.querySelectorAll('.checkin-person-btn').forEach(b =>
                 b.classList.toggle('active', b.dataset.assignee === CheckinView.currentAssignee));
         }
+        if (typeof StatsView !== 'undefined') {
+            document.querySelectorAll('.stats-person-filter .filter-pill').forEach(b =>
+                b.classList.toggle('active', b.dataset.assignee === StatsView.currentAssignee));
+        }
+        if (typeof GardenView !== 'undefined' && document.querySelector('.backpack-overlay')) {
+            const backpackAssignee = this.currentView === 'shop' ? GardenView.shopAssignee : GardenView.assignee;
+            GardenView.showBackpack(backpackAssignee);
+        }
 
         // Refresh coin display
         this._refreshHeaderCoins();
     },
 
     _applyPersonaToViews(persona) {
+        const scopedPersona = persona === 'all' ? this.lastPersona : persona;
         // For daily/monthly: set currentAssignee to persona (潘潘, 蒲蒲, or 'all')
         this.currentAssignee = persona === 'all' ? 'all' : persona;
 
         // For checkin: no 'all' mode, default to 潘潘 or 蒲蒲
         if (typeof CheckinView !== 'undefined') {
-            CheckinView.currentAssignee = persona === 'all' ? '潘潘' : persona;
+            CheckinView.currentAssignee = scopedPersona;
+        }
+
+        if (typeof StatsView !== 'undefined') {
+            StatsView.currentAssignee = scopedPersona;
         }
 
         // For garden: no 'all' mode
         if (typeof GardenView !== 'undefined') {
-            GardenView.assignee = persona === 'all' ? '潘潘' : persona;
-            GardenView.shopAssignee = persona === 'all' ? '潘潘' : persona;
+            GardenView.assignee = scopedPersona;
+            GardenView.shopAssignee = scopedPersona;
         }
 
         // Show/hide header coin button
@@ -350,6 +378,9 @@ const App = {
     },
 
     switchView(view) {
+        if (!this._viewSupportsAllAssignee(view) && this.activePersona === 'all') {
+            this.setPersona(this.lastPersona, { refresh: false });
+        }
         this.currentView = view;
 
         // Update desktop nav active states
