@@ -7,7 +7,7 @@ const Utils = {
     },
 
     headerCoinMarkup(balance = 0) {
-        return `${this.coinSvg()} <span id="header-coins">${this.formatCoinBalance(balance)}</span> 喵喵币`;
+        return `${this.coinSvg()} <span id="header-coins">${this.formatCoinBalance(balance)}</span> <span class="coin-label">喵喵币</span>`;
     },
 
     roundCoin(balance) {

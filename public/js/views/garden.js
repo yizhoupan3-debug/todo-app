@@ -141,6 +141,11 @@ const GardenView = {
     _staticRendered: false,
     _backpackSort: { by: 'price', order: 'asc' },
     _plotMenuCleanup: null,
+    _backpackRenderQueued: false,
+    _backpackOverlayEl: null,
+    _backpackContentEl: null,
+    _backpackSearchInputEl: null,
+    _activePlotMenu: null,
 
     init() { },
 
@@ -361,6 +366,36 @@ const GardenView = {
     _todayString() {
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    },
+
+    _positionPlotMenu(menuEl, plotEl) {
+        if (!menuEl || !plotEl) return;
+        const rect = plotEl.getBoundingClientRect();
+        const menuRect = menuEl.getBoundingClientRect();
+        const showBelow = rect.top < 180;
+        const viewportPadding = 12;
+        const left = Math.min(
+            window.innerWidth - menuRect.width / 2 - viewportPadding,
+            Math.max(menuRect.width / 2 + viewportPadding, rect.left + rect.width / 2)
+        );
+        menuEl.classList.toggle('plot-menu-below', showBelow);
+        menuEl.style.left = `${left}px`;
+        menuEl.style.top = `${showBelow ? rect.bottom + 10 : rect.top - 10}px`;
+    },
+
+    _queueBackpackRender() {
+        if (this._backpackRenderQueued) return;
+        this._backpackRenderQueued = true;
+        requestAnimationFrame(() => {
+            this._backpackRenderQueued = false;
+            if (!this._backpackContentEl) return;
+            const filtered = this._getFilteredPlants();
+            this._backpackContentEl.innerHTML = this._renderBackpackPlants(
+                filtered,
+                this._backpackSort.by,
+                this._backpackSort.order
+            );
+        });
     },
 
     /* Update only the dynamic parts of the garden view (plots, HUD, stats bar) */
@@ -734,6 +769,9 @@ const GardenView = {
 
         vp.addEventListener('scroll', () => {
             this._clampViewport(vp, world);
+            if (this._activePlotMenu?.menuEl && this._activePlotMenu?.plotEl) {
+                this._positionPlotMenu(this._activePlotMenu.menuEl, this._activePlotMenu.plotEl);
+            }
         }, { passive: true });
 
         // ─── Mouse drag ───
@@ -768,6 +806,18 @@ const GardenView = {
             });
         }
 
+        if (!this._zoomRaf) this._zoomRaf = null;
+        const scheduleViewportSync = () => {
+            if (this._zoomRaf) cancelAnimationFrame(this._zoomRaf);
+            this._zoomRaf = requestAnimationFrame(() => {
+                this._clampViewport(vp, world);
+                if (this._activePlotMenu?.menuEl && this._activePlotMenu?.plotEl) {
+                    this._positionPlotMenu(this._activePlotMenu.menuEl, this._activePlotMenu.plotEl);
+                }
+                this._zoomRaf = null;
+            });
+        };
+
         // ─── Scroll-wheel zoom ───
         vp.addEventListener('wheel', e => {
             e.preventDefault();
@@ -776,7 +826,7 @@ const GardenView = {
             this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._zoom + delta));
             this._applyTransform(world);
             this._updateZoomDisplay();
-            requestAnimationFrame(() => this._clampViewport(vp, world));
+            scheduleViewportSync();
         }, { passive: false });
 
         // ─── Touch: drag + pinch-to-zoom ───
@@ -815,6 +865,7 @@ const GardenView = {
                 this._applyTransform(world);
                 this._updateZoomDisplay();
                 lastPinchDist = dist;
+                scheduleViewportSync();
             } else if (dragState.active && e.touches.length === 1) {
                 vp.scrollLeft = dragState.sl - (e.touches[0].pageX - dragState.sx);
                 vp.scrollTop = dragState.st - (e.touches[0].pageY - dragState.sy);
@@ -833,14 +884,14 @@ const GardenView = {
             this._zoom = Math.min(this._maxZoom, this._zoom + 0.15);
             this._applyTransform(world);
             this._updateZoomDisplay();
-            requestAnimationFrame(() => this._clampViewport(vp, world));
+            scheduleViewportSync();
         });
         document.getElementById('zoom-out-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
             this._zoom = Math.max(this._minZoom, this._zoom - 0.15);
             this._applyTransform(world);
             this._updateZoomDisplay();
-            requestAnimationFrame(() => this._clampViewport(vp, world));
+            scheduleViewportSync();
         });
         document.getElementById('zoom-reset-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
@@ -850,6 +901,9 @@ const GardenView = {
             // Re-center
             requestAnimationFrame(() => {
                 this._centerViewport(vp, world);
+                if (this._activePlotMenu?.menuEl && this._activePlotMenu?.plotEl) {
+                    this._positionPlotMenu(this._activePlotMenu.menuEl, this._activePlotMenu.plotEl);
+                }
             });
         });
     },
@@ -973,22 +1027,27 @@ const GardenView = {
             </div>
         `;
 
-        // Position near the plot in screen space so scroll/zoom doesn't desync the menu.
-        const rect = plotEl.getBoundingClientRect();
-        const showBelow = rect.top < 180;
-        if (showBelow) menu.classList.add('plot-menu-below');
+        // Position near the plot in screen space and keep it anchored during pan/zoom.
         menu.style.position = 'fixed';
-        menu.style.left = `${rect.left + rect.width / 2}px`;
-        menu.style.top = `${showBelow ? rect.bottom + 10 : rect.top - 10}px`;
 
         document.body.appendChild(menu);
+        this._positionPlotMenu(menu, plotEl);
+        this._activePlotMenu = { plotId, plotEl, menuEl: menu };
 
         const outsideHandler = (e) => {
             if (e.target.closest('.plot-menu')) return;
             if (e.target.closest(`.iplot[data-plot-id="${plotId}"]`)) return;
             this.closePlotMenu();
         };
-        const viewportChangeHandler = () => this.closePlotMenu();
+        const viewportChangeHandler = () => {
+            const livePlotEl = document.querySelector(`.iplot[data-plot-id="${plotId}"]`);
+            if (!livePlotEl || !document.body.contains(menu)) {
+                this.closePlotMenu();
+                return;
+            }
+            this._activePlotMenu = { plotId, plotEl: livePlotEl, menuEl: menu };
+            this._positionPlotMenu(menu, livePlotEl);
+        };
         const viewport = document.getElementById('island-viewport');
         document.addEventListener('mousedown', outsideHandler, true);
         window.addEventListener('resize', viewportChangeHandler);
@@ -997,6 +1056,7 @@ const GardenView = {
             document.removeEventListener('mousedown', outsideHandler, true);
             window.removeEventListener('resize', viewportChangeHandler);
             viewport?.removeEventListener('scroll', viewportChangeHandler);
+            this._activePlotMenu = null;
             this._plotMenuCleanup = null;
         };
 
@@ -1412,26 +1472,28 @@ const GardenView = {
     },
 
     bindShopEvents() {
-        // Person filter
-        document.querySelectorAll('#view-shop .filter-pill').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                App.setPersona(btn.dataset.person, { refresh: false });
-                this.shopAssignee = btn.dataset.person;
+        const shopView = document.getElementById('view-shop');
+        if (!shopView) return;
+
+        shopView.onclick = async (e) => {
+            const personBtn = e.target.closest('.filter-pill[data-person]');
+            if (personBtn) {
+                App.setPersona(personBtn.dataset.person, { refresh: false });
+                this.shopAssignee = personBtn.dataset.person;
                 await this.openShop();
-            });
-        });
+                return;
+            }
 
-        // Backpack button (shop)
-        document.getElementById('shop-backpack-btn')?.addEventListener('click', () => {
-            this.showBackpack(this.shopAssignee);
-        });
+            if (e.target.closest('#shop-backpack-btn')) {
+                this.showBackpack(this.shopAssignee);
+                return;
+            }
 
-        // Clicking card opens detail modal
-        document.querySelectorAll('#view-shop .shop-card').forEach(card => {
-            card.addEventListener('click', () => {
+            const card = e.target.closest('.shop-card');
+            if (card) {
                 this.showTreeDetail(card.dataset.type);
-            });
-        });
+            }
+        };
     },
 
     // ═══ Backpack Overlay ═══
@@ -1533,26 +1595,25 @@ const GardenView = {
         `;
         document.body.appendChild(overlay);
         requestAnimationFrame(() => overlay.classList.add('active'));
+        this._backpackOverlayEl = overlay;
+        this._backpackContentEl = overlay.querySelector('#backpack-content');
+        this._backpackSearchInputEl = overlay.querySelector('#backpack-search');
 
         // Close
         const closeOverlay = () => {
             overlay.classList.remove('active');
+            this._backpackOverlayEl = null;
+            this._backpackContentEl = null;
+            this._backpackSearchInputEl = null;
             setTimeout(() => overlay.remove(), 200);
         };
         document.getElementById('backpack-close')?.addEventListener('click', closeOverlay);
         overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
 
         // Search input
-        const searchInput = document.getElementById('backpack-search');
-        searchInput?.addEventListener('input', () => {
-            this._backpackSearch = searchInput.value.trim();
-            const content = document.getElementById('backpack-content');
-            if (content) {
-                const filtered = this._getFilteredPlants();
-                content.innerHTML = this._renderBackpackPlants(
-                    filtered, this._backpackSort.by, this._backpackSort.order
-                );
-            }
+        this._backpackSearchInputEl?.addEventListener('input', () => {
+            this._backpackSearch = this._backpackSearchInputEl.value.trim();
+            this._queueBackpackRender();
         });
 
         // Sort buttons
@@ -1575,15 +1636,11 @@ const GardenView = {
                         arrow.textContent = '▲';
                     }
                 });
-                const content = document.getElementById('backpack-content');
-                if (content) {
-                    const filtered = this._getFilteredPlants();
-                    content.innerHTML = this._renderBackpackPlants(
-                        filtered, this._backpackSort.by, this._backpackSort.order
-                    );
-                }
+                this._queueBackpackRender();
             });
         });
+
+        requestAnimationFrame(() => this._backpackSearchInputEl?.focus({ preventScroll: true }));
 
         // Go-to-shop button in empty state
         overlay.addEventListener('click', e => {

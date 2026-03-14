@@ -2713,8 +2713,26 @@ form {
     gap: 3px;
   }
 
+  .coin-label {
+    display: none;
+  }
+
+  #header-title {
+    display: none;
+  }
+
   .add-btn {
     display: none;
+  }
+
+  /* Cleaner FAB button */
+  .bottom-nav-btn.add-fab {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    margin: -12px 2px 0;
+    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+    animation: none;
   }
 
   /* --- Bottom Nav --- */
@@ -7234,6 +7252,7 @@ form {
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   padding: 8px 20px 20px;
+  contain: layout paint;
 }
 
 .garden-shop-grid {
@@ -7251,6 +7270,9 @@ form {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   transition: all var(--transition);
+  transform: translateZ(0);
+  will-change: transform;
+  contain: layout paint style;
 }
 
 .shop-card:hover:not(.locked) {
@@ -7306,6 +7328,8 @@ form {
   padding: 0;
   overflow: hidden;
   position: relative;
+  contain: layout paint style;
+  transform: translateZ(0);
 }
 
 .modal-x-btn {
@@ -7524,6 +7548,7 @@ form {
   -webkit-backdrop-filter: blur(10px);
   opacity: 0;
   transition: opacity 0.25s ease;
+  contain: layout paint style;
 }
 
 .backpack-overlay.active {
@@ -7542,6 +7567,8 @@ form {
   overflow: hidden;
   transform: scale(0.92) translateY(20px);
   transition: transform 0.3s cubic-bezier(0.23,1,0.32,1);
+  contain: layout paint style;
+  will-change: transform;
 }
 
 .backpack-overlay.active .backpack-modal {
@@ -7654,6 +7681,11 @@ form {
   gap: 8px;
   padding: 10px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(30, 35, 50, 0.98) 0%, rgba(24, 28, 42, 0.92) 100%);
+  backdrop-filter: blur(8px);
 }
 
 .backpack-search {
@@ -7738,6 +7770,7 @@ form {
   padding: 12px 14px 16px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.1) transparent;
+  contain: layout paint;
 }
 
 .backpack-content::-webkit-scrollbar { width: 4px; }
@@ -7761,6 +7794,10 @@ form {
   border: 1px solid rgba(255, 255, 255, 0.05);
   transition: all 0.25s ease;
   animation: backpackCardIn 0.3s ease-out both;
+  transform: translateZ(0);
+  will-change: transform;
+  content-visibility: auto;
+  contain-intrinsic-size: 78px;
 }
 
 @keyframes backpackCardIn {
@@ -8005,6 +8042,20 @@ form {
   .garden-canvas {
     min-height: 240px;
     margin: 0 12px;
+  }
+
+  .backpack-toolbar {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .backpack-search {
+    min-width: 100%;
+  }
+
+  .backpack-sort-bar {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 
@@ -8491,6 +8542,7 @@ form {
   min-width: 200px;
   transform: translate(-50%, -100%) translateZ(0);
   backface-visibility: hidden;
+  will-change: transform, opacity;
 }
 
 .plot-menu.plot-menu-below {
