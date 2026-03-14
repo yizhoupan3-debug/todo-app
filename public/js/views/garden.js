@@ -140,6 +140,26 @@ const GardenView = {
 
     SCENE_GRID_W: 8,
     SCENE_GRID_H: 6,
+    FOREST_LAYOUTS: [
+        { left: 17, top: 37, scale: 0.94 }, { left: 25, top: 35, scale: 0.98 }, { left: 33, top: 36, scale: 1.03 },
+        { left: 41, top: 34, scale: 1.07 }, { left: 49, top: 35, scale: 1.04 }, { left: 57, top: 34, scale: 1.01 },
+        { left: 65, top: 36, scale: 0.99 }, { left: 73, top: 35, scale: 0.95 }, { left: 20, top: 44, scale: 0.97 },
+        { left: 29, top: 46, scale: 1.02 }, { left: 37, top: 43, scale: 1.07 }, { left: 45, top: 45, scale: 1.12 },
+        { left: 53, top: 43, scale: 1.07 }, { left: 61, top: 45, scale: 1.03 }, { left: 69, top: 43, scale: 0.99 },
+        { left: 77, top: 46, scale: 0.95 }, { left: 18, top: 51, scale: 0.98 }, { left: 27, top: 53, scale: 1.03 },
+        { left: 35, top: 50, scale: 1.08 }, { left: 43, top: 53, scale: 1.14 }, { left: 51, top: 50, scale: 1.09 },
+        { left: 59, top: 53, scale: 1.04 }, { left: 67, top: 51, scale: 1.01 }, { left: 75, top: 53, scale: 0.97 },
+        { left: 25, top: 59, scale: 1.01 }, { left: 35, top: 61, scale: 1.07 }, { left: 45, top: 59, scale: 1.13 },
+        { left: 55, top: 61, scale: 1.08 }, { left: 65, top: 59, scale: 1.03 }, { left: 75, top: 61, scale: 0.99 },
+    ],
+    FRONTIER_LAYOUTS: [
+        { left: 14, top: 66, scale: 0.99 }, { left: 84, top: 66, scale: 0.99 }, { left: 20, top: 74, scale: 1.03 },
+        { left: 30, top: 76, scale: 1.08 }, { left: 40, top: 72, scale: 1.03 }, { left: 50, top: 75, scale: 1.08 },
+        { left: 60, top: 72, scale: 1.03 }, { left: 70, top: 75, scale: 1.07 }, { left: 80, top: 72, scale: 1.03 },
+        { left: 86, top: 76, scale: 0.99 }, { left: 18, top: 84, scale: 1.07 }, { left: 30, top: 88, scale: 1.11 },
+        { left: 42, top: 84, scale: 1.05 }, { left: 54, top: 88, scale: 1.12 }, { left: 66, top: 84, scale: 1.05 },
+        { left: 78, top: 88, scale: 1.1 }, { left: 88, top: 84, scale: 1.04 }, { left: 94, top: 88, scale: 0.98 },
+    ],
 
     _staticRendered: false,
     _backpackSort: { by: 'price', order: 'asc' },
@@ -191,6 +211,7 @@ const GardenView = {
             } else {
                 this.plots = await API.getPlots(this.assignee);
             }
+            this._syncCurrentIslandGridFromPlots();
         } catch (e) { /* keep old */ }
 
         // Update only dynamic parts
@@ -209,6 +230,14 @@ const GardenView = {
         const balEl = el.querySelector('.garden-balance strong');
         if (balEl) balEl.textContent = Utils.formatCoinBalance(this.shopBalance);
         this.updateHeaderCoins();
+    },
+
+    _syncCurrentIslandGridFromPlots() {
+        if (!this.currentIsland || !Array.isArray(this.plots) || !this.plots.length) return;
+        const maxX = this.plots.reduce((max, plot) => Math.max(max, Number(plot.x) || 0), 0) + 1;
+        const maxY = this.plots.reduce((max, plot) => Math.max(max, Number(plot.y) || 0), 0) + 1;
+        this.currentIsland.grid_w = Math.max(Number(this.currentIsland.grid_w) || 0, maxX);
+        this.currentIsland.grid_h = Math.max(Number(this.currentIsland.grid_h) || 0, maxY);
     },
 
     getPlotZone(plot) {
@@ -233,6 +262,17 @@ const GardenView = {
         return n - Math.floor(n);
     },
 
+    _getForestLayoutIndex(x, y) {
+        if (y < 3) return y * this.SCENE_GRID_W + x;
+        return 24 + Math.max(0, x - 1);
+    },
+
+    _getFrontierLayoutIndex(x, y) {
+        if (y === 3) return x === 0 ? 0 : 1;
+        if (y === 4) return 2 + x;
+        return 10 + x;
+    },
+
     getPlotLayout(plot) {
         const island = this.currentIsland || {};
         const gridW = Math.max(1, Number(island.grid_w) || this.SCENE_GRID_W);
@@ -247,39 +287,20 @@ const GardenView = {
         const n3 = this._plotNoise(plot, 3);
         const n4 = this._plotNoise(plot, 4);
 
-        let left;
-        let top;
-        let scale;
-        let tilt = (n4 - 0.5) * 8;
-        let spriteScale = 0.96 + n2 * 0.2;
-        let sway = 0.88 + n3 * 0.26;
-        let depth = 0;
+        const base = zone === 'forest'
+            ? this.FOREST_LAYOUTS[this._getForestLayoutIndex(x, y)]
+            : this.FRONTIER_LAYOUTS[this._getFrontierLayoutIndex(x, y)];
+        let left = (base?.left ?? (14 + xRatio * 70)) + (n1 - 0.5) * (zone === 'forest' ? 2.6 : 3.2);
+        let top = (base?.top ?? (56 + yRatio * 24)) + (n2 - 0.5) * (zone === 'forest' ? 2.2 : 2.8);
+        let scale = (base?.scale ?? 1) + (n3 - 0.5) * 0.06;
+        let tilt = (n4 - 0.5) * (zone === 'forest' ? 10 : 6);
+        let spriteScale = zone === 'forest' ? 1.08 + n2 * 0.18 : 0.94 + n2 * 0.18;
+        let sway = zone === 'forest' ? 0.94 + n3 * 0.22 : 0.88 + n3 * 0.16;
+        const depth = top / 10;
 
-        if (zone === 'forest') {
-            const forestDepth = y <= 2 ? y : 2.45;
-            depth = forestDepth;
-            left = 14 + xRatio * 71 + Math.sin((x + 1) * 0.78 + y * 0.4) * 2.8 + (n1 - 0.5) * 6.2;
-            top = 18 + forestDepth * 8.7 + Math.cos((x + 2) * 0.72 + y * 0.65) * 2.3 + (n2 - 0.5) * 3.6;
-            scale = 0.84 + forestDepth * 0.055 + (n3 - 0.5) * 0.08;
-            tilt = (n4 - 0.5) * 14;
-            spriteScale = 1.02 + n2 * 0.28;
-            sway = 0.92 + n3 * 0.22;
-        } else {
-            const fieldRow = Math.max(0, y - Math.max(3, Math.floor(gridH * 0.5)));
-            depth = 2.8 + fieldRow;
-            left = 15 + xRatio * 70 + Math.sin((x + 3) * 0.95 + y * 0.36) * 4.9 + (n1 - 0.5) * 8;
-            top = 56 + fieldRow * 11.7 + Math.cos((x + 1) * 0.64 + y * 0.58) * 2.5 + (n2 - 0.5) * 4.4;
-            scale = 0.94 + fieldRow * 0.05 + (n3 - 0.5) * 0.08;
-            tilt = (n4 - 0.5) * 6;
-            spriteScale = 0.94 + n2 * 0.18;
-            sway = 0.86 + n3 * 0.18;
-            if (zone === 'shore') {
-                top += 1.4 + n4 * 2.4;
-                left += x <= 1 ? -2.8 : 2.8;
-                scale += 0.04;
-                tilt += x <= 1 ? -4 : 4;
-                spriteScale += 0.08;
-            }
+        if (zone === 'shore') {
+            tilt += x <= 1 ? -3 : 3;
+            spriteScale += 0.06;
         }
 
         return {
@@ -301,7 +322,7 @@ const GardenView = {
     _fitZoom: 0.72,
     _defaultZoom: 0.9,
     _viewportPadding: 0,
-    _cameraBounds: { x: 120, y: 70, width: 1440, height: 1020 },
+    _cameraBounds: { x: 40, y: 40, width: 1700, height: 1260 },
 
     _recalculateZoomBounds(vp, world) {
         if (!vp || !world) return;

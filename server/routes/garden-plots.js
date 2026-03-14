@@ -1,6 +1,66 @@
 module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, PLANT_TIERS, TREE_MATURE_MINUTES, SPEEDUP_COST, SPEEDUP_MINUTES }) {
+    const BASE_GRID_W = 8;
+    const BASE_GRID_H = 6;
+
+    function isForestPlot(x, y, gridW, gridH) {
+        const forestRows = Math.max(3, Math.floor(gridH * 0.5));
+        return y < forestRows || (y === forestRows && x > 0 && x < gridW - 1);
+    }
+
+    function pickObstacleForPlot(x, y, gridW, gridH) {
+        if (isForestPlot(x, y, gridW, gridH)) return 'wild_tree';
+        const frontierPool = x <= 1 || x >= gridW - 2 || y >= gridH - 1
+            ? ['weed', 'rock', 'weed', 'rock', 'weed']
+            : ['weed', 'rock', 'weed'];
+        return frontierPool[Math.floor(Math.random() * frontierPool.length)];
+    }
+
+    function ensureIslandSceneGrid(islandId, assignee = null) {
+        const island = assignee
+            ? db.prepare('SELECT * FROM islands WHERE id = ? AND assignee = ?').get(islandId, assignee)
+            : db.prepare('SELECT * FROM islands WHERE id = ?').get(islandId);
+        if (!island) return null;
+
+        const gridW = Math.max(BASE_GRID_W, Number(island.grid_w) || BASE_GRID_W);
+        const gridH = Math.max(BASE_GRID_H, Number(island.grid_h) || BASE_GRID_H);
+        const updateIsland = db.prepare('UPDATE islands SET grid_w = ?, grid_h = ? WHERE id = ?');
+        const existingPlots = db.prepare('SELECT id, x, y, status FROM garden_plots WHERE island_id = ?').all(island.id);
+        const insertPlot = db.prepare(
+            'INSERT INTO garden_plots (assignee, x, y, status, obstacle_type, island_id) VALUES (?, ?, ?, ?, ?, ?)'
+        );
+        const updateObstacle = db.prepare(
+            'UPDATE garden_plots SET obstacle_type = ? WHERE id = ? AND status = ?'
+        );
+
+        const ensure = db.transaction(() => {
+            if (gridW !== island.grid_w || gridH !== island.grid_h) {
+                updateIsland.run(gridW, gridH, island.id);
+            }
+
+            const plotMap = new Map(existingPlots.map(plot => [`${plot.x},${plot.y}`, plot]));
+            for (let y = 0; y < gridH; y++) {
+                for (let x = 0; x < gridW; x++) {
+                    const obstacle = pickObstacleForPlot(x, y, gridW, gridH);
+                    const existing = plotMap.get(`${x},${y}`);
+                    if (!existing) {
+                        insertPlot.run(island.assignee, x, y, 'wasteland', obstacle, island.id);
+                        continue;
+                    }
+                    if (existing.status === 'wasteland') {
+                        updateObstacle.run(obstacle, existing.id, 'wasteland');
+                    }
+                }
+            }
+        });
+
+        ensure();
+        return { ...island, grid_w: gridW, grid_h: gridH };
+    }
+
     router.get('/plots/:assignee', (req, res) => {
         try {
+            const islands = db.prepare('SELECT id FROM islands WHERE assignee = ?').all(req.params.assignee);
+            islands.forEach(island => ensureIslandSceneGrid(island.id, req.params.assignee));
             const plots = db.prepare(
                 `SELECT gp.*, t.tree_type, t.growth_minutes, t.status as tree_status, t.planted_at, t.last_harvested
                  FROM garden_plots gp
@@ -222,6 +282,7 @@ module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, 
 
     router.get('/plots/:assignee/:islandId', (req, res) => {
         try {
+            ensureIslandSceneGrid(req.params.islandId, req.params.assignee);
             const plots = db.prepare(
                 `SELECT gp.*, t.tree_type, t.growth_minutes, t.status as tree_status, t.planted_at, t.last_harvested
                  FROM garden_plots gp

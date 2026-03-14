@@ -38,7 +38,10 @@ Object.assign(GardenView, {
             API.fetch(`/garden/expeditions/${encodeURIComponent(this.assignee)}`).then(r => r.json()),
         ]);
 
-        if (plotsResult.status === 'fulfilled') this.plots = plotsResult.value;
+        if (plotsResult.status === 'fulfilled') {
+            this.plots = plotsResult.value;
+            this._syncCurrentIslandGridFromPlots();
+        }
         else if (!this.plots.length) this.plots = [];
 
         if (boatsResult.status === 'fulfilled') this.boats = boatsResult.value.boats || [];
@@ -99,8 +102,8 @@ Object.assign(GardenView, {
                 </div>
                 <div class="island-hud-right">
                     <button class="hud-btn" id="garden-backpack-btn" title="背包" style="font-size:14px">\u{1F392}</button>
-                    <button class="hud-btn" id="world-map-btn" title="世界地图" style="font-size:14px">\u{1F5FA}\uFE0F ${discoveredCount}/${totalCount}</button>
-                    <button class="hud-btn" id="garden-history-btn" title="记录">\u{1F4CA}</button>
+                    <button class="hud-btn" id="world-map-btn" title="世界地图" style="font-size:14px">\u{1F5FA}\uFE0F</button>
+                    <button class="hud-btn" id="garden-harbor-btn" title="港口">\u26F5</button>
                 </div>
             </div>
 
@@ -111,78 +114,9 @@ Object.assign(GardenView, {
                     <div class="scene-surf scene-surf-1"></div>
                     <div class="scene-surf scene-surf-2"></div>
                     <div class="scene-surf scene-surf-3"></div>
-                    <div class="scene-haze"></div>
-                    <div class="scene-forest-backdrop">${this.renderForestBackdrop()}</div>
-                    <div class="scene-frontier-backdrop">${this.renderFrontierBackdrop()}</div>
-                    <div class="scene-nearshore">
-                        <span class="shore-palm shore-palm-left"></span>
-                        <span class="shore-palm shore-palm-left small"></span>
-                        <span class="shore-palm shore-palm-right"></span>
-                        <span class="shore-palm shore-palm-right small"></span>
-                        <span class="shore-rock shore-rock-left"></span>
-                        <span class="shore-rock shore-rock-right"></span>
-                    </div>
 
                     <div class="island-land" id="island-land">
                         <div class="scene-land-shadow"></div>
-
-                        <div class="boom-house garden-landmark" style="left:73%;top:45%">
-                            <svg viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="16" y="190" width="208" height="18" rx="3" fill="#7B6340"/>
-                                <rect x="20" y="192" width="200" height="14" rx="2" fill="#8B7355"/>
-                                <rect x="30" y="88" width="180" height="108" rx="4" fill="#E8D8B0"/>
-                                <rect x="30" y="88" width="90" height="108" fill="#F0E0C0" opacity="0.3"/>
-                                <g stroke="#C4B090" stroke-width="0.8" opacity="0.25">
-                                    <line x1="30" y1="106" x2="210" y2="106"/>
-                                    <line x1="30" y1="124" x2="210" y2="124"/>
-                                    <line x1="30" y1="142" x2="210" y2="142"/>
-                                    <line x1="30" y1="160" x2="210" y2="160"/>
-                                    <line x1="30" y1="178" x2="210" y2="178"/>
-                                    <line x1="120" y1="88" x2="120" y2="196"/>
-                                </g>
-                                <polygon points="6,90 120,22 234,90" fill="#B83224"/>
-                                <polygon points="6,90 120,22 120,90" fill="#D04838" opacity="0.4"/>
-                                <polygon points="120,22 234,90 120,90" fill="#8C261C" opacity="0.3"/>
-                                <line x1="6" y1="90" x2="234" y2="90" stroke="#6A1810" stroke-width="4"/>
-                                <line x1="120" y1="22" x2="120" y2="90" stroke="#6A1810" stroke-width="1.5" opacity="0.3"/>
-                                <path d="M4,90 Q120,96 236,90" stroke="#6A1810" stroke-width="2" fill="none" opacity="0.4"/>
-                                <rect x="170" y="28" width="18" height="48" rx="2" fill="#8B6914"/>
-                                <rect x="168" y="24" width="22" height="8" rx="2" fill="#A07018"/>
-                                <circle cx="179" cy="18" r="5" fill="rgba(200,200,200,0.5)"><animate attributeName="cy" values="18;2;-14" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0.3;0" dur="3s" repeatCount="indefinite"/></circle>
-                                <circle cx="184" cy="12" r="4" fill="rgba(200,200,200,0.4)"><animate attributeName="cy" values="12;-4;-18" dur="3.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.4;0.2;0" dur="3.5s" repeatCount="indefinite"/></circle>
-                                <circle cx="174" cy="20" r="3.5" fill="rgba(200,200,200,0.3)"><animate attributeName="cy" values="20;6;-8" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.3;0.15;0" dur="4s" repeatCount="indefinite"/></circle>
-                                <rect x="46" y="104" width="34" height="34" rx="3" fill="#87CEEB" stroke="#8B6914" stroke-width="2.5"/>
-                                <line x1="63" y1="104" x2="63" y2="138" stroke="#8B6914" stroke-width="2"/>
-                                <line x1="46" y1="121" x2="80" y2="121" stroke="#8B6914" stroke-width="2"/>
-                                <rect x="46" y="104" width="34" height="34" rx="3" fill="rgba(255,220,100,0.15)"/>
-                                <rect x="158" y="104" width="34" height="34" rx="3" fill="#87CEEB" stroke="#8B6914" stroke-width="2.5"/>
-                                <line x1="175" y1="104" x2="175" y2="138" stroke="#8B6914" stroke-width="2"/>
-                                <line x1="158" y1="121" x2="192" y2="121" stroke="#8B6914" stroke-width="2"/>
-                                <rect x="158" y="104" width="34" height="34" rx="3" fill="rgba(255,220,100,0.15)"/>
-                                <rect x="93" y="138" width="54" height="58" rx="4" fill="#6B4410"/>
-                                <rect x="97" y="142" width="46" height="52" rx="3" fill="#8B5E14"/>
-                                <path d="M93,138 Q120,124 147,138" fill="#5A3A0C" opacity="0.4"/>
-                                <circle cx="135" cy="170" r="3.5" fill="#DAA520"/><circle cx="135" cy="170" r="2" fill="#FFD700"/>
-                                <rect x="46" y="138" width="34" height="6" rx="1" fill="#6B4410"/>
-                                <circle cx="52" cy="136" r="4" fill="#FF6B8A"/><circle cx="63" cy="135" r="3.5" fill="#FFD700"/><circle cx="74" cy="136" r="4" fill="#FF8FAA"/>
-                                <rect x="158" y="138" width="34" height="6" rx="1" fill="#6B4410"/>
-                                <circle cx="164" cy="136" r="4" fill="#FFD700"/><circle cx="175" cy="135" r="3.5" fill="#FF6B8A"/><circle cx="186" cy="136" r="4" fill="#FFD700"/>
-                                <rect x="84" y="144" width="6" height="14" rx="1" fill="#DAA520"/>
-                                <circle cx="87" cy="141" r="5" fill="rgba(255,200,50,0.6)"><animate attributeName="opacity" values="0.35;0.75;0.35" dur="2.5s" repeatCount="indefinite"/></circle>
-                            </svg>
-                            <div class="hut-label">\u{1F3E0} 小屋</div>
-                        </div>
-
-                        <div class="boom-harbor garden-landmark" id="harbor-building" style="left:83%;top:78%" title="港口 — 点击管理">
-                            <span class="harbor-icon">\u26F5</span>
-                            <div class="hut-label">\u2693 港口</div>
-                        </div>
-
-                        <div class="ambient-particle p1" style="font-size:12px">\u2601\uFE0F</div>
-                        <div class="ambient-particle p3" style="font-size:11px">\u2601\uFE0F</div>
-                        <div class="ambient-particle p2">\u{1F343}</div>
-                        <div class="ambient-particle p4">\u{1F98B}</div>
-                        <div class="ambient-particle p5" style="font-size:9px">\u{1F30A}</div>
 
                         ${this.plots.map((plot, i) => this.renderIslandPlot(plot, this.getPlotLayout(plot, i))).join('')}
                     </div>
@@ -217,39 +151,6 @@ Object.assign(GardenView, {
         this._renderSignature = renderSignature;
     },
 
-    renderForestBackdrop() {
-        const clusters = [
-            { left: 9, top: 11, size: 138, hue: 110, sway: 0.4 },
-            { left: 17, top: 16, size: 154, hue: 118, sway: 0.9 },
-            { left: 27, top: 13, size: 126, hue: 124, sway: 0.2 },
-            { left: 34, top: 20, size: 148, hue: 116, sway: 0.7 },
-            { left: 43, top: 15, size: 166, hue: 111, sway: 0.1 },
-            { left: 55, top: 17, size: 150, hue: 121, sway: 0.6 },
-            { left: 66, top: 12, size: 142, hue: 112, sway: 0.8 },
-            { left: 76, top: 18, size: 156, hue: 118, sway: 0.3 },
-            { left: 86, top: 16, size: 132, hue: 115, sway: 0.5 },
-            { left: 22, top: 25, size: 124, hue: 108, sway: 0.4 },
-            { left: 51, top: 27, size: 134, hue: 105, sway: 0.9 },
-            { left: 72, top: 26, size: 128, hue: 109, sway: 0.2 },
-        ];
-        return clusters.map(cluster => `
-            <span class="forest-cluster" style="left:${cluster.left}%;top:${cluster.top}%;--cluster-size:${cluster.size}px;--cluster-hue:${cluster.hue};--cluster-sway:${cluster.sway}s"></span>
-        `).join('');
-    },
-
-    renderFrontierBackdrop() {
-        const patches = [
-            { left: 19, top: 60, size: 102, rot: -8, tone: 0.95 },
-            { left: 34, top: 68, size: 96, rot: 6, tone: 1.1 },
-            { left: 49, top: 63, size: 118, rot: -3, tone: 1 },
-            { left: 63, top: 69, size: 104, rot: 8, tone: 1.08 },
-            { left: 77, top: 62, size: 112, rot: -7, tone: 0.92 },
-        ];
-        return patches.map(patch => `
-            <span class="frontier-patch" style="left:${patch.left}%;top:${patch.top}%;--patch-size:${patch.size}px;--patch-rot:${patch.rot}deg;--patch-tone:${patch.tone}"></span>
-        `).join('');
-    },
-
     renderIslandPlot(plot, layout) {
         const { left, top, zone, scale, zIndex, tilt, sway, spriteScale, depth } = layout || {};
         const style = [
@@ -265,18 +166,16 @@ Object.assign(GardenView, {
         const zoneClass = zone ? `zone-${zone}` : '';
         if (plot.status === 'wasteland') {
             const obs = this.obstacleMap[plot.obstacle_type] || this.obstacleMap.rock;
-            const action = plot.obstacle_type === 'wild_tree' ? '砍伐' : '开发';
-            return `<div class="iplot wasteland ${zoneClass} obstacle-${plot.obstacle_type || 'rock'}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="${obs.name} · ${action} ${obs.cost} 喵喵币">
+            const glyph = plot.obstacle_type === 'wild_tree' ? '🪓' : '⛏';
+            return `<div class="iplot wasteland ${zoneClass} obstacle-${plot.obstacle_type || 'rock'}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
                 <img src="${obs.img}" alt="${obs.name}" class="iplot-img">
-                <span class="iplot-tag">${action}</span>
-                <span class="iplot-cost">⛏️${obs.cost}</span>
+                <span class="iplot-cost">${glyph} ${obs.cost}</span>
             </div>`;
         }
         if (plot.status === 'cleared') {
             const sel = this.selectedTree;
-            return `<div class="iplot cleared ${zoneClass} ${sel ? 'plantable' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="空地">
+            return `<div class="iplot cleared ${zoneClass} ${sel ? 'plantable' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
                 <div class="iplot-empty">${sel ? '🌱' : ''}</div>
-                <span class="iplot-tag">${sel ? '种植' : '可种植'}</span>
             </div>`;
         }
         const catItem = this.catalog.find(c => c.type === plot.tree_type);
@@ -284,9 +183,8 @@ Object.assign(GardenView, {
         const stage = this.getGrowthStage(gm);
         const pct = Math.min(100, Math.round(gm / 150 * 100));
         let imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.svg';
-        return `<div class="iplot planted ${zoneClass} stage-${stage}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="${catItem?.name || plot.tree_type} · ${this.getGrowthLabel(gm)}">
+        return `<div class="iplot planted ${zoneClass} stage-${stage}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
             <img src="${imgSrc}" alt="" class="iplot-img">
-            <span class="iplot-tag">成长</span>
             <div class="iplot-bar"><div class="iplot-bar-fill" style="width:${pct}%"></div></div>
         </div>`;
     },
@@ -370,7 +268,7 @@ Object.assign(GardenView, {
 
         // ── Mouse drag ──
         vp.addEventListener('mousedown', e => {
-            if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls,.plot-menu')) return;
+            if (e.target.closest('.iplot,.zoom-controls,.plot-menu')) return;
             this.closePlotMenu();
             stopInertia();
             dragState.active = true;
@@ -434,7 +332,7 @@ Object.assign(GardenView, {
                     e.touches[0].pageY - e.touches[1].pageY
                 );
             } else if (e.touches.length === 1 && !pinching) {
-                if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls,.plot-menu')) return;
+                if (e.target.closest('.iplot,.zoom-controls,.plot-menu')) return;
                 this.closePlotMenu();
                 stopInertia();
                 dragState.active = true;
@@ -535,17 +433,14 @@ Object.assign(GardenView, {
             this.showBackpack(this.assignee);
         });
 
-        document.getElementById('garden-history-btn')?.addEventListener('click', () => {
-            this.closePlotMenu();
-            this.showHistory();
-        });
+
 
         document.getElementById('world-map-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
             this.showWorldMap();
         });
 
-        document.getElementById('harbor-building')?.addEventListener('click', () => {
+        document.getElementById('garden-harbor-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
             this.showHarborPanel();
         });
@@ -904,28 +799,4 @@ Object.assign(GardenView, {
         }
     },
 
-    async showHistory() {
-        try {
-            const history = await API.getCoinHistory(this.assignee, 30);
-            const html = history.map(h => `
-                <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
-                    <span>${h.reason === 'pomodoro' ? '🍅' : h.reason === 'checkin' ? '✅' : h.reason === 'purchase' ? '🛒' : '⛏️'} ${h.detail || h.reason}</span>
-                    <span style="color:${h.amount > 0 ? '#4CAF50' : '#ef5350'};font-weight:600">${h.amount > 0 ? '+' : ''}${h.amount}</span>
-                </div>
-            `).join('') || '<p style="text-align:center;opacity:0.5">暂无记录</p>';
-
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = `<div class="modal-box" style="max-width:400px">
-                <h3>📊 喵喵币记录</h3>
-                <div style="max-height:300px;overflow-y:auto">${html}</div>
-                <button class="modal-close-btn" style="margin-top:12px;width:100%">关闭</button>
-            </div>`;
-            document.body.appendChild(overlay);
-            overlay.querySelector('.modal-close-btn').addEventListener('click', () => overlay.remove());
-            overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-        } catch (e) {
-            App.showToast('加载记录失败', 'error');
-        }
-    },
 });

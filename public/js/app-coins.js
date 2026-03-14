@@ -194,7 +194,8 @@ Object.assign(App, {
                     </div>
                 </div>
                 <div class="coin-rules-footer">
-                    <button class="coin-rules-goto-garden">🌴 去花园种树</button>
+                    <button class="coin-rules-goto-garden">🌴 跳转花园</button>
+                    <button class="coin-rules-goto-history">📊 查看明细</button>
                 </div>
             </div>
         `;
@@ -204,6 +205,52 @@ Object.assign(App, {
         overlay.querySelector('.coin-rules-close').onclick = close;
         overlay.onclick = (e) => { if (e.target === overlay) close(); };
         overlay.querySelector('.coin-rules-goto-garden').onclick = () => { close(); this.switchView('garden'); };
+        overlay.querySelector('.coin-rules-goto-history').onclick = () => { close(); this._showCoinHistory(); };
+    },
+
+    async _showCoinHistory() {
+        const assignee = this._getHeaderCoinUser();
+        try {
+            const history = await API.getCoinHistory(assignee, 30);
+            const html = history.map(h => `
+                <div style="display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(0,0,0,0.06);align-items:center">
+                    <span style="font-size:14px;color:#333;display:flex;align-items:center;gap:8px">
+                        <span style="font-size:16px">${h.reason === 'pomodoro' ? '🍅' : h.reason === 'checkin' ? '✅' : h.reason === 'purchase' ? '🛒' : '⛏️'}</span> 
+                        ${h.detail || h.reason}
+                    </span>
+                    <span style="color:${h.amount > 0 ? '#4CAF50' : '#E53935'};font-weight:600;font-size:15px">${h.amount > 0 ? '+' : ''}${h.amount}</span>
+                </div>
+            `).join('') || '<div style="text-align:center;padding:32px;color:#999;font-size:14px">暂无记录</div>';
+
+            const overlay = document.createElement('div');
+            overlay.className = 'history-modal-overlay';
+            overlay.innerHTML = \`<div class="modal-box history-modal-box" style="width:360px; max-width:92vw; background:#fff; border-radius:24px; box-shadow:0 12px 48px rgba(0,0,0,0.2); overflow:hidden;">
+                <div style="padding:16px 20px; border-bottom:1px solid rgba(0,0,0,0.06); display:flex; justify-content:space-between; align-items:center; background:#fdfdfd;">
+                    <h3 style="margin:0; font-size:16px; font-weight:700;">📊 喵喵币明细 - ${assignee}</h3>
+                    <button class="history-modal-close" style="background:none; border:none; font-size:16px; color:#999; cursor:pointer;">✕</button>
+                </div>
+                <div class="history-modal-body" style="max-height:60vh; overflow-y:auto; padding:8px 0;">${html}</div>
+            </div>\`;
+            
+            overlay.style.position = 'fixed';
+            overlay.style.inset = '0';
+            overlay.style.background = 'rgba(0,0,0,0.4)';
+            overlay.style.zIndex = '2100';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+            overlay.style.opacity = '0';
+            overlay.style.transition = 'opacity 0.2s';
+            
+            document.body.appendChild(overlay);
+            requestAnimationFrame(() => overlay.style.opacity = '1');
+            
+            const close = () => { overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 250); };
+            overlay.querySelector('.history-modal-close').addEventListener('click', close);
+            overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+        } catch (e) {
+            this.showToast('加载记录失败', 'error');
+        }
     },
 
     showToast(message, type = 'info') {
