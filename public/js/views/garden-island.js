@@ -159,8 +159,8 @@ Object.assign(GardenView, {
 
             <div class="island-viewport" id="island-viewport">
                 <div class="island-world" id="island-world">
-                    <img class="scene-backdrop scene-backdrop-bleed" src="/img/boom_beach_island_bg.png" alt="" draggable="false">
-                    <img class="scene-backdrop" src="/img/boom_beach_island_bg.png" alt="" draggable="false">
+                    <img class="scene-backdrop scene-backdrop-bleed" src="/img/boom_beach_island_bg_v2.png" alt="" draggable="false">
+                    <img class="scene-backdrop" src="/img/boom_beach_island_bg_v2.png" alt="" draggable="false">
                     <div class="scene-sea-glow"></div>
                     <div class="scene-surf scene-surf-1"></div>
                     <div class="scene-surf scene-surf-2"></div>
