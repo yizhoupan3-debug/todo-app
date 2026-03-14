@@ -137,29 +137,38 @@ const GardenView = {
         weed: { img: '/img/trees/obstacle_weed.svg', name: '杂草', cost: 5 },
         wild_tree: { img: '/img/trees/obstacle_wild_tree.svg', name: '野树', cost: 15 },
     },
-    wildTreeVariants: ['/img/trees/oak.svg', '/img/trees/pine.svg', '/img/trees/oak.svg'],
+    wildTreeVariants: ['/img/trees/oak.svg', '/img/trees/pine.svg', '/img/trees/maple.svg', '/img/trees/oak.svg', '/img/trees/pine.svg'],
 
     SCENE_GRID_W: 8,
     SCENE_GRID_H: 6,
     FOREST_LAYOUTS: [
-        { left: 20, top: 41, scale: 0.94 }, { left: 28, top: 39, scale: 0.98 }, { left: 36, top: 40, scale: 1.03 },
-        { left: 44, top: 38, scale: 1.07 }, { left: 52, top: 39, scale: 1.04 }, { left: 60, top: 38, scale: 1.01 },
-        { left: 68, top: 40, scale: 0.99 }, { left: 76, top: 39, scale: 0.95 }, { left: 23, top: 48, scale: 0.97 },
-        { left: 32, top: 50, scale: 1.02 }, { left: 40, top: 47, scale: 1.07 }, { left: 48, top: 49, scale: 1.12 },
-        { left: 56, top: 47, scale: 1.07 }, { left: 64, top: 49, scale: 1.03 }, { left: 72, top: 47, scale: 0.99 },
-        { left: 80, top: 50, scale: 0.95 }, { left: 21, top: 55, scale: 0.98 }, { left: 30, top: 57, scale: 1.03 },
-        { left: 39, top: 54, scale: 1.08 }, { left: 48, top: 57, scale: 1.14 }, { left: 57, top: 54, scale: 1.09 },
-        { left: 66, top: 57, scale: 1.04 }, { left: 75, top: 55, scale: 1.01 }, { left: 83, top: 57, scale: 0.97 },
-        { left: 28, top: 62, scale: 1.01 }, { left: 39, top: 64, scale: 1.07 }, { left: 50, top: 62, scale: 1.13 },
-        { left: 61, top: 64, scale: 1.08 }, { left: 72, top: 62, scale: 1.03 }, { left: 82, top: 64, scale: 0.99 },
+        // Upper rim (deep forest)
+        { left: 20, top: 38, scale: 0.95 }, { left: 28, top: 36, scale: 1.02 }, { left: 38, top: 35, scale: 1.06 },
+        { left: 48, top: 34, scale: 1.12 }, { left: 58, top: 35, scale: 1.10 }, { left: 68, top: 36, scale: 1.05 },
+        { left: 78, top: 38, scale: 0.98 }, { left: 85, top: 41, scale: 0.95 },
+        // Mid-upper forest
+        { left: 16, top: 45, scale: 0.99 }, { left: 25, top: 44, scale: 1.08 }, { left: 35, top: 42, scale: 1.12 },
+        { left: 45, top: 41, scale: 1.15 }, { left: 55, top: 42, scale: 1.12 }, { left: 65, top: 44, scale: 1.09 },
+        { left: 75, top: 45, scale: 1.04 }, { left: 88, top: 48, scale: 0.96 },
+        // Middle forest area
+        { left: 14, top: 52, scale: 1.02 }, { left: 24, top: 51, scale: 1.10 }, { left: 34, top: 49, scale: 1.16 },
+        { left: 44, top: 48, scale: 1.20 }, { left: 54, top: 49, scale: 1.15 }, { left: 64, top: 51, scale: 1.10 },
+        { left: 76, top: 53, scale: 1.05 }, { left: 90, top: 55, scale: 0.99 },
+        // Lower forest boundary
+        { left: 28, top: 58, scale: 1.08 }, { left: 40, top: 56, scale: 1.16 }, { left: 50, top: 56, scale: 1.18 },
+        { left: 62, top: 57, scale: 1.12 }, { left: 74, top: 59, scale: 1.06 }, { left: 84, top: 62, scale: 1.02 },
     ],
     FRONTIER_LAYOUTS: [
-        { left: 15, top: 70, scale: 0.99 }, { left: 85, top: 70, scale: 0.99 }, { left: 22, top: 78, scale: 1.03 },
-        { left: 33, top: 80, scale: 1.08 }, { left: 44, top: 76, scale: 1.03 }, { left: 55, top: 79, scale: 1.08 },
-        { left: 66, top: 76, scale: 1.03 }, { left: 77, top: 79, scale: 1.07 }, { left: 87, top: 76, scale: 1.03 },
-        { left: 91, top: 82, scale: 0.99 }, { left: 18, top: 87, scale: 1.07 }, { left: 31, top: 91, scale: 1.11 },
-        { left: 44, top: 88, scale: 1.05 }, { left: 57, top: 92, scale: 1.12 }, { left: 70, top: 88, scale: 1.05 },
-        { left: 82, top: 92, scale: 1.1 }, { left: 90, top: 88, scale: 1.04 }, { left: 96, top: 92, scale: 0.98 },
+        // Mid-lower wasteland (rocks, stumps)
+        { left: 18, top: 63, scale: 1.05 }, { left: 92, top: 64, scale: 1.02 },
+        { left: 26, top: 68, scale: 1.08 }, { left: 38, top: 66, scale: 1.14 }, { left: 50, top: 65, scale: 1.16 },
+        { left: 62, top: 66, scale: 1.12 }, { left: 76, top: 68, scale: 1.06 }, { left: 88, top: 70, scale: 1.01 },
+        // Near beach / clearings
+        { left: 22, top: 76, scale: 1.10 }, { left: 34, top: 74, scale: 1.18 }, { left: 46, top: 72, scale: 1.20 },
+        { left: 58, top: 73, scale: 1.15 }, { left: 70, top: 75, scale: 1.10 }, { left: 84, top: 78, scale: 1.05 },
+        // Shoreline edges
+        { left: 30, top: 82, scale: 1.20 }, { left: 44, top: 80, scale: 1.25 }, { left: 58, top: 80, scale: 1.20 },
+        { left: 72, top: 83, scale: 1.15 },
     ],
 
     _staticRendered: false,
@@ -170,6 +179,7 @@ const GardenView = {
     _backpackContentEl: null,
     _backpackSearchInputEl: null,
     _activePlotMenu: null,
+    _selectedPlotId: null,
 
     init() { },
 
@@ -300,8 +310,8 @@ const GardenView = {
         const base = zone === 'forest'
             ? this.FOREST_LAYOUTS[this._getForestLayoutIndex(x, y)]
             : this.FRONTIER_LAYOUTS[this._getFrontierLayoutIndex(x, y)];
-        let left = (base?.left ?? (14 + xRatio * 70)) + (n1 - 0.5) * (zone === 'forest' ? 2.6 : 3.2);
-        let top = (base?.top ?? (56 + yRatio * 24)) + (n2 - 0.5) * (zone === 'forest' ? 2.2 : 2.8);
+        let left = (base?.left ?? (14 + xRatio * 70)) + (n1 - 0.5) * (zone === 'forest' ? 1.8 : 2.8);
+        let top = (base?.top ?? (56 + yRatio * 24)) + (n2 - 0.5) * (zone === 'forest' ? 1.6 : 2.4);
         let scale = (base?.scale ?? 1) + (n3 - 0.5) * 0.06;
         let tilt = (n4 - 0.5) * (zone === 'forest' ? 10 : 6);
         let spriteScale = zone === 'forest' ? 1.08 + n2 * 0.18 : 0.94 + n2 * 0.18;
@@ -311,6 +321,11 @@ const GardenView = {
         if (zone === 'shore') {
             tilt += x <= 1 ? -3 : 3;
             spriteScale += 0.06;
+        }
+
+        if (zone === 'forest' && y < 2) {
+            top += 1.6;
+            left += (xRatio - 0.5) * 0.8;
         }
 
         return {
@@ -332,15 +347,15 @@ const GardenView = {
     _fitZoom: 0.72,
     _defaultZoom: 0.9,
     _viewportPadding: 0,
-    _cameraBounds: { x: 40, y: 40, width: 1700, height: 1260 },
+    _cameraBounds: { x: 300, y: 150, width: 1380, height: 1200 },
 
     _recalculateZoomBounds(vp, world) {
         if (!vp || !world) return;
         const fitX = vp.clientWidth / world.offsetWidth;
         const fitY = vp.clientHeight / world.offsetHeight;
-        this._fitZoom = Math.max(Math.min(fitX, fitY), 0.56);
+        this._fitZoom = Math.max(Math.min(fitX, fitY), 0.58);
         this._minZoom = this._fitZoom;
-        this._defaultZoom = Math.max(this._minZoom, Math.min(1.02, this._fitZoom * 1.12));
+        this._defaultZoom = Math.max(this._minZoom, Math.min(1.08, this._fitZoom * 1.18));
     },
 
     _zoomAtPoint(vp, world, nextZoom, clientX, clientY) {
@@ -452,13 +467,25 @@ const GardenView = {
                 const plotId = parseInt(plotEl.dataset.plotId, 10);
                 const plot = this.plots.find(p => p.id === plotId);
                 if (!plot) return;
+                const actionBtn = e.target.closest('.iplot-action');
+                if (actionBtn) {
+                    const action = actionBtn.dataset.action;
+                    if (action === 'clear' && plot.status === 'wasteland') await this.clearPlot(plotId, plot.obstacle_type);
+                    else if (action === 'plant' && plot.status === 'cleared' && this.selectedTree) await this.plantOnPlot(plotId);
+                    else if (action === 'menu' && plot.status === 'planted') this.showPlotMenu(plotId, plotEl);
+                    return;
+                }
                 if (this._movingPlotId && plot.status === 'cleared') {
                     await this.executeMoveToPlot(plotId);
                     return;
                 }
-                if (plot.status === 'wasteland') await this.clearPlot(plotId, plot.obstacle_type);
-                else if (plot.status === 'cleared' && this.selectedTree) await this.plantOnPlot(plotId);
-                else if (plot.status === 'planted') this.showPlotMenu(plotId, plotEl);
+                if (this._selectedPlotId === plotId) {
+                    this._selectedPlotId = null;
+                    this._updateDynamicContent();
+                    return;
+                }
+                this._selectedPlotId = plotId;
+                this._updateDynamicContent();
             };
         });
     },

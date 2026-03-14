@@ -54,6 +54,56 @@ Object.assign(GardenView, {
         this.updateHeaderCoins();
     },
 
+    renderBackdropDecor() {
+        const cliffTrees = [
+            { left: 14.2, top: 19.4, type: 'pine', scale: 0.78, rotate: -8, depth: 6 },
+            { left: 18.4, top: 17.6, type: 'oak', scale: 0.86, rotate: -4, depth: 6 },
+            { left: 23.2, top: 18.1, type: 'pine', scale: 0.74, rotate: 6, depth: 6 },
+            { left: 30.6, top: 16.1, type: 'oak', scale: 0.72, rotate: -3, depth: 6 },
+            { left: 36.8, top: 14.8, type: 'pine', scale: 0.76, rotate: 4, depth: 6 },
+            { left: 42.8, top: 13.7, type: 'oak', scale: 0.9, rotate: -2, depth: 6 },
+            { left: 49.1, top: 13.1, type: 'pine', scale: 0.84, rotate: 3, depth: 6 },
+            { left: 55.4, top: 13.8, type: 'oak', scale: 0.92, rotate: 1, depth: 6 },
+            { left: 61.6, top: 15.4, type: 'pine', scale: 0.8, rotate: -5, depth: 6 },
+            { left: 67.5, top: 16.8, type: 'oak', scale: 0.86, rotate: 5, depth: 6 },
+            { left: 73.6, top: 18.2, type: 'pine', scale: 0.74, rotate: -3, depth: 6 },
+            { left: 79.8, top: 20.2, type: 'oak', scale: 0.82, rotate: 6, depth: 6 },
+            { left: 86.5, top: 24.7, type: 'oak', scale: 0.72, rotate: 8, depth: 6 },
+            { left: 10.6, top: 29.8, type: 'pine', scale: 0.7, rotate: -8, depth: 6 },
+        ];
+
+        const rockTrees = [
+            { left: 13.1, top: 25.9, type: 'oak', scale: 0.62, rotate: -10, depth: 7 },
+            { left: 74.3, top: 24.1, type: 'pine', scale: 0.58, rotate: 8, depth: 7 },
+            { left: 90.2, top: 35.5, type: 'oak', scale: 0.56, rotate: 10, depth: 7 },
+        ];
+
+        return `
+            <div class="scene-waterfall scene-waterfall-main" aria-hidden="true">
+                <span class="waterfall-stream stream-1"></span>
+                <span class="waterfall-stream stream-2"></span>
+                <span class="waterfall-stream stream-3"></span>
+                <span class="waterfall-stream stream-4"></span>
+                <span class="waterfall-sheen"></span>
+                <span class="waterfall-mist"></span>
+                <span class="waterfall-pool"></span>
+            </div>
+            <div class="scene-waterfall scene-waterfall-side" aria-hidden="true">
+                <span class="waterfall-stream stream-1"></span>
+                <span class="waterfall-stream stream-2"></span>
+                <span class="waterfall-mist"></span>
+            </div>
+            <div class="scene-cliff-forest" aria-hidden="true">
+                ${cliffTrees.map(tree => `
+                    <span class="cliff-tree tree-${tree.type}" style="left:${tree.left}%;top:${tree.top}%;--tree-scale:${tree.scale};--tree-rotate:${tree.rotate}deg;z-index:${tree.depth}"></span>
+                `).join('')}
+                ${rockTrees.map(tree => `
+                    <span class="cliff-tree cliff-tree-rock tree-${tree.type}" style="left:${tree.left}%;top:${tree.top}%;--tree-scale:${tree.scale};--tree-rotate:${tree.rotate}deg;z-index:${tree.depth}"></span>
+                `).join('')}
+            </div>
+        `;
+    },
+
     render() {
         const el = document.getElementById('view-garden');
         if (!el) return;
@@ -109,11 +159,13 @@ Object.assign(GardenView, {
 
             <div class="island-viewport" id="island-viewport">
                 <div class="island-world" id="island-world">
-                    <img class="scene-backdrop" src="/img/island-bg.png" alt="" draggable="false">
+                    <img class="scene-backdrop scene-backdrop-bleed" src="/img/boom_beach_island_bg.png" alt="" draggable="false">
+                    <img class="scene-backdrop" src="/img/boom_beach_island_bg.png" alt="" draggable="false">
                     <div class="scene-sea-glow"></div>
                     <div class="scene-surf scene-surf-1"></div>
                     <div class="scene-surf scene-surf-2"></div>
                     <div class="scene-surf scene-surf-3"></div>
+                    ${this.renderBackdropDecor()}
 
                     <div class="island-land" id="island-land">
                         <div class="scene-land-shadow"></div>
@@ -153,6 +205,7 @@ Object.assign(GardenView, {
 
     renderIslandPlot(plot, layout) {
         const { left, top, zone, scale, zIndex, tilt, sway, spriteScale, depth } = layout || {};
+        const isSelected = this._selectedPlotId === plot.id;
         const style = [
             `left:${left ?? 50}%`,
             `top:${top ?? 60}%`,
@@ -167,15 +220,16 @@ Object.assign(GardenView, {
         if (plot.status === 'wasteland') {
             const obs = this.getObstacleVisual(plot);
             const glyph = plot.obstacle_type === 'wild_tree' ? '🪓' : '⛏';
-            return `<div class="iplot wasteland ${zoneClass} obstacle-${plot.obstacle_type || 'rock'}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
+            return `<div class="iplot wasteland ${zoneClass} obstacle-${plot.obstacle_type || 'rock'} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
                 <img src="${obs.img}" alt="${obs.name}" class="iplot-img">
-                <span class="iplot-cost">${glyph} ${obs.cost}</span>
+                ${isSelected ? `<button class="iplot-action" data-action="clear" title="">${glyph} ${obs.cost}</button>` : ''}
             </div>`;
         }
         if (plot.status === 'cleared') {
             const sel = this.selectedTree;
-            return `<div class="iplot cleared ${zoneClass} ${sel ? 'plantable' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
+            return `<div class="iplot cleared ${zoneClass} ${sel ? 'plantable' : ''} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
                 <div class="iplot-empty">${sel ? '🌱' : ''}</div>
+                ${isSelected && sel ? '<button class="iplot-action" data-action="plant" title="">🌱</button>' : ''}
             </div>`;
         }
         const catItem = this.catalog.find(c => c.type === plot.tree_type);
@@ -183,9 +237,10 @@ Object.assign(GardenView, {
         const stage = this.getGrowthStage(gm);
         const pct = Math.min(100, Math.round(gm / 150 * 100));
         let imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.svg';
-        return `<div class="iplot planted ${zoneClass} stage-${stage}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
+        return `<div class="iplot planted ${zoneClass} stage-${stage} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
             <img src="${imgSrc}" alt="" class="iplot-img">
             <div class="iplot-bar"><div class="iplot-bar-fill" style="width:${pct}%"></div></div>
+            ${isSelected ? '<button class="iplot-action" data-action="menu" title="">⋯</button>' : ''}
         </div>`;
     },
 
@@ -453,6 +508,10 @@ Object.assign(GardenView, {
         document.getElementById('island-viewport')?.addEventListener('click', (e) => {
             if (!e.target.closest('.plot-menu') && !e.target.closest('.iplot')) {
                 this.closePlotMenu();
+                if (this._selectedPlotId != null) {
+                    this._selectedPlotId = null;
+                    this._updateDynamicContent();
+                }
             }
         });
     },
@@ -461,6 +520,7 @@ Object.assign(GardenView, {
 
     showPlotMenu(plotId, plotEl) {
         this.closePlotMenu();
+        this._selectedPlotId = plotId;
         const plot = this.plots.find(p => p.id === plotId);
         if (!plot) return;
 
@@ -755,6 +815,7 @@ Object.assign(GardenView, {
                 planted_at: null,
                 last_harvested: null,
             });
+            this._selectedPlotId = null;
             this._updateDynamicContent();
             this._flashPlot(plotId, 'plot-cleared');
             const followup = this.selectedTree ? ' 现在点这块空地就能种下去。' : ' 现在它已经是可种植空地了。';
@@ -790,6 +851,7 @@ Object.assign(GardenView, {
                 last_harvested: result.tree.last_harvested || null,
                 obstacle_type: null,
             });
+            this._selectedPlotId = null;
             this.selectedTree = null;
             this._updateDynamicContent();
             this._flashPlot(plotId, 'plot-planted');

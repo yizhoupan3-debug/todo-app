@@ -131,6 +131,9 @@ const JournalView = {
             <button class="journal-tool-btn bg-picker-btn" id="j-bg-btn">
               <span class="icon">🎨</span> 底布
             </button>
+            <button class="journal-tool-btn" id="j-export-btn">
+              <span class="icon">📥</span> 导出
+            </button>
             <input type="file" id="j-file-input" accept="image/*" multiple hidden>
           </div>
           <div class="journal-bg-picker" id="j-bg-picker">${bgSwatches}</div>
@@ -184,12 +187,7 @@ const JournalView = {
         canvas.style.minHeight = maxBottom + 'px';
 
         if (this.elements.length === 0) {
-            canvas.innerHTML = `
-              <div class="journal-empty">
-                <div class="journal-empty-icon">📖</div>
-                <div class="journal-empty-text">空白画布</div>
-                <div class="journal-empty-hint">点上方 📝文字 或 📷照片 开始创作</div>
-              </div>`;
+            canvas.innerHTML = '';
             return;
         }
 
@@ -266,6 +264,8 @@ const JournalView = {
             Array.from(e.target.files).forEach((f, i) => this._uploadPhoto(f, i));
             fileInput.value = '';
         });
+
+        document.getElementById('j-export-btn')?.addEventListener('click', () => this._exportToImage());
 
         // Background picker
         document.getElementById('j-bg-btn')?.addEventListener('click', (e) => {
@@ -366,6 +366,43 @@ const JournalView = {
 
     _selectedElement() {
         return this.elements.find(el => el.id === this._selectedId) || null;
+    },
+
+    /* ═══ Export ═══ */
+    async _exportToImage() {
+        if (typeof html2canvas === 'undefined') {
+            App.showToast('导出组件加载中，请稍后再试...', 'warning');
+            return;
+        }
+        
+        // Deselect any active element before capturing
+        this._select(null);
+        
+        const canvasEl = document.getElementById('j-canvas');
+        if (!canvasEl) return;
+        
+        try {
+            App.showToast('生成收据中...', 'info');
+            // Adding a small delay to ensure UI selection state clears visually
+            await new Promise(r => setTimeout(r, 100));
+            
+            const renderCanvas = await html2canvas(canvasEl, {
+                useCORS: true,
+                backgroundColor: null, // preserve background transparency/pattern if any
+                scale: 2 // High res export
+            });
+            
+            const imgData = renderCanvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = imgData;
+            a.download = `共同日记_${this.currentDate}.png`;
+            a.click();
+            
+            App.showToast('导出成功', 'success');
+        } catch (err) {
+            console.error('Export error:', err);
+            App.showToast('导出失败，请重试', 'error');
+        }
     },
 
     /* ═══ Canvas-level events ═══ */
