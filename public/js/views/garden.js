@@ -143,32 +143,32 @@ const GardenView = {
     SCENE_GRID_H: 6,
     FOREST_LAYOUTS: [
         // Upper rim (deep forest)
-        { left: 20, top: 38, scale: 0.95 }, { left: 28, top: 36, scale: 1.02 }, { left: 38, top: 35, scale: 1.06 },
-        { left: 48, top: 34, scale: 1.12 }, { left: 58, top: 35, scale: 1.10 }, { left: 68, top: 36, scale: 1.05 },
-        { left: 78, top: 38, scale: 0.98 }, { left: 85, top: 41, scale: 0.95 },
+        { left: 24, top: 38, scale: 0.95 }, { left: 32, top: 37, scale: 1.02 }, { left: 40, top: 36, scale: 1.06 },
+        { left: 48, top: 35, scale: 1.12 }, { left: 56, top: 35, scale: 1.10 }, { left: 64, top: 36, scale: 1.05 },
+        { left: 72, top: 37, scale: 0.98 }, { left: 80, top: 38, scale: 0.95 },
         // Mid-upper forest
-        { left: 16, top: 45, scale: 0.99 }, { left: 25, top: 44, scale: 1.08 }, { left: 35, top: 42, scale: 1.12 },
-        { left: 45, top: 41, scale: 1.15 }, { left: 55, top: 42, scale: 1.12 }, { left: 65, top: 44, scale: 1.09 },
-        { left: 75, top: 45, scale: 1.04 }, { left: 88, top: 48, scale: 0.96 },
+        { left: 20, top: 45, scale: 0.99 }, { left: 29, top: 44, scale: 1.08 }, { left: 38, top: 43, scale: 1.12 },
+        { left: 47, top: 42, scale: 1.15 }, { left: 55, top: 42, scale: 1.12 }, { left: 63, top: 43, scale: 1.09 },
+        { left: 71, top: 44, scale: 1.04 }, { left: 80, top: 46, scale: 0.96 },
         // Middle forest area
-        { left: 14, top: 52, scale: 1.02 }, { left: 24, top: 51, scale: 1.10 }, { left: 34, top: 49, scale: 1.16 },
-        { left: 44, top: 48, scale: 1.20 }, { left: 54, top: 49, scale: 1.15 }, { left: 64, top: 51, scale: 1.10 },
-        { left: 76, top: 53, scale: 1.05 }, { left: 90, top: 55, scale: 0.99 },
+        { left: 18, top: 52, scale: 1.02 }, { left: 28, top: 51, scale: 1.10 }, { left: 38, top: 50, scale: 1.16 },
+        { left: 48, top: 49, scale: 1.20 }, { left: 57, top: 49, scale: 1.15 }, { left: 66, top: 50, scale: 1.10 },
+        { left: 75, top: 52, scale: 1.05 }, { left: 84, top: 54, scale: 0.99 },
         // Lower forest boundary
-        { left: 28, top: 58, scale: 1.08 }, { left: 40, top: 56, scale: 1.16 }, { left: 50, top: 56, scale: 1.18 },
-        { left: 62, top: 57, scale: 1.12 }, { left: 74, top: 59, scale: 1.06 }, { left: 84, top: 62, scale: 1.02 },
+        { left: 28, top: 59, scale: 1.08 }, { left: 38, top: 57, scale: 1.16 }, { left: 48, top: 56, scale: 1.18 },
+        { left: 58, top: 56, scale: 1.12 }, { left: 68, top: 58, scale: 1.06 }, { left: 78, top: 60, scale: 1.02 },
     ],
     FRONTIER_LAYOUTS: [
         // Mid-lower wasteland (rocks, stumps)
-        { left: 18, top: 63, scale: 1.05 }, { left: 92, top: 64, scale: 1.02 },
-        { left: 26, top: 68, scale: 1.08 }, { left: 38, top: 66, scale: 1.14 }, { left: 50, top: 65, scale: 1.16 },
-        { left: 62, top: 66, scale: 1.12 }, { left: 76, top: 68, scale: 1.06 }, { left: 88, top: 70, scale: 1.01 },
+        { left: 22, top: 65, scale: 1.05 }, { left: 82, top: 65, scale: 1.02 },
+        { left: 30, top: 68, scale: 1.08 }, { left: 40, top: 65, scale: 1.14 }, { left: 50, top: 64, scale: 1.16 },
+        { left: 60, top: 64, scale: 1.12 }, { left: 70, top: 66, scale: 1.06 }, { left: 80, top: 70, scale: 1.01 },
         // Near beach / clearings
-        { left: 22, top: 76, scale: 1.10 }, { left: 34, top: 74, scale: 1.18 }, { left: 46, top: 72, scale: 1.20 },
-        { left: 58, top: 73, scale: 1.15 }, { left: 70, top: 75, scale: 1.10 }, { left: 84, top: 78, scale: 1.05 },
+        { left: 28, top: 75, scale: 1.10 }, { left: 38, top: 73, scale: 1.18 }, { left: 48, top: 71, scale: 1.20 },
+        { left: 58, top: 72, scale: 1.15 }, { left: 68, top: 74, scale: 1.10 }, { left: 78, top: 76, scale: 1.05 },
         // Shoreline edges
-        { left: 30, top: 82, scale: 1.20 }, { left: 44, top: 80, scale: 1.25 }, { left: 58, top: 80, scale: 1.20 },
-        { left: 72, top: 83, scale: 1.15 },
+        { left: 34, top: 82, scale: 1.20 }, { left: 46, top: 80, scale: 1.25 }, { left: 58, top: 80, scale: 1.20 },
+        { left: 70, top: 82, scale: 1.15 },
     ],
 
     _staticRendered: false,
