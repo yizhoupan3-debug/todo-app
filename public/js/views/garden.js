@@ -140,6 +140,8 @@ const GardenView = {
 
     _staticRendered: false,
     _backpackSort: { by: 'price', order: 'asc' },
+    _plotMenuCleanup: null,
+    _forestHintShown: false,
 
     init() { },
 
@@ -204,33 +206,34 @@ const GardenView = {
 
     getIslandPlotPositions() {
         return [
-            [20, 61], [33, 58], [47, 57], [61, 60],
-            [17, 68], [30, 65], [44, 64], [58, 65], [71, 68],
-            [24, 75], [38, 72], [52, 71], [66, 74],
+            [20, 66], [34, 62], [49, 61], [64, 63],
+            [18, 73], [32, 69], [47, 68], [62, 69], [77, 72],
+            [26, 79], [41, 76], [56, 75], [71, 78],
         ];
     },
 
     getForestButtonLayout() {
         return [
-            { left: 12, top: 19, cost: 120, img: '/img/trees/pine.svg', width: 76, tilt: -3 },
-            { left: 22, top: 16, cost: 110, img: '/img/trees/oak.svg', width: 74, tilt: 2 },
-            { left: 33, top: 18, cost: 105, img: '/img/trees/pine.svg', width: 68, tilt: -1 },
-            { left: 45, top: 16, cost: 120, img: '/img/trees/sakura.svg', width: 72, tilt: 2 },
-            { left: 57, top: 17, cost: 100, img: '/img/trees/oak.svg', width: 70, tilt: -2 },
-            { left: 69, top: 19, cost: 90, img: '/img/trees/maple.svg', width: 62, tilt: 3 },
-            { left: 9, top: 25, cost: 75, img: '/img/trees/bamboo.svg', width: 56, tilt: -4 },
-            { left: 19, top: 28, cost: 65, img: '/img/trees/orange_tree.svg', width: 54, tilt: 2 },
-            { left: 31, top: 25, cost: 70, img: '/img/trees/christmas.svg', width: 58, tilt: -3 },
-            { left: 43, top: 27, cost: 60, img: '/img/trees/peach.svg', width: 54, tilt: 1 },
-            { left: 55, top: 24, cost: 70, img: '/img/trees/pine.svg', width: 60, tilt: -2 },
-            { left: 67, top: 26, cost: 60, img: '/img/trees/oak.svg', width: 56, tilt: 4 },
-            { left: 77, top: 24, cost: 45, img: '/img/trees/bamboo.svg', width: 48, tilt: -2 },
-            { left: 11, top: 35, cost: 25, img: '/img/trees/obstacle_wild_tree.svg', width: 48, tilt: -2 },
-            { left: 23, top: 38, cost: 18, img: '/img/trees/mushroom.svg', width: 42, tilt: 3 },
-            { left: 35, top: 36, cost: 35, img: '/img/trees/oak.svg', width: 52, tilt: -1 },
-            { left: 48, top: 38, cost: 20, img: '/img/trees/palm.svg', width: 52, tilt: 2 },
-            { left: 61, top: 36, cost: 20, img: '/img/trees/bamboo.svg', width: 48, tilt: -3 },
-            { left: 73, top: 35, cost: 20, img: '/img/trees/maple.svg', width: 46, tilt: 2 },
+            { left: 10, top: 40, cost: 120, img: '/img/trees/pine.svg', width: 80, tilt: -3 },
+            { left: 20, top: 37, cost: 110, img: '/img/trees/oak.svg', width: 76, tilt: 2 },
+            { left: 31, top: 39, cost: 105, img: '/img/trees/pine.svg', width: 70, tilt: -1 },
+            { left: 43, top: 36, cost: 120, img: '/img/trees/sakura.svg', width: 74, tilt: 2 },
+            { left: 55, top: 37, cost: 100, img: '/img/trees/oak.svg', width: 72, tilt: -2 },
+            { left: 67, top: 39, cost: 90, img: '/img/trees/maple.svg', width: 62, tilt: 3 },
+            { left: 79, top: 41, cost: 90, img: '/img/trees/bamboo.svg', width: 52, tilt: -2 },
+            { left: 8, top: 48, cost: 75, img: '/img/trees/bamboo.svg', width: 58, tilt: -4 },
+            { left: 19, top: 50, cost: 65, img: '/img/trees/orange_tree.svg', width: 56, tilt: 2 },
+            { left: 31, top: 47, cost: 70, img: '/img/trees/christmas.svg', width: 60, tilt: -3 },
+            { left: 43, top: 49, cost: 60, img: '/img/trees/peach.svg', width: 56, tilt: 1 },
+            { left: 55, top: 46, cost: 70, img: '/img/trees/pine.svg', width: 62, tilt: -2 },
+            { left: 67, top: 48, cost: 60, img: '/img/trees/oak.svg', width: 58, tilt: 4 },
+            { left: 79, top: 49, cost: 45, img: '/img/trees/bamboo.svg', width: 50, tilt: -2 },
+            { left: 13, top: 56, cost: 25, img: '/img/trees/obstacle_wild_tree.svg', width: 48, tilt: -2 },
+            { left: 26, top: 58, cost: 18, img: '/img/trees/mushroom.svg', width: 42, tilt: 3 },
+            { left: 39, top: 55, cost: 35, img: '/img/trees/oak.svg', width: 52, tilt: -1 },
+            { left: 52, top: 56, cost: 20, img: '/img/trees/palm.svg', width: 52, tilt: 2 },
+            { left: 65, top: 54, cost: 20, img: '/img/trees/bamboo.svg', width: 48, tilt: -3 },
+            { left: 77, top: 53, cost: 20, img: '/img/trees/maple.svg', width: 46, tilt: 2 },
         ];
     },
 
@@ -242,10 +245,52 @@ const GardenView = {
         `).join('');
     },
 
+    _getViewportBounds(world) {
+        if (!world) return { left: 0, right: 0, top: 0, bottom: 0 };
+        const land = document.getElementById('island-land');
+        if (land) {
+            const left = land.offsetLeft;
+            const top = land.offsetTop;
+            const width = land.offsetWidth;
+            const height = land.offsetHeight;
+            return {
+                left: left + width * 0.035,
+                right: left + width * 0.965,
+                top: top + height * 0.055,
+                bottom: top + height * 0.905,
+            };
+        }
+        const width = world.offsetWidth || 0;
+        const height = world.offsetHeight || 0;
+        return {
+            left: width * 0.07,
+            right: width * 0.93,
+            top: height * 0.08,
+            bottom: height * 0.86,
+        };
+    },
+
+    _clampViewport(vp, world) {
+        if (!vp || !world) return;
+        const bounds = this._getViewportBounds(world);
+        const visibleWidth = vp.clientWidth / this._zoom;
+        const visibleHeight = vp.clientHeight / this._zoom;
+        const minLeft = bounds.left;
+        const maxLeft = Math.max(minLeft, bounds.right - visibleWidth);
+        const minTop = bounds.top;
+        const maxTop = Math.max(minTop, bounds.bottom - visibleHeight);
+        vp.scrollLeft = Math.min(maxLeft, Math.max(minLeft, vp.scrollLeft));
+        vp.scrollTop = Math.min(maxTop, Math.max(minTop, vp.scrollTop));
+    },
+
     _centerViewport(vp, world) {
         if (!vp || !world) return;
-        vp.scrollLeft = Math.max(0, (world.offsetWidth - vp.offsetWidth) / 2);
-        vp.scrollTop = Math.max(0, (world.offsetHeight - vp.offsetHeight) / 2.15);
+        const bounds = this._getViewportBounds(world);
+        const visibleWidth = vp.clientWidth / this._zoom;
+        const visibleHeight = vp.clientHeight / this._zoom;
+        vp.scrollLeft = bounds.left + Math.max(0, (bounds.right - bounds.left - visibleWidth) / 2);
+        vp.scrollTop = bounds.top + Math.max(0, (bounds.bottom - bounds.top - visibleHeight) * 0.46);
+        this._clampViewport(vp, world);
     },
 
     _syncPlantingToolbar() {
@@ -278,6 +323,7 @@ const GardenView = {
     /* Update only the dynamic parts of the garden view (plots, HUD, stats bar) */
     _updateDynamicContent() {
         const PP = this.getIslandPlotPositions();
+        this.closePlotMenu();
 
         // Update plots
         const land = document.getElementById('island-land');
@@ -379,7 +425,6 @@ const GardenView = {
             this.expeditions = await fetch(`/api/garden/expeditions/${encodeURIComponent(this.assignee)}`).then(r => r.json());
         } catch (e) { this.expeditions = []; }
 
-        this.selectedTree = null;
         this.render();
         this.updateHeaderCoins();
     },
@@ -448,84 +493,81 @@ const GardenView = {
                             <radialGradient id="fogG" cx="50%" cy="50%"><stop offset="0%" stop-color="rgba(208,224,235,0.75)"/><stop offset="70%" stop-color="rgba(181,199,215,0.28)"/><stop offset="100%" stop-color="rgba(181,199,215,0)"/></radialGradient>
                         </defs>
                         <g filter="url(#ishadow)">
-                            <path d="M72,620 Q38,498 74,334 L108,172 Q130,84 274,70 L934,70 Q1080,78 1116,238 L1128,616 Q1120,802 946,838 L196,850 Q70,844 72,620 Z" fill="url(#reefG)" opacity="0.92"/>
-                            <ellipse cx="250" cy="684" rx="270" ry="180" fill="url(#shallowsG)" opacity="0.8"/>
-                            <ellipse cx="962" cy="644" rx="232" ry="152" fill="url(#shallowsG)" opacity="0.68"/>
-                            <path d="M114,610 Q90,510 120,354 L152,206 Q176,116 300,112 L910,112 Q1026,118 1054,252 L1066,594 Q1058,758 922,790 L214,800 Q120,796 114,610 Z" fill="none" stroke="rgba(255,255,255,0.26)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity="0.68"/>
-                            <path d="M128,610 Q92,502 124,358 L152,205 Q174,118 301,114 L909,114 Q1022,118 1052,250 L1064,596 Q1058,752 922,786 L214,796 Q124,794 128,610 Z" fill="url(#sandG)"/>
-                            <path d="M188,560 Q162,472 188,342 L214,234 Q238,154 344,150 L886,150 Q980,156 1004,268 L1010,566 Q1000,666 888,716 L292,732 Q206,724 188,560 Z" fill="url(#grassG)"/>
-                            <path d="M152,640 Q190,756 286,798 L178,790 Q122,786 128,610 Z" fill="#f9efce" opacity="0.92"/>
-                            <path d="M888,694 Q980,710 1048,650 L1048,724 Q996,784 920,790 L850,784 Q886,742 888,694 Z" fill="#efd59c" opacity="0.84"/>
-                            <ellipse cx="834" cy="504" rx="154" ry="96" fill="url(#yardG)" opacity="0.92"/>
-                            <ellipse cx="842" cy="506" rx="122" ry="66" fill="rgba(255,244,217,0.12)"/>
-                            <path d="M182,520 Q178,454 224,408 Q310,352 420,356 L610,368 Q710,378 756,442 Q776,506 742,606 Q704,678 620,708 L324,716 Q220,694 188,614 Q180,568 182,520 Z" fill="url(#dirtG)" opacity="0.9"/>
-                            <path d="M230,518 Q324,474 434,478 Q546,484 650,516" stroke="rgba(104,66,34,0.24)" stroke-width="8" fill="none" stroke-linecap="round"/>
-                            <path d="M226,564 Q332,524 452,530 Q576,536 674,576" stroke="rgba(104,66,34,0.22)" stroke-width="7" fill="none" stroke-linecap="round"/>
-                            <path d="M242,610 Q348,578 458,584 Q568,590 654,624" stroke="rgba(104,66,34,0.18)" stroke-width="6" fill="none" stroke-linecap="round"/>
-                            <path d="M206,318 L214,234 Q238,154 344,150 L886,150 Q980,156 1004,268 L1010,338 Q938,304 864,324 Q782,288 692,320 Q594,282 494,314 Q382,280 290,316 Z" fill="url(#cliffG)"/>
-                            <path d="M212,324 Q328,276 436,298 Q560,266 678,296 Q816,268 940,316 L952,344 Q824,318 694,346 Q568,322 442,350 Q316,320 210,348 Z" fill="url(#cliffFaceG)" opacity="0.56"/>
-                            <polygon points="226,318 330,134 440,320" fill="#7d6848"/>
-                            <polygon points="410,320 540,92 686,324" fill="#665237"/>
-                            <polygon points="648,324 790,120 936,332" fill="#7a6447"/>
-                            <polygon points="866,328 980,190 1042,336" fill="#6a5639"/>
-                            <polygon points="530,112 540,92 552,112" fill="rgba(255,255,255,0.55)"/>
-                            <polygon points="780,138 790,120 802,138" fill="rgba(255,255,255,0.45)"/>
-                            <g opacity="0.34">
-                                <ellipse cx="336" cy="302" rx="154" ry="26" fill="rgba(210,220,230,0.22)"/>
-                                <ellipse cx="814" cy="300" rx="186" ry="32" fill="rgba(210,220,230,0.2)"/>
+                            <path d="M40,658 Q22,516 70,286 L124,138 Q170,38 354,30 L944,46 Q1092,64 1148,236 L1160,692 Q1150,852 978,882 L180,886 Q58,874 40,658 Z" fill="url(#reefG)" opacity="0.92"/>
+                            <ellipse cx="182" cy="742" rx="318" ry="234" fill="url(#shallowsG)" opacity="0.92"/>
+                            <ellipse cx="1000" cy="686" rx="286" ry="182" fill="url(#shallowsG)" opacity="0.78"/>
+                            <ellipse cx="1098" cy="418" rx="126" ry="96" fill="url(#shallowsG)" opacity="0.48"/>
+
+                            <path d="M106,642 Q84,524 120,338 L160,190 Q204,96 348,90 L908,92 Q1020,98 1068,244 L1096,628 Q1094,776 946,840 L214,850 Q128,840 106,642 Z" fill="url(#sandG)"/>
+                            <path d="M250,596 Q230,496 250,360 L276,248 Q304,176 398,168 L840,170 Q934,178 980,286 L994,610 Q998,714 904,772 L346,784 Q268,778 250,596 Z" fill="url(#grassG)"/>
+                            <path d="M108,642 Q118,790 228,842 L164,848 Q124,840 106,642 Z" fill="#f9efce" opacity="0.96"/>
+                            <path d="M902,722 Q986,730 1060,666 L1072,748 Q1016,822 930,838 L854,832 Q900,790 902,722 Z" fill="#efd59c" opacity="0.88"/>
+                            <path d="M110,664 Q170,786 334,832" stroke="rgba(255,255,255,0.32)" stroke-width="12" fill="none" stroke-linecap="round"/>
+                            <path d="M874,814 Q1028,780 1092,682" stroke="rgba(255,255,255,0.3)" stroke-width="10" fill="none" stroke-linecap="round"/>
+
+                            <path d="M264,324 L276,248 Q304,176 398,168 L840,170 Q934,178 980,286 L990,330 Q928,310 840,320 Q744,294 646,324 Q546,298 448,330 Q346,300 264,324 Z" fill="url(#cliffG)"/>
+                            <path d="M258,336 Q372,284 492,296 Q612,272 714,302 Q828,278 956,326 L966,364 Q842,336 720,356 Q596,330 472,360 Q354,334 252,362 Z" fill="url(#cliffFaceG)" opacity="0.58"/>
+                            <path d="M118,432 L140,246 L236,86 L322,182 L304,348 L248,434 Z" fill="#8c7250"/>
+                            <path d="M212,306 L320,154 L440,76 L512,200 L454,336 Z" fill="#7b6546"/>
+                            <path d="M442,310 L566,72 L700,216 L648,344 Z" fill="#6b563a"/>
+                            <path d="M684,316 L812,102 L944,226 L884,350 Z" fill="#7a6647"/>
+                            <path d="M914,416 L956,222 L1046,164 L1098,312 L1062,458 Z" fill="#6d583c"/>
+                            <polygon points="560,90 566,72 578,92" fill="rgba(255,255,255,0.58)"/>
+                            <polygon points="804,118 812,102 826,120" fill="rgba(255,255,255,0.44)"/>
+                            <rect x="168" y="164" width="18" height="168" rx="9" fill="rgba(172,235,255,0.66)"/>
+                            <rect x="194" y="156" width="12" height="182" rx="7" fill="rgba(122,220,255,0.56)"/>
+                            <g opacity="0.26">
+                                <ellipse cx="282" cy="310" rx="166" ry="30" fill="rgba(210,220,230,0.2)"/>
+                                <ellipse cx="836" cy="300" rx="206" ry="34" fill="rgba(210,220,230,0.18)"/>
                             </g>
-                            <ellipse cx="302" cy="360" rx="90" ry="30" fill="rgba(20,38,18,0.28)"/>
-                            <ellipse cx="664" cy="364" rx="132" ry="34" fill="rgba(20,38,18,0.3)"/>
-                            <path d="M188,402 Q258,336 356,326 L800,330 Q918,336 992,408 L988,504 Q902,540 812,530 Q706,558 610,538 Q510,564 398,540 Q282,560 196,516 Z" fill="url(#forestG)"/>
-                            <g opacity="0.97">
-                                <circle cx="184" cy="364" r="56" fill="#113215"/>
-                                <circle cx="280" cy="346" r="66" fill="#163918"/>
-                                <circle cx="380" cy="338" r="70" fill="#133416"/>
-                                <circle cx="492" cy="334" r="76" fill="#173819"/>
-                                <circle cx="608" cy="340" r="68" fill="#183a1d"/>
-                                <circle cx="726" cy="350" r="66" fill="#173819"/>
-                                <circle cx="830" cy="366" r="58" fill="#153518"/>
+
+                            <path d="M210,438 Q286,350 394,342 L762,348 Q896,356 978,434 L968,518 Q892,554 806,548 Q716,566 620,560 Q518,576 408,560 Q302,576 220,536 Z" fill="url(#forestG)"/>
+                            <g opacity="0.98">
+                                <circle cx="228" cy="392" r="56" fill="#153518"/>
+                                <circle cx="320" cy="378" r="64" fill="#173a19"/>
+                                <circle cx="424" cy="368" r="72" fill="#123416"/>
+                                <circle cx="544" cy="362" r="80" fill="#173819"/>
+                                <circle cx="670" cy="366" r="76" fill="#193b1d"/>
+                                <circle cx="796" cy="378" r="70" fill="#163718"/>
+                                <circle cx="904" cy="396" r="62" fill="#173819"/>
                             </g>
                             <g opacity="0.9">
-                                <circle cx="146" cy="432" r="42" fill="#244d25"/>
-                                <circle cx="246" cy="424" r="50" fill="#2a5827"/>
-                                <circle cx="352" cy="418" r="50" fill="#31642c"/>
-                                <circle cx="466" cy="416" r="52" fill="#285727"/>
-                                <circle cx="582" cy="420" r="48" fill="#356b2e"/>
-                                <circle cx="694" cy="424" r="50" fill="#2d5d29"/>
-                                <circle cx="806" cy="434" r="44" fill="#356b2e"/>
+                                <circle cx="190" cy="448" r="44" fill="#244d25"/>
+                                <circle cx="286" cy="442" r="52" fill="#2a5827"/>
+                                <circle cx="398" cy="436" r="54" fill="#31642c"/>
+                                <circle cx="522" cy="434" r="56" fill="#285727"/>
+                                <circle cx="648" cy="438" r="54" fill="#356b2e"/>
+                                <circle cx="770" cy="444" r="50" fill="#2d5d29"/>
+                                <circle cx="886" cy="456" r="46" fill="#356b2e"/>
                             </g>
-                            <g opacity="0.76">
-                                <circle cx="176" cy="492" r="34" fill="#4c9c37"/>
-                                <circle cx="292" cy="486" r="38" fill="#53a93a"/>
-                                <circle cx="420" cy="490" r="36" fill="#62b442"/>
-                                <circle cx="554" cy="488" r="40" fill="#5ca53d"/>
-                                <circle cx="688" cy="490" r="36" fill="#4f9635"/>
-                                <circle cx="806" cy="500" r="30" fill="#5ca53d"/>
+                            <g opacity="0.78">
+                                <circle cx="228" cy="504" r="36" fill="#4c9c37"/>
+                                <circle cx="352" cy="502" r="40" fill="#53a93a"/>
+                                <circle cx="492" cy="500" r="40" fill="#62b442"/>
+                                <circle cx="634" cy="500" r="42" fill="#5ca53d"/>
+                                <circle cx="776" cy="506" r="38" fill="#4f9635"/>
+                                <circle cx="900" cy="518" r="34" fill="#5ca53d"/>
                             </g>
-                            <g opacity="0.3" fill="#102812">
-                                <rect x="226" y="474" width="8" height="42" rx="4"/>
-                                <rect x="294" y="468" width="8" height="48" rx="4"/>
-                                <rect x="374" y="462" width="8" height="52" rx="4"/>
-                                <rect x="466" y="460" width="8" height="56" rx="4"/>
-                                <rect x="566" y="466" width="8" height="48" rx="4"/>
-                                <rect x="670" y="470" width="8" height="44" rx="4"/>
-                            </g>
-                            <ellipse cx="828" cy="474" rx="166" ry="104" fill="rgba(255,246,213,0.18)"/>
-                            <ellipse cx="500" cy="556" rx="236" ry="104" fill="rgba(255,244,217,0.09)"/>
-                            <ellipse cx="858" cy="542" rx="150" ry="84" fill="rgba(255,255,255,0.06)"/>
-                            <path d="M816,532 Q730,584 648,684" stroke="rgba(139,105,68,0.34)" stroke-width="28" fill="none" stroke-linecap="round"/>
-                            <path d="M772,510 Q794,522 810,540" stroke="rgba(255,255,255,0.24)" stroke-width="4" fill="none" stroke-linecap="round"/>
-                            <path d="M922,660 Q968,676 1018,651" stroke="rgba(139,105,68,0.3)" stroke-width="18" fill="none" stroke-linecap="round"/>
-                            <rect x="952" y="654" width="122" height="16" rx="6" fill="#8a6849"/>
-                            <rect x="982" y="668" width="14" height="54" rx="4" fill="#6d5037"/>
-                            <rect x="1032" y="668" width="14" height="54" rx="4" fill="#6d5037"/>
-                            <ellipse cx="286" cy="352" rx="26" ry="16" fill="#7c6546"/>
-                            <ellipse cx="734" cy="340" rx="32" ry="18" fill="#6f593e"/>
-                            <ellipse cx="890" cy="360" rx="22" ry="14" fill="#7f6747"/>
-                            <path d="M154,680 Q202,774 330,808" stroke="rgba(255,255,255,0.38)" stroke-width="10" fill="none" stroke-linecap="round"/>
-                            <path d="M900,804 Q1038,776 1082,690" stroke="rgba(255,255,255,0.34)" stroke-width="9" fill="none" stroke-linecap="round"/>
-                            <path d="M110,634 Q156,744 240,790" stroke="rgba(255,255,255,0.22)" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+                            <ellipse cx="824" cy="548" rx="168" ry="108" fill="url(#yardG)" opacity="0.94"/>
+                            <ellipse cx="824" cy="548" rx="136" ry="76" fill="rgba(255,244,217,0.16)"/>
+                            <ellipse cx="612" cy="600" rx="334" ry="140" fill="rgba(255,255,255,0.07)"/>
+
+                            <path d="M300,618 Q284,560 312,520 Q380,474 460,480 L580,486 Q648,492 688,530 Q698,584 674,644 Q640,724 590,762 L398,772 Q344,766 316,720 Q290,676 300,618 Z" fill="url(#dirtG)" opacity="0.92"/>
+                            <path d="M324,580 Q404,548 492,552 Q570,556 646,584" stroke="rgba(104,66,34,0.24)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                            <path d="M318,628 Q412,598 508,602 Q592,606 654,632" stroke="rgba(104,66,34,0.2)" stroke-width="7" fill="none" stroke-linecap="round"/>
+                            <path d="M334,678 Q420,654 516,658 Q586,662 636,686" stroke="rgba(104,66,34,0.16)" stroke-width="6" fill="none" stroke-linecap="round"/>
+
+                            <path d="M830,588 Q904,632 974,708" stroke="rgba(139,105,68,0.34)" stroke-width="28" fill="none" stroke-linecap="round"/>
+                            <path d="M970,706 Q1036,724 1108,688" stroke="rgba(139,105,68,0.3)" stroke-width="18" fill="none" stroke-linecap="round"/>
+                            <rect x="972" y="704" width="142" height="18" rx="6" fill="#8a6849"/>
+                            <rect x="1006" y="720" width="14" height="58" rx="4" fill="#6d5037"/>
+                            <rect x="1062" y="720" width="14" height="58" rx="4" fill="#6d5037"/>
+
+                            <ellipse cx="200" cy="476" rx="70" ry="56" fill="rgba(68,92,76,0.54)"/>
+                            <ellipse cx="998" cy="622" rx="34" ry="28" fill="rgba(112,132,144,0.52)"/>
+                            <ellipse cx="1068" cy="352" rx="24" ry="18" fill="rgba(126,102,72,0.62)"/>
+                            <path d="M118,680 Q164,782 258,826" stroke="rgba(255,255,255,0.22)" stroke-width="6" fill="none" stroke-linecap="round"/>
                         </g>
                         <ellipse cx="600" cy="852" rx="560" ry="92" fill="url(#fogG)" opacity="0.78"/>
                         <ellipse cx="108" cy="472" rx="110" ry="270" fill="rgba(176,198,214,0.28)"/>
@@ -534,7 +576,7 @@ const GardenView = {
                     </svg>
 
                     <div class="island-land" id="island-land">
-                        <div class="boom-house" style="left:75%;top:46%">
+                        <div class="boom-house" style="left:80%;top:54%">
                             <svg viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg">
                                 <rect x="20" y="190" width="200" height="16" rx="3" fill="#8B7355"/>
                                 <rect x="30" y="88" width="180" height="108" rx="4" fill="#E8D8B0"/>
@@ -577,17 +619,17 @@ const GardenView = {
 
                         ${this.renderForestButtons()}
 
-                        <div class="boom-harbor" id="harbor-building" style="left:88%;top:74%" title="港口 — 点击管理">
+                        <div class="boom-harbor" id="harbor-building" style="left:92%;top:79%" title="港口 — 点击管理">
                             <span class="harbor-icon">\u26F5</span>
                             <div class="hut-label">\u2693 港口</div>
                         </div>
 
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:13%;top:77%;width:58px;opacity:0.9">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:26%;top:81%;width:44px;opacity:0.74">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:90%;top:78%;width:50px;opacity:0.84">
-                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:16%;top:79%;width:58px;opacity:0.74">
-                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:82%;top:57%;width:44px;opacity:0.54">
-                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:69%;top:27%;width:38px;opacity:0.44">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:11%;top:84%;width:72px;opacity:0.92">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:24%;top:87%;width:48px;opacity:0.76">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:89%;top:82%;width:56px;opacity:0.86">
+                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:18%;top:82%;width:72px;opacity:0.76">
+                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:83%;top:58%;width:56px;opacity:0.56">
+                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:68%;top:24%;width:44px;opacity:0.42">
 
                         <div class="ambient-particle p1" style="font-size:11px">\u{1F54A}\uFE0F</div>
                         <div class="ambient-particle p3" style="font-size:10px">\u{1F54A}\uFE0F</div>
@@ -645,8 +687,8 @@ const GardenView = {
     },
 
     _zoom: 1,
-    _minZoom: 0.4,
-    _maxZoom: 2.5,
+    _minZoom: 0.85,
+    _maxZoom: 2.6,
 
     initDrag() {
         const vp = document.getElementById('island-viewport');
@@ -665,9 +707,14 @@ const GardenView = {
             this._centerViewport(vp, world);
         });
 
+        vp.addEventListener('scroll', () => {
+            this._clampViewport(vp, world);
+        }, { passive: true });
+
         // ─── Mouse drag ───
         vp.addEventListener('mousedown', e => {
-            if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls')) return;
+            if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls,.forest-tree-btn,.plot-menu')) return;
+            this.closePlotMenu();
             dragState.active = true;
             dragState.sx = e.pageX;
             dragState.sy = e.pageY;
@@ -683,9 +730,11 @@ const GardenView = {
                 if (!this._dragState?.active) return;
                 e.preventDefault();
                 const vpEl = document.getElementById('island-viewport');
+                const worldEl = document.getElementById('island-world');
                 if (!vpEl) return;
                 vpEl.scrollLeft = this._dragState.sl - (e.pageX - this._dragState.sx);
                 vpEl.scrollTop = this._dragState.st - (e.pageY - this._dragState.sy);
+                this._clampViewport(vpEl, worldEl);
             });
             document.addEventListener('mouseup', () => {
                 if (this._dragState) this._dragState.active = false;
@@ -697,10 +746,12 @@ const GardenView = {
         // ─── Scroll-wheel zoom ───
         vp.addEventListener('wheel', e => {
             e.preventDefault();
+            this.closePlotMenu();
             const delta = e.deltaY > 0 ? -0.08 : 0.08;
             this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._zoom + delta));
             this._applyTransform(world);
             this._updateZoomDisplay();
+            requestAnimationFrame(() => this._clampViewport(vp, world));
         }, { passive: false });
 
         // ─── Touch: drag + pinch-to-zoom ───
@@ -710,6 +761,7 @@ const GardenView = {
         vp.addEventListener('touchstart', e => {
             if (e.touches.length === 2) {
                 // Pinch start
+                this.closePlotMenu();
                 pinching = true;
                 dragState.active = false;
                 lastPinchDist = Math.hypot(
@@ -717,7 +769,8 @@ const GardenView = {
                     e.touches[0].pageY - e.touches[1].pageY
                 );
             } else if (e.touches.length === 1 && !pinching) {
-                if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls')) return;
+                if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls,.forest-tree-btn,.plot-menu')) return;
+                this.closePlotMenu();
                 dragState.active = true;
                 dragState.sx = e.touches[0].pageX;
                 dragState.sy = e.touches[0].pageY;
@@ -740,6 +793,7 @@ const GardenView = {
             } else if (dragState.active && e.touches.length === 1) {
                 vp.scrollLeft = dragState.sl - (e.touches[0].pageX - dragState.sx);
                 vp.scrollTop = dragState.st - (e.touches[0].pageY - dragState.sy);
+                this._clampViewport(vp, world);
             }
         }, { passive: true });
 
@@ -750,16 +804,21 @@ const GardenView = {
 
         // ─── Zoom button events ───
         document.getElementById('zoom-in-btn')?.addEventListener('click', () => {
+            this.closePlotMenu();
             this._zoom = Math.min(this._maxZoom, this._zoom + 0.15);
             this._applyTransform(world);
             this._updateZoomDisplay();
+            requestAnimationFrame(() => this._clampViewport(vp, world));
         });
         document.getElementById('zoom-out-btn')?.addEventListener('click', () => {
+            this.closePlotMenu();
             this._zoom = Math.max(this._minZoom, this._zoom - 0.15);
             this._applyTransform(world);
             this._updateZoomDisplay();
+            requestAnimationFrame(() => this._clampViewport(vp, world));
         });
         document.getElementById('zoom-reset-btn')?.addEventListener('click', () => {
+            this.closePlotMenu();
             this._zoom = 1;
             this._applyTransform(world);
             this._updateZoomDisplay();
@@ -774,7 +833,7 @@ const GardenView = {
         if (!world) world = document.getElementById('island-world');
         if (!world) return;
         world.style.transform = `perspective(1600px) rotateX(14deg) scale(${this._zoom})`;
-        world.style.transformOrigin = 'center 46%';
+        world.style.transformOrigin = 'center 42.5%';
     },
 
     _updateZoomDisplay() {
@@ -807,21 +866,25 @@ const GardenView = {
 
         // Backpack button (garden)
         document.getElementById('garden-backpack-btn')?.addEventListener('click', () => {
+            this.closePlotMenu();
             this.showBackpack(this.assignee);
         });
 
         // History button
         document.getElementById('garden-history-btn')?.addEventListener('click', () => {
+            this.closePlotMenu();
             this.showHistory();
         });
 
         // World map button
         document.getElementById('world-map-btn')?.addEventListener('click', () => {
+            this.closePlotMenu();
             this.showWorldMap();
         });
 
         // Harbor building click
         document.getElementById('harbor-building')?.addEventListener('click', () => {
+            this.closePlotMenu();
             this.showHarborPanel();
         });
 
@@ -855,6 +918,17 @@ const GardenView = {
             });
         });
 
+        document.querySelectorAll('.forest-tree-btn').forEach(treeEl => {
+            treeEl.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.closePlotMenu();
+                if (!this._forestHintShown) {
+                    this._forestHintShown = true;
+                    App.showToast('🌲 深林层目前是地形层，开垦和种植请点前方荒地地块', 'info');
+                }
+            });
+        });
+
         // Close menu when clicking outside
         document.getElementById('island-viewport')?.addEventListener('click', (e) => {
             if (!e.target.closest('.plot-menu') && !e.target.closest('.iplot')) {
@@ -873,7 +947,6 @@ const GardenView = {
 
         const catItem = this.catalog.find(c => c.type === plot.tree_type);
         const gm = plot.growth_minutes || 0;
-        const stage = this.getGrowthStage(gm);
         const isMature = gm >= 150;
 
         const menu = document.createElement('div');
@@ -908,13 +981,32 @@ const GardenView = {
             </div>
         `;
 
-        // Position near the plot
+        // Position near the plot in screen space so scroll/zoom doesn't desync the menu.
         const rect = plotEl.getBoundingClientRect();
-        const vpRect = document.getElementById('island-viewport')?.getBoundingClientRect() || { left: 0, top: 0 };
-        menu.style.left = `${rect.left - vpRect.left + rect.width / 2}px`;
-        menu.style.top = `${rect.top - vpRect.top - 10}px`;
+        const showBelow = rect.top < 180;
+        if (showBelow) menu.classList.add('plot-menu-below');
+        menu.style.position = 'fixed';
+        menu.style.left = `${rect.left + rect.width / 2}px`;
+        menu.style.top = `${showBelow ? rect.bottom + 10 : rect.top - 10}px`;
 
-        document.getElementById('island-viewport')?.appendChild(menu);
+        document.body.appendChild(menu);
+
+        const outsideHandler = (e) => {
+            if (e.target.closest('.plot-menu')) return;
+            if (e.target.closest(`.iplot[data-plot-id="${plotId}"]`)) return;
+            this.closePlotMenu();
+        };
+        const viewportChangeHandler = () => this.closePlotMenu();
+        const viewport = document.getElementById('island-viewport');
+        document.addEventListener('mousedown', outsideHandler, true);
+        window.addEventListener('resize', viewportChangeHandler);
+        viewport?.addEventListener('scroll', viewportChangeHandler, { passive: true });
+        this._plotMenuCleanup = () => {
+            document.removeEventListener('mousedown', outsideHandler, true);
+            window.removeEventListener('resize', viewportChangeHandler);
+            viewport?.removeEventListener('scroll', viewportChangeHandler);
+            this._plotMenuCleanup = null;
+        };
 
         // Bind actions
         menu.querySelectorAll('.pm-btn:not(.disabled)').forEach(btn => {
@@ -931,6 +1023,7 @@ const GardenView = {
     },
 
     closePlotMenu() {
+        this._plotMenuCleanup?.();
         document.querySelectorAll('.plot-menu').forEach(m => m.remove());
         this._movingPlotId = null;
         document.querySelectorAll('.iplot.move-target').forEach(el => el.classList.remove('move-target'));

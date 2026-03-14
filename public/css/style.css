@@ -4699,6 +4699,67 @@ form {
 
 /* ===== GARDEN ===== */
 
+/* Persona Toggle */
+.persona-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface-translucent, rgba(255,255,255,0.08));
+  border: 2px solid transparent;
+  border-radius: 24px;
+  padding: 3px 12px 3px 3px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+
+.persona-toggle:hover {
+  background: var(--primary-glow, rgba(99,102,241,0.12));
+  transform: scale(1.05);
+}
+
+.persona-toggle:active {
+  transform: scale(0.95);
+}
+
+.persona-toggle-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.2);
+  transition: border-color 0.25s;
+}
+
+.persona-toggle-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.02em;
+}
+
+/* Persona-specific colors */
+.persona-panpan {
+  border-color: #f0c040;
+}
+.persona-panpan .persona-toggle-img {
+  border-color: #f0c040;
+}
+
+.persona-pupu {
+  border-color: #b088e0;
+}
+.persona-pupu .persona-toggle-img {
+  border-color: #b088e0;
+}
+
+.persona-all {
+  border-color: #4dd0d0;
+}
+.persona-all .persona-toggle-img {
+  border-color: #4dd0d0;
+}
+
 /* Header coin button */
 .header-coin-btn {
   background: none;
@@ -8087,7 +8148,7 @@ form {
 .island-viewport {
   position: relative;
   width: 100%;
-  height: clamp(380px, calc(100vh - 168px), 760px);
+  height: clamp(460px, calc(100vh - 158px), 860px);
   overflow: auto;
   cursor: grab;
   overscroll-behavior: contain;
@@ -8108,23 +8169,23 @@ form {
 /* World — rectangular island canvas with limited margins for zooming */
 .island-world {
   position: relative;
-  width: 1660px;
-  height: 1380px;
+  width: 2240px;
+  height: 1660px;
   margin: 0 auto;
   user-select: none;
   transform: perspective(1600px) rotateX(14deg);
-  transform-origin: center 46%;
+  transform-origin: center 42.5%;
   transition: transform 0.25s ease-out;
-  filter: saturate(1.04) contrast(1.02);
+  filter: saturate(1.08) contrast(1.03);
 }
 
 /* Island SVG shape */
 .island-shape {
   position: absolute;
   left: 50%;
-  top: 48%;
+  top: 44.2%;
   transform: translate(-50%, -50%);
-  width: 86%;
+  width: 92%;
   height: auto;
   pointer-events: none;
   z-index: 1;
@@ -8134,9 +8195,9 @@ form {
 .island-land {
   position: absolute;
   left: 50%;
-  top: 48%;
+  top: 44.2%;
   transform: translate(-50%, -50%);
-  width: 86%;
+  width: 92%;
   aspect-ratio: 1200 / 900;
   z-index: 5;
   overflow: visible;
@@ -8148,8 +8209,8 @@ form {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 42% 28% at 72% 54%, rgba(255,244,208,0.12) 0%, transparent 78%),
-    radial-gradient(ellipse 48% 30% at 34% 70%, rgba(255,230,170,0.08) 0%, transparent 76%);
+    radial-gradient(ellipse 36% 22% at 74% 54%, rgba(255,244,208,0.12) 0%, transparent 80%),
+    radial-gradient(ellipse 48% 30% at 34% 74%, rgba(255,230,170,0.09) 0%, transparent 78%);
   z-index: 1;
 }
 
@@ -8273,9 +8334,9 @@ form {
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 240px 140px at 22% 32%, rgba(255,255,255,0.08) 0%, transparent 70%),
-    radial-gradient(ellipse 360px 180px at 74% 58%, rgba(255,255,255,0.07) 0%, transparent 72%),
-    radial-gradient(ellipse 220px 110px at 48% 84%, rgba(255,255,255,0.06) 0%, transparent 62%);
+    radial-gradient(ellipse 260px 150px at 22% 34%, rgba(255,255,255,0.09) 0%, transparent 70%),
+    radial-gradient(ellipse 420px 200px at 78% 60%, rgba(255,255,255,0.08) 0%, transparent 74%),
+    radial-gradient(ellipse 260px 120px at 48% 86%, rgba(255,255,255,0.07) 0%, transparent 64%);
   animation: shimmer 8s ease-in-out infinite alternate;
   z-index: 0;
 }
@@ -8307,8 +8368,8 @@ form {
   z-index: 20;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 100% 78% at 50% 52%, rgba(0,0,0,0) 54%, rgba(150,168,184,0.2) 70%, rgba(150,168,184,0.46) 88%, rgba(150,168,184,0.7) 100%),
-    linear-gradient(180deg, rgba(180,195,210,0.32) 0%, rgba(180,195,210,0) 18%, rgba(180,195,210,0) 82%, rgba(180,195,210,0.4) 100%);
+    radial-gradient(ellipse 104% 84% at 50% 50%, rgba(0,0,0,0) 54%, rgba(150,168,184,0.22) 68%, rgba(150,168,184,0.58) 88%, rgba(150,168,184,0.82) 100%),
+    linear-gradient(180deg, rgba(180,195,210,0.44) 0%, rgba(180,195,210,0.04) 14%, rgba(180,195,210,0) 78%, rgba(180,195,210,0.5) 100%);
 }
 
 .island-viewport > .zoom-controls {
@@ -8325,14 +8386,14 @@ form {
 
 @media (max-width: 768px) {
   .island-world {
-    width: 1360px;
-    height: 1160px;
+    width: 1820px;
+    height: 1380px;
   }
 
   .island-shape,
   .island-land {
-    width: 92%;
-    top: 49%;
+    width: 95%;
+    top: 45.2%;
   }
 
   .boom-house svg {
@@ -8363,6 +8424,10 @@ form {
   min-width: 200px;
 }
 
+.plot-menu.plot-menu-below {
+  transform: translate(-50%, 0);
+}
+
 @keyframes menuPopIn {
   from { opacity: 0; transform: translate(-50%, -90%) scale(0.85); }
   to   { opacity: 1; transform: translate(-50%, -100%) scale(1); }
@@ -8376,6 +8441,13 @@ form {
   transform: translateX(-50%);
   border: 6px solid transparent;
   border-top-color: rgba(20, 25, 35, 0.92);
+}
+
+.plot-menu.plot-menu-below::after {
+  top: -12px;
+  bottom: auto;
+  border-top-color: transparent;
+  border-bottom-color: rgba(20, 25, 35, 0.92);
 }
 
 .plot-menu-header {

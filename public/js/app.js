@@ -4,6 +4,7 @@
 const App = {
     currentView: 'daily', // 'daily' | 'monthly' | 'checkin' | 'stats' | 'garden' | 'shop'
     currentAssignee: 'all', // 'all' | '潘潘' | '蒲蒲'
+    activePersona: '潘潘', // '潘潘' | '蒲蒲' — the global persona toggle (no 'all')
     socket: null,
     _refreshTimer: null, // Socket debounce timer
     _headerCoinBalance: 0,
@@ -41,6 +42,9 @@ const App = {
 
         // Initialize Lucide icons
         if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // Restore global persona from localStorage
+        this._initPersona();
 
         // Theme
         this.initTheme();
@@ -91,6 +95,13 @@ const App = {
             e.stopPropagation();
             e.preventDefault();
             this._showCoinRules();
+        });
+
+        // Persona toggle click — cycle 潘潘→蒲蒲→全部
+        document.getElementById('persona-toggle')?.addEventListener('click', () => {
+            const order = ['潘潘', '蒲蒲', 'all'];
+            const idx = order.indexOf(this.activePersona);
+            this.setPersona(order[(idx + 1) % order.length]);
         });
 
         // Load initial coin balance
@@ -240,6 +251,83 @@ const App = {
         localStorage.setItem('panpu-theme', theme);
         document.querySelectorAll('.theme-swatch').forEach(s =>
             s.classList.toggle('active', s.dataset.theme === theme));
+    },
+
+    // ===== Global Persona Toggle =====
+    _initPersona() {
+        const saved = localStorage.getItem('panpu-persona');
+        if (saved && ['潘潘', '蒲蒲', 'all'].includes(saved)) {
+            this.activePersona = saved;
+        } else {
+            this.activePersona = '潘潘';
+        }
+        // Silently sync all views without triggering reloads
+        this._applyPersonaToViews(this.activePersona);
+        this._updatePersonaToggleUI();
+    },
+
+    setPersona(persona) {
+        this.activePersona = persona;
+        localStorage.setItem('panpu-persona', persona);
+
+        // Sync all views
+        this._applyPersonaToViews(persona);
+        this._updatePersonaToggleUI();
+
+        // Refresh current view
+        this.refreshCurrentView();
+
+        // Re-sync filter pills in daily/monthly views
+        if (typeof DailyView !== 'undefined') DailyView.syncPersonPills();
+        if (typeof MonthlyView !== 'undefined') MonthlyView.syncLocalAssignee?.();
+        if (typeof CheckinView !== 'undefined') {
+            document.querySelectorAll('.checkin-person-btn').forEach(b =>
+                b.classList.toggle('active', b.dataset.assignee === CheckinView.currentAssignee));
+        }
+
+        // Refresh coin display
+        this._refreshHeaderCoins();
+    },
+
+    _applyPersonaToViews(persona) {
+        // For daily/monthly: set currentAssignee to persona (潘潘, 蒲蒲, or 'all')
+        this.currentAssignee = persona === 'all' ? 'all' : persona;
+
+        // For checkin: no 'all' mode, default to 潘潘 or 蒲蒲
+        if (typeof CheckinView !== 'undefined') {
+            CheckinView.currentAssignee = persona === 'all' ? '潘潘' : persona;
+        }
+
+        // For garden: no 'all' mode
+        if (typeof GardenView !== 'undefined') {
+            GardenView.assignee = persona === 'all' ? '潘潘' : persona;
+            GardenView.shopAssignee = persona === 'all' ? '潘潘' : persona;
+        }
+
+        // Show/hide header coin button
+        const coinBtn = document.getElementById('header-coin-btn');
+        if (coinBtn) {
+            const hideViews = ['daily', 'monthly'];
+            const shouldHide = hideViews.includes(this.currentView) && persona === 'all';
+            coinBtn.style.display = shouldHide ? 'none' : '';
+        }
+    },
+
+    _updatePersonaToggleUI() {
+        const img = document.getElementById('persona-toggle-img');
+        const name = document.getElementById('persona-toggle-name');
+        const btn = document.getElementById('persona-toggle');
+        if (!img || !name || !btn) return;
+
+        const map = {
+            '潘潘': { src: '/img/panpan.png', label: '潘潘', cls: 'persona-panpan' },
+            '蒲蒲': { src: '/img/pupu.png', label: '蒲蒲', cls: 'persona-pupu' },
+            'all':  { src: '/img/all.png',   label: '全部', cls: 'persona-all' },
+        };
+        const p = map[this.activePersona] || map['潘潘'];
+        img.src = p.src;
+        name.textContent = p.label;
+        btn.className = 'persona-toggle ' + p.cls;
     },
 
     // ===== Navigation =====
