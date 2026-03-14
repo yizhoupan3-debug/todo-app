@@ -49,6 +49,11 @@ Object.assign(App, {
         }
 
         this._refreshHeaderCoins();
+
+        // Re-join socket room for the new persona
+        if (this.socket?.connected) {
+            this.socket.emit('join:assignee', this.activePersona);
+        }
     },
 
     _applyPersonaToViews(persona) {

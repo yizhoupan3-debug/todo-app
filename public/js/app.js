@@ -18,6 +18,10 @@ const App = {
             this.socket = io(API.getSocketURL(), {
                 transports: ['websocket', 'polling'],
             });
+            // Join the correct assignee room for scoped broadcasts
+            this.socket.on('connect', () => {
+                this.socket.emit('join:assignee', this.activePersona || '潘潘');
+            });
             const debouncedRefresh = () => {
                 clearTimeout(this._refreshTimer);
                 this._refreshTimer = setTimeout(() => this.refreshCurrentView(), 150);

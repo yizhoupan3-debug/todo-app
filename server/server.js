@@ -95,19 +95,42 @@ app.use('/uploads/journal', express.static(path.join(__dirname, '..', 'data', 'j
     etag: true,
 }));
 
-// Socket.io for real-time sync
+// Socket.io for real-time sync — room-based filtering by assignee
 io.on('connection', (socket) => {
     console.log('📱 Client connected:', socket.id);
 
+    // Client joins an assignee room so broadcasts are scoped
+    socket.on('join:assignee', (assignee) => {
+        // Leave any previous assignee rooms
+        for (const room of socket.rooms) {
+            if (room !== socket.id && room.startsWith('assignee:')) {
+                socket.leave(room);
+            }
+        }
+        if (assignee && assignee !== 'all') {
+            socket.join(`assignee:${assignee}`);
+        }
+        // Also join a shared room for 'all' listeners
+        socket.join('assignee:all');
+    });
+
     socket.on('task:created', (task) => {
-        socket.broadcast.emit('task:created', task);
+        // Broadcast to the task's assignee room + 'all' viewers
+        if (task?.assignee) {
+            socket.to(`assignee:${task.assignee}`).emit('task:created', task);
+        }
+        socket.to('assignee:all').emit('task:created', task);
     });
 
     socket.on('task:updated', (task) => {
-        socket.broadcast.emit('task:updated', task);
+        if (task?.assignee) {
+            socket.to(`assignee:${task.assignee}`).emit('task:updated', task);
+        }
+        socket.to('assignee:all').emit('task:updated', task);
     });
 
     socket.on('task:deleted', (data) => {
+        // Deleted tasks may affect any view, broadcast to all rooms
         socket.broadcast.emit('task:deleted', data);
     });
 
@@ -115,6 +138,7 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('task:imported', data);
     });
 
+    // Journal is shared between both users, always broadcast
     socket.on('journal:updated', (data) => {
         socket.broadcast.emit('journal:updated', data);
     });

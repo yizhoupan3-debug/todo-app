@@ -1,13 +1,29 @@
 /**
  * Task Modal — handles create and edit of tasks.
+ * Includes DateNLP integration for smart Chinese date/time recognition.
  */
 const TaskModal = {
     isOpen: false,
     editingTask: null,
     categories: [],
+    _nlpResult: null,     // current NLP parse result
+    _nlpDismissed: false, // user dismissed the pill
+    _debounceTimer: null, // input debounce
 
     init() {
+        this._injectPillContainer();
         this.bindEvents();
+    },
+
+    /** Inject the NLP pill container right after the task-title input */
+    _injectPillContainer() {
+        const titleGroup = document.getElementById('task-title').closest('.form-group');
+        if (titleGroup && !document.getElementById('nlp-pill-container')) {
+            const container = document.createElement('div');
+            container.id = 'nlp-pill-container';
+            container.className = 'nlp-pill-container';
+            titleGroup.after(container);
+        }
     },
 
     bindEvents() {
@@ -33,6 +49,68 @@ const TaskModal = {
             const hasTime = !!e.target.value;
             document.getElementById('auto-complete-group').classList.toggle('hidden', !hasTime);
         });
+
+        // ── NLP: listen to title input ──
+        document.getElementById('task-title').addEventListener('input', (e) => {
+            if (this._nlpDismissed) return;
+            clearTimeout(this._debounceTimer);
+            this._debounceTimer = setTimeout(() => this._runNLP(e.target.value), 200);
+        });
+    },
+
+    // ── NLP Methods ──
+
+    _runNLP(text) {
+        if (!text || typeof DateNLP === 'undefined') {
+            this._hideNLPPill();
+            return;
+        }
+        const result = DateNLP.parse(text);
+        if (!result) {
+            this._hideNLPPill();
+            return;
+        }
+        this._nlpResult = result;
+        this._showNLPPill(result);
+    },
+
+    _showNLPPill(result) {
+        const container = document.getElementById('nlp-pill-container');
+        if (!container) return;
+
+        let pillText = '📅 ';
+        if (result.friendlyDate) pillText += result.friendlyDate;
+        if (result.friendlyTime) pillText += '  ' + result.friendlyTime;
+
+        container.innerHTML = `
+            <div class="nlp-pill">
+                <span class="nlp-pill-text">${pillText}</span>
+                <button class="nlp-pill-dismiss" title="取消识别" type="button">✕</button>
+            </div>
+        `;
+        container.classList.add('visible');
+
+        // Dismiss button
+        container.querySelector('.nlp-pill-dismiss').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this._nlpDismissed = true;
+            this._nlpResult = null;
+            this._hideNLPPill();
+        });
+    },
+
+    _hideNLPPill() {
+        const container = document.getElementById('nlp-pill-container');
+        if (!container) return;
+        container.classList.remove('visible');
+        this._nlpResult = null;
+    },
+
+    _resetNLPState() {
+        this._nlpResult = null;
+        this._nlpDismissed = false;
+        clearTimeout(this._debounceTimer);
+        this._hideNLPPill();
     },
 
     async loadCategories() {
@@ -53,6 +131,7 @@ const TaskModal = {
 
     openCreate() {
         this.editingTask = null;
+        this._resetNLPState();
         document.getElementById('modal-title').textContent = '新建任务';
         document.getElementById('btn-delete').classList.add('hidden');
 
@@ -71,11 +150,8 @@ const TaskModal = {
         }
 
         // Set default assignee based on current filter
-        const assigneeSel = document.getElementById('task-assignee');
-        if (App.currentAssignee === 'all') {
-            assigneeSel.value = '全部';
-        } else {
-            assigneeSel.value = App.currentAssignee;
+        if (App.currentAssignee !== 'all') {
+            document.getElementById('task-assignee').value = App.currentAssignee;
         }
 
         this.loadCategories().then(() => this.show());
@@ -83,6 +159,7 @@ const TaskModal = {
 
     openEdit(task) {
         this.editingTask = task;
+        this._resetNLPState();
         document.getElementById('modal-title').textContent = '编辑任务';
         document.getElementById('btn-delete').classList.remove('hidden');
 
@@ -128,23 +205,41 @@ const TaskModal = {
         document.getElementById('modal-overlay').classList.add('hidden');
         this.isOpen = false;
         this.editingTask = null;
+        this._resetNLPState();
     },
 
     async save() {
+        let title = document.getElementById('task-title').value.trim();
+        let dateVal = document.getElementById('task-date').value || null;
+        let timeVal = document.getElementById('task-time').value || null;
+
+        // ── Apply NLP result if active ──
+        if (this._nlpResult && !this._nlpDismissed) {
+            const r = this._nlpResult;
+            if (r.date) dateVal = r.date;
+            if (r.time) timeVal = r.time;
+            if (r.cleaned) title = r.cleaned;
+        }
+
         const data = {
-            title: document.getElementById('task-title').value.trim(),
+            title: title,
             description: document.getElementById('task-description').value.trim(),
             assignee: document.getElementById('task-assignee').value,
             category_id: document.getElementById('task-category').value || null,
             priority: parseInt(document.getElementById('task-priority').value),
-            due_date: document.getElementById('task-date').value || null,
-            due_time: document.getElementById('task-time').value || null,
+            due_date: dateVal,
+            due_time: timeVal,
             is_recurring: document.getElementById('task-recurring').checked,
             recurring_type: document.getElementById('task-recurring-type').value,
             recurring_interval: parseInt(document.getElementById('task-recurring-interval').value) || 1,
             recurring_end_date: document.getElementById('task-recurring-end').value || null,
             auto_complete: document.getElementById('task-auto-complete').checked ? 1 : 0,
         };
+
+        // Show auto-complete group if NLP set a time
+        if (this._nlpResult && this._nlpResult.time && !this._nlpDismissed) {
+            data.auto_complete = document.getElementById('task-auto-complete').checked ? 1 : 0;
+        }
 
         if (!data.title) {
             App.showToast('请输入任务标题', 'error');
@@ -154,22 +249,24 @@ const TaskModal = {
         try {
             let result;
             if (this.editingTask) {
-                // Editing always targets one specific task
-                if (data.assignee === '全部') data.assignee = this.editingTask.assignee;
                 result = await API.updateTask(this.editingTask.id, data);
                 App.socket.emit('task:updated', result);
                 App.showToast('✏️ 任务已更新', 'success');
-            } else if (data.assignee === '全部') {
-                // Create a task for each person
-                for (const person of ['潘潘', '蒲蒲']) {
-                    result = await API.createTask({ ...data, assignee: person });
-                    App.socket.emit('task:created', result);
-                }
-                App.showToast('✅ 已为全部成员创建任务', 'success');
             } else {
                 result = await API.createTask(data);
                 App.socket.emit('task:created', result);
-                App.showToast('✅ 任务已创建', 'success');
+                // Show smart toast with NLP info
+                if (this._nlpResult && !this._nlpDismissed) {
+                    const r = this._nlpResult;
+                    let nlpInfo = '✅ 任务已创建';
+                    if (r.friendlyDate || r.friendlyTime) {
+                        nlpInfo += ` · 📅 ${r.friendlyDate || ''}`;
+                        if (r.friendlyTime) nlpInfo += ` ${r.friendlyTime}`;
+                    }
+                    App.showToast(nlpInfo, 'success');
+                } else {
+                    App.showToast('✅ 任务已创建', 'success');
+                }
             }
             this.close();
             App.refreshCurrentView();
