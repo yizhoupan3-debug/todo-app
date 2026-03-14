@@ -23,6 +23,7 @@ const CheckinView = {
         // Card clicks → open detail
         document.getElementById('card-water').addEventListener('click', () => this.showDetail('water'));
         document.getElementById('card-wakeup').addEventListener('click', () => this.showDetail('wakeup'));
+        document.getElementById('card-goout').addEventListener('click', () => this.showDetail('goout'));
         document.getElementById('card-skincare').addEventListener('click', () => this.showDetail('skincare'));
         document.getElementById('card-steps').addEventListener('click', () => this.showDetail('steps'));
 
@@ -78,6 +79,9 @@ const CheckinView = {
 
         // ===== Wakeup stamp =====
         document.getElementById('wakeup-stamp-btn').addEventListener('click', () => this.stampWakeup());
+
+        // ===== Goout stamp =====
+        document.getElementById('goout-stamp-btn').addEventListener('click', () => this.stampGoout());
 
         // ===== Skincare stamp =====
         document.getElementById('skincare-stamp-btn').addEventListener('click', () => this.stampSkincare());
@@ -138,7 +142,7 @@ const CheckinView = {
     showLanding() {
         this.currentPage = 'landing';
         document.getElementById('checkin-landing').classList.remove('hidden');
-        ['water', 'wakeup', 'skincare', 'steps'].forEach(t =>
+        ['water', 'wakeup', 'goout', 'skincare', 'steps'].forEach(t =>
             document.getElementById(`checkin-detail-${t}`).classList.add('hidden'));
         document.getElementById('water-goal-editor').classList.add('hidden');
         document.getElementById('water-goal-display').classList.remove('hidden');
@@ -148,13 +152,15 @@ const CheckinView = {
     showDetail(type) {
         this.currentPage = type;
         document.getElementById('checkin-landing').classList.add('hidden');
-        ['water', 'wakeup', 'skincare', 'steps'].forEach(t =>
+        ['water', 'wakeup', 'goout', 'skincare', 'steps'].forEach(t =>
             document.getElementById(`checkin-detail-${t}`).classList.toggle('hidden', t !== type));
 
         if (type === 'water') {
             this.loadGoal().then(() => this.loadWaterData());
         } else if (type === 'wakeup') {
             this.loadWakeupData();
+        } else if (type === 'goout') {
+            this.loadGooutData();
         } else if (type === 'skincare') {
             this.loadSkincareData();
         } else if (type === 'steps') {
@@ -166,6 +172,7 @@ const CheckinView = {
         if (this.currentPage === 'landing') this._loadLanding();
         else if (this.currentPage === 'water') this.loadGoal().then(() => this.loadWaterData());
         else if (this.currentPage === 'wakeup') this.loadWakeupData();
+        else if (this.currentPage === 'goout') this.loadGooutData();
         else if (this.currentPage === 'skincare') this.loadSkincareData();
         else if (this.currentPage === 'steps') this.loadStepsGoal().then(() => this.loadStepsData());
     },
@@ -176,6 +183,8 @@ const CheckinView = {
         await this.loadWaterData();
         // Load wakeup stats for card
         await this.loadWakeupCard();
+        // Load goout stats for card
+        await this.loadGooutCard();
         // Load skincare stats for card
         await this.loadSkincareCard();
         // Load steps stats for card
@@ -392,6 +401,78 @@ const CheckinView = {
             App.showToast(`⏰ 起床打卡成功！${coinMsg}`, 'success');
             this.loadWakeupData();
             this.loadWakeupCard();
+        } catch (err) {
+            App.showToast('打卡失败', 'error');
+        }
+    },
+
+    // ===== Goout =====
+    async loadGooutCard() {
+        try {
+            const data = await API.getCheckin({
+                date: this._getToday(),
+                assignee: this.currentAssignee,
+                type: 'goout'
+            });
+            const statsEl = document.getElementById('card-goout-stats');
+            if (data.records.length > 0) {
+                const time = data.records[0].created_at?.split(' ')[1]?.slice(0, 5) || '';
+                statsEl.textContent = `✅ ${time} 已打卡`;
+                statsEl.style.color = '#22c55e';
+            } else {
+                statsEl.textContent = '今日未打卡';
+                statsEl.style.color = '';
+            }
+        } catch (err) { /* ignore */ }
+    },
+
+    async loadGooutData() {
+        try {
+            const todayData = await API.getCheckin({
+                date: this._getToday(),
+                assignee: this.currentAssignee,
+                type: 'goout'
+            });
+
+            const statusEl = document.getElementById('goout-status');
+            const timeEl = document.getElementById('goout-time');
+            const stampBtn = document.getElementById('goout-stamp-btn');
+
+            if (todayData.records.length > 0) {
+                const time = todayData.records[0].created_at?.split(' ')[1]?.slice(0, 5) || '';
+                statusEl.textContent = '✅ 今日已打卡';
+                statusEl.style.color = '#22c55e';
+                timeEl.textContent = time;
+                stampBtn.disabled = true;
+                stampBtn.classList.add('stamped');
+            } else {
+                statusEl.textContent = '今日未打卡';
+                statusEl.style.color = '';
+                timeEl.textContent = '';
+                stampBtn.disabled = false;
+                stampBtn.classList.remove('stamped');
+            }
+
+            this.loadHistory('goout', 'goout-log');
+        } catch (err) {
+            App.showToast('加载出门数据失败', 'error');
+        }
+    },
+
+    async stampGoout() {
+        try {
+            const result = await API.addCheckin({
+                type: 'goout',
+                amount: 1,
+                assignee: this.currentAssignee
+            });
+            if (result.coinsEarned > 0) {
+                App.syncCoins({ assignee: this.currentAssignee, delta: result.coinsEarned, animate: true });
+            }
+            const coinMsg = result.coinsEarned > 0 ? ` · +${result.coinsEarned} 喵喵币` : '';
+            App.showToast(`🚪 出门打卡成功！${coinMsg}`, 'success');
+            this.loadGooutData();
+            this.loadGooutCard();
         } catch (err) {
             App.showToast('打卡失败', 'error');
         }

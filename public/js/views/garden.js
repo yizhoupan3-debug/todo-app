@@ -427,17 +427,21 @@ const GardenView = {
         this._syncPlantingToolbar();
     },
 
+    TREE_MATURE_MINUTES: 150,
+
     getGrowthStage(minutes) {
-        if (minutes >= 150) return 'mature';
-        if (minutes >= 75) return 'growing';
-        if (minutes >= 25) return 'sprout';
+        const m = this.TREE_MATURE_MINUTES;
+        if (minutes >= m) return 'mature';
+        if (minutes >= m / 2) return 'growing';
+        if (minutes >= m / 6) return 'sprout';
         return 'seed';
     },
 
     getGrowthLabel(minutes) {
-        if (minutes >= 150) return '成熟';
-        if (minutes >= 75) return '成长中';
-        if (minutes >= 25) return '发芽';
+        const m = this.TREE_MATURE_MINUTES;
+        if (minutes >= m) return '成熟';
+        if (minutes >= m / 2) return '成长中';
+        if (minutes >= m / 6) return '发芽';
         return '种子';
     },
 

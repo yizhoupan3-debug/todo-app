@@ -185,40 +185,91 @@ Object.assign(GardenView, {
 
                             <!-- Dense forest canopy (back layer — darkest) -->
                             <path d="M206,442 Q282,346 390,338 L768,344 Q902,352 984,438 L974,524 Q898,560 812,554 Q722,572 626,566 Q524,582 414,566 Q308,582 216,542 Z" fill="url(#forestG)"/>
+                            <!-- Interior shadow between canopy and cliffs -->
+                            <path d="M210,438 Q290,388 400,380 L756,384 Q888,392 970,438 L974,464 Q890,504 800,498 Q710,518 616,510 Q516,526 410,512 Q310,528 218,492 Z" fill="rgba(8,22,10,0.48)"/>
+                            <!-- Back tree crowns — deep dark greens -->
                             <g opacity="0.98">
-                                <circle cx="224" cy="390" r="58" fill="#143218"/>
-                                <circle cx="318" cy="376" r="66" fill="#163a18"/>
-                                <circle cx="426" cy="366" r="74" fill="#113214"/>
-                                <circle cx="548" cy="360" r="82" fill="#163618"/>
-                                <circle cx="674" cy="364" r="78" fill="#183a1c"/>
-                                <circle cx="800" cy="376" r="72" fill="#153618"/>
-                                <circle cx="910" cy="394" r="64" fill="#163618"/>
+                                <circle cx="204" cy="398" r="52" fill="#102e14"/>
+                                <circle cx="274" cy="384" r="60" fill="#143416"/>
+                                <circle cx="364" cy="374" r="68" fill="#0f2e12"/>
+                                <circle cx="466" cy="368" r="76" fill="#143416"/>
+                                <circle cx="576" cy="362" r="80" fill="#163818"/>
+                                <circle cx="690" cy="366" r="76" fill="#183c1a"/>
+                                <circle cx="800" cy="374" r="70" fill="#143616"/>
+                                <circle cx="898" cy="388" r="60" fill="#163818"/>
+                                <circle cx="964" cy="408" r="48" fill="#143416"/>
                             </g>
-                            <!-- Forest mid layer -->
-                            <g opacity="0.92">
-                                <circle cx="186" cy="450" r="46" fill="#234c24"/>
-                                <circle cx="282" cy="444" r="54" fill="#285826"/>
-                                <circle cx="398" cy="438" r="56" fill="#2e6228"/>
-                                <circle cx="526" cy="436" r="58" fill="#265426"/>
-                                <circle cx="652" cy="440" r="56" fill="#326a2c"/>
-                                <circle cx="774" cy="446" r="52" fill="#2a5c28"/>
-                                <circle cx="890" cy="458" r="48" fill="#326a2c"/>
+                            <!-- Back crown highlights (sunlight on top-left) -->
+                            <g opacity="0.18">
+                                <ellipse cx="194" cy="378" rx="30" ry="22" fill="#4caa3a"/>
+                                <ellipse cx="264" cy="364" rx="34" ry="24" fill="#44a234"/>
+                                <ellipse cx="354" cy="354" rx="38" ry="26" fill="#4caa3a"/>
+                                <ellipse cx="456" cy="350" rx="40" ry="28" fill="#48a636"/>
+                                <ellipse cx="566" cy="344" rx="42" ry="30" fill="#50b03c"/>
+                                <ellipse cx="680" cy="348" rx="40" ry="28" fill="#4caa3a"/>
+                                <ellipse cx="790" cy="356" rx="36" ry="26" fill="#48a636"/>
+                                <ellipse cx="888" cy="370" rx="32" ry="24" fill="#4caa3a"/>
                             </g>
-                            <!-- Forest front layer — lighter -->
-                            <g opacity="0.80">
-                                <circle cx="224" cy="506" r="38" fill="#4a9a36"/>
-                                <circle cx="348" cy="504" r="42" fill="#52a83a"/>
-                                <circle cx="490" cy="502" r="42" fill="#60b240"/>
-                                <circle cx="638" cy="502" r="44" fill="#5aa43c"/>
-                                <circle cx="780" cy="508" r="40" fill="#4e9434"/>
-                                <circle cx="904" cy="520" r="36" fill="#5aa43c"/>
+                            <!-- Forest mid layer — medium greens -->
+                            <g opacity="0.94">
+                                <circle cx="178" cy="454" r="42" fill="#1e4a20"/>
+                                <circle cx="254" cy="446" r="50" fill="#245424"/>
+                                <circle cx="348" cy="440" r="54" fill="#286028"/>
+                                <circle cx="454" cy="436" r="56" fill="#225222"/>
+                                <circle cx="562" cy="434" r="58" fill="#2a5e26"/>
+                                <circle cx="672" cy="438" r="56" fill="#306828"/>
+                                <circle cx="778" cy="444" r="52" fill="#285a26"/>
+                                <circle cx="874" cy="454" r="46" fill="#306828"/>
+                                <circle cx="948" cy="470" r="38" fill="#285a26"/>
+                            </g>
+                            <!-- Mid-layer shadow creases -->
+                            <g opacity="0.22">
+                                <ellipse cx="216" cy="462" rx="28" ry="10" fill="#0a1e0c"/>
+                                <ellipse cx="302" cy="458" rx="32" ry="12" fill="#0a1e0c"/>
+                                <ellipse cx="406" cy="454" rx="34" ry="12" fill="#0a1e0c"/>
+                                <ellipse cx="512" cy="452" rx="36" ry="13" fill="#0a1e0c"/>
+                                <ellipse cx="618" cy="456" rx="34" ry="12" fill="#0a1e0c"/>
+                                <ellipse cx="726" cy="460" rx="32" ry="12" fill="#0a1e0c"/>
+                                <ellipse cx="828" cy="466" rx="28" ry="10" fill="#0a1e0c"/>
+                            </g>
+                            <!-- Forest front layer — lighter vivid greens -->
+                            <g opacity="0.84">
+                                <circle cx="200" cy="508" r="36" fill="#429832"/>
+                                <circle cx="290" cy="504" r="40" fill="#4aa438"/>
+                                <circle cx="396" cy="502" r="42" fill="#52ae3c"/>
+                                <circle cx="510" cy="500" r="44" fill="#5ab840"/>
+                                <circle cx="628" cy="500" r="44" fill="#56b23e"/>
+                                <circle cx="742" cy="504" r="42" fill="#4ea836"/>
+                                <circle cx="846" cy="510" r="38" fill="#52ae3c"/>
+                                <circle cx="930" cy="522" r="32" fill="#4ea836"/>
+                            </g>
+                            <!-- Front crown highlights — bright sun spots -->
+                            <g opacity="0.24">
+                                <ellipse cx="190" cy="494" rx="20" ry="14" fill="#8ede6a"/>
+                                <ellipse cx="280" cy="490" rx="22" ry="16" fill="#8ade68"/>
+                                <ellipse cx="386" cy="488" rx="24" ry="16" fill="#8ede6a"/>
+                                <ellipse cx="500" cy="486" rx="26" ry="18" fill="#92e670"/>
+                                <ellipse cx="618" cy="486" rx="26" ry="18" fill="#8ede6a"/>
+                                <ellipse cx="732" cy="490" rx="24" ry="16" fill="#8ade68"/>
+                                <ellipse cx="836" cy="496" rx="22" ry="14" fill="#8ede6a"/>
+                            </g>
+                            <!-- Trunk hints (tiny dark lines below front trees) -->
+                            <g opacity="0.30" stroke="#2a3c1a" stroke-width="4" stroke-linecap="round">
+                                <line x1="200" y1="540" x2="200" y2="554"/>
+                                <line x1="396" y1="540" x2="396" y2="556"/>
+                                <line x1="510" y1="540" x2="510" y2="556"/>
+                                <line x1="628" y1="540" x2="628" y2="556"/>
+                                <line x1="846" y1="544" x2="846" y2="558"/>
                             </g>
                             <!-- Scattered small trees at forest edge -->
-                            <g opacity="0.55">
-                                <circle cx="196" cy="536" r="18" fill="#6ab84a"/>
-                                <circle cx="934" cy="542" r="16" fill="#5eac42"/>
-                                <circle cx="260" cy="540" r="14" fill="#72c252"/>
-                                <circle cx="852" cy="538" r="15" fill="#68b648"/>
+                            <g opacity="0.50">
+                                <circle cx="170" cy="538" r="20" fill="#62b444"/>
+                                <circle cx="244" cy="542" r="16" fill="#6cc04e"/>
+                                <circle cx="320" cy="540" r="12" fill="#72c854"/>
+                                <circle cx="714" cy="536" r="14" fill="#68b848"/>
+                                <circle cx="798" cy="540" r="12" fill="#6cc04e"/>
+                                <circle cx="954" cy="546" r="18" fill="#5eac42"/>
+                                <circle cx="986" cy="544" r="12" fill="#62b444"/>
                             </g>
 
                             <!-- Yard/clearing near house -->
