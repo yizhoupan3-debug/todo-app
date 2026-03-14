@@ -142,33 +142,33 @@ const GardenView = {
     SCENE_GRID_W: 8,
     SCENE_GRID_H: 6,
     FOREST_LAYOUTS: [
-        // y=0
-        { left: 22, top: 37, scale: 0.95 }, { left: 30, top: 37, scale: 0.95 }, { left: 38, top: 37, scale: 0.95 },
-        { left: 46, top: 37, scale: 0.95 }, { left: 54, top: 37, scale: 0.95 }, { left: 62, top: 37, scale: 0.95 },
-        { left: 70, top: 37, scale: 0.95 }, { left: 78, top: 37, scale: 0.95 },
-        // y=1
-        { left: 26, top: 45, scale: 1.0 }, { left: 34, top: 45, scale: 1.0 }, { left: 42, top: 45, scale: 1.0 },
-        { left: 50, top: 45, scale: 1.0 }, { left: 58, top: 45, scale: 1.0 }, { left: 66, top: 45, scale: 1.0 },
-        { left: 74, top: 45, scale: 1.0 }, { left: 82, top: 45, scale: 1.0 },
-        // y=2
-        { left: 22, top: 53, scale: 1.05 }, { left: 30, top: 53, scale: 1.05 }, { left: 38, top: 53, scale: 1.05 },
-        { left: 46, top: 53, scale: 1.05 }, { left: 54, top: 53, scale: 1.05 }, { left: 62, top: 53, scale: 1.05 },
-        { left: 70, top: 53, scale: 1.05 }, { left: 78, top: 53, scale: 1.05 },
-        // y=3 (x=1..6)
-        { left: 34, top: 61, scale: 1.1 }, { left: 42, top: 61, scale: 1.1 }, { left: 50, top: 61, scale: 1.1 },
-        { left: 58, top: 61, scale: 1.1 }, { left: 66, top: 61, scale: 1.1 }, { left: 74, top: 61, scale: 1.1 },
+        // y=0 top=25
+        { left: 10, top: 25, scale: 0.95 }, { left: 20, top: 25, scale: 0.95 }, { left: 30, top: 25, scale: 0.95 },
+        { left: 40, top: 25, scale: 0.95 }, { left: 50, top: 25, scale: 0.95 }, { left: 60, top: 25, scale: 0.95 },
+        { left: 70, top: 25, scale: 0.95 }, { left: 80, top: 25, scale: 0.95 },
+        // y=1 top=34
+        { left: 15, top: 34, scale: 1.0 }, { left: 25, top: 34, scale: 1.0 }, { left: 35, top: 34, scale: 1.0 },
+        { left: 45, top: 34, scale: 1.0 }, { left: 55, top: 34, scale: 1.0 }, { left: 65, top: 34, scale: 1.0 },
+        { left: 75, top: 34, scale: 1.0 }, { left: 85, top: 34, scale: 1.0 },
+        // y=2 top=43
+        { left: 10, top: 43, scale: 1.05 }, { left: 20, top: 43, scale: 1.05 }, { left: 30, top: 43, scale: 1.05 },
+        { left: 40, top: 43, scale: 1.05 }, { left: 50, top: 43, scale: 1.05 }, { left: 60, top: 43, scale: 1.05 },
+        { left: 70, top: 43, scale: 1.05 }, { left: 80, top: 43, scale: 1.05 },
+        // y=3 (x=1..6) top=52
+        { left: 25, top: 52, scale: 1.1 }, { left: 35, top: 52, scale: 1.1 }, { left: 45, top: 52, scale: 1.1 },
+        { left: 55, top: 52, scale: 1.1 }, { left: 65, top: 52, scale: 1.1 }, { left: 75, top: 52, scale: 1.1 },
     ],
     FRONTIER_LAYOUTS: [
-        // y=3 (x=0, 7)
-        { left: 26, top: 61, scale: 1.1 }, { left: 82, top: 61, scale: 1.1 },
-        // y=4
-        { left: 22, top: 69, scale: 1.15 }, { left: 30, top: 69, scale: 1.15 }, { left: 38, top: 69, scale: 1.15 },
-        { left: 46, top: 69, scale: 1.15 }, { left: 54, top: 69, scale: 1.15 }, { left: 62, top: 69, scale: 1.15 },
-        { left: 70, top: 69, scale: 1.15 }, { left: 78, top: 69, scale: 1.15 },
-        // y=5
-        { left: 26, top: 77, scale: 1.2 }, { left: 34, top: 77, scale: 1.2 }, { left: 42, top: 77, scale: 1.2 },
-        { left: 50, top: 77, scale: 1.2 }, { left: 58, top: 77, scale: 1.2 }, { left: 66, top: 77, scale: 1.2 },
-        { left: 74, top: 77, scale: 1.2 }, { left: 82, top: 77, scale: 1.2 }
+        // y=3 (x=0, 7) top=52
+        { left: 15, top: 52, scale: 1.1 }, { left: 85, top: 52, scale: 1.1 },
+        // y=4 top=61
+        { left: 10, top: 61, scale: 1.15 }, { left: 20, top: 61, scale: 1.15 }, { left: 30, top: 61, scale: 1.15 },
+        { left: 40, top: 61, scale: 1.15 }, { left: 50, top: 61, scale: 1.15 }, { left: 60, top: 61, scale: 1.15 },
+        { left: 70, top: 61, scale: 1.15 }, { left: 80, top: 61, scale: 1.15 },
+        // y=5 top=70
+        { left: 15, top: 70, scale: 1.2 }, { left: 25, top: 70, scale: 1.2 }, { left: 35, top: 70, scale: 1.2 },
+        { left: 45, top: 70, scale: 1.2 }, { left: 55, top: 70, scale: 1.2 }, { left: 65, top: 70, scale: 1.2 },
+        { left: 75, top: 70, scale: 1.2 }, { left: 85, top: 70, scale: 1.2 }
     ],
 
     _staticRendered: false,
