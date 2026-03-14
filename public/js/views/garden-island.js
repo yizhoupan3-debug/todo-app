@@ -7,43 +7,45 @@ Object.assign(GardenView, {
         const el = document.getElementById('view-garden');
         if (!el) return;
 
-        // Load balance
-        try {
-            const { balance } = await API.getCoins(this.assignee);
-            this.balance = balance;
-        } catch (e) {
-            App.showToast('获取余额失败', 'error');
-        }
+        // If we already have a rendered island, show it immediately
+        // while we refresh data in the background
+        const hasCachedView = this._staticRendered && el.innerHTML.trim().length > 0;
 
-        // Load islands
-        try {
-            this.islands = await API.fetch(`/garden/islands/${encodeURIComponent(this.assignee)}`).then(r => r.json());
+        // Fetch all data in parallel instead of sequential awaits
+        const [balanceResult, islandsResult] = await Promise.allSettled([
+            API.getCoins(this.assignee),
+            API.fetch(`/garden/islands/${encodeURIComponent(this.assignee)}`).then(r => r.json()),
+        ]);
+
+        if (balanceResult.status === 'fulfilled') {
+            this.balance = balanceResult.value.balance;
+        }
+        if (islandsResult.status === 'fulfilled') {
+            this.islands = islandsResult.value;
             if (!this.currentIsland) {
                 this.currentIsland = this.islands.find(i => i.island_type === 'starter') || this.islands[0];
             }
-        } catch (e) {
-            this.islands = [];
+        } else {
+            this.islands = this.islands.length ? this.islands : [];
         }
 
-        // Load plots for current island
-        try {
-            if (this.currentIsland) {
-                this.plots = await API.fetch(`/garden/plots/${encodeURIComponent(this.assignee)}/${this.currentIsland.id}`).then(r => r.json());
-            } else {
-                this.plots = await API.getPlots(this.assignee);
-            }
-        } catch (e) {
-            this.plots = [];
-        }
+        // Second parallel batch (depends on currentIsland from first batch)
+        const [plotsResult, boatsResult, expResult] = await Promise.allSettled([
+            this.currentIsland
+                ? API.fetch(`/garden/plots/${encodeURIComponent(this.assignee)}/${this.currentIsland.id}`).then(r => r.json())
+                : API.getPlots(this.assignee),
+            API.fetch(`/garden/boats/${encodeURIComponent(this.assignee)}`).then(r => r.json()),
+            API.fetch(`/garden/expeditions/${encodeURIComponent(this.assignee)}`).then(r => r.json()),
+        ]);
 
-        // Load boats & expeditions
-        try {
-            const boatData = await API.fetch(`/garden/boats/${encodeURIComponent(this.assignee)}`).then(r => r.json());
-            this.boats = boatData.boats || [];
-        } catch (e) { this.boats = []; }
-        try {
-            this.expeditions = await API.fetch(`/garden/expeditions/${encodeURIComponent(this.assignee)}`).then(r => r.json());
-        } catch (e) { this.expeditions = []; }
+        if (plotsResult.status === 'fulfilled') this.plots = plotsResult.value;
+        else if (!this.plots.length) this.plots = [];
+
+        if (boatsResult.status === 'fulfilled') this.boats = boatsResult.value.boats || [];
+        else if (!this.boats.length) this.boats = [];
+
+        if (expResult.status === 'fulfilled') this.expeditions = expResult.value;
+        else if (!this.expeditions.length) this.expeditions = [];
 
         this.render();
         this.updateHeaderCoins();

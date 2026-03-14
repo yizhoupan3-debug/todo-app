@@ -19,7 +19,9 @@
   <meta name="msapplication-TileColor" content="#ffcfd0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" href="/css/style.css?v=43" as="style">
+  <link rel="preload" href="/css/base.css?v=43" as="style">
+  <link rel="preload" href="/css/checkin.css?v=43" as="style">
+  <link rel="preload" href="/css/pomodoro-stats.css?v=43" as="style">
   <!-- Instant theme restore: runs BEFORE CSS to prevent flash of wrong theme -->
   <script>
     (function() {
@@ -37,7 +39,12 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css?v=43">
+  <!-- CSS loaded in parallel (no @import waterfall) -->
+  <link rel="stylesheet" href="/css/base.css?v=43">
+  <link rel="stylesheet" href="/css/checkin.css?v=43">
+  <link rel="stylesheet" href="/css/pomodoro-stats.css?v=43">
+  <!-- garden.css (83KB): non-render-blocking via print→all swap -->
+  <link rel="stylesheet" href="/css/garden.css?v=43" media="print" onload="this.media='all'">
   <script src="https://unpkg.com/lucide@0.577.0/dist/umd/lucide.min.js" defer></script>
   <script>
     // SW registration + controlled reload only when an existing worker is replaced.
