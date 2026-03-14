@@ -194,7 +194,13 @@ Object.assign(GardenView, {
         overlay.innerHTML = `
             <div class="backpack-modal">
                 <div class="backpack-header">
-                    <h3>\u{1F392} 背包</h3>
+                    <div class="backpack-header-main">
+                        <h3>\u{1F392} 背包</h3>
+                        <div class="backpack-persona-switch" role="tablist" aria-label="背包角色切换">
+                            <button class="backpack-persona-btn ${assignee === '潘潘' ? 'active' : ''}" data-person="潘潘">潘潘</button>
+                            <button class="backpack-persona-btn ${assignee === '蒲蒲' ? 'active' : ''}" data-person="蒲蒲">蒲蒲</button>
+                        </div>
+                    </div>
                     <button class="backpack-close" id="backpack-close">✕</button>
                 </div>
                 <div class="backpack-summary">
@@ -248,6 +254,24 @@ Object.assign(GardenView, {
         };
         document.getElementById('backpack-close')?.addEventListener('click', closeOverlay);
         overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
+
+        overlay.querySelectorAll('.backpack-persona-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const nextAssignee = btn.dataset.person;
+                if (!nextAssignee || nextAssignee === assignee) return;
+                App.setPersona(nextAssignee, { refresh: false });
+                if (App.currentView === 'shop') {
+                    this.shopAssignee = nextAssignee;
+                    await this.openShop();
+                } else {
+                    this.assignee = nextAssignee;
+                    this.currentIsland = null;
+                    this._staticRendered = false;
+                    await this.open();
+                }
+                await this.showBackpack(nextAssignee);
+            });
+        });
 
         this._backpackSearchInputEl?.addEventListener('input', () => {
             this._backpackSearch = this._backpackSearchInputEl.value.trim();

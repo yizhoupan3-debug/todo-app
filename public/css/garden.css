@@ -2790,11 +2790,47 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.backpack-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .backpack-header h3 {
   font-size: 1.2rem;
   font-weight: 700;
   color: #fff;
   margin: 0;
+}
+
+.backpack-persona-switch {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.backpack-persona-btn {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.backpack-persona-btn:hover {
+  transform: translateY(-1px);
+  color: #fff;
+  border-color: rgba(139, 137, 255, 0.42);
+}
+
+.backpack-persona-btn.active {
+  background: linear-gradient(135deg, rgba(126, 133, 255, 0.96), rgba(103, 96, 255, 0.94));
+  color: #fff;
+  border-color: rgba(171, 176, 255, 0.8);
+  box-shadow: 0 8px 18px rgba(92, 88, 255, 0.26);
 }
 
 .backpack-close {

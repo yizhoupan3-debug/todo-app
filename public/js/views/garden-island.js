@@ -53,18 +53,27 @@ Object.assign(GardenView, {
         const el = document.getElementById('view-garden');
         if (!el) return;
 
+        const islandName = this.currentIsland ? this.currentIsland.name : '起始岛';
+        const discoveredCount = this.islands.filter(i => i.discovered).length;
+        const totalCount = this.islands.length;
+        const renderSignature = [
+            this.assignee,
+            this.currentIsland?.id || 'none',
+            discoveredCount,
+            totalCount,
+        ].join('|');
+
         if (this._staticRendered) {
-            this._updateDynamicContent();
-            return;
+            if (this._renderSignature === renderSignature) {
+                this._updateDynamicContent();
+                return;
+            }
+            this._staticRendered = false;
         }
 
         const clearedCount = this.plots.filter(p => p.status !== 'wasteland').length;
         const plantedCount = this.plots.filter(p => p.status === 'planted').length;
         const typesCollected = new Set(this.plots.filter(p => p.tree_type).map(p => p.tree_type)).size;
-
-        const islandName = this.currentIsland ? this.currentIsland.name : '起始岛';
-        const discoveredCount = this.islands.filter(i => i.discovered).length;
-        const totalCount = this.islands.length;
         const activeExp = this.expeditions.find(e => e.status === 'sailing');
 
         el.innerHTML = `
@@ -278,6 +287,7 @@ Object.assign(GardenView, {
         this._bindPlotInteractions(el);
         this.initDrag();
         this._staticRendered = true;
+        this._renderSignature = renderSignature;
     },
 
     renderIslandPlot(plot, layout) {
