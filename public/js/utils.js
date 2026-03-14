@@ -2,8 +2,13 @@
  * Shared utility functions — avoids duplication across modules.
  */
 const Utils = {
+    assetVersion() {
+        if (typeof window === 'undefined') return 'dev';
+        return window.__PANPU_ASSET_VERSION__ || 'dev';
+    },
+
     coinIconSrc() {
-        return '/img/meow-coin.png?v=4';
+        return `/img/meow-coin.png?v=${this.assetVersion()}`;
     },
 
     headerCoinMarkup(balance = 0) {

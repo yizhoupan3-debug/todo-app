@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>峡谷讨伐日记</title>
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="/manifest.json?v=__ASSET_VERSION__">
   <link rel="icon" href="/favicon.ico" sizes="48x48">
   <link rel="icon" type="image/png" sizes="48x48" href="/img/icon-48.png">
   <link rel="icon" type="image/png" sizes="96x96" href="/img/icon-96.png">
@@ -19,9 +19,9 @@
   <meta name="msapplication-TileColor" content="#ffcfd0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" href="/css/base.css?v=45" as="style">
-  <link rel="preload" href="/css/checkin.css?v=45" as="style">
-  <link rel="preload" href="/css/pomodoro-stats.css?v=45" as="style">
+  <link rel="preload" href="/css/base.css?v=__ASSET_VERSION__" as="style">
+  <link rel="preload" href="/css/checkin.css?v=__ASSET_VERSION__" as="style">
+  <link rel="preload" href="/css/pomodoro-stats.css?v=__ASSET_VERSION__" as="style">
   <!-- Instant theme restore: runs BEFORE CSS to prevent flash of wrong theme -->
   <script>
     (function() {
@@ -35,24 +35,25 @@
     })();
   </script>
   <script>
+    window.__PANPU_ASSET_VERSION__ = '__ASSET_VERSION__';
     window.__PANPU_DEFAULT_BACKEND_ORIGIN__ = 'http://43.99.80.200';
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
   <!-- CSS loaded in parallel (no @import waterfall) -->
-  <link rel="stylesheet" href="/css/base.css?v=45">
-  <link rel="stylesheet" href="/css/checkin.css?v=45">
-  <link rel="stylesheet" href="/css/pomodoro-stats.css?v=45">
-  <link rel="stylesheet" href="/css/journal.css?v=45">
+  <link rel="stylesheet" href="/css/base.css?v=__ASSET_VERSION__">
+  <link rel="stylesheet" href="/css/checkin.css?v=__ASSET_VERSION__">
+  <link rel="stylesheet" href="/css/pomodoro-stats.css?v=__ASSET_VERSION__">
+  <link rel="stylesheet" href="/css/journal.css?v=__ASSET_VERSION__">
   <!-- garden.css (83KB): non-render-blocking via print→all swap -->
-  <link rel="stylesheet" href="/css/garden.css?v=45" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="/css/garden.css?v=__ASSET_VERSION__" media="print" onload="this.media='all'">
   <script src="https://unpkg.com/lucide@0.577.0/dist/umd/lucide.min.js" defer></script>
   <script>
     // SW registration + controlled reload only when an existing worker is replaced.
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         const hadController = !!navigator.serviceWorker.controller;
-        navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+        navigator.serviceWorker.register('/sw.js?v=__ASSET_VERSION__', { updateViaCache: 'none' })
           .then(reg => reg.update())
           .catch(err => console.warn('Service worker registration failed:', err));
 
@@ -673,10 +674,8 @@
           <input type="text" id="task-title" placeholder="要做什么？" required autocomplete="off">
         </div>
 
-        <div class="form-group">
-          <label for="task-description">描述（可选）</label>
-          <textarea id="task-description" placeholder="补充说明..." rows="2"></textarea>
-        </div>
+        <textarea id="task-description" class="hidden"></textarea>
+        <select id="task-priority" class="hidden"><option value="2" selected></option></select>
 
         <div class="form-row">
           <div class="form-group">
@@ -688,11 +687,9 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="task-priority">优先级</label>
-            <select id="task-priority">
-              <option value="1">🔴 高</option>
-              <option value="2" selected>🟡 中</option>
-              <option value="3">🟢 低</option>
+            <label for="task-category">分类</label>
+            <select id="task-category">
+              <option value="">无分类</option>
             </select>
           </div>
         </div>
@@ -713,13 +710,6 @@
             <input type="checkbox" id="task-auto-complete" checked>
             ⏰ 到时间自动完成
           </label>
-        </div>
-
-        <div class="form-group">
-          <label for="task-category">分类</label>
-          <select id="task-category">
-            <option value="">无分类</option>
-          </select>
         </div>
 
         <div class="form-group">
@@ -930,26 +920,26 @@
   <div class="toast-container" id="toast-container"></div>
 
   <script src="/socket.io/socket.io.js" defer></script>
-  <script src="/js/utils.js?v=45" defer></script>
-  <script src="/js/api.js?v=45" defer></script>
-  <script src="/js/views/daily.js?v=45" defer></script>
-  <script src="/js/views/monthly.js?v=45" defer></script>
-  <script src="/js/views/checkin.js?v=45" defer></script>
-  <script src="/js/views/stats.js?v=45" defer></script>
-  <script src="/js/views/garden.js?v=45" defer></script>
-  <script src="/js/views/garden-island.js?v=45" defer></script>
-  <script src="/js/views/garden-shop.js?v=45" defer></script>
-  <script src="/js/views/journal.js?v=45" defer></script>
-  <script src="/js/utils/date-nlp.js?v=45" defer></script>
-  <script src="/js/components/task-modal.js?v=45" defer></script>
-  <script src="/js/components/ics-import.js?v=45" defer></script>
-  <script src="/js/components/pomodoro.js?v=45" defer></script>
-  <script src="/js/ambient.js?v=45" defer></script>
-  <script src="/js/app.js?v=45" defer></script>
-  <script src="/js/app-theme.js?v=45" defer></script>
-  <script src="/js/app-persona-nav.js?v=45" defer></script>
-  <script src="/js/app-coins.js?v=45" defer></script>
-  <script src="/js/widget-installer.js?v=45" defer></script>
+  <script src="/js/utils.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/api.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/views/daily.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/views/monthly.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/views/checkin.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/views/stats.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/views/garden.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/views/garden-island.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/views/garden-shop.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/views/journal.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/utils/date-nlp.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/components/task-modal.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/components/ics-import.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/components/pomodoro.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/ambient.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/app.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/app-theme.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/app-persona-nav.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/app-coins.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/widget-installer.js?v=__ASSET_VERSION__" defer></script>
 </body>
 
 </html>

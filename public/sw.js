@@ -1,56 +1,19 @@
-const CACHE_VERSION = 'v45'; // Bump on each deploy
+const CACHE_VERSION = '__CACHE_VERSION__';
 const CACHE_NAME = `panpu-todo-${CACHE_VERSION}`;
 
-const STATIC_ASSETS = [
-    '/',
-    '/index.html',
-    '/css/style.css?v=45',
-    '/css/base.css?v=45',
-    '/css/checkin.css?v=45',
-    '/css/pomodoro-stats.css?v=45',
-    '/css/journal.css?v=45',
-    '/css/garden.css?v=45',
-    '/js/utils.js?v=45',
-    '/js/app.js?v=45',
-    '/js/app-theme.js?v=45',
-    '/js/app-persona-nav.js?v=45',
-    '/js/app-coins.js?v=45',
-    '/js/widget-installer.js?v=45',
-    '/js/api.js?v=45',
-    '/js/ambient.js?v=45',
-    '/js/views/daily.js?v=45',
-    '/js/views/monthly.js?v=45',
-    '/js/views/checkin.js?v=45',
-    '/js/views/stats.js?v=45',
-    '/js/views/garden.js?v=45',
-    '/js/views/garden-island.js?v=45',
-    '/js/views/garden-shop.js?v=45',
-    '/js/views/journal.js?v=45',
-    '/js/utils/date-nlp.js?v=45',
-    '/js/components/task-modal.js?v=45',
-    '/js/components/ics-import.js?v=45',
-    '/js/components/pomodoro.js?v=45',
-    '/manifest.json',
-    '/img/panpan.png',
-    '/img/pupu.png',
-    '/img/all.png',
-    '/img/taofa.png',
-    '/img/meow-coin.png?v=4',
-    '/img/icon-48.png',
-    '/img/icon-96.png',
-    '/img/icon-144.png',
-    '/img/icon-180.png',
-    '/img/icon-192.png',
-    '/img/icon-512.png',
-    '/img/icon-maskable-192.png',
-    '/img/icon-maskable-512.png',
-];
+const STATIC_ASSETS = __PRECACHE_ASSETS__;
 
 // Install — pre-cache static assets for offline use
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(STATIC_ASSETS);
+        caches.open(CACHE_NAME).then(async (cache) => {
+            await Promise.all(STATIC_ASSETS.map(async (asset) => {
+                try {
+                    await cache.add(asset);
+                } catch (err) {
+                    console.warn('[sw] precache failed:', asset, err);
+                }
+            }));
         })
     );
     self.skipWaiting(); // Activate immediately
@@ -81,6 +44,9 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
         fetch(event.request)
             .then((response) => {
+                if (!response || response.status >= 400 || response.type === 'opaque') {
+                    return response;
+                }
                 // Got network response — update cache and return
                 const clone = response.clone();
                 caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));

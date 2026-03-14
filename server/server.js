@@ -7,9 +7,12 @@ const { Server } = require('socket.io');
 const path = require('path');
 
 const compression = require('compression');
+const { createAssetPipeline } = require('./assets');
 
 const app = express();
 const server = http.createServer(app);
+const publicDir = path.join(__dirname, '..', 'public');
+const assets = createAssetPipeline({ publicDir });
 const configuredOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
     : null;
@@ -53,14 +56,24 @@ app.use((req, res, next) => {
 app.use(compression()); // Gzip all responses
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+function sendAppShell(res) {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.type('html').send(assets.renderIndex());
+}
+
 // Service worker must NEVER be cached by browser
 app.get('/sw.js', (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.set('Pragma', 'no-cache');
     res.set('Expires', '0');
-    res.sendFile(path.join(__dirname, '..', 'public', 'sw.js'));
+    res.type('application/javascript').send(assets.renderServiceWorker());
 });
-app.use(express.static(path.join(__dirname, '..', 'public'), {
+app.get(['/', '/index.html'], (req, res) => {
+    sendAppShell(res);
+});
+app.use(express.static(publicDir, {
+    index: false,
     maxAge: '1d',          // Cache static assets for 1 day
     etag: true,            // Enable ETag for cache validation
     lastModified: true,
@@ -150,7 +163,7 @@ io.on('connection', (socket) => {
 
 // SPA fallback
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+    sendAppShell(res);
 });
 
 // Auto-complete timer — check every 60 seconds
