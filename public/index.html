@@ -37,30 +37,19 @@
   <link rel="stylesheet" href="/css/style.css?v=38">
   <script src="https://unpkg.com/lucide@0.577.0/dist/umd/lucide.min.js" defer></script>
   <script>
-    // SW registration + force update on every load
+    // SW registration + controlled reload only when an existing worker is replaced.
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
-        .then(reg => {
-          // Force check for new SW on every page load
-          reg.update();
-          // When new SW is found and waiting, tell it to activate
-          reg.addEventListener('updatefound', () => {
-            const newWorker = reg.installing;
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'activated') {
-                // New SW activated — reload to get fresh assets
-                window.location.reload();
-              }
-            });
-          });
-        });
-      // Listen for the new SW taking control
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        // Avoid infinite reload loops
-        if (!window.__swReloaded) {
+      window.addEventListener('load', () => {
+        const hadController = !!navigator.serviceWorker.controller;
+        navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' })
+          .then(reg => reg.update())
+          .catch(err => console.warn('Service worker registration failed:', err));
+
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!hadController || window.__swReloaded) return;
           window.__swReloaded = true;
           window.location.reload();
-        }
+        });
       });
     }
   </script>

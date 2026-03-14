@@ -7,7 +7,9 @@ const DailyView = {
     _loadId: 0, // Race condition guard
 
     init() {
-        this.setDate(new Date());
+        this.currentDate = new Date();
+        this.updateDateDisplay();
+        this.syncPersonPills();
 
         // Person filter pills in daily toolbar
         document.querySelectorAll('.daily-person-filter .filter-pill').forEach(btn => {
