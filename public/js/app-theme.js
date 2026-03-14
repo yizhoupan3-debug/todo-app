@@ -88,10 +88,15 @@ Object.assign(App, {
 
         const renderStatus = () => {
             const origin = API.getBackendOrigin();
+            const mode = localStorage.getItem(API.backendModeKey) || 'auto';
             input.value = origin;
-            status.textContent = origin
-                ? `当前共享后端：${origin}`
-                : '当前使用本地后端';
+            if (origin) {
+                status.textContent = mode === 'custom'
+                    ? `当前共享后端：${origin}`
+                    : `当前默认共享后端：${origin}`;
+                return;
+            }
+            status.textContent = '当前使用本地后端';
         };
 
         saveBtn.addEventListener('click', () => {
@@ -103,7 +108,7 @@ Object.assign(App, {
         });
 
         clearBtn.addEventListener('click', () => {
-            API.setBackendOrigin('');
+            API.setBackendOrigin('', { forceLocal: true });
             status.textContent = '已恢复本地后端，页面即将刷新';
             setTimeout(() => window.location.reload(), 120);
         });

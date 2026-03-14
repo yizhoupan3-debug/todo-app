@@ -3,6 +3,12 @@
  */
 const API = {
     backendOriginKey: 'panpu-backend-origin',
+    backendModeKey: 'panpu-backend-mode',
+
+    getDefaultBackendOrigin() {
+        if (typeof window === 'undefined') return '';
+        return this.normalizeOrigin(window.__PANPU_DEFAULT_BACKEND_ORIGIN__ || '');
+    },
 
     normalizeOrigin(origin) {
         const value = String(origin || '').trim();
@@ -13,8 +19,12 @@ const API = {
 
     getBackendOrigin() {
         try {
+            const mode = localStorage.getItem(this.backendModeKey) || 'auto';
+            if (mode === 'local') return '';
             const raw = localStorage.getItem(this.backendOriginKey);
-            const normalized = this.normalizeOrigin(raw);
+            const normalized = mode === 'custom'
+                ? this.normalizeOrigin(raw)
+                : this.getDefaultBackendOrigin();
             if (!normalized) return '';
             if (normalized === window.location.origin) return '';
             return normalized;
@@ -23,13 +33,25 @@ const API = {
         }
     },
 
-    setBackendOrigin(origin) {
+    setBackendOrigin(origin, { forceLocal = false } = {}) {
+        const defaultOrigin = this.getDefaultBackendOrigin();
         const normalized = this.normalizeOrigin(origin);
         try {
-            if (!normalized || normalized === window.location.origin) {
+            if (forceLocal) {
+                localStorage.setItem(this.backendModeKey, 'local');
                 localStorage.removeItem(this.backendOriginKey);
                 return '';
             }
+            if (!normalized || normalized === window.location.origin) {
+                if (defaultOrigin) {
+                    localStorage.setItem(this.backendModeKey, 'auto');
+                } else {
+                    localStorage.removeItem(this.backendModeKey);
+                }
+                localStorage.removeItem(this.backendOriginKey);
+                return '';
+            }
+            localStorage.setItem(this.backendModeKey, 'custom');
             localStorage.setItem(this.backendOriginKey, normalized);
             return normalized;
         } catch (e) {
