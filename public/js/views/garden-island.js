@@ -165,7 +165,7 @@ Object.assign(GardenView, {
         ].join(';');
         const zoneClass = zone ? `zone-${zone}` : '';
         if (plot.status === 'wasteland') {
-            const obs = this.obstacleMap[plot.obstacle_type] || this.obstacleMap.rock;
+            const obs = this.getObstacleVisual(plot);
             const glyph = plot.obstacle_type === 'wild_tree' ? '🪓' : '⛏';
             return `<div class="iplot wasteland ${zoneClass} obstacle-${plot.obstacle_type || 'rock'}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
                 <img src="${obs.img}" alt="${obs.name}" class="iplot-img">

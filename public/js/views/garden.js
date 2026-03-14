@@ -137,28 +137,29 @@ const GardenView = {
         weed: { img: '/img/trees/obstacle_weed.svg', name: '杂草', cost: 5 },
         wild_tree: { img: '/img/trees/obstacle_wild_tree.svg', name: '野树', cost: 15 },
     },
+    wildTreeVariants: ['/img/trees/oak.svg', '/img/trees/pine.svg', '/img/trees/oak.svg'],
 
     SCENE_GRID_W: 8,
     SCENE_GRID_H: 6,
     FOREST_LAYOUTS: [
-        { left: 17, top: 37, scale: 0.94 }, { left: 25, top: 35, scale: 0.98 }, { left: 33, top: 36, scale: 1.03 },
-        { left: 41, top: 34, scale: 1.07 }, { left: 49, top: 35, scale: 1.04 }, { left: 57, top: 34, scale: 1.01 },
-        { left: 65, top: 36, scale: 0.99 }, { left: 73, top: 35, scale: 0.95 }, { left: 20, top: 44, scale: 0.97 },
-        { left: 29, top: 46, scale: 1.02 }, { left: 37, top: 43, scale: 1.07 }, { left: 45, top: 45, scale: 1.12 },
-        { left: 53, top: 43, scale: 1.07 }, { left: 61, top: 45, scale: 1.03 }, { left: 69, top: 43, scale: 0.99 },
-        { left: 77, top: 46, scale: 0.95 }, { left: 18, top: 51, scale: 0.98 }, { left: 27, top: 53, scale: 1.03 },
-        { left: 35, top: 50, scale: 1.08 }, { left: 43, top: 53, scale: 1.14 }, { left: 51, top: 50, scale: 1.09 },
-        { left: 59, top: 53, scale: 1.04 }, { left: 67, top: 51, scale: 1.01 }, { left: 75, top: 53, scale: 0.97 },
-        { left: 25, top: 59, scale: 1.01 }, { left: 35, top: 61, scale: 1.07 }, { left: 45, top: 59, scale: 1.13 },
-        { left: 55, top: 61, scale: 1.08 }, { left: 65, top: 59, scale: 1.03 }, { left: 75, top: 61, scale: 0.99 },
+        { left: 20, top: 41, scale: 0.94 }, { left: 28, top: 39, scale: 0.98 }, { left: 36, top: 40, scale: 1.03 },
+        { left: 44, top: 38, scale: 1.07 }, { left: 52, top: 39, scale: 1.04 }, { left: 60, top: 38, scale: 1.01 },
+        { left: 68, top: 40, scale: 0.99 }, { left: 76, top: 39, scale: 0.95 }, { left: 23, top: 48, scale: 0.97 },
+        { left: 32, top: 50, scale: 1.02 }, { left: 40, top: 47, scale: 1.07 }, { left: 48, top: 49, scale: 1.12 },
+        { left: 56, top: 47, scale: 1.07 }, { left: 64, top: 49, scale: 1.03 }, { left: 72, top: 47, scale: 0.99 },
+        { left: 80, top: 50, scale: 0.95 }, { left: 21, top: 55, scale: 0.98 }, { left: 30, top: 57, scale: 1.03 },
+        { left: 39, top: 54, scale: 1.08 }, { left: 48, top: 57, scale: 1.14 }, { left: 57, top: 54, scale: 1.09 },
+        { left: 66, top: 57, scale: 1.04 }, { left: 75, top: 55, scale: 1.01 }, { left: 83, top: 57, scale: 0.97 },
+        { left: 28, top: 62, scale: 1.01 }, { left: 39, top: 64, scale: 1.07 }, { left: 50, top: 62, scale: 1.13 },
+        { left: 61, top: 64, scale: 1.08 }, { left: 72, top: 62, scale: 1.03 }, { left: 82, top: 64, scale: 0.99 },
     ],
     FRONTIER_LAYOUTS: [
-        { left: 14, top: 66, scale: 0.99 }, { left: 84, top: 66, scale: 0.99 }, { left: 20, top: 74, scale: 1.03 },
-        { left: 30, top: 76, scale: 1.08 }, { left: 40, top: 72, scale: 1.03 }, { left: 50, top: 75, scale: 1.08 },
-        { left: 60, top: 72, scale: 1.03 }, { left: 70, top: 75, scale: 1.07 }, { left: 80, top: 72, scale: 1.03 },
-        { left: 86, top: 76, scale: 0.99 }, { left: 18, top: 84, scale: 1.07 }, { left: 30, top: 88, scale: 1.11 },
-        { left: 42, top: 84, scale: 1.05 }, { left: 54, top: 88, scale: 1.12 }, { left: 66, top: 84, scale: 1.05 },
-        { left: 78, top: 88, scale: 1.1 }, { left: 88, top: 84, scale: 1.04 }, { left: 94, top: 88, scale: 0.98 },
+        { left: 15, top: 70, scale: 0.99 }, { left: 85, top: 70, scale: 0.99 }, { left: 22, top: 78, scale: 1.03 },
+        { left: 33, top: 80, scale: 1.08 }, { left: 44, top: 76, scale: 1.03 }, { left: 55, top: 79, scale: 1.08 },
+        { left: 66, top: 76, scale: 1.03 }, { left: 77, top: 79, scale: 1.07 }, { left: 87, top: 76, scale: 1.03 },
+        { left: 91, top: 82, scale: 0.99 }, { left: 18, top: 87, scale: 1.07 }, { left: 31, top: 91, scale: 1.11 },
+        { left: 44, top: 88, scale: 1.05 }, { left: 57, top: 92, scale: 1.12 }, { left: 70, top: 88, scale: 1.05 },
+        { left: 82, top: 92, scale: 1.1 }, { left: 90, top: 88, scale: 1.04 }, { left: 96, top: 92, scale: 0.98 },
     ],
 
     _staticRendered: false,
@@ -260,6 +261,15 @@ const GardenView = {
         const y = Number(plot?.y) || 0;
         const n = Math.sin((x + 1) * 127.1 + (y + 1) * 311.7 + islandId * 53.3 + salt * 19.7) * 43758.5453;
         return n - Math.floor(n);
+    },
+
+    getObstacleVisual(plot) {
+        const obstacle = this.obstacleMap[plot?.obstacle_type] || this.obstacleMap.rock;
+        if (plot?.obstacle_type !== 'wild_tree') return obstacle;
+        const x = Number(plot?.x) || 0;
+        const y = Number(plot?.y) || 0;
+        const variant = this.wildTreeVariants[(x * 3 + y * 5) % this.wildTreeVariants.length];
+        return { ...obstacle, img: variant };
     },
 
     _getForestLayoutIndex(x, y) {

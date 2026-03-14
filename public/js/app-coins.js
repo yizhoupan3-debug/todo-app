@@ -224,13 +224,13 @@ Object.assign(App, {
 
             const overlay = document.createElement('div');
             overlay.className = 'history-modal-overlay';
-            overlay.innerHTML = \`<div class="modal-box history-modal-box" style="width:360px; max-width:92vw; background:#fff; border-radius:24px; box-shadow:0 12px 48px rgba(0,0,0,0.2); overflow:hidden;">
+            overlay.innerHTML = `<div class="modal-box history-modal-box" style="width:360px; max-width:92vw; background:#fff; border-radius:24px; box-shadow:0 12px 48px rgba(0,0,0,0.2); overflow:hidden;">
                 <div style="padding:16px 20px; border-bottom:1px solid rgba(0,0,0,0.06); display:flex; justify-content:space-between; align-items:center; background:#fdfdfd;">
                     <h3 style="margin:0; font-size:16px; font-weight:700;">📊 喵喵币明细 - ${assignee}</h3>
                     <button class="history-modal-close" style="background:none; border:none; font-size:16px; color:#999; cursor:pointer;">✕</button>
                 </div>
                 <div class="history-modal-body" style="max-height:60vh; overflow-y:auto; padding:8px 0;">${html}</div>
-            </div>\`;
+            </div>`;
             
             overlay.style.position = 'fixed';
             overlay.style.inset = '0';
