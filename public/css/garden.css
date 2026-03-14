@@ -4461,31 +4461,35 @@
 }
 
 .iplot.obstacle-wild_tree .iplot-img {
-  width: 140px;
-  height: 155px;
+  width: 170px;
+  height: 190px;
   transform: rotate(var(--plot-tilt, 0deg)) scale(var(--plot-sprite-scale, 1));
   transform-origin: 50% 100%;
   animation: wildTreeSway calc(4.8s * var(--plot-sway, 1)) ease-in-out infinite;
-  filter: saturate(0.86) brightness(0.92) drop-shadow(0 10px 10px rgba(10, 30, 8, 0.24));
+  filter: saturate(0.65) contrast(1.15) brightness(0.85) drop-shadow(0 14px 16px rgba(10, 30, 8, 0.4));
 }
 
 .iplot.obstacle-rock .iplot-img,
 .iplot.obstacle-weed .iplot-img {
-  width: 100px;
-  height: 100px;
+  width: 110px;
+  height: 110px;
   transform: rotate(calc(var(--plot-tilt, 0deg) * 0.36)) scale(var(--plot-sprite-scale, 1));
 }
 
 .iplot.cleared {
-  background: transparent;
-  border: none;
-  box-shadow: none;
+  background: 
+    radial-gradient(ellipse at center, rgba(139, 90, 43, 0.45) 0%, rgba(101, 67, 33, 0.25) 50%, transparent 75%),
+    radial-gradient(ellipse at center, rgba(255, 255, 255, 0.12) 0%, transparent 40%);
+  border: 1.5px dashed rgba(160, 110, 60, 0.4);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(60, 40, 20, 0.3);
 }
 
 .iplot.cleared.plantable {
-  background: radial-gradient(ellipse at center, rgba(164, 214, 119, 0.15) 0%, transparent 60%);
-  border: none;
-  box-shadow: none;
+  background: 
+    radial-gradient(ellipse at center, rgba(164, 214, 119, 0.2) 0%, transparent 60%),
+    radial-gradient(ellipse at center, rgba(139, 90, 43, 0.5) 0%, rgba(101, 67, 33, 0.3) 50%, transparent 75%);
+  border: 1.5px dashed rgba(160, 110, 60, 0.5);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(60, 40, 20, 0.3), 0 0 15px rgba(164, 214, 119, 0.2);
 }
 
 .iplot.planted {

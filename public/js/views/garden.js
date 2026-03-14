@@ -142,33 +142,33 @@ const GardenView = {
     SCENE_GRID_W: 8,
     SCENE_GRID_H: 6,
     FOREST_LAYOUTS: [
-        // Upper rim (deep forest)
-        { left: 24, top: 38, scale: 0.95 }, { left: 32, top: 37, scale: 1.02 }, { left: 40, top: 36, scale: 1.06 },
-        { left: 48, top: 35, scale: 1.12 }, { left: 56, top: 35, scale: 1.10 }, { left: 64, top: 36, scale: 1.05 },
-        { left: 72, top: 37, scale: 0.98 }, { left: 80, top: 38, scale: 0.95 },
-        // Mid-upper forest
-        { left: 20, top: 45, scale: 0.99 }, { left: 29, top: 44, scale: 1.08 }, { left: 38, top: 43, scale: 1.12 },
-        { left: 47, top: 42, scale: 1.15 }, { left: 55, top: 42, scale: 1.12 }, { left: 63, top: 43, scale: 1.09 },
-        { left: 71, top: 44, scale: 1.04 }, { left: 80, top: 46, scale: 0.96 },
-        // Middle forest area
-        { left: 18, top: 52, scale: 1.02 }, { left: 28, top: 51, scale: 1.10 }, { left: 38, top: 50, scale: 1.16 },
-        { left: 48, top: 49, scale: 1.20 }, { left: 57, top: 49, scale: 1.15 }, { left: 66, top: 50, scale: 1.10 },
-        { left: 75, top: 52, scale: 1.05 }, { left: 84, top: 54, scale: 0.99 },
-        // Lower forest boundary
-        { left: 28, top: 59, scale: 1.08 }, { left: 38, top: 57, scale: 1.16 }, { left: 48, top: 56, scale: 1.18 },
-        { left: 58, top: 56, scale: 1.12 }, { left: 68, top: 58, scale: 1.06 }, { left: 78, top: 60, scale: 1.02 },
+        // y=0
+        { left: 22, top: 37, scale: 0.95 }, { left: 30, top: 37, scale: 0.95 }, { left: 38, top: 37, scale: 0.95 },
+        { left: 46, top: 37, scale: 0.95 }, { left: 54, top: 37, scale: 0.95 }, { left: 62, top: 37, scale: 0.95 },
+        { left: 70, top: 37, scale: 0.95 }, { left: 78, top: 37, scale: 0.95 },
+        // y=1
+        { left: 26, top: 45, scale: 1.0 }, { left: 34, top: 45, scale: 1.0 }, { left: 42, top: 45, scale: 1.0 },
+        { left: 50, top: 45, scale: 1.0 }, { left: 58, top: 45, scale: 1.0 }, { left: 66, top: 45, scale: 1.0 },
+        { left: 74, top: 45, scale: 1.0 }, { left: 82, top: 45, scale: 1.0 },
+        // y=2
+        { left: 22, top: 53, scale: 1.05 }, { left: 30, top: 53, scale: 1.05 }, { left: 38, top: 53, scale: 1.05 },
+        { left: 46, top: 53, scale: 1.05 }, { left: 54, top: 53, scale: 1.05 }, { left: 62, top: 53, scale: 1.05 },
+        { left: 70, top: 53, scale: 1.05 }, { left: 78, top: 53, scale: 1.05 },
+        // y=3 (x=1..6)
+        { left: 34, top: 61, scale: 1.1 }, { left: 42, top: 61, scale: 1.1 }, { left: 50, top: 61, scale: 1.1 },
+        { left: 58, top: 61, scale: 1.1 }, { left: 66, top: 61, scale: 1.1 }, { left: 74, top: 61, scale: 1.1 },
     ],
     FRONTIER_LAYOUTS: [
-        // Mid-lower wasteland (rocks, stumps)
-        { left: 22, top: 65, scale: 1.05 }, { left: 82, top: 65, scale: 1.02 },
-        { left: 30, top: 68, scale: 1.08 }, { left: 40, top: 65, scale: 1.14 }, { left: 50, top: 64, scale: 1.16 },
-        { left: 60, top: 64, scale: 1.12 }, { left: 70, top: 66, scale: 1.06 }, { left: 80, top: 70, scale: 1.01 },
-        // Near beach / clearings
-        { left: 28, top: 75, scale: 1.10 }, { left: 38, top: 73, scale: 1.18 }, { left: 48, top: 71, scale: 1.20 },
-        { left: 58, top: 72, scale: 1.15 }, { left: 68, top: 74, scale: 1.10 }, { left: 78, top: 76, scale: 1.05 },
-        // Shoreline edges
-        { left: 34, top: 82, scale: 1.20 }, { left: 46, top: 80, scale: 1.25 }, { left: 58, top: 80, scale: 1.20 },
-        { left: 70, top: 82, scale: 1.15 },
+        // y=3 (x=0, 7)
+        { left: 26, top: 61, scale: 1.1 }, { left: 82, top: 61, scale: 1.1 },
+        // y=4
+        { left: 22, top: 69, scale: 1.15 }, { left: 30, top: 69, scale: 1.15 }, { left: 38, top: 69, scale: 1.15 },
+        { left: 46, top: 69, scale: 1.15 }, { left: 54, top: 69, scale: 1.15 }, { left: 62, top: 69, scale: 1.15 },
+        { left: 70, top: 69, scale: 1.15 }, { left: 78, top: 69, scale: 1.15 },
+        // y=5
+        { left: 26, top: 77, scale: 1.2 }, { left: 34, top: 77, scale: 1.2 }, { left: 42, top: 77, scale: 1.2 },
+        { left: 50, top: 77, scale: 1.2 }, { left: 58, top: 77, scale: 1.2 }, { left: 66, top: 77, scale: 1.2 },
+        { left: 74, top: 77, scale: 1.2 }, { left: 82, top: 77, scale: 1.2 }
     ],
 
     _staticRendered: false,
@@ -310,8 +310,8 @@ const GardenView = {
         const base = zone === 'forest'
             ? this.FOREST_LAYOUTS[this._getForestLayoutIndex(x, y)]
             : this.FRONTIER_LAYOUTS[this._getFrontierLayoutIndex(x, y)];
-        let left = (base?.left ?? (14 + xRatio * 70)) + (n1 - 0.5) * (zone === 'forest' ? 1.8 : 2.8);
-        let top = (base?.top ?? (56 + yRatio * 24)) + (n2 - 0.5) * (zone === 'forest' ? 1.6 : 2.4);
+        let left = (base?.left ?? (14 + xRatio * 70)) + (n1 - 0.5) * 0.4;
+        let top = (base?.top ?? (56 + yRatio * 24)) + (n2 - 0.5) * 0.3;
         let scale = (base?.scale ?? 1) + (n3 - 0.5) * 0.06;
         let tilt = (n4 - 0.5) * (zone === 'forest' ? 10 : 6);
         let spriteScale = zone === 'forest' ? 1.08 + n2 * 0.18 : 0.94 + n2 * 0.18;
@@ -323,9 +323,9 @@ const GardenView = {
             spriteScale += 0.06;
         }
 
-        if (zone === 'forest' && y < 2) {
-            top += 1.6;
-            left += (xRatio - 0.5) * 0.8;
+        if (zone === 'shore') {
+            tilt += x <= 1 ? -3 : 3;
+            spriteScale += 0.06;
         }
 
         return {
