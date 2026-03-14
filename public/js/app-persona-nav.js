@@ -205,6 +205,7 @@ Object.assign(App, {
     },
 
     switchView(view) {
+        const isInitialSwitch = !this._viewSwitchedOnce;
         // Skip redundant same-view switches (unless it's initial load)
         if (this.currentView === view && this._viewSwitchedOnce) return;
         this._viewSwitchedOnce = true;
@@ -215,7 +216,7 @@ Object.assign(App, {
             this.setPersona(this.lastPersona, { refresh: false });
         }
 
-        const transition = this._runViewTransition(() => {
+        const renderView = () => {
             this.currentView = view;
 
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
@@ -243,6 +244,10 @@ Object.assign(App, {
                 const isTarget = vid === viewMap[view];
                 el.classList.toggle('hidden', !isTarget);
                 if (isTarget) {
+                    if (isInitialSwitch) {
+                        el.classList.remove('view-animating');
+                        continue;
+                    }
                     // Use CSS class for animation (auto-cleaned after animation ends)
                     el.classList.remove('view-animating');
                     void el.offsetHeight; // force reflow to restart animation
@@ -274,7 +279,10 @@ Object.assign(App, {
             }
 
             this._refreshHeaderCoins();
-        });
+        };
+
+        const transition = isInitialSwitch ? null : this._runViewTransition(renderView);
+        if (isInitialSwitch) renderView();
 
         // Defer heavy view data loading so the transition animation isn't blocked
         const loadViewData = () => {

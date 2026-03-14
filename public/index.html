@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-mode="light" data-theme="indigo">
+<html lang="zh-CN" data-mode="light" data-theme="indigo" data-boot-ui="pending">
 
 <head>
   <meta charset="UTF-8">
@@ -34,16 +34,24 @@
         var validPersona = ['潘潘', '蒲蒲', 'all'].indexOf(p) !== -1 ? p : '潘潘';
         var validLastPersona = ['潘潘', '蒲蒲'].indexOf(lp) !== -1 ? lp : '潘潘';
         var scopedPersona = validPersona === 'all' ? validLastPersona : validPersona;
+        var coinCache = {};
         var d = document.documentElement;
         if (m) d.setAttribute('data-mode', m);
         if (t) d.setAttribute('data-theme', t);
+        if (rawCoinCache) {
+          try {
+            coinCache = JSON.parse(rawCoinCache) || {};
+          } catch (_) {
+            coinCache = {};
+          }
+        }
         window.__PANPU_BOOT_PERSONA__ = validPersona;
         window.__PANPU_BOOT_LAST_PERSONA__ = validLastPersona;
         window.__PANPU_BOOT_STATE__ = {
           persona: validPersona,
           lastPersona: validLastPersona,
           scopedPersona: scopedPersona,
-          coinCache: rawCoinCache ? JSON.parse(rawCoinCache) : {}
+          coinCache: coinCache
         };
         window.__PANPU_APPLY_ASSIGNEE_FILTER__ = function(rootSelector, assignee, buttonSelector) {
           var root = typeof rootSelector === 'string' ? document.querySelector(rootSelector) : rootSelector;
@@ -51,6 +59,9 @@
           root.querySelectorAll(buttonSelector || '[data-assignee]').forEach(function(btn) {
             btn.classList.toggle('active', btn.dataset.assignee === assignee);
           });
+        };
+        window.__PANPU_MARK_BOOT_READY__ = function() {
+          document.documentElement.setAttribute('data-boot-ui', 'ready');
         };
       } catch(e) {}
     })();
@@ -60,10 +71,11 @@
     window.__PANPU_DEFAULT_BACKEND_ORIGIN__ = 'http://43.99.80.200';
   </script>
   <style>
-    #persona-toggle[data-booting="true"] {
-      visibility: hidden;
-    }
-    #header-coin-btn[data-booting="true"] {
+    html[data-boot-ui="pending"] #persona-toggle,
+    html[data-boot-ui="pending"] #header-coin-btn,
+    html[data-boot-ui="pending"] #date-display,
+    html[data-boot-ui="pending"] #love-days,
+    html[data-boot-ui="pending"] .daily-person-filter {
       visibility: hidden;
     }
   </style>
@@ -78,19 +90,13 @@
   <link rel="stylesheet" href="/css/garden.css?v=__ASSET_VERSION__" media="print" onload="this.media='all'">
   <script src="https://unpkg.com/lucide@0.577.0/dist/umd/lucide.min.js" defer></script>
   <script>
-    // SW registration + controlled reload only when an existing worker is replaced.
+    // SW registration only. Do not force a full-page reload on controller change;
+    // that causes a visible flash during startup on updates.
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        const hadController = !!navigator.serviceWorker.controller;
         navigator.serviceWorker.register('/sw.js?v=__ASSET_VERSION__', { updateViaCache: 'none' })
           .then(reg => reg.update())
           .catch(err => console.warn('Service worker registration failed:', err));
-
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (!hadController || window.__swReloaded) return;
-          window.__swReloaded = true;
-          window.location.reload();
-        });
       });
     }
   </script>
@@ -334,6 +340,7 @@
         </div>
         <script>
           window.__PANPU_APPLY_ASSIGNEE_FILTER__('.daily-person-filter', (window.__PANPU_BOOT_STATE__ || {}).persona || 'all');
+          window.__PANPU_MARK_BOOT_READY__ && window.__PANPU_MARK_BOOT_READY__();
         </script>
       </div>
       <div class="task-columns">

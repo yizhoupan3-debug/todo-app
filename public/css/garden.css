@@ -3620,8 +3620,8 @@
 /* ── World canvas ── */
 .island-world {
   position: relative;
-  width: 1400px;
-  height: 1400px;
+  width: 800px;
+  height: 800px;
   margin: 0 auto;
   user-select: none;
   /* transform set by JS — _applyWorldTransform() */
