@@ -71,103 +71,98 @@ router.post('/', (req, res) => {
     }
 
     try {
-        const result = db.prepare(`
-            INSERT INTO checkin_records (type, amount, assignee, date)
-            VALUES (?, ?, ?, ?)
-        `).run(checkinType, amount, assignee, today);
-
-        const record = db.prepare('SELECT * FROM checkin_records WHERE id = ?').get(result.lastInsertRowid);
-
-        // Return updated total
-        const { total } = db.prepare(
-            'SELECT COALESCE(SUM(amount), 0) as total FROM checkin_records WHERE date = ? AND type = ? AND assignee = ?'
-        ).get(today, checkinType, assignee);
-
-        // ── Check-in coin rewards ──
-        let coinsEarned = 0;
-        let streakBonus = 0;
-        let currentStreak = 0;
-
-        // Get goal for this type
-        const goalRow = db.prepare('SELECT goal FROM checkin_goals WHERE type = ? AND assignee = ?')
-            .get(checkinType, assignee);
-        // Default goal by type
-        const defaultGoals = { water: 2000, wakeup: 1, goout: 1, skincare: 1, steps: 10000 };
-        const goal = goalRow ? goalRow.goal : (defaultGoals[checkinType] || 1);
-
         const rewardEligible = isRewardEligible(checkinType, now);
 
-        if (total >= goal && rewardEligible) {
-            // Daily goal reached — check if already rewarded today
-            const streak = db.prepare('SELECT * FROM checkin_streaks WHERE assignee = ? AND type = ?')
-                .get(assignee, checkinType);
+        // Wrap insert + reward logic in a single transaction to prevent
+        // concurrent double-reward from multiple devices
+        const txResult = db.transaction(() => {
+            const result = db.prepare(`
+                INSERT INTO checkin_records (type, amount, assignee, date)
+                VALUES (?, ?, ?, ?)
+            `).run(checkinType, amount, assignee, today);
 
-            const alreadyRewardedToday = streak && streak.last_date === today;
+            const record = db.prepare('SELECT * FROM checkin_records WHERE id = ?').get(result.lastInsertRowid);
 
-            if (!alreadyRewardedToday) {
-                // +0.5 daily reward
-                coinsEarned = CHECKIN_DAILY_REWARD;
-                db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
-                    .run(CHECKIN_DAILY_REWARD, assignee);
-                db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                    .run(assignee, CHECKIN_DAILY_REWARD, 'checkin_daily', `${checkinType} 达标`);
+            // Return updated total
+            const { total } = db.prepare(
+                'SELECT COALESCE(SUM(amount), 0) as total FROM checkin_records WHERE date = ? AND type = ? AND assignee = ?'
+            ).get(today, checkinType, assignee);
 
-                // Update streak
-                let newStreak = 1;
-                if (streak) {
-                    const yesterday = new Date(today);
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
-                    if (streak.last_date === yesterdayStr) {
-                        newStreak = streak.current_streak + 1;
+            // ── Check-in coin rewards ──
+            let coinsEarned = 0;
+            let streakBonus = 0;
+            let currentStreak = 0;
+
+            // Get goal for this type
+            const goalRow = db.prepare('SELECT goal FROM checkin_goals WHERE type = ? AND assignee = ?')
+                .get(checkinType, assignee);
+            const defaultGoals = { water: 2000, wakeup: 1, goout: 1, skincare: 1, steps: 10000 };
+            const goal = goalRow ? goalRow.goal : (defaultGoals[checkinType] || 1);
+
+            if (total >= goal && rewardEligible) {
+                const streak = db.prepare('SELECT * FROM checkin_streaks WHERE assignee = ? AND type = ?')
+                    .get(assignee, checkinType);
+
+                const alreadyRewardedToday = streak && streak.last_date === today;
+
+                if (!alreadyRewardedToday) {
+                    coinsEarned = CHECKIN_DAILY_REWARD;
+                    db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
+                        .run(CHECKIN_DAILY_REWARD, assignee);
+                    db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                        .run(assignee, CHECKIN_DAILY_REWARD, 'checkin_daily', `${checkinType} 达标`);
+
+                    let newStreak = 1;
+                    if (streak) {
+                        const yesterday = new Date(today);
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+                        if (streak.last_date === yesterdayStr) {
+                            newStreak = streak.current_streak + 1;
+                        }
+                    }
+
+                    db.prepare(`
+                        INSERT INTO checkin_streaks (assignee, type, current_streak, last_date)
+                        VALUES (?, ?, ?, ?)
+                        ON CONFLICT(assignee, type) DO UPDATE SET current_streak = ?, last_date = ?
+                    `).run(assignee, checkinType, newStreak, today, newStreak, today);
+
+                    currentStreak = newStreak;
+
+                    const updatedStreak = db.prepare('SELECT * FROM checkin_streaks WHERE assignee = ? AND type = ?')
+                        .get(assignee, checkinType);
+                    if (newStreak >= 3 && newStreak % 3 === 0 && updatedStreak.reward_3_claimed !== today) {
+                        streakBonus += CHECKIN_STREAK_3_BONUS;
+                        db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?').run(CHECKIN_STREAK_3_BONUS, assignee);
+                        db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                            .run(assignee, CHECKIN_STREAK_3_BONUS, 'checkin_streak_3', `${checkinType} 连续${newStreak}天`);
+                        db.prepare('UPDATE checkin_streaks SET reward_3_claimed = ? WHERE assignee = ? AND type = ?')
+                            .run(today, assignee, checkinType);
+                    }
+
+                    if (newStreak >= 7 && newStreak % 7 === 0 && updatedStreak.reward_7_claimed !== today) {
+                        streakBonus += CHECKIN_STREAK_7_BONUS;
+                        db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?').run(CHECKIN_STREAK_7_BONUS, assignee);
+                        db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                            .run(assignee, CHECKIN_STREAK_7_BONUS, 'checkin_streak_7', `${checkinType} 连续${newStreak}天`);
+                        db.prepare('UPDATE checkin_streaks SET reward_7_claimed = ? WHERE assignee = ? AND type = ?')
+                            .run(today, assignee, checkinType);
+
+                        db.prepare('UPDATE checkin_streaks SET current_streak = 0 WHERE assignee = ? AND type = ?')
+                            .run(assignee, checkinType);
+                        currentStreak = 0;
                     }
                 }
 
-                db.prepare(`
-                    INSERT INTO checkin_streaks (assignee, type, current_streak, last_date)
-                    VALUES (?, ?, ?, ?)
-                    ON CONFLICT(assignee, type) DO UPDATE SET current_streak = ?, last_date = ?
-                `).run(assignee, checkinType, newStreak, today, newStreak, today);
-
-                currentStreak = newStreak;
-
-                // 3-day streak bonus
-                const updatedStreak = db.prepare('SELECT * FROM checkin_streaks WHERE assignee = ? AND type = ?')
-                    .get(assignee, checkinType);
-                if (newStreak >= 3 && newStreak % 3 === 0 && updatedStreak.reward_3_claimed !== today) {
-                    streakBonus += CHECKIN_STREAK_3_BONUS;
-                    db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?').run(CHECKIN_STREAK_3_BONUS, assignee);
-                    db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                        .run(assignee, CHECKIN_STREAK_3_BONUS, 'checkin_streak_3', `${checkinType} 连续${newStreak}天`);
-                    db.prepare('UPDATE checkin_streaks SET reward_3_claimed = ? WHERE assignee = ? AND type = ?')
-                        .run(today, assignee, checkinType);
-                }
-
-                // 7-day streak bonus + reset
-                if (newStreak >= 7 && newStreak % 7 === 0 && updatedStreak.reward_7_claimed !== today) {
-                    streakBonus += CHECKIN_STREAK_7_BONUS;
-                    db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?').run(CHECKIN_STREAK_7_BONUS, assignee);
-                    db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                        .run(assignee, CHECKIN_STREAK_7_BONUS, 'checkin_streak_7', `${checkinType} 连续${newStreak}天`);
-                    db.prepare('UPDATE checkin_streaks SET reward_7_claimed = ? WHERE assignee = ? AND type = ?')
-                        .run(today, assignee, checkinType);
-
-                    // Reset streak after 7-day cycle
-                    db.prepare('UPDATE checkin_streaks SET current_streak = 0 WHERE assignee = ? AND type = ?')
-                        .run(assignee, checkinType);
-                    currentStreak = 0;
-                }
+                if (streak && !currentStreak) currentStreak = streak.current_streak;
             }
 
-            if (streak && !currentStreak) currentStreak = streak.current_streak;
-        }
+            return { record, total, coinsEarned: coinsEarned + streakBonus, currentStreak, streakBonus };
+        })();
 
         res.json({
-            record,
-            total,
-            coinsEarned: coinsEarned + streakBonus,
-            currentStreak,
-            streakBonus,
+            ...txResult,
             rewardEligible,
             rewardBlockedReason: !rewardEligible
                 ? (checkinType === 'wakeup'

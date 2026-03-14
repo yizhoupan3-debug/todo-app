@@ -43,6 +43,7 @@
   <link rel="stylesheet" href="/css/base.css?v=43">
   <link rel="stylesheet" href="/css/checkin.css?v=43">
   <link rel="stylesheet" href="/css/pomodoro-stats.css?v=43">
+  <link rel="stylesheet" href="/css/journal.css?v=43">
   <!-- garden.css (83KB): non-render-blocking via print→all swap -->
   <link rel="stylesheet" href="/css/garden.css?v=43" media="print" onload="this.media='all'">
   <script src="https://unpkg.com/lucide@0.577.0/dist/umd/lucide.min.js" defer></script>
@@ -499,6 +500,9 @@
     <!-- Garden View -->
     <section class="view-container hidden" id="view-garden"></section>
 
+    <!-- Journal View -->
+    <section class="view-container hidden" id="view-journal"></section>
+
     <!-- Shop View -->
     <section class="view-container hidden" id="view-shop"></section>
 
@@ -600,13 +604,13 @@
 
   <!-- Bottom Nav (Mobile) -->
   <nav class="bottom-nav" id="bottom-nav">
-    <button class="bottom-nav-btn active" data-view="daily">
-      <span class="nav-icon"><i data-lucide="calendar-days"></i></span>
-      <span>每日</span>
+    <button class="bottom-nav-btn active" data-view="daily" id="mobile-home">
+      <span class="nav-icon"><i data-lucide="house"></i></span>
+      <span>首页</span>
     </button>
-    <button class="bottom-nav-btn" data-view="monthly">
-      <span class="nav-icon"><i data-lucide="calendar-range"></i></span>
-      <span>每月</span>
+    <button class="bottom-nav-btn" data-view="garden" id="mobile-garden">
+      <span class="nav-icon"><i data-lucide="trees"></i></span>
+      <span>花园</span>
     </button>
     <button class="bottom-nav-btn add-fab" id="fab-add">
       <span class="nav-icon"><i data-lucide="plus"></i></span>
@@ -615,11 +619,44 @@
       <span class="nav-icon"><i data-lucide="circle-check-big"></i></span>
       <span>打卡</span>
     </button>
-    <button class="bottom-nav-btn" id="mobile-stats">
-      <span class="nav-icon"><i data-lucide="bar-chart-3"></i></span>
-      <span>统计</span>
+    <button class="bottom-nav-btn" id="mobile-more">
+      <span class="nav-icon"><i data-lucide="grip-horizontal"></i></span>
+      <span>更多</span>
     </button>
   </nav>
+
+  <!-- More Panel (Mobile action sheet) -->
+  <div class="more-panel-overlay hidden" id="more-panel-overlay">
+    <div class="more-panel" id="more-panel">
+      <div class="more-panel-handle"></div>
+      <div class="more-panel-grid">
+        <button class="more-panel-item" data-action="shop">
+          <span class="more-panel-icon"><i data-lucide="store"></i></span>
+          <span>商城</span>
+        </button>
+        <button class="more-panel-item" data-action="stats">
+          <span class="more-panel-icon"><i data-lucide="bar-chart-3"></i></span>
+          <span>统计</span>
+        </button>
+        <button class="more-panel-item" data-action="journal">
+          <span class="more-panel-icon"><i data-lucide="book-open"></i></span>
+          <span>日记</span>
+        </button>
+        <button class="more-panel-item" data-action="pomodoro">
+          <span class="more-panel-icon"><i data-lucide="timer"></i></span>
+          <span>番茄钟</span>
+        </button>
+        <button class="more-panel-item" data-action="coins">
+          <span class="more-panel-icon"><i data-lucide="coins"></i></span>
+          <span>喵喵币</span>
+        </button>
+        <button class="more-panel-item" data-action="settings">
+          <span class="more-panel-icon"><i data-lucide="settings"></i></span>
+          <span>设置</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Task Modal -->
   <div class="modal-overlay hidden" id="modal-overlay">
@@ -645,6 +682,7 @@
           <div class="form-group">
             <label for="task-assignee">指派给</label>
             <select id="task-assignee">
+              <option value="全部">全部</option>
               <option value="潘潘">潘潘</option>
               <option value="蒲蒲">蒲蒲</option>
             </select>
@@ -901,6 +939,7 @@
   <script src="/js/views/garden.js?v=43" defer></script>
   <script src="/js/views/garden-island.js?v=43" defer></script>
   <script src="/js/views/garden-shop.js?v=43" defer></script>
+  <script src="/js/views/journal.js?v=43" defer></script>
   <script src="/js/components/task-modal.js?v=43" defer></script>
   <script src="/js/components/ics-import.js?v=43" defer></script>
   <script src="/js/components/pomodoro.js?v=43" defer></script>

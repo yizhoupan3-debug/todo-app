@@ -5,6 +5,11 @@ const { TASK_REWARD } = require('./garden-shared');
 
 const router = express.Router();
 
+// Valid date format: YYYY-MM-DD
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const MONTH_RE = /^\d{4}-\d{2}$/;
+const VALID_ASSIGNEES = ['潘潘', '蒲蒲'];
+
 // GET /api/tasks — list tasks with optional filters
 router.get('/', (req, res) => {
     const { assignee, date, month, status } = req.query;
@@ -18,6 +23,9 @@ router.get('/', (req, res) => {
     }
 
     if (date) {
+        if (!DATE_RE.test(date) || isNaN(new Date(date + 'T00:00:00').getTime())) {
+            return res.status(400).json({ error: 'invalid date format (YYYY-MM-DD)' });
+        }
         // Generate recurring instances for this date range
         generateRecurringInstances(date, date);
         where.push('t.due_date = ?');
@@ -25,6 +33,9 @@ router.get('/', (req, res) => {
     }
 
     if (month) {
+        if (!MONTH_RE.test(month)) {
+            return res.status(400).json({ error: 'invalid month format (YYYY-MM)' });
+        }
         // month is YYYY-MM format
         const start = `${month}-01`;
         const [y, m] = month.split('-').map(Number);
@@ -140,6 +151,9 @@ router.post('/', (req, res) => {
     if (!title || !assignee) {
         return res.status(400).json({ error: 'title and assignee are required' });
     }
+    if (!VALID_ASSIGNEES.includes(assignee)) {
+        return res.status(400).json({ error: `assignee must be one of: ${VALID_ASSIGNEES.join(', ')}` });
+    }
 
     try {
         const result = db.prepare(`
@@ -224,8 +238,19 @@ router.put('/:id', (req, res) => {
                 coinsEarned = TASK_REWARD;
             } catch (e) { console.error('Coin reward error:', e); }
         }
+        // ── Deduct coins when task un-completed (done → todo/in_progress) ──
+        let coinsDeducted = 0;
+        if (prevTask.status === 'done' && fields.status && fields.status !== 'done') {
+            try {
+                db.prepare('UPDATE coin_accounts SET balance = MAX(0, balance - ?) WHERE assignee = ?')
+                    .run(TASK_REWARD, task.assignee);
+                db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                    .run(task.assignee, -TASK_REWARD, 'task_undone', task.title);
+                coinsDeducted = TASK_REWARD;
+            } catch (e) { console.error('Coin rollback error:', e); }
+        }
 
-        res.json({ ...task, coinsEarned });
+        res.json({ ...task, coinsEarned, coinsDeducted });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

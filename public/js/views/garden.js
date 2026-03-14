@@ -253,50 +253,51 @@ const GardenView = {
         };
     },
 
-    _getViewportBounds(world) {
-        if (!world) return { left: 0, right: 0, top: 0, bottom: 0 };
-        const land = document.getElementById('island-land');
-        if (land) {
-            const left = land.offsetLeft;
-            const top = land.offsetTop;
-            const width = land.offsetWidth;
-            const height = land.offsetHeight;
-            // Allow full scroll range — no padding restriction
-            return {
-                left: left - width * 0.05,
-                right: left + width * 1.05,
-                top: top - height * 0.06,
-                bottom: top + height * 1.02,
-            };
-        }
-        const width = world.offsetWidth || 0;
-        const height = world.offsetHeight || 0;
-        return {
-            left: 0,
-            right: width,
-            top: 0,
-            bottom: height,
-        };
-    },
+    /* ── CSS-transform based pan / zoom ── */
+    _panX: 0,
+    _panY: 0,
 
-    _clampViewport(vp, world) {
+    _clampPan(vp, world) {
         if (!vp || !world) return;
-        // Don't clamp aggressively — just ensure we don't scroll
-        // beyond the world boundaries
-        const maxScrollLeft = vp.scrollWidth - vp.clientWidth;
-        const maxScrollTop = vp.scrollHeight - vp.clientHeight;
-        vp.scrollLeft = Math.max(0, Math.min(maxScrollLeft, vp.scrollLeft));
-        vp.scrollTop = Math.max(0, Math.min(maxScrollTop, vp.scrollTop));
+        const vpW = vp.clientWidth;
+        const vpH = vp.clientHeight;
+        const wW = world.offsetWidth * this._zoom;
+        const wH = world.offsetHeight * this._zoom;
+        // Allow panning so that the island can be centered
+        // but prevent scrolling beyond the world edges
+        const minX = vpW - wW;
+        const maxX = 0;
+        const minY = vpH - wH;
+        const maxY = 0;
+        if (wW <= vpW) {
+            this._panX = (vpW - wW) / 2;
+        } else {
+            this._panX = Math.max(minX, Math.min(maxX, this._panX));
+        }
+        if (wH <= vpH) {
+            this._panY = (vpH - wH) / 2;
+        } else {
+            this._panY = Math.max(minY, Math.min(maxY, this._panY));
+        }
     },
 
     _centerViewport(vp, world) {
         if (!vp || !world) return;
-        const bounds = this._getViewportBounds(world);
-        const visibleWidth = vp.clientWidth / this._zoom;
-        const visibleHeight = vp.clientHeight / this._zoom;
-        vp.scrollLeft = bounds.left + Math.max(0, (bounds.right - bounds.left - visibleWidth) / 2);
-        vp.scrollTop = bounds.top + Math.max(0, (bounds.bottom - bounds.top - visibleHeight) * 0.46);
-        this._clampViewport(vp, world);
+        const vpW = vp.clientWidth;
+        const vpH = vp.clientHeight;
+        const wW = world.offsetWidth * this._zoom;
+        const wH = world.offsetHeight * this._zoom;
+        this._panX = (vpW - wW) / 2;
+        this._panY = (vpH - wH) / 2;
+        this._clampPan(vp, world);
+        this._applyWorldTransform(world);
+    },
+
+    _applyWorldTransform(world) {
+        if (!world) world = document.getElementById('island-world');
+        if (!world) return;
+        world.style.transform = `scale(${this._zoom}) translate(${this._panX / this._zoom}px, ${this._panY / this._zoom}px)`;
+        world.style.transformOrigin = '0 0';
     },
 
     _syncPlantingToolbar() {

@@ -131,4 +131,30 @@ function formatDate(date) {
     return `${y}-${m}-${d}`;
 }
 
-module.exports = { generateRecurringInstances, formatDate };
+/**
+ * Clean up old completed recurring task instances to prevent unbounded table growth.
+ * Deletes instances that are: done, have a recurring_parent_id, and are older than 30 days.
+ */
+function cleanupOldRecurringInstances() {
+    try {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - 30);
+        const cutoffStr = formatDate(cutoff);
+        const result = db.prepare(`
+            DELETE FROM tasks
+            WHERE recurring_parent_id IS NOT NULL
+              AND status = 'done'
+              AND due_date < ?
+        `).run(cutoffStr);
+        if (result.changes > 0) {
+            console.log(`🧹 Cleaned up ${result.changes} old recurring task instances (before ${cutoffStr})`);
+        }
+    } catch (e) {
+        console.error('Recurring cleanup error:', e.message);
+    }
+}
+
+// Run cleanup on module load (server startup)
+cleanupOldRecurringInstances();
+
+module.exports = { generateRecurringInstances, formatDate, cleanupOldRecurringInstances };

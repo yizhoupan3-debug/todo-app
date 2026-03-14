@@ -16,18 +16,30 @@ module.exports = function registerGardenCoinRoutes(router, { db }) {
                 return res.status(400).json({ error: 'assignee, amount, reason required' });
             }
 
+            // Only allow legitimate server-side earn reasons to prevent arbitrary coin injection
+            const ALLOWED_EARN_REASONS = ['pomodoro', 'task_done', 'checkin_daily', 'checkin_streak_3', 'checkin_streak_7', 'plant_drop', 'harvest'];
+            if (!ALLOWED_EARN_REASONS.includes(reason)) {
+                return res.status(403).json({ error: '非法的获取途径' });
+            }
+
+            // Sanity-check: cap single earn to prevent abuse (max 50 coins per call)
+            const safeAmount = Math.min(Math.max(0, Number(amount) || 0), 50);
+            if (safeAmount <= 0) {
+                return res.status(400).json({ error: 'amount must be positive' });
+            }
+
             const earn = db.transaction(() => {
                 db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
-                    .run(amount, assignee);
+                    .run(safeAmount, assignee);
                 db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                    .run(assignee, amount, reason, detail || null);
+                    .run(assignee, safeAmount, reason, detail || null);
                 const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
                     .get(assignee);
                 return balance;
             });
 
             const balance = earn();
-            res.json({ balance, earned: amount });
+            res.json({ balance, earned: safeAmount });
         } catch (err) {
             res.status(500).json({ error: err.message });
         }

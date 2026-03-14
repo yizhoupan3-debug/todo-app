@@ -224,4 +224,25 @@ const API = {
     harvestTree(data) {
         return this.request('/garden/harvest', { method: 'POST', body: data });
     },
+
+    // Journal (手帐 canvas)
+    getJournal(date) {
+        return this.request(`/journal?date=${encodeURIComponent(date)}`);
+    },
+
+    getRecentJournals(limit = 30) {
+        return this.request(`/journal/recent?limit=${limit}`);
+    },
+
+    addElement(formData) {
+        return this.request('/journal/element', { method: 'POST', body: formData });
+    },
+
+    updateElement(id, data) {
+        return this.request(`/journal/element/${id}`, { method: 'PUT', body: data });
+    },
+
+    deleteElement(id) {
+        return this.request(`/journal/element/${id}`, { method: 'DELETE' });
+    },
 };

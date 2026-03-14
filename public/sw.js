@@ -8,6 +8,7 @@ const STATIC_ASSETS = [
     '/css/base.css?v=43',
     '/css/checkin.css?v=43',
     '/css/pomodoro-stats.css?v=43',
+    '/css/journal.css?v=43',
     '/css/garden.css?v=43',
     '/js/utils.js?v=43',
     '/js/app.js?v=43',

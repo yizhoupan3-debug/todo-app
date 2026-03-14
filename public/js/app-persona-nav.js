@@ -107,6 +107,78 @@ Object.assign(App, {
                 this.switchView(view);
             });
         });
+
+        // --- More Panel ---
+        const moreBtn = document.getElementById('mobile-more');
+        const morePanelOverlay = document.getElementById('more-panel-overlay');
+        if (moreBtn && morePanelOverlay) {
+            moreBtn.addEventListener('click', () => {
+                this.toggleMorePanel();
+            });
+
+            // Close on overlay click
+            morePanelOverlay.addEventListener('click', (e) => {
+                if (e.target === morePanelOverlay) {
+                    this.closeMorePanel();
+                }
+            });
+
+            // Handle more panel items
+            morePanelOverlay.querySelectorAll('.more-panel-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const action = item.dataset.action;
+                    this.closeMorePanel();
+
+                    switch (action) {
+                        case 'shop':
+                            this.switchView('shop');
+                            break;
+                        case 'stats':
+                            this.switchView('stats');
+                            break;
+                        case 'journal':
+                            this.switchView('journal');
+                            break;
+                        case 'pomodoro':
+                            document.getElementById('nav-pomodoro')?.click();
+                            break;
+                        case 'coins':
+                            document.getElementById('header-coin-btn')?.click();
+                            break;
+                        case 'settings':
+                            // Open sidebar settings on mobile
+                            const sidebar = document.getElementById('sidebar');
+                            if (sidebar) {
+                                sidebar.classList.add('open');
+                                const backdrop = document.createElement('div');
+                                backdrop.className = 'sidebar-backdrop';
+                                backdrop.id = 'sidebar-backdrop';
+                                backdrop.addEventListener('click', () => this.closeSidebar());
+                                document.body.appendChild(backdrop);
+                            }
+                            break;
+                    }
+                });
+            });
+        }
+    },
+
+    toggleMorePanel() {
+        const overlay = document.getElementById('more-panel-overlay');
+        if (!overlay) return;
+        const isHidden = overlay.classList.contains('hidden');
+        if (isHidden) {
+            overlay.classList.remove('hidden');
+            // Re-render lucide icons inside the panel
+            if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [overlay] });
+        } else {
+            this.closeMorePanel();
+        }
+    },
+
+    closeMorePanel() {
+        const overlay = document.getElementById('more-panel-overlay');
+        if (overlay) overlay.classList.add('hidden');
     },
 
     _runViewTransition(work) {
@@ -142,14 +214,23 @@ Object.assign(App, {
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
             document.getElementById('nav-stats')?.classList.toggle('active', view === 'stats');
             document.getElementById('nav-checkin')?.classList.toggle('active', view === 'checkin');
-            document.querySelectorAll('.bottom-nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
-            const mobileStats = document.getElementById('mobile-stats');
-            if (mobileStats) mobileStats.classList.toggle('active', view === 'stats');
+
+            // Mobile bottom nav: "home" button covers daily + monthly
+            document.querySelectorAll('.bottom-nav-btn[data-view]').forEach(b => {
+                const bView = b.dataset.view;
+                const isHomeBtn = b.id === 'mobile-home';
+                const isActive = isHomeBtn
+                    ? (view === 'daily' || view === 'monthly')
+                    : bView === view;
+                b.classList.toggle('active', isActive);
+            });
             const mobileCheckin = document.getElementById('mobile-checkin');
             if (mobileCheckin) mobileCheckin.classList.toggle('active', view === 'checkin');
+            // Close more panel if open
+            this.closeMorePanel();
 
-            const viewIds = ['view-daily', 'view-monthly', 'view-checkin', 'view-stats', 'view-garden', 'view-shop'];
-            const viewMap = { daily: 'view-daily', monthly: 'view-monthly', checkin: 'view-checkin', stats: 'view-stats', garden: 'view-garden', shop: 'view-shop' };
+            const viewIds = ['view-daily', 'view-monthly', 'view-checkin', 'view-stats', 'view-garden', 'view-shop', 'view-journal'];
+            const viewMap = { daily: 'view-daily', monthly: 'view-monthly', checkin: 'view-checkin', stats: 'view-stats', garden: 'view-garden', shop: 'view-shop', journal: 'view-journal' };
             for (const vid of viewIds) {
                 const el = document.getElementById(vid);
                 const isTarget = vid === viewMap[view];
@@ -171,7 +252,8 @@ Object.assign(App, {
             const titles = {
                 daily: '今日任务', monthly: '月度总览',
                 checkin: '打卡', stats: '统计',
-                garden: '花园', shop: '商城'
+                garden: '花园', shop: '商城',
+                journal: '共同日记'
             };
             document.getElementById('header-title').textContent = titles[view] || '峡谷讨伐日记';
 
@@ -208,6 +290,9 @@ Object.assign(App, {
                     break;
                 case 'shop':
                     GardenView.openShop();
+                    break;
+                case 'journal':
+                    JournalView.open();
                     break;
             }
         };

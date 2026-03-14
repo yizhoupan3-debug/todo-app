@@ -41,6 +41,8 @@ const Utils = {
     },
 
     formatCoinBalance(balance) {
-        return Number.isInteger(balance) ? String(balance) : balance.toFixed(1);
+        const n = Number(balance);
+        if (!Number.isFinite(n)) return '0';
+        return Number.isInteger(n) ? String(n) : n.toFixed(1);
     },
 };

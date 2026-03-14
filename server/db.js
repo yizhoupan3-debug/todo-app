@@ -167,11 +167,12 @@ db.exec(`
 `);
 
 // Seed default categories if empty
-// Migrate: add auto_complete column if missing
-try {
-  db.prepare("SELECT auto_complete FROM tasks LIMIT 1").get();
-} catch (e) {
-  db.exec("ALTER TABLE tasks ADD COLUMN auto_complete INTEGER NOT NULL DEFAULT 1");
+// Migrate: add auto_complete column if missing (using pragma for reliability)
+{
+  const cols = db.pragma('table_info(tasks)').map(c => c.name);
+  if (!cols.includes('auto_complete')) {
+    db.exec("ALTER TABLE tasks ADD COLUMN auto_complete INTEGER NOT NULL DEFAULT 1");
+  }
 }
 const catCount = db.prepare('SELECT COUNT(*) as count FROM categories').get();
 if (catCount.count === 0) {
@@ -199,17 +200,19 @@ if (coinCount.count === 0) {
 }
 
 // Migrate: add growth_minutes column to trees if missing
-try {
-  db.prepare("SELECT growth_minutes FROM trees LIMIT 1").get();
-} catch (e) {
-  db.exec("ALTER TABLE trees ADD COLUMN growth_minutes INTEGER NOT NULL DEFAULT 0");
+{
+  const cols = db.pragma('table_info(trees)').map(c => c.name);
+  if (!cols.includes('growth_minutes')) {
+    db.exec("ALTER TABLE trees ADD COLUMN growth_minutes INTEGER NOT NULL DEFAULT 0");
+  }
 }
 
 // Migrate: add island_id column to garden_plots if missing
-try {
-  db.prepare("SELECT island_id FROM garden_plots LIMIT 1").get();
-} catch (e) {
-  db.exec("ALTER TABLE garden_plots ADD COLUMN island_id INTEGER DEFAULT NULL");
+{
+  const cols = db.pragma('table_info(garden_plots)').map(c => c.name);
+  if (!cols.includes('island_id')) {
+    db.exec("ALTER TABLE garden_plots ADD COLUMN island_id INTEGER DEFAULT NULL");
+  }
 }
 
 // Seed starter islands if empty
@@ -296,10 +299,11 @@ db.exec(`
 `);
 
 // Migrate: add last_harvested column to trees if missing
-try {
-  db.prepare("SELECT last_harvested FROM trees LIMIT 1").get();
-} catch (e) {
-  db.exec("ALTER TABLE trees ADD COLUMN last_harvested TEXT DEFAULT NULL");
+{
+  const cols = db.pragma('table_info(trees)').map(c => c.name);
+  if (!cols.includes('last_harvested')) {
+    db.exec("ALTER TABLE trees ADD COLUMN last_harvested TEXT DEFAULT NULL");
+  }
 }
 
 // Migrate: coin_accounts.balance from INTEGER to REAL for decimal support
@@ -388,5 +392,41 @@ try {
     migrateForestPlots();
   }
 } catch (e) { /* ignore migration failures */ }
+
+// ── Journal / Diary tables (手帐 canvas) ──
+db.exec(`
+  CREATE TABLE IF NOT EXISTS journal_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    date TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+  );
+
+  CREATE TABLE IF NOT EXISTS journal_elements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    entry_id INTEGER NOT NULL REFERENCES journal_entries(id) ON DELETE CASCADE,
+    author TEXT NOT NULL CHECK(author IN ('潘潘','蒲蒲')),
+    element_type TEXT NOT NULL DEFAULT 'text' CHECK(element_type IN ('text','photo')),
+    content TEXT DEFAULT '',
+    photo_path TEXT DEFAULT NULL,
+    pos_x REAL NOT NULL DEFAULT 50,
+    pos_y REAL NOT NULL DEFAULT 50,
+    width REAL NOT NULL DEFAULT 200,
+    height REAL NOT NULL DEFAULT 150,
+    rotation REAL NOT NULL DEFAULT 0,
+    z_index INTEGER NOT NULL DEFAULT 0,
+    crop_data TEXT DEFAULT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+  );
+  CREATE INDEX IF NOT EXISTS idx_elements_entry ON journal_elements(entry_id);
+`);
+
+// Migrate: add style_data column to journal_elements if missing
+{
+  const cols = db.pragma('table_info(journal_elements)').map(c => c.name);
+  if (!cols.includes('style_data')) {
+    db.exec("ALTER TABLE journal_elements ADD COLUMN style_data TEXT DEFAULT NULL");
+  }
+}
 
 module.exports = db;

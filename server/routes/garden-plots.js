@@ -308,9 +308,6 @@ module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, 
             const { assignee, plot_id } = req.body;
             if (!assignee || !plot_id) return res.status(400).json({ error: 'assignee, plot_id required' });
 
-            const SPEED_COST = 5;
-            const SPEED_MINUTES = 50;
-
             const speedup = db.transaction(() => {
                 const plot = db.prepare('SELECT * FROM garden_plots WHERE id = ? AND assignee = ?')
                     .get(plot_id, assignee);
@@ -323,7 +320,7 @@ module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, 
 
                 const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
                     .get(assignee);
-                if (balance < SPEED_COST) throw new Error('INSUFFICIENT');
+                if (balance < SPEEDUP_COST) throw new Error('INSUFFICIENT');
 
                 db.prepare('UPDATE coin_accounts SET balance = balance - ? WHERE assignee = ?')
                     .run(SPEEDUP_COST, assignee);
@@ -339,7 +336,7 @@ module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, 
                     .get(assignee).balance;
                 const updatedTree = db.prepare('SELECT * FROM trees WHERE id = ?').get(tree.id);
 
-                return { balance: newBalance, tree: updatedTree, cost: SPEED_COST };
+                return { balance: newBalance, tree: updatedTree, cost: SPEEDUP_COST };
             });
 
             const result = speedup();

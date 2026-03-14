@@ -79,6 +79,7 @@ const importRouter = require('./routes/import');
 const checkinRouter = require('./routes/checkin');
 const statsRouter = require('./routes/stats');
 const gardenRouter = require('./routes/garden');
+const journalRouter = require('./routes/journal');
 
 app.use('/api/tasks', tasksRouter);
 app.use('/api/categories', categoriesRouter);
@@ -86,6 +87,13 @@ app.use('/api/import', importRouter);
 app.use('/api/checkin', checkinRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/garden', gardenRouter);
+app.use('/api/journal', journalRouter);
+
+// Serve uploaded journal photos
+app.use('/uploads/journal', express.static(path.join(__dirname, '..', 'data', 'journal'), {
+    maxAge: '7d',
+    etag: true,
+}));
 
 // Socket.io for real-time sync
 io.on('connection', (socket) => {
@@ -105,6 +113,10 @@ io.on('connection', (socket) => {
 
     socket.on('task:imported', (data) => {
         socket.broadcast.emit('task:imported', data);
+    });
+
+    socket.on('journal:updated', (data) => {
+        socket.broadcast.emit('journal:updated', data);
     });
 
     socket.on('disconnect', () => {

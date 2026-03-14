@@ -2,7 +2,7 @@
  * App — main application controller.
  */
 const App = {
-    currentView: 'daily', // 'daily' | 'monthly' | 'checkin' | 'stats' | 'garden' | 'shop'
+    currentView: 'daily', // 'daily' | 'monthly' | 'checkin' | 'stats' | 'garden' | 'shop' | 'journal'
     currentAssignee: 'all', // 'all' | '潘潘' | '蒲蒲'
     activePersona: '潘潘', // '潘潘' | '蒲蒲' — the global persona toggle (no 'all')
     lastPersona: '潘潘',
@@ -29,6 +29,9 @@ const App = {
                 this.showToast(`📥 另一设备导入了 ${data.count} 个任务`, 'info');
                 debouncedRefresh();
             });
+            this.socket.on('journal:updated', () => {
+                if (this.currentView === 'journal') JournalView.refresh();
+            });
         } catch (e) {
             console.warn('Socket.io unavailable — real-time updates disabled.', e);
         }
@@ -39,6 +42,7 @@ const App = {
         CheckinView.init();
         StatsView.init();
         GardenView.init();
+        JournalView.init();
         TaskModal.init();
         ICSImport.init();
         Pomodoro.init();
@@ -124,6 +128,10 @@ const App = {
         // Mobile stats
         const mobileStats = document.getElementById('mobile-stats');
         if (mobileStats) mobileStats.addEventListener('click', () => this.switchView('stats'));
+
+        // Mobile journal
+        const mobileJournal = document.getElementById('mobile-journal');
+        if (mobileJournal) mobileJournal.addEventListener('click', () => this.switchView('journal'));
 
         // Mobile menu with backdrop
         document.getElementById('btn-menu').addEventListener('click', () => {

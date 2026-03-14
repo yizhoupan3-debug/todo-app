@@ -112,207 +112,7 @@ Object.assign(GardenView, {
                         <div class="wave-ring w2"></div>
                         <div class="wave-ring w3"></div>
                     </div>
-                    <svg class="island-shape" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                        <defs>
-                            <filter id="ishadow"><feDropShadow dx="0" dy="14" stdDeviation="28" flood-color="rgba(0,0,0,0.42)"/></filter>
-                            <filter id="softGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                            <!-- Reef & shallow water -->
-                            <radialGradient id="reefG" cx="50%" cy="50%"><stop offset="0%" stop-color="#4ed8e4"/><stop offset="35%" stop-color="#38c0d4"/><stop offset="70%" stop-color="#22a0b8"/><stop offset="100%" stop-color="#14809b"/></radialGradient>
-                            <radialGradient id="shallowsG" cx="50%" cy="48%"><stop offset="0%" stop-color="rgba(140,255,245,0.55)"/><stop offset="50%" stop-color="rgba(109,220,225,0.25)"/><stop offset="100%" stop-color="rgba(20,128,155,0)"/></radialGradient>
-                            <!-- Sand -->
-                            <linearGradient id="sandG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#faf0d5"/><stop offset="30%" stop-color="#f0dba0"/><stop offset="65%" stop-color="#e2c47a"/><stop offset="100%" stop-color="#c9a25e"/></linearGradient>
-                            <!-- Grass -->
-                            <linearGradient id="grassG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7ade56"/><stop offset="35%" stop-color="#5cb838"/><stop offset="70%" stop-color="#45922a"/><stop offset="100%" stop-color="#357422"/></linearGradient>
-                            <!-- Forest -->
-                            <linearGradient id="forestG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#14381a"/><stop offset="40%" stop-color="#1e4e20"/><stop offset="100%" stop-color="#2d6828"/></linearGradient>
-                            <!-- Cliffs -->
-                            <linearGradient id="cliffG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9a8460"/><stop offset="50%" stop-color="#7a6444"/><stop offset="100%" stop-color="#5c4830"/></linearGradient>
-                            <linearGradient id="cliffFaceG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ab9068"/><stop offset="50%" stop-color="#886c48"/><stop offset="100%" stop-color="#644e32"/></linearGradient>
-                            <!-- Dirt farmland -->
-                            <radialGradient id="dirtG" cx="50%" cy="45%"><stop offset="0%" stop-color="#8c6a47"/><stop offset="55%" stop-color="#785737"/><stop offset="100%" stop-color="#5d422a"/></radialGradient>
-                            <!-- Yard -->
-                            <linearGradient id="yardG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#bce090"/><stop offset="40%" stop-color="#98c460"/><stop offset="100%" stop-color="#72a040"/></linearGradient>
-                            <!-- Fog -->
-                            <radialGradient id="fogG" cx="50%" cy="50%"><stop offset="0%" stop-color="rgba(180,210,230,0.65)"/><stop offset="60%" stop-color="rgba(160,190,210,0.22)"/><stop offset="100%" stop-color="rgba(160,190,210,0)"/></radialGradient>
-                        </defs>
-                        <g filter="url(#ishadow)">
-                            <!-- Reef platform -->
-                            <path d="M38,660 Q18,510 65,280 L120,132 Q168,34 358,26 L948,42 Q1098,62 1152,240 L1164,698 Q1156,858 982,886 L176,890 Q54,878 38,660 Z" fill="url(#reefG)" opacity="0.94"/>
-                            <!-- Shallow water glow -->
-                            <ellipse cx="186" cy="748" rx="324" ry="240" fill="url(#shallowsG)" opacity="0.94"/>
-                            <ellipse cx="1008" cy="692" rx="294" ry="188" fill="url(#shallowsG)" opacity="0.80"/>
-                            <ellipse cx="1104" cy="420" rx="132" ry="100" fill="url(#shallowsG)" opacity="0.52"/>
-                            <ellipse cx="300" cy="200" rx="180" ry="120" fill="url(#shallowsG)" opacity="0.36"/>
-
-                            <!-- Sand beach -->
-                            <path d="M102,648 Q78,520 114,332 L156,184 Q200,90 344,84 L912,86 Q1026,94 1074,248 L1102,634 Q1100,782 950,846 L210,856 Q124,846 102,648 Z" fill="url(#sandG)"/>
-                            <!-- Beach foam lines -->
-                            <path d="M108,650 Q168,792 324,838" stroke="rgba(255,255,255,0.38)" stroke-width="14" fill="none" stroke-linecap="round"/>
-                            <path d="M116,620 Q190,770 348,828" stroke="rgba(255,255,255,0.18)" stroke-width="8" fill="none" stroke-linecap="round"/>
-                            <path d="M878,820 Q1034,784 1098,688" stroke="rgba(255,255,255,0.34)" stroke-width="12" fill="none" stroke-linecap="round"/>
-                            <path d="M890,808 Q1042,770 1088,672" stroke="rgba(255,255,255,0.16)" stroke-width="6" fill="none" stroke-linecap="round"/>
-                            <!-- Wet sand highlights -->
-                            <path d="M102,656 Q114,796 224,848 L162,854 Q120,846 102,656 Z" fill="#fbf2d6" opacity="0.88"/>
-                            <path d="M908,728 Q992,736 1066,672 L1078,754 Q1022,828 936,844 L858,838 Q906,796 908,728 Z" fill="#edd89c" opacity="0.80"/>
-
-                            <!-- Main grass area -->
-                            <path d="M244,600 Q222,492 244,354 L272,242 Q300,170 396,162 L846,164 Q940,174 986,290 L1000,616 Q1004,720 908,778 L340,790 Q262,784 244,600 Z" fill="url(#grassG)"/>
-                            <!-- Grass texture highlights -->
-                            <ellipse cx="520" cy="620" rx="240" ry="100" fill="rgba(140,230,100,0.12)"/>
-                            <ellipse cx="780" cy="540" rx="120" ry="80" fill="rgba(160,240,120,0.10)"/>
-
-                            <!-- Cliff ridge (upper) -->
-                            <path d="M260,320 L272,242 Q300,170 396,162 L846,164 Q940,174 986,290 L996,336 Q932,314 846,324 Q748,298 650,328 Q550,302 452,334 Q350,304 260,320 Z" fill="url(#cliffG)"/>
-                            <!-- Cliff face texture -->
-                            <path d="M254,332 Q368,280 496,292 Q618,268 720,298 Q834,274 962,322 L972,368 Q848,340 726,360 Q600,334 476,364 Q358,338 248,366 Z" fill="url(#cliffFaceG)" opacity="0.55"/>
-                            <!-- Mountain peaks -->
-                            <path d="M114,438 L136,240 L232,80 L318,176 L300,344 L244,438 Z" fill="#8c7250"/>
-                            <path d="M208,302 L316,148 L436,70 L508,194 L450,332 Z" fill="#7b6546"/>
-                            <path d="M438,306 L562,66 L696,210 L644,340 Z" fill="#6b563a"/>
-                            <path d="M680,312 L808,96 L940,220 L880,346 Z" fill="#7a6647"/>
-                            <path d="M910,412 L952,216 L1042,158 L1094,306 L1058,454 Z" fill="#6d583c"/>
-                            <!-- Snow caps on peaks -->
-                            <polygon points="558,84 566,66 576,88" fill="rgba(255,255,255,0.62)"/>
-                            <polygon points="802,114 812,96 824,116" fill="rgba(255,255,255,0.48)"/>
-                            <polygon points="228,96 236,80 244,98" fill="rgba(255,255,255,0.42)"/>
-                            <!-- Waterfalls -->
-                            <rect x="166" y="158" width="18" height="172" rx="9" fill="rgba(172,235,255,0.70)"/>
-                            <rect x="192" y="150" width="12" height="186" rx="7" fill="rgba(122,220,255,0.58)"/>
-                            <rect x="178" y="332" width="14" height="40" rx="7" fill="rgba(172,235,255,0.45)"/>
-                            <!-- Mountain mist -->
-                            <g opacity="0.24">
-                                <ellipse cx="278" cy="306" rx="170" ry="32" fill="rgba(210,220,235,0.25)"/>
-                                <ellipse cx="842" cy="296" rx="210" ry="36" fill="rgba(210,220,235,0.22)"/>
-                            </g>
-
-                            <!-- Dense forest canopy (back layer — darkest) -->
-                            <path d="M206,442 Q282,346 390,338 L768,344 Q902,352 984,438 L974,524 Q898,560 812,554 Q722,572 626,566 Q524,582 414,566 Q308,582 216,542 Z" fill="url(#forestG)"/>
-                            <!-- Interior shadow between canopy and cliffs -->
-                            <path d="M210,438 Q290,388 400,380 L756,384 Q888,392 970,438 L974,464 Q890,504 800,498 Q710,518 616,510 Q516,526 410,512 Q310,528 218,492 Z" fill="rgba(8,22,10,0.48)"/>
-                            <!-- Back tree crowns — deep dark greens -->
-                            <g opacity="0.98">
-                                <circle cx="204" cy="398" r="52" fill="#102e14"/>
-                                <circle cx="274" cy="384" r="60" fill="#143416"/>
-                                <circle cx="364" cy="374" r="68" fill="#0f2e12"/>
-                                <circle cx="466" cy="368" r="76" fill="#143416"/>
-                                <circle cx="576" cy="362" r="80" fill="#163818"/>
-                                <circle cx="690" cy="366" r="76" fill="#183c1a"/>
-                                <circle cx="800" cy="374" r="70" fill="#143616"/>
-                                <circle cx="898" cy="388" r="60" fill="#163818"/>
-                                <circle cx="964" cy="408" r="48" fill="#143416"/>
-                            </g>
-                            <!-- Back crown highlights (sunlight on top-left) -->
-                            <g opacity="0.18">
-                                <ellipse cx="194" cy="378" rx="30" ry="22" fill="#4caa3a"/>
-                                <ellipse cx="264" cy="364" rx="34" ry="24" fill="#44a234"/>
-                                <ellipse cx="354" cy="354" rx="38" ry="26" fill="#4caa3a"/>
-                                <ellipse cx="456" cy="350" rx="40" ry="28" fill="#48a636"/>
-                                <ellipse cx="566" cy="344" rx="42" ry="30" fill="#50b03c"/>
-                                <ellipse cx="680" cy="348" rx="40" ry="28" fill="#4caa3a"/>
-                                <ellipse cx="790" cy="356" rx="36" ry="26" fill="#48a636"/>
-                                <ellipse cx="888" cy="370" rx="32" ry="24" fill="#4caa3a"/>
-                            </g>
-                            <!-- Forest mid layer — medium greens -->
-                            <g opacity="0.94">
-                                <circle cx="178" cy="454" r="42" fill="#1e4a20"/>
-                                <circle cx="254" cy="446" r="50" fill="#245424"/>
-                                <circle cx="348" cy="440" r="54" fill="#286028"/>
-                                <circle cx="454" cy="436" r="56" fill="#225222"/>
-                                <circle cx="562" cy="434" r="58" fill="#2a5e26"/>
-                                <circle cx="672" cy="438" r="56" fill="#306828"/>
-                                <circle cx="778" cy="444" r="52" fill="#285a26"/>
-                                <circle cx="874" cy="454" r="46" fill="#306828"/>
-                                <circle cx="948" cy="470" r="38" fill="#285a26"/>
-                            </g>
-                            <!-- Mid-layer shadow creases -->
-                            <g opacity="0.22">
-                                <ellipse cx="216" cy="462" rx="28" ry="10" fill="#0a1e0c"/>
-                                <ellipse cx="302" cy="458" rx="32" ry="12" fill="#0a1e0c"/>
-                                <ellipse cx="406" cy="454" rx="34" ry="12" fill="#0a1e0c"/>
-                                <ellipse cx="512" cy="452" rx="36" ry="13" fill="#0a1e0c"/>
-                                <ellipse cx="618" cy="456" rx="34" ry="12" fill="#0a1e0c"/>
-                                <ellipse cx="726" cy="460" rx="32" ry="12" fill="#0a1e0c"/>
-                                <ellipse cx="828" cy="466" rx="28" ry="10" fill="#0a1e0c"/>
-                            </g>
-                            <!-- Forest front layer — lighter vivid greens -->
-                            <g opacity="0.84">
-                                <circle cx="200" cy="508" r="36" fill="#429832"/>
-                                <circle cx="290" cy="504" r="40" fill="#4aa438"/>
-                                <circle cx="396" cy="502" r="42" fill="#52ae3c"/>
-                                <circle cx="510" cy="500" r="44" fill="#5ab840"/>
-                                <circle cx="628" cy="500" r="44" fill="#56b23e"/>
-                                <circle cx="742" cy="504" r="42" fill="#4ea836"/>
-                                <circle cx="846" cy="510" r="38" fill="#52ae3c"/>
-                                <circle cx="930" cy="522" r="32" fill="#4ea836"/>
-                            </g>
-                            <!-- Front crown highlights — bright sun spots -->
-                            <g opacity="0.24">
-                                <ellipse cx="190" cy="494" rx="20" ry="14" fill="#8ede6a"/>
-                                <ellipse cx="280" cy="490" rx="22" ry="16" fill="#8ade68"/>
-                                <ellipse cx="386" cy="488" rx="24" ry="16" fill="#8ede6a"/>
-                                <ellipse cx="500" cy="486" rx="26" ry="18" fill="#92e670"/>
-                                <ellipse cx="618" cy="486" rx="26" ry="18" fill="#8ede6a"/>
-                                <ellipse cx="732" cy="490" rx="24" ry="16" fill="#8ade68"/>
-                                <ellipse cx="836" cy="496" rx="22" ry="14" fill="#8ede6a"/>
-                            </g>
-                            <!-- Trunk hints (tiny dark lines below front trees) -->
-                            <g opacity="0.30" stroke="#2a3c1a" stroke-width="4" stroke-linecap="round">
-                                <line x1="200" y1="540" x2="200" y2="554"/>
-                                <line x1="396" y1="540" x2="396" y2="556"/>
-                                <line x1="510" y1="540" x2="510" y2="556"/>
-                                <line x1="628" y1="540" x2="628" y2="556"/>
-                                <line x1="846" y1="544" x2="846" y2="558"/>
-                            </g>
-                            <!-- Scattered small trees at forest edge -->
-                            <g opacity="0.50">
-                                <circle cx="170" cy="538" r="20" fill="#62b444"/>
-                                <circle cx="244" cy="542" r="16" fill="#6cc04e"/>
-                                <circle cx="320" cy="540" r="12" fill="#72c854"/>
-                                <circle cx="714" cy="536" r="14" fill="#68b848"/>
-                                <circle cx="798" cy="540" r="12" fill="#6cc04e"/>
-                                <circle cx="954" cy="546" r="18" fill="#5eac42"/>
-                                <circle cx="986" cy="544" r="12" fill="#62b444"/>
-                            </g>
-
-                            <!-- Yard/clearing near house -->
-                            <ellipse cx="830" cy="554" rx="172" ry="112" fill="url(#yardG)" opacity="0.94"/>
-                            <ellipse cx="830" cy="554" rx="140" ry="78" fill="rgba(255,248,220,0.14)"/>
-                            <!-- Central meadow glow -->
-                            <ellipse cx="618" cy="606" rx="340" ry="144" fill="rgba(255,255,255,0.06)"/>
-
-                            <!-- Farmland/dirt area -->
-                            <path d="M296,624 Q278,564 308,516 Q376,468 456,474 L576,482 Q644,488 684,526 Q694,580 670,650 Q636,728 586,768 L394,778 Q340,772 312,726 Q286,682 296,624 Z" fill="url(#dirtG)" opacity="0.92"/>
-                            <!-- Furrow lines -->
-                            <path d="M320,576 Q400,544 488,548 Q566,552 642,580" stroke="rgba(104,66,34,0.26)" stroke-width="8" fill="none" stroke-linecap="round"/>
-                            <path d="M314,624 Q408,594 504,598 Q588,602 650,628" stroke="rgba(104,66,34,0.22)" stroke-width="7" fill="none" stroke-linecap="round"/>
-                            <path d="M330,674 Q416,650 512,654 Q582,658 632,682" stroke="rgba(104,66,34,0.18)" stroke-width="6" fill="none" stroke-linecap="round"/>
-                            <path d="M356,718 Q428,698 510,702 Q568,706 610,722" stroke="rgba(104,66,34,0.14)" stroke-width="5" fill="none" stroke-linecap="round"/>
-
-                            <!-- Path to dock -->
-                            <path d="M836,594 Q910,638 980,714" stroke="rgba(139,105,68,0.36)" stroke-width="30" fill="none" stroke-linecap="round"/>
-                            <path d="M976,712 Q1042,730 1114,694" stroke="rgba(139,105,68,0.32)" stroke-width="20" fill="none" stroke-linecap="round"/>
-                            <!-- Dock planks -->
-                            <rect x="978" y="710" width="146" height="20" rx="6" fill="#8a6849"/>
-                            <rect x="1012" y="726" width="14" height="60" rx="4" fill="#6d5037"/>
-                            <rect x="1068" y="726" width="14" height="60" rx="4" fill="#6d5037"/>
-                            <!-- Dock ropes -->
-                            <path d="M1018,732 Q1024,740 1018,748" stroke="rgba(180,150,100,0.5)" stroke-width="2" fill="none"/>
-                            <path d="M1074,732 Q1080,740 1074,748" stroke="rgba(180,150,100,0.5)" stroke-width="2" fill="none"/>
-
-                            <!-- Rock details -->
-                            <ellipse cx="196" cy="480" rx="72" ry="58" fill="rgba(68,92,76,0.56)"/>
-                            <ellipse cx="1004" cy="628" rx="36" ry="30" fill="rgba(112,132,144,0.55)"/>
-                            <ellipse cx="1074" cy="356" rx="28" ry="20" fill="rgba(126,102,72,0.65)"/>
-                            <ellipse cx="156" cy="600" rx="22" ry="16" fill="rgba(90,110,90,0.40)"/>
-                            <!-- Beach wave line at bottom -->
-                            <path d="M114,686 Q162,788 254,832" stroke="rgba(255,255,255,0.24)" stroke-width="7" fill="none" stroke-linecap="round"/>
-                        </g>
-                        <!-- Atmospheric fog around island -->
-                        <ellipse cx="600" cy="858" rx="564" ry="96" fill="url(#fogG)" opacity="0.82"/>
-                        <ellipse cx="104" cy="476" rx="114" ry="274" fill="rgba(160,190,210,0.22)"/>
-                        <ellipse cx="1096" cy="462" rx="130" ry="260" fill="rgba(160,190,210,0.18)"/>
-                        <ellipse cx="600" cy="88" rx="498" ry="82" fill="rgba(160,190,210,0.14)"/>
-                    </svg>
+                    <img class="island-shape" src="/img/island-bg.png" alt="" draggable="false">
 
                     <div class="island-land" id="island-land">
                         <div class="boom-house" style="left:80%;top:54%">
@@ -447,7 +247,7 @@ Object.assign(GardenView, {
     },
 
     _zoom: 1,
-    _minZoom: 0.85,
+    _minZoom: 0.5,
     _maxZoom: 2.6,
 
     initDrag() {
@@ -455,31 +255,24 @@ Object.assign(GardenView, {
         const world = document.getElementById('island-world');
         if (!vp || !world) return;
         if (!this._dragState) {
-            this._dragState = { active: false, sx: 0, sy: 0, sl: 0, st: 0 };
+            this._dragState = { active: false, sx: 0, sy: 0, px: 0, py: 0 };
         }
         const dragState = this._dragState;
 
-        this._applyTransform(world);
-
+        // Initial center
         requestAnimationFrame(() => {
             this._centerViewport(vp, world);
         });
 
-        vp.addEventListener('scroll', () => {
-            this._clampViewport(vp, world);
-            if (this._activePlotMenu?.menuEl && this._activePlotMenu?.plotEl) {
-                this._positionPlotMenu(this._activePlotMenu.menuEl, this._activePlotMenu.plotEl);
-            }
-        }, { passive: true });
-
+        // ── Mouse drag ──
         vp.addEventListener('mousedown', e => {
             if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls,.plot-menu')) return;
             this.closePlotMenu();
             dragState.active = true;
             dragState.sx = e.pageX;
             dragState.sy = e.pageY;
-            dragState.sl = vp.scrollLeft;
-            dragState.st = vp.scrollTop;
+            dragState.px = this._panX;
+            dragState.py = this._panY;
             vp.style.cursor = 'grabbing';
         });
 
@@ -488,12 +281,13 @@ Object.assign(GardenView, {
             document.addEventListener('mousemove', e => {
                 if (!this._dragState?.active) return;
                 e.preventDefault();
-                const vpEl = document.getElementById('island-viewport');
                 const worldEl = document.getElementById('island-world');
-                if (!vpEl) return;
-                vpEl.scrollLeft = this._dragState.sl - (e.pageX - this._dragState.sx);
-                vpEl.scrollTop = this._dragState.st - (e.pageY - this._dragState.sy);
-                this._clampViewport(vpEl, worldEl);
+                const vpEl = document.getElementById('island-viewport');
+                if (!worldEl || !vpEl) return;
+                this._panX = this._dragState.px + (e.pageX - this._dragState.sx);
+                this._panY = this._dragState.py + (e.pageY - this._dragState.sy);
+                this._clampPan(vpEl, worldEl);
+                this._applyWorldTransform(worldEl);
             });
             document.addEventListener('mouseup', () => {
                 if (this._dragState) this._dragState.active = false;
@@ -502,28 +296,18 @@ Object.assign(GardenView, {
             });
         }
 
-        if (!this._zoomRaf) this._zoomRaf = null;
-        const scheduleViewportSync = () => {
-            if (this._zoomRaf) cancelAnimationFrame(this._zoomRaf);
-            this._zoomRaf = requestAnimationFrame(() => {
-                this._clampViewport(vp, world);
-                if (this._activePlotMenu?.menuEl && this._activePlotMenu?.plotEl) {
-                    this._positionPlotMenu(this._activePlotMenu.menuEl, this._activePlotMenu.plotEl);
-                }
-                this._zoomRaf = null;
-            });
-        };
-
+        // ── Wheel zoom ──
         vp.addEventListener('wheel', e => {
             e.preventDefault();
             this.closePlotMenu();
             const delta = e.deltaY > 0 ? -0.08 : 0.08;
             this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._zoom + delta));
-            this._applyTransform(world);
+            this._clampPan(vp, world);
+            this._applyWorldTransform(world);
             this._updateZoomDisplay();
-            scheduleViewportSync();
         }, { passive: false });
 
+        // ── Touch drag & pinch zoom ──
         let lastPinchDist = 0;
         let pinching = false;
 
@@ -542,8 +326,8 @@ Object.assign(GardenView, {
                 dragState.active = true;
                 dragState.sx = e.touches[0].pageX;
                 dragState.sy = e.touches[0].pageY;
-                dragState.sl = vp.scrollLeft;
-                dragState.st = vp.scrollTop;
+                dragState.px = this._panX;
+                dragState.py = this._panY;
             }
         }, { passive: true });
 
@@ -555,14 +339,15 @@ Object.assign(GardenView, {
                 );
                 const pinchDelta = (dist - lastPinchDist) * 0.005;
                 this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._zoom + pinchDelta));
-                this._applyTransform(world);
+                this._clampPan(vp, world);
+                this._applyWorldTransform(world);
                 this._updateZoomDisplay();
                 lastPinchDist = dist;
-                scheduleViewportSync();
             } else if (dragState.active && e.touches.length === 1) {
-                vp.scrollLeft = dragState.sl - (e.touches[0].pageX - dragState.sx);
-                vp.scrollTop = dragState.st - (e.touches[0].pageY - dragState.sy);
-                this._clampViewport(vp, world);
+                this._panX = dragState.px + (e.touches[0].pageX - dragState.sx);
+                this._panY = dragState.py + (e.touches[0].pageY - dragState.sy);
+                this._clampPan(vp, world);
+                this._applyWorldTransform(world);
             }
         }, { passive: true });
 
@@ -571,39 +356,27 @@ Object.assign(GardenView, {
             if (e.touches.length === 0) dragState.active = false;
         });
 
+        // ── Zoom buttons ──
         document.getElementById('zoom-in-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
             this._zoom = Math.min(this._maxZoom, this._zoom + 0.15);
-            this._applyTransform(world);
+            this._clampPan(vp, world);
+            this._applyWorldTransform(world);
             this._updateZoomDisplay();
-            scheduleViewportSync();
         });
         document.getElementById('zoom-out-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
             this._zoom = Math.max(this._minZoom, this._zoom - 0.15);
-            this._applyTransform(world);
+            this._clampPan(vp, world);
+            this._applyWorldTransform(world);
             this._updateZoomDisplay();
-            scheduleViewportSync();
         });
         document.getElementById('zoom-reset-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
             this._zoom = 1;
-            this._applyTransform(world);
+            this._centerViewport(vp, world);
             this._updateZoomDisplay();
-            requestAnimationFrame(() => {
-                this._centerViewport(vp, world);
-                if (this._activePlotMenu?.menuEl && this._activePlotMenu?.plotEl) {
-                    this._positionPlotMenu(this._activePlotMenu.menuEl, this._activePlotMenu.plotEl);
-                }
-            });
         });
-    },
-
-    _applyTransform(world) {
-        if (!world) world = document.getElementById('island-world');
-        if (!world) return;
-        world.style.transform = `perspective(1600px) rotateX(14deg) scale(${this._zoom})`;
-        world.style.transformOrigin = 'center 42.5%';
     },
 
     _updateZoomDisplay() {
