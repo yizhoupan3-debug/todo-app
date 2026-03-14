@@ -119,44 +119,57 @@ Object.assign(App, {
         overlay.className = 'coin-rules-overlay';
         overlay.innerHTML = `
             <div class="coin-rules-modal">
-                <div class="coin-rules-header">
-                ${Utils.coinSvg('cat-coin-icon large')}
-                    <h3>喵喵币获取规则</h3>
+                <div class="coin-rules-hero">
+                    ${Utils.coinSvg('cat-coin-icon coin-rules-hero-coin')}
+                    <h3>喵喵币攻略</h3>
+                    <p>完成任务、打卡、专注 — 轻松获取喵喵币</p>
                     <button class="coin-rules-close">✕</button>
                 </div>
                 <div class="coin-rules-body">
-                <div class="coin-rule-item">
-                    <span class="coin-rule-icon">✅</span>
-                    <div><strong>完成任务</strong><br>每完成一个任务获得 <b>1.5</b> 喵喵币</div>
+                    <div class="coin-rule-card">
+                        <div class="coin-rule-badge">1</div>
+                        <div class="coin-rule-icon">✅</div>
+                        <div class="coin-rule-text">
+                            <strong>完成任务</strong>
+                            <span>每完成一个任务获得 <b>1.5</b> 喵喵币</span>
+                        </div>
+                    </div>
+                    <div class="coin-rule-card">
+                        <div class="coin-rule-badge">2</div>
+                        <div class="coin-rule-icon">📅</div>
+                        <div class="coin-rule-text">
+                            <strong>每日打卡</strong>
+                            <span>每项达标 <b>0.5</b> 币，连续3天 <b>+2</b>，7天 <b>+5</b></span>
+                        </div>
+                    </div>
+                    <div class="coin-rule-card">
+                        <div class="coin-rule-badge">3</div>
+                        <div class="coin-rule-icon">🍅</div>
+                        <div class="coin-rule-text">
+                            <strong>番茄钟</strong>
+                            <span>15分 <b>0.5</b> · 25分 <b>1</b> · 45分 <b>2</b> · 60分 <b>3</b><br>评分倍率 ×50%~150%</span>
+                        </div>
+                    </div>
+                    <div class="coin-rule-card">
+                        <div class="coin-rule-badge">4</div>
+                        <div class="coin-rule-icon">🌳</div>
+                        <div class="coin-rule-text">
+                            <strong>植物成长</strong>
+                            <span>专注种树时随机掉落喵喵币</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="coin-rule-item">
-                    <span class="coin-rule-icon">📅</span>
-                    <div><strong>每日打卡</strong><br>每项达标 <b>0.5</b> 币，连续3天 <b>+2</b>，连续7天 <b>+5</b>（然后重置）</div>
-                </div>
-                <div class="coin-rule-item">
-                    <span class="coin-rule-icon">🍅</span>
-                    <div><strong>番茄钟</strong><br>15分钟 <b>0.5</b> · 25分 <b>1</b> · 45分 <b>2</b> · 60分 <b>3</b> 币<br>专注结束后评分结算：时间奖励 × <b>50%</b> · <b>75%</b> · <b>100%</b> · <b>125%</b> · <b>150%</b></div>
-                </div>
-                <div class="coin-rule-item">
-                    <span class="coin-rule-icon">🌳</span>
-                    <div><strong>植物成长</strong><br>专注种树，植物成长时随机掉落喵喵币</div>
-                </div>
-                <div class="coin-rule-item">
-                    <span class="coin-rule-icon">🛒</span>
-                    <div><strong>商城消费</strong><br>在商城中购买植物、装饰等</div>
-                </div>
-            </div>
                 <div class="coin-rules-footer">
-                    <button class="coin-rules-goto-garden">🌴 去花园</button>
-                    <button class="coin-rules-goto-shop">🛒 去商城</button>
+                    <button class="coin-rules-goto-garden">🌴 去花园种树</button>
                 </div>
             </div>
         `;
         document.body.appendChild(overlay);
-        overlay.querySelector('.coin-rules-close').onclick = () => overlay.remove();
-        overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
-        overlay.querySelector('.coin-rules-goto-garden').onclick = () => { overlay.remove(); this.switchView('garden'); };
-        overlay.querySelector('.coin-rules-goto-shop').onclick = () => { overlay.remove(); this.switchView('shop'); };
+        requestAnimationFrame(() => overlay.classList.add('active'));
+        const close = () => { overlay.classList.remove('active'); setTimeout(() => overlay.remove(), 250); };
+        overlay.querySelector('.coin-rules-close').onclick = close;
+        overlay.onclick = (e) => { if (e.target === overlay) close(); };
+        overlay.querySelector('.coin-rules-goto-garden').onclick = () => { close(); this.switchView('garden'); };
     },
 
     showToast(message, type = 'info') {

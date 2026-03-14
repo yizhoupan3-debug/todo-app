@@ -105,141 +105,215 @@ Object.assign(GardenView, {
             <div class="island-viewport" id="island-viewport">
                 <div class="island-world" id="island-world">
                     <div class="ocean-shimmer"></div>
+                    <div class="ocean-waves">
+                        <div class="wave-ring w1"></div>
+                        <div class="wave-ring w2"></div>
+                        <div class="wave-ring w3"></div>
+                    </div>
                     <svg class="island-shape" viewBox="0 0 1200 900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <defs>
-                            <filter id="ishadow"><feDropShadow dx="0" dy="12" stdDeviation="24" flood-color="rgba(0,0,0,0.38)"/></filter>
-                            <radialGradient id="reefG" cx="50%" cy="50%"><stop offset="0%" stop-color="#5ed7e0"/><stop offset="45%" stop-color="#3bb6cf"/><stop offset="100%" stop-color="#14809b"/></radialGradient>
-                            <radialGradient id="shallowsG" cx="50%" cy="48%"><stop offset="0%" stop-color="rgba(140,255,245,0.5)"/><stop offset="60%" stop-color="rgba(109,212,219,0.2)"/><stop offset="100%" stop-color="rgba(20,128,155,0)"/></radialGradient>
-                            <linearGradient id="sandG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#f7edd0"/><stop offset="45%" stop-color="#e7cf91"/><stop offset="100%" stop-color="#cda56b"/></linearGradient>
-                            <linearGradient id="grassG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#74d952"/><stop offset="50%" stop-color="#55ae35"/><stop offset="100%" stop-color="#3f7c28"/></linearGradient>
-                            <linearGradient id="forestG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#173d1b"/><stop offset="50%" stop-color="#235423"/><stop offset="100%" stop-color="#356d2a"/></linearGradient>
-                            <linearGradient id="cliffG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8e7755"/><stop offset="50%" stop-color="#715b3e"/><stop offset="100%" stop-color="#56442d"/></linearGradient>
-                            <linearGradient id="cliffFaceG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#a18562"/><stop offset="50%" stop-color="#7c6445"/><stop offset="100%" stop-color="#5d482f"/></linearGradient>
-                            <radialGradient id="dirtG" cx="50%" cy="45%"><stop offset="0%" stop-color="#8c6a47"/><stop offset="60%" stop-color="#785737"/><stop offset="100%" stop-color="#5d422a"/></radialGradient>
-                            <linearGradient id="yardG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#b8d889"/><stop offset="55%" stop-color="#8dba59"/><stop offset="100%" stop-color="#69953e"/></linearGradient>
-                            <radialGradient id="fogG" cx="50%" cy="50%"><stop offset="0%" stop-color="rgba(208,224,235,0.75)"/><stop offset="70%" stop-color="rgba(181,199,215,0.28)"/><stop offset="100%" stop-color="rgba(181,199,215,0)"/></radialGradient>
+                            <filter id="ishadow"><feDropShadow dx="0" dy="14" stdDeviation="28" flood-color="rgba(0,0,0,0.42)"/></filter>
+                            <filter id="softGlow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                            <!-- Reef & shallow water -->
+                            <radialGradient id="reefG" cx="50%" cy="50%"><stop offset="0%" stop-color="#4ed8e4"/><stop offset="35%" stop-color="#38c0d4"/><stop offset="70%" stop-color="#22a0b8"/><stop offset="100%" stop-color="#14809b"/></radialGradient>
+                            <radialGradient id="shallowsG" cx="50%" cy="48%"><stop offset="0%" stop-color="rgba(140,255,245,0.55)"/><stop offset="50%" stop-color="rgba(109,220,225,0.25)"/><stop offset="100%" stop-color="rgba(20,128,155,0)"/></radialGradient>
+                            <!-- Sand -->
+                            <linearGradient id="sandG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#faf0d5"/><stop offset="30%" stop-color="#f0dba0"/><stop offset="65%" stop-color="#e2c47a"/><stop offset="100%" stop-color="#c9a25e"/></linearGradient>
+                            <!-- Grass -->
+                            <linearGradient id="grassG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7ade56"/><stop offset="35%" stop-color="#5cb838"/><stop offset="70%" stop-color="#45922a"/><stop offset="100%" stop-color="#357422"/></linearGradient>
+                            <!-- Forest -->
+                            <linearGradient id="forestG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#14381a"/><stop offset="40%" stop-color="#1e4e20"/><stop offset="100%" stop-color="#2d6828"/></linearGradient>
+                            <!-- Cliffs -->
+                            <linearGradient id="cliffG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9a8460"/><stop offset="50%" stop-color="#7a6444"/><stop offset="100%" stop-color="#5c4830"/></linearGradient>
+                            <linearGradient id="cliffFaceG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ab9068"/><stop offset="50%" stop-color="#886c48"/><stop offset="100%" stop-color="#644e32"/></linearGradient>
+                            <!-- Dirt farmland -->
+                            <radialGradient id="dirtG" cx="50%" cy="45%"><stop offset="0%" stop-color="#8c6a47"/><stop offset="55%" stop-color="#785737"/><stop offset="100%" stop-color="#5d422a"/></radialGradient>
+                            <!-- Yard -->
+                            <linearGradient id="yardG" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#bce090"/><stop offset="40%" stop-color="#98c460"/><stop offset="100%" stop-color="#72a040"/></linearGradient>
+                            <!-- Fog -->
+                            <radialGradient id="fogG" cx="50%" cy="50%"><stop offset="0%" stop-color="rgba(180,210,230,0.65)"/><stop offset="60%" stop-color="rgba(160,190,210,0.22)"/><stop offset="100%" stop-color="rgba(160,190,210,0)"/></radialGradient>
                         </defs>
                         <g filter="url(#ishadow)">
-                            <path d="M40,658 Q22,516 70,286 L124,138 Q170,38 354,30 L944,46 Q1092,64 1148,236 L1160,692 Q1150,852 978,882 L180,886 Q58,874 40,658 Z" fill="url(#reefG)" opacity="0.92"/>
-                            <ellipse cx="182" cy="742" rx="318" ry="234" fill="url(#shallowsG)" opacity="0.92"/>
-                            <ellipse cx="1000" cy="686" rx="286" ry="182" fill="url(#shallowsG)" opacity="0.78"/>
-                            <ellipse cx="1098" cy="418" rx="126" ry="96" fill="url(#shallowsG)" opacity="0.48"/>
+                            <!-- Reef platform -->
+                            <path d="M38,660 Q18,510 65,280 L120,132 Q168,34 358,26 L948,42 Q1098,62 1152,240 L1164,698 Q1156,858 982,886 L176,890 Q54,878 38,660 Z" fill="url(#reefG)" opacity="0.94"/>
+                            <!-- Shallow water glow -->
+                            <ellipse cx="186" cy="748" rx="324" ry="240" fill="url(#shallowsG)" opacity="0.94"/>
+                            <ellipse cx="1008" cy="692" rx="294" ry="188" fill="url(#shallowsG)" opacity="0.80"/>
+                            <ellipse cx="1104" cy="420" rx="132" ry="100" fill="url(#shallowsG)" opacity="0.52"/>
+                            <ellipse cx="300" cy="200" rx="180" ry="120" fill="url(#shallowsG)" opacity="0.36"/>
 
-                            <path d="M106,642 Q84,524 120,338 L160,190 Q204,96 348,90 L908,92 Q1020,98 1068,244 L1096,628 Q1094,776 946,840 L214,850 Q128,840 106,642 Z" fill="url(#sandG)"/>
-                            <path d="M250,596 Q230,496 250,360 L276,248 Q304,176 398,168 L840,170 Q934,178 980,286 L994,610 Q998,714 904,772 L346,784 Q268,778 250,596 Z" fill="url(#grassG)"/>
-                            <path d="M108,642 Q118,790 228,842 L164,848 Q124,840 106,642 Z" fill="#f9efce" opacity="0.96"/>
-                            <path d="M902,722 Q986,730 1060,666 L1072,748 Q1016,822 930,838 L854,832 Q900,790 902,722 Z" fill="#efd59c" opacity="0.88"/>
-                            <path d="M110,664 Q170,786 334,832" stroke="rgba(255,255,255,0.32)" stroke-width="12" fill="none" stroke-linecap="round"/>
-                            <path d="M874,814 Q1028,780 1092,682" stroke="rgba(255,255,255,0.3)" stroke-width="10" fill="none" stroke-linecap="round"/>
+                            <!-- Sand beach -->
+                            <path d="M102,648 Q78,520 114,332 L156,184 Q200,90 344,84 L912,86 Q1026,94 1074,248 L1102,634 Q1100,782 950,846 L210,856 Q124,846 102,648 Z" fill="url(#sandG)"/>
+                            <!-- Beach foam lines -->
+                            <path d="M108,650 Q168,792 324,838" stroke="rgba(255,255,255,0.38)" stroke-width="14" fill="none" stroke-linecap="round"/>
+                            <path d="M116,620 Q190,770 348,828" stroke="rgba(255,255,255,0.18)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                            <path d="M878,820 Q1034,784 1098,688" stroke="rgba(255,255,255,0.34)" stroke-width="12" fill="none" stroke-linecap="round"/>
+                            <path d="M890,808 Q1042,770 1088,672" stroke="rgba(255,255,255,0.16)" stroke-width="6" fill="none" stroke-linecap="round"/>
+                            <!-- Wet sand highlights -->
+                            <path d="M102,656 Q114,796 224,848 L162,854 Q120,846 102,656 Z" fill="#fbf2d6" opacity="0.88"/>
+                            <path d="M908,728 Q992,736 1066,672 L1078,754 Q1022,828 936,844 L858,838 Q906,796 908,728 Z" fill="#edd89c" opacity="0.80"/>
 
-                            <path d="M264,324 L276,248 Q304,176 398,168 L840,170 Q934,178 980,286 L990,330 Q928,310 840,320 Q744,294 646,324 Q546,298 448,330 Q346,300 264,324 Z" fill="url(#cliffG)"/>
-                            <path d="M258,336 Q372,284 492,296 Q612,272 714,302 Q828,278 956,326 L966,364 Q842,336 720,356 Q596,330 472,360 Q354,334 252,362 Z" fill="url(#cliffFaceG)" opacity="0.58"/>
-                            <path d="M118,432 L140,246 L236,86 L322,182 L304,348 L248,434 Z" fill="#8c7250"/>
-                            <path d="M212,306 L320,154 L440,76 L512,200 L454,336 Z" fill="#7b6546"/>
-                            <path d="M442,310 L566,72 L700,216 L648,344 Z" fill="#6b563a"/>
-                            <path d="M684,316 L812,102 L944,226 L884,350 Z" fill="#7a6647"/>
-                            <path d="M914,416 L956,222 L1046,164 L1098,312 L1062,458 Z" fill="#6d583c"/>
-                            <polygon points="560,90 566,72 578,92" fill="rgba(255,255,255,0.58)"/>
-                            <polygon points="804,118 812,102 826,120" fill="rgba(255,255,255,0.44)"/>
-                            <rect x="168" y="164" width="18" height="168" rx="9" fill="rgba(172,235,255,0.66)"/>
-                            <rect x="194" y="156" width="12" height="182" rx="7" fill="rgba(122,220,255,0.56)"/>
-                            <g opacity="0.26">
-                                <ellipse cx="282" cy="310" rx="166" ry="30" fill="rgba(210,220,230,0.2)"/>
-                                <ellipse cx="836" cy="300" rx="206" ry="34" fill="rgba(210,220,230,0.18)"/>
+                            <!-- Main grass area -->
+                            <path d="M244,600 Q222,492 244,354 L272,242 Q300,170 396,162 L846,164 Q940,174 986,290 L1000,616 Q1004,720 908,778 L340,790 Q262,784 244,600 Z" fill="url(#grassG)"/>
+                            <!-- Grass texture highlights -->
+                            <ellipse cx="520" cy="620" rx="240" ry="100" fill="rgba(140,230,100,0.12)"/>
+                            <ellipse cx="780" cy="540" rx="120" ry="80" fill="rgba(160,240,120,0.10)"/>
+
+                            <!-- Cliff ridge (upper) -->
+                            <path d="M260,320 L272,242 Q300,170 396,162 L846,164 Q940,174 986,290 L996,336 Q932,314 846,324 Q748,298 650,328 Q550,302 452,334 Q350,304 260,320 Z" fill="url(#cliffG)"/>
+                            <!-- Cliff face texture -->
+                            <path d="M254,332 Q368,280 496,292 Q618,268 720,298 Q834,274 962,322 L972,368 Q848,340 726,360 Q600,334 476,364 Q358,338 248,366 Z" fill="url(#cliffFaceG)" opacity="0.55"/>
+                            <!-- Mountain peaks -->
+                            <path d="M114,438 L136,240 L232,80 L318,176 L300,344 L244,438 Z" fill="#8c7250"/>
+                            <path d="M208,302 L316,148 L436,70 L508,194 L450,332 Z" fill="#7b6546"/>
+                            <path d="M438,306 L562,66 L696,210 L644,340 Z" fill="#6b563a"/>
+                            <path d="M680,312 L808,96 L940,220 L880,346 Z" fill="#7a6647"/>
+                            <path d="M910,412 L952,216 L1042,158 L1094,306 L1058,454 Z" fill="#6d583c"/>
+                            <!-- Snow caps on peaks -->
+                            <polygon points="558,84 566,66 576,88" fill="rgba(255,255,255,0.62)"/>
+                            <polygon points="802,114 812,96 824,116" fill="rgba(255,255,255,0.48)"/>
+                            <polygon points="228,96 236,80 244,98" fill="rgba(255,255,255,0.42)"/>
+                            <!-- Waterfalls -->
+                            <rect x="166" y="158" width="18" height="172" rx="9" fill="rgba(172,235,255,0.70)"/>
+                            <rect x="192" y="150" width="12" height="186" rx="7" fill="rgba(122,220,255,0.58)"/>
+                            <rect x="178" y="332" width="14" height="40" rx="7" fill="rgba(172,235,255,0.45)"/>
+                            <!-- Mountain mist -->
+                            <g opacity="0.24">
+                                <ellipse cx="278" cy="306" rx="170" ry="32" fill="rgba(210,220,235,0.25)"/>
+                                <ellipse cx="842" cy="296" rx="210" ry="36" fill="rgba(210,220,235,0.22)"/>
                             </g>
 
-                            <path d="M210,438 Q286,350 394,342 L762,348 Q896,356 978,434 L968,518 Q892,554 806,548 Q716,566 620,560 Q518,576 408,560 Q302,576 220,536 Z" fill="url(#forestG)"/>
+                            <!-- Dense forest canopy (back layer — darkest) -->
+                            <path d="M206,442 Q282,346 390,338 L768,344 Q902,352 984,438 L974,524 Q898,560 812,554 Q722,572 626,566 Q524,582 414,566 Q308,582 216,542 Z" fill="url(#forestG)"/>
                             <g opacity="0.98">
-                                <circle cx="228" cy="392" r="56" fill="#153518"/>
-                                <circle cx="320" cy="378" r="64" fill="#173a19"/>
-                                <circle cx="424" cy="368" r="72" fill="#123416"/>
-                                <circle cx="544" cy="362" r="80" fill="#173819"/>
-                                <circle cx="670" cy="366" r="76" fill="#193b1d"/>
-                                <circle cx="796" cy="378" r="70" fill="#163718"/>
-                                <circle cx="904" cy="396" r="62" fill="#173819"/>
+                                <circle cx="224" cy="390" r="58" fill="#143218"/>
+                                <circle cx="318" cy="376" r="66" fill="#163a18"/>
+                                <circle cx="426" cy="366" r="74" fill="#113214"/>
+                                <circle cx="548" cy="360" r="82" fill="#163618"/>
+                                <circle cx="674" cy="364" r="78" fill="#183a1c"/>
+                                <circle cx="800" cy="376" r="72" fill="#153618"/>
+                                <circle cx="910" cy="394" r="64" fill="#163618"/>
                             </g>
-                            <g opacity="0.9">
-                                <circle cx="190" cy="448" r="44" fill="#244d25"/>
-                                <circle cx="286" cy="442" r="52" fill="#2a5827"/>
-                                <circle cx="398" cy="436" r="54" fill="#31642c"/>
-                                <circle cx="522" cy="434" r="56" fill="#285727"/>
-                                <circle cx="648" cy="438" r="54" fill="#356b2e"/>
-                                <circle cx="770" cy="444" r="50" fill="#2d5d29"/>
-                                <circle cx="886" cy="456" r="46" fill="#356b2e"/>
+                            <!-- Forest mid layer -->
+                            <g opacity="0.92">
+                                <circle cx="186" cy="450" r="46" fill="#234c24"/>
+                                <circle cx="282" cy="444" r="54" fill="#285826"/>
+                                <circle cx="398" cy="438" r="56" fill="#2e6228"/>
+                                <circle cx="526" cy="436" r="58" fill="#265426"/>
+                                <circle cx="652" cy="440" r="56" fill="#326a2c"/>
+                                <circle cx="774" cy="446" r="52" fill="#2a5c28"/>
+                                <circle cx="890" cy="458" r="48" fill="#326a2c"/>
                             </g>
-                            <g opacity="0.78">
-                                <circle cx="228" cy="504" r="36" fill="#4c9c37"/>
-                                <circle cx="352" cy="502" r="40" fill="#53a93a"/>
-                                <circle cx="492" cy="500" r="40" fill="#62b442"/>
-                                <circle cx="634" cy="500" r="42" fill="#5ca53d"/>
-                                <circle cx="776" cy="506" r="38" fill="#4f9635"/>
-                                <circle cx="900" cy="518" r="34" fill="#5ca53d"/>
+                            <!-- Forest front layer — lighter -->
+                            <g opacity="0.80">
+                                <circle cx="224" cy="506" r="38" fill="#4a9a36"/>
+                                <circle cx="348" cy="504" r="42" fill="#52a83a"/>
+                                <circle cx="490" cy="502" r="42" fill="#60b240"/>
+                                <circle cx="638" cy="502" r="44" fill="#5aa43c"/>
+                                <circle cx="780" cy="508" r="40" fill="#4e9434"/>
+                                <circle cx="904" cy="520" r="36" fill="#5aa43c"/>
+                            </g>
+                            <!-- Scattered small trees at forest edge -->
+                            <g opacity="0.55">
+                                <circle cx="196" cy="536" r="18" fill="#6ab84a"/>
+                                <circle cx="934" cy="542" r="16" fill="#5eac42"/>
+                                <circle cx="260" cy="540" r="14" fill="#72c252"/>
+                                <circle cx="852" cy="538" r="15" fill="#68b648"/>
                             </g>
 
-                            <ellipse cx="824" cy="548" rx="168" ry="108" fill="url(#yardG)" opacity="0.94"/>
-                            <ellipse cx="824" cy="548" rx="136" ry="76" fill="rgba(255,244,217,0.16)"/>
-                            <ellipse cx="612" cy="600" rx="334" ry="140" fill="rgba(255,255,255,0.07)"/>
+                            <!-- Yard/clearing near house -->
+                            <ellipse cx="830" cy="554" rx="172" ry="112" fill="url(#yardG)" opacity="0.94"/>
+                            <ellipse cx="830" cy="554" rx="140" ry="78" fill="rgba(255,248,220,0.14)"/>
+                            <!-- Central meadow glow -->
+                            <ellipse cx="618" cy="606" rx="340" ry="144" fill="rgba(255,255,255,0.06)"/>
 
-                            <path d="M300,618 Q284,560 312,520 Q380,474 460,480 L580,486 Q648,492 688,530 Q698,584 674,644 Q640,724 590,762 L398,772 Q344,766 316,720 Q290,676 300,618 Z" fill="url(#dirtG)" opacity="0.92"/>
-                            <path d="M324,580 Q404,548 492,552 Q570,556 646,584" stroke="rgba(104,66,34,0.24)" stroke-width="8" fill="none" stroke-linecap="round"/>
-                            <path d="M318,628 Q412,598 508,602 Q592,606 654,632" stroke="rgba(104,66,34,0.2)" stroke-width="7" fill="none" stroke-linecap="round"/>
-                            <path d="M334,678 Q420,654 516,658 Q586,662 636,686" stroke="rgba(104,66,34,0.16)" stroke-width="6" fill="none" stroke-linecap="round"/>
+                            <!-- Farmland/dirt area -->
+                            <path d="M296,624 Q278,564 308,516 Q376,468 456,474 L576,482 Q644,488 684,526 Q694,580 670,650 Q636,728 586,768 L394,778 Q340,772 312,726 Q286,682 296,624 Z" fill="url(#dirtG)" opacity="0.92"/>
+                            <!-- Furrow lines -->
+                            <path d="M320,576 Q400,544 488,548 Q566,552 642,580" stroke="rgba(104,66,34,0.26)" stroke-width="8" fill="none" stroke-linecap="round"/>
+                            <path d="M314,624 Q408,594 504,598 Q588,602 650,628" stroke="rgba(104,66,34,0.22)" stroke-width="7" fill="none" stroke-linecap="round"/>
+                            <path d="M330,674 Q416,650 512,654 Q582,658 632,682" stroke="rgba(104,66,34,0.18)" stroke-width="6" fill="none" stroke-linecap="round"/>
+                            <path d="M356,718 Q428,698 510,702 Q568,706 610,722" stroke="rgba(104,66,34,0.14)" stroke-width="5" fill="none" stroke-linecap="round"/>
 
-                            <path d="M830,588 Q904,632 974,708" stroke="rgba(139,105,68,0.34)" stroke-width="28" fill="none" stroke-linecap="round"/>
-                            <path d="M970,706 Q1036,724 1108,688" stroke="rgba(139,105,68,0.3)" stroke-width="18" fill="none" stroke-linecap="round"/>
-                            <rect x="972" y="704" width="142" height="18" rx="6" fill="#8a6849"/>
-                            <rect x="1006" y="720" width="14" height="58" rx="4" fill="#6d5037"/>
-                            <rect x="1062" y="720" width="14" height="58" rx="4" fill="#6d5037"/>
+                            <!-- Path to dock -->
+                            <path d="M836,594 Q910,638 980,714" stroke="rgba(139,105,68,0.36)" stroke-width="30" fill="none" stroke-linecap="round"/>
+                            <path d="M976,712 Q1042,730 1114,694" stroke="rgba(139,105,68,0.32)" stroke-width="20" fill="none" stroke-linecap="round"/>
+                            <!-- Dock planks -->
+                            <rect x="978" y="710" width="146" height="20" rx="6" fill="#8a6849"/>
+                            <rect x="1012" y="726" width="14" height="60" rx="4" fill="#6d5037"/>
+                            <rect x="1068" y="726" width="14" height="60" rx="4" fill="#6d5037"/>
+                            <!-- Dock ropes -->
+                            <path d="M1018,732 Q1024,740 1018,748" stroke="rgba(180,150,100,0.5)" stroke-width="2" fill="none"/>
+                            <path d="M1074,732 Q1080,740 1074,748" stroke="rgba(180,150,100,0.5)" stroke-width="2" fill="none"/>
 
-                            <ellipse cx="200" cy="476" rx="70" ry="56" fill="rgba(68,92,76,0.54)"/>
-                            <ellipse cx="998" cy="622" rx="34" ry="28" fill="rgba(112,132,144,0.52)"/>
-                            <ellipse cx="1068" cy="352" rx="24" ry="18" fill="rgba(126,102,72,0.62)"/>
-                            <path d="M118,680 Q164,782 258,826" stroke="rgba(255,255,255,0.22)" stroke-width="6" fill="none" stroke-linecap="round"/>
+                            <!-- Rock details -->
+                            <ellipse cx="196" cy="480" rx="72" ry="58" fill="rgba(68,92,76,0.56)"/>
+                            <ellipse cx="1004" cy="628" rx="36" ry="30" fill="rgba(112,132,144,0.55)"/>
+                            <ellipse cx="1074" cy="356" rx="28" ry="20" fill="rgba(126,102,72,0.65)"/>
+                            <ellipse cx="156" cy="600" rx="22" ry="16" fill="rgba(90,110,90,0.40)"/>
+                            <!-- Beach wave line at bottom -->
+                            <path d="M114,686 Q162,788 254,832" stroke="rgba(255,255,255,0.24)" stroke-width="7" fill="none" stroke-linecap="round"/>
                         </g>
-                        <ellipse cx="600" cy="852" rx="560" ry="92" fill="url(#fogG)" opacity="0.78"/>
-                        <ellipse cx="108" cy="472" rx="110" ry="270" fill="rgba(176,198,214,0.28)"/>
-                        <ellipse cx="1090" cy="458" rx="126" ry="254" fill="rgba(176,198,214,0.24)"/>
-                        <ellipse cx="600" cy="92" rx="492" ry="78" fill="rgba(176,198,214,0.18)"/>
+                        <!-- Atmospheric fog around island -->
+                        <ellipse cx="600" cy="858" rx="564" ry="96" fill="url(#fogG)" opacity="0.82"/>
+                        <ellipse cx="104" cy="476" rx="114" ry="274" fill="rgba(160,190,210,0.22)"/>
+                        <ellipse cx="1096" cy="462" rx="130" ry="260" fill="rgba(160,190,210,0.18)"/>
+                        <ellipse cx="600" cy="88" rx="498" ry="82" fill="rgba(160,190,210,0.14)"/>
                     </svg>
 
                     <div class="island-land" id="island-land">
                         <div class="boom-house" style="left:80%;top:54%">
                             <svg viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="20" y="190" width="200" height="16" rx="3" fill="#8B7355"/>
+                                <!-- Foundation -->
+                                <rect x="16" y="190" width="208" height="18" rx="3" fill="#7B6340"/>
+                                <rect x="20" y="192" width="200" height="14" rx="2" fill="#8B7355"/>
+                                <!-- Walls with wood grain -->
                                 <rect x="30" y="88" width="180" height="108" rx="4" fill="#E8D8B0"/>
                                 <rect x="30" y="88" width="90" height="108" fill="#F0E0C0" opacity="0.3"/>
-                                <g stroke="#C4B090" stroke-width="0.8" opacity="0.3">
-                                    <line x1="30" y1="108" x2="210" y2="108"/>
-                                    <line x1="30" y1="128" x2="210" y2="128"/>
-                                    <line x1="30" y1="148" x2="210" y2="148"/>
-                                    <line x1="30" y1="168" x2="210" y2="168"/>
+                                <g stroke="#C4B090" stroke-width="0.8" opacity="0.25">
+                                    <line x1="30" y1="106" x2="210" y2="106"/>
+                                    <line x1="30" y1="124" x2="210" y2="124"/>
+                                    <line x1="30" y1="142" x2="210" y2="142"/>
+                                    <line x1="30" y1="160" x2="210" y2="160"/>
+                                    <line x1="30" y1="178" x2="210" y2="178"/>
                                     <line x1="120" y1="88" x2="120" y2="196"/>
                                 </g>
-                                <polygon points="10,88 120,25 230,88" fill="#C0392B"/>
-                                <polygon points="10,88 120,25 120,88" fill="#E74C3C" opacity="0.4"/>
-                                <polygon points="120,25 230,88 120,88" fill="#962D22" opacity="0.3"/>
-                                <line x1="10" y1="88" x2="230" y2="88" stroke="#7A2018" stroke-width="4"/>
-                                <line x1="120" y1="25" x2="120" y2="88" stroke="#7A2018" stroke-width="1.5" opacity="0.3"/>
-                                <rect x="170" y="30" width="18" height="45" rx="2" fill="#8B6914"/>
-                                <rect x="168" y="26" width="22" height="8" rx="2" fill="#A07018"/>
-                                <circle cx="179" cy="20" r="5" fill="rgba(200,200,200,0.5)"><animate attributeName="cy" values="20;5;-10" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0.3;0" dur="3s" repeatCount="indefinite"/></circle>
-                                <circle cx="184" cy="15" r="4" fill="rgba(200,200,200,0.4)"><animate attributeName="cy" values="15;0;-15" dur="3.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.4;0.2;0" dur="3.5s" repeatCount="indefinite"/></circle>
-                                <rect x="48" y="105" width="32" height="32" rx="3" fill="#87CEEB" stroke="#8B6914" stroke-width="2.5"/>
-                                <line x1="64" y1="105" x2="64" y2="137" stroke="#8B6914" stroke-width="2"/>
-                                <line x1="48" y1="121" x2="80" y2="121" stroke="#8B6914" stroke-width="2"/>
-                                <rect x="160" y="105" width="32" height="32" rx="3" fill="#87CEEB" stroke="#8B6914" stroke-width="2.5"/>
-                                <line x1="176" y1="105" x2="176" y2="137" stroke="#8B6914" stroke-width="2"/>
-                                <line x1="160" y1="121" x2="192" y2="121" stroke="#8B6914" stroke-width="2"/>
-                                <rect x="95" y="140" width="50" height="56" rx="4" fill="#6B4410"/>
-                                <rect x="98" y="143" width="44" height="50" rx="3" fill="#8B5E14"/>
-                                <path d="M95,140 Q120,125 145,140" fill="#5A3A0C" opacity="0.4"/>
-                                <circle cx="133" cy="170" r="3.5" fill="#DAA520"/><circle cx="133" cy="170" r="2" fill="#FFD700"/>
-                                <rect x="48" y="138" width="32" height="6" rx="1" fill="#6B4410"/>
-                                <circle cx="54" cy="136" r="4" fill="#FF6B8A"/><circle cx="64" cy="135" r="3.5" fill="#FFD700"/><circle cx="74" cy="136" r="4" fill="#FF8FAA"/>
-                                <rect x="160" y="138" width="32" height="6" rx="1" fill="#6B4410"/>
-                                <circle cx="166" cy="136" r="4" fill="#FFD700"/><circle cx="176" cy="135" r="3.5" fill="#FF6B8A"/><circle cx="186" cy="136" r="4" fill="#FFD700"/>
-                                <rect x="86" y="145" width="6" height="12" rx="1" fill="#DAA520"/>
-                                <circle cx="89" cy="142" r="4" fill="rgba(255,200,50,0.6)"><animate attributeName="opacity" values="0.4;0.8;0.4" dur="2s" repeatCount="indefinite"/></circle>
+                                <!-- Roof -->
+                                <polygon points="6,90 120,22 234,90" fill="#B83224"/>
+                                <polygon points="6,90 120,22 120,90" fill="#D04838" opacity="0.4"/>
+                                <polygon points="120,22 234,90 120,90" fill="#8C261C" opacity="0.3"/>
+                                <line x1="6" y1="90" x2="234" y2="90" stroke="#6A1810" stroke-width="4"/>
+                                <line x1="120" y1="22" x2="120" y2="90" stroke="#6A1810" stroke-width="1.5" opacity="0.3"/>
+                                <!-- Roof edge overhang -->
+                                <path d="M4,90 Q120,96 236,90" stroke="#6A1810" stroke-width="2" fill="none" opacity="0.4"/>
+                                <!-- Chimney + smoke -->
+                                <rect x="170" y="28" width="18" height="48" rx="2" fill="#8B6914"/>
+                                <rect x="168" y="24" width="22" height="8" rx="2" fill="#A07018"/>
+                                <circle cx="179" cy="18" r="5" fill="rgba(200,200,200,0.5)"><animate attributeName="cy" values="18;2;-14" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0.3;0" dur="3s" repeatCount="indefinite"/></circle>
+                                <circle cx="184" cy="12" r="4" fill="rgba(200,200,200,0.4)"><animate attributeName="cy" values="12;-4;-18" dur="3.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.4;0.2;0" dur="3.5s" repeatCount="indefinite"/></circle>
+                                <circle cx="174" cy="20" r="3.5" fill="rgba(200,200,200,0.3)"><animate attributeName="cy" values="20;6;-8" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.3;0.15;0" dur="4s" repeatCount="indefinite"/></circle>
+                                <!-- Windows with warm glow -->
+                                <rect x="46" y="104" width="34" height="34" rx="3" fill="#87CEEB" stroke="#8B6914" stroke-width="2.5"/>
+                                <line x1="63" y1="104" x2="63" y2="138" stroke="#8B6914" stroke-width="2"/>
+                                <line x1="46" y1="121" x2="80" y2="121" stroke="#8B6914" stroke-width="2"/>
+                                <rect x="46" y="104" width="34" height="34" rx="3" fill="rgba(255,220,100,0.15)"/>
+                                <rect x="158" y="104" width="34" height="34" rx="3" fill="#87CEEB" stroke="#8B6914" stroke-width="2.5"/>
+                                <line x1="175" y1="104" x2="175" y2="138" stroke="#8B6914" stroke-width="2"/>
+                                <line x1="158" y1="121" x2="192" y2="121" stroke="#8B6914" stroke-width="2"/>
+                                <rect x="158" y="104" width="34" height="34" rx="3" fill="rgba(255,220,100,0.15)"/>
+                                <!-- Door -->
+                                <rect x="93" y="138" width="54" height="58" rx="4" fill="#6B4410"/>
+                                <rect x="97" y="142" width="46" height="52" rx="3" fill="#8B5E14"/>
+                                <path d="M93,138 Q120,124 147,138" fill="#5A3A0C" opacity="0.4"/>
+                                <circle cx="135" cy="170" r="3.5" fill="#DAA520"/><circle cx="135" cy="170" r="2" fill="#FFD700"/>
+                                <!-- Window boxes with flowers -->
+                                <rect x="46" y="138" width="34" height="6" rx="1" fill="#6B4410"/>
+                                <circle cx="52" cy="136" r="4" fill="#FF6B8A"/><circle cx="63" cy="135" r="3.5" fill="#FFD700"/><circle cx="74" cy="136" r="4" fill="#FF8FAA"/>
+                                <rect x="158" y="138" width="34" height="6" rx="1" fill="#6B4410"/>
+                                <circle cx="164" cy="136" r="4" fill="#FFD700"/><circle cx="175" cy="135" r="3.5" fill="#FF6B8A"/><circle cx="186" cy="136" r="4" fill="#FFD700"/>
+                                <!-- Lantern -->
+                                <rect x="84" y="144" width="6" height="14" rx="1" fill="#DAA520"/>
+                                <circle cx="87" cy="141" r="5" fill="rgba(255,200,50,0.6)"><animate attributeName="opacity" values="0.35;0.75;0.35" dur="2.5s" repeatCount="indefinite"/></circle>
                             </svg>
                             <div class="hut-label">\u{1F3E0} 小屋</div>
                         </div>
@@ -249,17 +323,23 @@ Object.assign(GardenView, {
                             <div class="hut-label">\u2693 港口</div>
                         </div>
 
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:11%;top:84%;width:72px;opacity:0.92">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:24%;top:87%;width:48px;opacity:0.76">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:89%;top:82%;width:56px;opacity:0.86">
-                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:18%;top:82%;width:72px;opacity:0.76">
-                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:83%;top:58%;width:56px;opacity:0.56">
-                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:68%;top:24%;width:44px;opacity:0.42">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:10%;top:86%;width:78px;opacity:0.94">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:16%;top:83%;width:56px;opacity:0.78">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:24%;top:88%;width:50px;opacity:0.72">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:89%;top:83%;width:62px;opacity:0.88">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:84%;top:86%;width:44px;opacity:0.70">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:52%;top:29%;width:40px;opacity:0.50">
+                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:36%;top:31%;width:36px;opacity:0.44">
+                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:18%;top:82%;width:74px;opacity:0.78">
+                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:83%;top:58%;width:58px;opacity:0.58">
+                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:68%;top:26%;width:46px;opacity:0.44">
+                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:30%;top:80%;width:38px;opacity:0.50">
 
-                        <div class="ambient-particle p1" style="font-size:11px">\u{1F54A}\uFE0F</div>
-                        <div class="ambient-particle p3" style="font-size:10px">\u{1F54A}\uFE0F</div>
+                        <div class="ambient-particle p1" style="font-size:12px">\u{1F54A}\uFE0F</div>
+                        <div class="ambient-particle p3" style="font-size:11px">\u{1F54A}\uFE0F</div>
                         <div class="ambient-particle p2">\u{1F343}</div>
                         <div class="ambient-particle p4">\u{1F98B}</div>
+                        <div class="ambient-particle p5" style="font-size:9px">\u{1F343}</div>
 
                         ${this.plots.map((plot, i) => this.renderIslandPlot(plot, this.getPlotLayout(plot, i))).join('')}
                     </div>

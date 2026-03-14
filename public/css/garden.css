@@ -110,147 +110,191 @@
   height: 36px;
 }
 
-/* ═══ Coin Rules Modal ═══ */
+/* ═══ Coin Rules Modal (Beautified) ═══ */
 .coin-rules-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(6px);
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
   z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.2s ease;
+  transition: background 0.3s ease, backdrop-filter 0.3s ease;
+}
+.coin-rules-overlay.active {
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
 }
 
 .coin-rules-modal {
   background: var(--bg-card, #fff);
-  border-radius: 20px;
-  width: 340px;
+  border-radius: 24px;
+  width: 360px;
   max-width: 92vw;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.06);
   overflow: hidden;
-  animation: coinModalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: scale(0.85) translateY(30px);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+}
+.coin-rules-overlay.active .coin-rules-modal {
+  transform: scale(1) translateY(0);
+  opacity: 1;
 }
 
-@keyframes coinModalIn {
-  from {
-    transform: scale(0.8) translateY(20px);
-    opacity: 0;
-  }
-
-  to {
-    transform: scale(1) translateY(0);
-    opacity: 1;
-  }
-}
-
-.coin-rules-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 18px 20px 14px;
-  border-bottom: 1px solid var(--border, #eee);
+/* ── Hero Header ── */
+.coin-rules-hero {
   position: relative;
+  background: linear-gradient(135deg, #f7c948 0%, #f0a020 50%, #e88d1a 100%);
+  padding: 28px 24px 22px;
+  text-align: center;
+  overflow: hidden;
 }
-
-.coin-rules-header h3 {
-  font-size: 17px;
-  font-weight: 700;
+.coin-rules-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120px 80px at 20% 30%, rgba(255,255,255,0.2) 0%, transparent 70%),
+    radial-gradient(ellipse 100px 60px at 80% 70%, rgba(255,200,50,0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+.coin-rules-hero-coin {
+  width: 52px !important;
+  height: 52px !important;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+  animation: coinFloat 3s ease-in-out infinite;
+}
+@keyframes coinFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(5deg); }
+}
+.coin-rules-hero h3 {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 10px 0 4px;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  letter-spacing: 0.03em;
+}
+.coin-rules-hero p {
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.85);
   margin: 0;
-  color: var(--text-primary, #333);
+  font-weight: 500;
 }
-
 .coin-rules-close {
   position: absolute;
-  right: 14px;
-  top: 14px;
-  background: none;
+  right: 12px;
+  top: 12px;
+  background: rgba(255,255,255,0.2);
   border: none;
-  font-size: 18px;
-  color: var(--text-secondary, #888);
+  font-size: 15px;
+  color: #fff;
   cursor: pointer;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.2s;
+  backdrop-filter: blur(4px);
 }
-
 .coin-rules-close:hover {
-  background: var(--bg-hover, rgba(0, 0, 0, 0.05));
+  background: rgba(255,255,255,0.35);
 }
 
+/* ── Rule Cards ── */
 .coin-rules-body {
-  padding: 16px 20px;
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.coin-rule-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 10px 12px;
-  background: var(--bg-main, #f5f5f5);
-  border-radius: 12px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--text-primary, #333);
-}
-
-.coin-rule-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.coin-rule-item strong {
-  color: var(--accent, #6366f1);
-}
-
-.coin-rules-footer {
-  display: flex;
   gap: 10px;
-  padding: 14px 20px 18px;
-  border-top: 1px solid var(--border, #eee);
 }
-
-.coin-rules-footer button {
+.coin-rule-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-main, #f5f5f5);
+  border-radius: 14px;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid transparent;
+}
+.coin-rule-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  border-color: rgba(247, 201, 72, 0.3);
+}
+.coin-rule-badge {
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #f7c948, #e88d1a);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(232, 141, 26, 0.4);
+}
+.coin-rule-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  width: 36px;
+  text-align: center;
+}
+.coin-rule-text {
   flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 12px;
+  min-width: 0;
+}
+.coin-rule-text strong {
+  display: block;
   font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+  font-weight: 700;
+  color: var(--text-primary, #333);
+  margin-bottom: 2px;
+}
+.coin-rule-text span {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-secondary, #666);
+}
+.coin-rule-text b {
+  color: #e88d1a;
+  font-weight: 700;
 }
 
+/* ── Footer CTA ── */
+.coin-rules-footer {
+  padding: 12px 18px 18px;
+}
+.coin-rules-footer button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
 .coin-rules-goto-garden {
   background: linear-gradient(135deg, #43b86a, #2d8f4e);
   color: #fff;
+  box-shadow: 0 4px 16px rgba(45, 143, 78, 0.3);
 }
-
 .coin-rules-goto-garden:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-}
-
-.coin-rules-goto-shop {
-  background: linear-gradient(135deg, #f0b816, #d4a017);
-  color: #fff;
-}
-
-.coin-rules-goto-shop:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(45, 143, 78, 0.4);
 }
 
 @keyframes coinBounce {
@@ -3526,13 +3570,13 @@
 }
 
 /* ═══ BOOM BEACH ISLAND STYLES ═══ */
-/* Override old island-world ocean background from line ~5095 */
+/* Override old island-world ocean background */
 .island-world { background: none !important; }
 .island-world::before { display: none !important; }
 .island-world::after { display: none !important; }
 .ocean-wave { display: none !important; }
 
-/* Viewport — compact ocean stage with controlled pan area */
+/* ── Viewport — immersive tropical ocean stage ── */
 .island-viewport {
   position: relative;
   width: 100%;
@@ -3543,13 +3587,29 @@
   touch-action: none;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  border-radius: 28px;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+  border-radius: 22px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.05),
+    inset 0 2px 30px rgba(0,0,0,0.15);
+  /* Boom Beach deep tropical ocean — rich blues & teals */
   background:
-    radial-gradient(ellipse 560px 360px at 18% 82%, rgba(83, 220, 226, 0.3) 0%, transparent 68%),
-    radial-gradient(ellipse 460px 280px at 82% 18%, rgba(47, 198, 173, 0.2) 0%, transparent 70%),
-    radial-gradient(ellipse 760px 420px at 50% 54%, rgba(49, 172, 208, 0.18) 0%, transparent 72%),
-    linear-gradient(180deg, #1590ad 0%, #11738d 24%, #0b5f75 52%, #083f56 100%);
+    /* Caustic light patches */
+    radial-gradient(ellipse 280px 180px at 14% 28%, rgba(120,230,255,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 220px 160px at 86% 68%, rgba(100,220,245,0.10) 0%, transparent 68%),
+    radial-gradient(ellipse 340px 200px at 50% 84%, rgba(80,200,240,0.08) 0%, transparent 72%),
+    radial-gradient(ellipse 160px 120px at 72% 22%, rgba(140,240,255,0.09) 0%, transparent 65%),
+    /* Shallow water zones near edges */
+    radial-gradient(ellipse 600px 400px at 50% 50%, rgba(50,190,220,0.15) 0%, transparent 60%),
+    /* Deep ocean gradient */
+    linear-gradient(175deg,
+      #0da5bf 0%,
+      #0b8faa 12%,
+      #097d96 28%,
+      #076a82 42%,
+      #065a70 58%,
+      #054c60 72%,
+      #043e52 86%,
+      #033344 100%);
   contain: layout paint style;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -3557,7 +3617,7 @@
 
 .island-viewport::-webkit-scrollbar { display: none; }
 
-/* World — rectangular island canvas with limited margins for zooming */
+/* ── World canvas ── */
 .island-world {
   position: relative;
   width: 2240px;
@@ -3567,12 +3627,12 @@
   transform: perspective(1600px) rotateX(14deg);
   transform-origin: center 42.5%;
   transition: transform 0.25s ease-out;
-  filter: saturate(1.08) contrast(1.03);
+  filter: saturate(1.12) contrast(1.04);
   will-change: transform;
   backface-visibility: hidden;
 }
 
-/* Island SVG shape */
+/* ── Island SVG shape ── */
 .island-shape {
   position: absolute;
   left: 50%;
@@ -3584,7 +3644,7 @@
   z-index: 1;
 }
 
-/* ── Island land (interactive overlay) — MUST overlay SVG exactly ── */
+/* ── Island land overlay ── */
 .island-land {
   position: absolute;
   left: 50%;
@@ -3597,14 +3657,16 @@
   contain: layout paint;
 }
 
+/* Sunlight dapple on land */
 .island-land::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 36% 22% at 74% 54%, rgba(255,244,208,0.12) 0%, transparent 80%),
-    radial-gradient(ellipse 48% 30% at 34% 74%, rgba(255,230,170,0.09) 0%, transparent 78%);
+    radial-gradient(ellipse 30% 20% at 72% 48%, rgba(255,248,218,0.16) 0%, transparent 78%),
+    radial-gradient(ellipse 24% 18% at 38% 68%, rgba(255,240,190,0.11) 0%, transparent 74%),
+    radial-gradient(ellipse 18% 14% at 56% 36%, rgba(255,255,230,0.08) 0%, transparent 68%);
   z-index: 1;
 }
 
@@ -3613,24 +3675,30 @@
   position: absolute;
   z-index: 10;
   transform: translate(-50%, -78%);
+  transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
 }
 
+.boom-house:hover {
+  transform: translate(-50%, -78%) scale(1.06);
+}
+
+/* Ground shadow */
 .boom-house::before {
   content: '';
   position: absolute;
   left: 50%;
-  top: 82%;
-  width: 164px;
-  height: 52px;
+  top: 84%;
+  width: 180px;
+  height: 48px;
   transform: translate(-50%, -50%);
-  background: radial-gradient(ellipse, rgba(0,0,0,0.24) 0%, rgba(0,0,0,0) 72%);
+  background: radial-gradient(ellipse, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0) 68%);
   z-index: -1;
 }
 
 .boom-house svg {
-  width: 132px;
+  width: 140px;
   height: auto;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,0.38));
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,0.35));
 }
 
 .hut-label {
@@ -3638,8 +3706,9 @@
   font-size: 11px;
   font-weight: 700;
   color: #fff;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-  margin-top: 2px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.7), 0 0 8px rgba(0,0,0,0.3);
+  margin-top: 3px;
+  letter-spacing: 0.3px;
 }
 
 /* ── Harbor ── */
@@ -3648,26 +3717,27 @@
   z-index: 10;
   cursor: pointer;
   transform: translate(-50%, -100%);
-  transition: transform 0.2s;
+  transition: transform 0.25s cubic-bezier(.34,1.56,.64,1);
 }
 
+/* Water reflection */
 .boom-harbor::before {
   content: '';
   position: absolute;
   left: 50%;
-  top: 86%;
-  width: 74px;
-  height: 24px;
+  top: 90%;
+  width: 80px;
+  height: 28px;
   transform: translate(-50%, -50%);
-  background: radial-gradient(ellipse, rgba(11,64,82,0.46) 0%, rgba(11,64,82,0) 72%);
+  background: radial-gradient(ellipse, rgba(8,55,72,0.5) 0%, rgba(8,55,72,0) 70%);
   z-index: -1;
 }
 
-.boom-harbor:hover { transform: translate(-50%, -100%) scale(1.12); }
+.boom-harbor:hover { transform: translate(-50%, -100%) scale(1.14); }
 
 .harbor-icon {
-  font-size: 38px;
-  filter: drop-shadow(0 5px 10px rgba(0,0,0,0.42));
+  font-size: 42px;
+  filter: drop-shadow(0 6px 12px rgba(0,0,0,0.45));
   animation: boatBob 3s ease-in-out infinite;
   display: block;
 }
@@ -3678,7 +3748,13 @@
   pointer-events: none;
   z-index: 6;
   transform: translate(-50%, -100%);
-  filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.35));
+  animation: palmSway 6s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.deco-palm:nth-child(odd) {
+  animation-delay: -2s;
 }
 
 .deco-rock {
@@ -3686,25 +3762,101 @@
   pointer-events: none;
   z-index: 6;
   transform: translate(-50%, -100%);
-  filter: drop-shadow(0 8px 12px rgba(0,0,0,0.24));
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.28));
 }
 
-/* ── Ocean shimmer ── */
+/* ── Ocean shimmer — multi-layer animated light ── */
 .ocean-shimmer {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(ellipse 260px 150px at 22% 34%, rgba(255,255,255,0.09) 0%, transparent 70%),
-    radial-gradient(ellipse 420px 200px at 78% 60%, rgba(255,255,255,0.08) 0%, transparent 74%),
-    radial-gradient(ellipse 260px 120px at 48% 86%, rgba(255,255,255,0.07) 0%, transparent 64%);
-  animation: shimmer 8s ease-in-out infinite alternate;
   z-index: 0;
 }
 
-@keyframes shimmer {
-  0% { opacity: 0.6; }
-  100% { opacity: 1; }
+/* Layer 1: large caustic patches */
+.ocean-shimmer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 280px 160px at 18% 30%, rgba(255,255,255,0.10) 0%, transparent 68%),
+    radial-gradient(ellipse 380px 200px at 76% 56%, rgba(255,255,255,0.09) 0%, transparent 72%),
+    radial-gradient(ellipse 240px 140px at 52% 82%, rgba(255,255,255,0.08) 0%, transparent 66%),
+    radial-gradient(ellipse 200px 120px at 38% 58%, rgba(180,240,255,0.06) 0%, transparent 64%);
+  animation: shimmerDrift1 10s ease-in-out infinite alternate;
+}
+
+/* Layer 2: smaller drifting light spots */
+.ocean-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 140px 100px at 28% 72%, rgba(200,250,255,0.08) 0%, transparent 68%),
+    radial-gradient(ellipse 120px 80px at 68% 28%, rgba(200,250,255,0.07) 0%, transparent 66%),
+    radial-gradient(ellipse 180px 110px at 84% 78%, rgba(180,240,255,0.06) 0%, transparent 64%);
+  animation: shimmerDrift2 14s ease-in-out 3s infinite alternate-reverse;
+}
+
+@keyframes shimmerDrift1 {
+  0% { opacity: 0.5; transform: translate(0, 0); }
+  100% { opacity: 1; transform: translate(12px, 8px); }
+}
+
+@keyframes shimmerDrift2 {
+  0% { opacity: 0.6; transform: translate(0, 0) scale(1); }
+  100% { opacity: 1; transform: translate(-10px, 6px) scale(1.04); }
+}
+
+/* ── Wave rings around island ── */
+.ocean-waves {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.wave-ring {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  border-radius: 48% 52% 50% 50% / 50% 48% 52% 50%;
+  border: 2px solid rgba(255,255,255,0.08);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.wave-ring.w1 {
+  width: 96%;
+  aspect-ratio: 1200 / 900;
+  animation: waveRingPulse 6s ease-in-out infinite;
+}
+
+.wave-ring.w2 {
+  width: 102%;
+  aspect-ratio: 1200 / 900;
+  border-width: 1.5px;
+  border-color: rgba(255,255,255,0.05);
+  animation: waveRingPulse 7s ease-in-out 2s infinite;
+}
+
+.wave-ring.w3 {
+  width: 108%;
+  aspect-ratio: 1200 / 900;
+  border-width: 1px;
+  border-color: rgba(255,255,255,0.03);
+  animation: waveRingPulse 8s ease-in-out 4s infinite;
+}
+
+@keyframes waveRingPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    border-color: rgba(255,255,255,0.08);
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.012);
+    border-color: rgba(255,255,255,0.14);
+  }
 }
 
 /* ── Expedition float badge ── */
@@ -3713,15 +3865,16 @@
   z-index: 30;
   top: 26px;
   right: 28px;
-  background: rgba(6,14,24,0.58);
-  backdrop-filter: blur(8px);
+  background: rgba(6,14,24,0.62);
+  backdrop-filter: blur(10px);
   border-radius: 14px;
   padding: 10px 16px;
   color: #fff;
   font-size: 13px;
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
-/* ── Fog vignette on viewport ── */
+/* ── Fog vignette — ocean-tinted edges ── */
 .island-viewport::before {
   content: '';
   position: absolute;
@@ -3729,8 +3882,27 @@
   z-index: 20;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 104% 84% at 50% 50%, rgba(0,0,0,0) 54%, rgba(150,168,184,0.22) 68%, rgba(150,168,184,0.58) 88%, rgba(150,168,184,0.82) 100%),
-    linear-gradient(180deg, rgba(180,195,210,0.44) 0%, rgba(180,195,210,0.04) 14%, rgba(180,195,210,0) 78%, rgba(180,195,210,0.5) 100%);
+    /* Radial vignette matching ocean tones */
+    radial-gradient(ellipse 100% 82% at 50% 50%,
+      rgba(0,0,0,0) 42%,
+      rgba(4,56,74,0.10) 52%,
+      rgba(4,50,66,0.26) 60%,
+      rgba(3,44,58,0.46) 68%,
+      rgba(3,38,52,0.64) 76%,
+      rgba(3,34,46,0.80) 84%,
+      rgba(3,30,42,0.92) 92%,
+      #032232 100%),
+    /* Top/bottom horizon glow */
+    linear-gradient(180deg,
+      rgba(10,120,160,0.28) 0%,
+      rgba(10,120,160,0.04) 10%,
+      rgba(10,120,160,0) 75%,
+      rgba(4,48,64,0.36) 100%);
+}
+
+/* Disable the sticky fog frame to avoid rendering artifacts */
+.island-viewport::after {
+  display: none;
 }
 
 .island-viewport > .zoom-controls {
@@ -3740,9 +3912,10 @@
   z-index: 32;
   padding: 5px 8px;
   border-radius: 18px;
-  background: rgba(7,14,22,0.62);
+  background: rgba(7,14,22,0.65);
   backdrop-filter: blur(10px);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.24);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.28);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
 @media (max-width: 768px) {
@@ -3758,11 +3931,11 @@
   }
 
   .boom-house svg {
-    width: 112px;
+    width: 118px;
   }
 
   .harbor-icon {
-    font-size: 34px;
+    font-size: 36px;
   }
 
   .island-viewport > .zoom-controls {
