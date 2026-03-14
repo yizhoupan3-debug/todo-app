@@ -261,34 +261,32 @@ const GardenView = {
             const top = land.offsetTop;
             const width = land.offsetWidth;
             const height = land.offsetHeight;
+            // Allow full scroll range — no padding restriction
             return {
-                left: left + width * 0.035,
-                right: left + width * 0.965,
-                top: top + height * 0.055,
-                bottom: top + height * 0.905,
+                left: left - width * 0.05,
+                right: left + width * 1.05,
+                top: top - height * 0.06,
+                bottom: top + height * 1.02,
             };
         }
         const width = world.offsetWidth || 0;
         const height = world.offsetHeight || 0;
         return {
-            left: width * 0.07,
-            right: width * 0.93,
-            top: height * 0.08,
-            bottom: height * 0.86,
+            left: 0,
+            right: width,
+            top: 0,
+            bottom: height,
         };
     },
 
     _clampViewport(vp, world) {
         if (!vp || !world) return;
-        const bounds = this._getViewportBounds(world);
-        const visibleWidth = vp.clientWidth / this._zoom;
-        const visibleHeight = vp.clientHeight / this._zoom;
-        const minLeft = bounds.left;
-        const maxLeft = Math.max(minLeft, bounds.right - visibleWidth);
-        const minTop = bounds.top;
-        const maxTop = Math.max(minTop, bounds.bottom - visibleHeight);
-        vp.scrollLeft = Math.min(maxLeft, Math.max(minLeft, vp.scrollLeft));
-        vp.scrollTop = Math.min(maxTop, Math.max(minTop, vp.scrollTop));
+        // Don't clamp aggressively — just ensure we don't scroll
+        // beyond the world boundaries
+        const maxScrollLeft = vp.scrollWidth - vp.clientWidth;
+        const maxScrollTop = vp.scrollHeight - vp.clientHeight;
+        vp.scrollLeft = Math.max(0, Math.min(maxScrollLeft, vp.scrollLeft));
+        vp.scrollTop = Math.max(0, Math.min(maxScrollTop, vp.scrollTop));
     },
 
     _centerViewport(vp, world) {

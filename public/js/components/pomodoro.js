@@ -70,8 +70,9 @@ const Pomodoro = {
         this.currentTask = task;
         this.round = 1;
         this.phase = 'setup';
-        document.getElementById('pomodoro-task-label').innerHTML =
-            `<span class="pomodoro-task-name">📌 ${task.title}</span>`;
+        const label = document.getElementById('pomodoro-task-label');
+        label.innerHTML = '<span class="pomodoro-task-name"></span>';
+        label.querySelector('.pomodoro-task-name').textContent = `📌 ${task.title}`;
         this.showScreen('setup');
         document.getElementById('pomodoro-overlay').classList.remove('hidden');
         this.isOpen = true;
@@ -154,14 +155,14 @@ const Pomodoro = {
         this.showScreen('setup');
     },
 
-    onPhaseComplete() {
+    async onPhaseComplete() {
         if (this.phase === 'focus') {
             // Play notification sound
             this.playNotification();
             // Persist this focus round to DB
             try {
                 const assignee = (this.currentTask && this.currentTask.assignee) || '潘潘';
-                API.addPomodoroSession({
+                await API.addPomodoroSession({
                     assignee,
                     focus_minutes: this.focusMin,
                     rounds: 1,
@@ -169,6 +170,7 @@ const Pomodoro = {
                 });
             } catch (e) {
                 console.error('Pomodoro save error:', e);
+                App.showToast('番茄钟记录保存失败', 'error');
             }
             // Show focus self-rating dialog before settling coin reward.
             this.showFocusRating();
@@ -209,8 +211,9 @@ const Pomodoro = {
 
     playNotification() {
         // Simple beep via Web Audio API
+        let ctx;
         try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            ctx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.connect(gain);
@@ -219,12 +222,17 @@ const Pomodoro = {
             gain.gain.value = 0.3;
             osc.start();
             setTimeout(() => { osc.stop(); ctx.close(); }, 300);
-            // Also try browser notification
+        } catch (e) {
+            console.error('Audio notification error:', e);
+            if (ctx) try { ctx.close(); } catch (_) {}
+        }
+        // Browser notification (separate try/catch to avoid leaking AudioContext)
+        try {
             if (Notification.permission === 'granted') {
                 new Notification('🍅 番茄钟', { body: this.phase === 'focus' ? '专注时间结束！' : '休息结束！' });
             }
         } catch (e) {
-            console.error('Pomodoro session save error:', e);
+            console.error('Browser notification error:', e);
         }
     },
 

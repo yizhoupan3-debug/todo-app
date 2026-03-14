@@ -697,7 +697,7 @@ Object.assign(GardenView, {
                 else if (action === 'remove') await this.removePlot(plotId);
                 else if (action === 'move') this.startMovePlot(plotId);
                 else if (action === 'speedup') await this.speedupPlot(plotId);
-                else if (action === 'items') Utils.toast('🧪 道具功能即将上线！');
+                else if (action === 'items') App.showToast('🧪 道具功能即将上线！');
             });
         });
     },
@@ -720,8 +720,8 @@ Object.assign(GardenView, {
             this._patchPlot(plotId, { last_harvested: this._todayString() });
             this._updateDynamicContent();
             this._flashPlot(plotId, 'plot-harvested');
-            Utils.toast(`💰 收获 ${data.reward} 喵喵币！`, 'success');
-        } catch (e) { Utils.toast(e.message || '收取失败'); }
+            App.showToast(`💰 收获 ${data.reward} 喵喵币！`, 'success');
+        } catch (e) { App.showToast(e.message || '收取失败'); }
     },
 
     async removePlot(plotId) {
@@ -735,11 +735,11 @@ Object.assign(GardenView, {
                 body: JSON.stringify({ assignee: this.assignee, plot_id: plotId })
             });
             const data = await res.json();
-            if (!res.ok) { Utils.toast(data.error || '铲除失败'); return; }
-            Utils.toast('🗑️ 已铲除', 'success');
+            if (!res.ok) { App.showToast(data.error || '铲除失败'); return; }
+            App.showToast('🗑️ 已铲除', 'success');
             this._staticRendered = false;
             await this.open();
-        } catch (e) { Utils.toast('网络错误'); }
+        } catch (e) { App.showToast('网络错误'); }
     },
 
     startMovePlot(plotId) {
@@ -748,7 +748,7 @@ Object.assign(GardenView, {
         document.querySelectorAll('.iplot.cleared').forEach(el => {
             el.classList.add('move-target');
         });
-        Utils.toast('🔄 点击一个空地块来移动植物', 'info');
+        App.showToast('🔄 点击一个空地块来移动植物', 'info');
     },
 
     async executeMoveToPlot(targetPlotId) {
@@ -763,12 +763,12 @@ Object.assign(GardenView, {
                 })
             });
             const data = await res.json();
-            if (!res.ok) { Utils.toast(data.error || '移动失败'); return; }
-            Utils.toast('🔄 移动成功！', 'success');
+            if (!res.ok) { App.showToast(data.error || '移动失败'); return; }
+            App.showToast('🔄 移动成功！', 'success');
             this._movingPlotId = null;
             this._staticRendered = false;
             await this.open();
-        } catch (e) { Utils.toast('网络错误'); }
+        } catch (e) { App.showToast('网络错误'); }
     },
 
     async speedupPlot(plotId) {
@@ -779,12 +779,12 @@ Object.assign(GardenView, {
                 body: JSON.stringify({ assignee: this.assignee, plot_id: plotId })
             });
             const data = await res.json();
-            if (!res.ok) { Utils.toast(data.error || '加速失败'); return; }
+            if (!res.ok) { App.showToast(data.error || '加速失败'); return; }
             App.syncCoins({ assignee: this.assignee, balance: data.balance });
-            Utils.toast(`⏩ 加速成功！花费 ${data.cost} 喵喵币`, 'success');
+            App.showToast(`⏩ 加速成功！花费 ${data.cost} 喵喵币`, 'success');
             this._staticRendered = false;
             await this.open();
-        } catch (e) { Utils.toast('网络错误'); }
+        } catch (e) { App.showToast('网络错误'); }
     },
 
     showWorldMap() {

@@ -29,6 +29,7 @@ const CheckinView = {
         // Back buttons
         document.getElementById('checkin-back').addEventListener('click', () => this.showLanding());
         document.getElementById('checkin-back-wakeup').addEventListener('click', () => this.showLanding());
+        document.getElementById('checkin-back-goout').addEventListener('click', () => this.showLanding());
         document.getElementById('checkin-back-skincare').addEventListener('click', () => this.showLanding());
         document.getElementById('checkin-back-steps').addEventListener('click', () => this.showLanding());
 
@@ -353,7 +354,7 @@ const CheckinView = {
         );
 
         const weekday = ['日', '一', '二', '三', '四', '五', '六'];
-        const iconMap = { wakeup: '⏰', skincare: '🧴' };
+        const iconMap = { wakeup: '⏰', goout: '🚪', skincare: '🧴' };
         const icon = iconMap[type] || '✅';
         let html = '';
         for (const result of results) {

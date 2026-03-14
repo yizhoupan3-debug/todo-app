@@ -1,4 +1,4 @@
-module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, PLANT_TIERS }) {
+module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, PLANT_TIERS, TREE_MATURE_MINUTES, SPEEDUP_COST, SPEEDUP_MINUTES }) {
     router.get('/plots/:assignee', (req, res) => {
         try {
             const plots = db.prepare(
@@ -138,7 +138,7 @@ module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, 
                 if (!tree) return { tree: null, coinDrop: 0 };
 
                 const newMinutes = (tree.growth_minutes || 0) + minutes;
-                const newStatus = newMinutes >= 150 ? 'grown' : 'growing';
+                const newStatus = newMinutes >= TREE_MATURE_MINUTES ? 'grown' : 'growing';
 
                 db.prepare('UPDATE trees SET growth_minutes = ?, status = ? WHERE id = ?')
                     .run(newMinutes, newStatus, tree.id);
@@ -319,19 +319,19 @@ module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, 
 
                 const tree = db.prepare('SELECT * FROM trees WHERE id = ?').get(plot.tree_id);
                 if (!tree) throw new Error('NOT_FOUND');
-                if ((tree.growth_minutes || 0) >= 150) throw new Error('ALREADY_MATURE');
+                if ((tree.growth_minutes || 0) >= TREE_MATURE_MINUTES) throw new Error('ALREADY_MATURE');
 
                 const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
                     .get(assignee);
                 if (balance < SPEED_COST) throw new Error('INSUFFICIENT');
 
                 db.prepare('UPDATE coin_accounts SET balance = balance - ? WHERE assignee = ?')
-                    .run(SPEED_COST, assignee);
+                    .run(SPEEDUP_COST, assignee);
                 db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                    .run(assignee, -SPEED_COST, 'speedup', tree.tree_type);
+                    .run(assignee, -SPEEDUP_COST, 'speedup', tree.tree_type);
 
-                const newMinutes = Math.min(150, (tree.growth_minutes || 0) + SPEED_MINUTES);
-                const newStatus = newMinutes >= 150 ? 'grown' : 'growing';
+                const newMinutes = Math.min(TREE_MATURE_MINUTES, (tree.growth_minutes || 0) + SPEEDUP_MINUTES);
+                const newStatus = newMinutes >= TREE_MATURE_MINUTES ? 'grown' : 'growing';
                 db.prepare('UPDATE trees SET growth_minutes = ?, status = ? WHERE id = ?')
                     .run(newMinutes, newStatus, tree.id);
 

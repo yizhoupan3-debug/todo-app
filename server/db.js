@@ -279,7 +279,6 @@ if (plotCount.count === 0) {
   seedPlots();
 }
 
-module.exports = db;
 
 // ── Coin earning system migrations ──
 
@@ -389,3 +388,5 @@ try {
     migrateForestPlots();
   }
 } catch (e) { /* ignore migration failures */ }
+
+module.exports = db;

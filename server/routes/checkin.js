@@ -1,12 +1,22 @@
 const express = require('express');
 const db = require('../db');
+const { CHECKIN_DAILY_REWARD, CHECKIN_STREAK_3_BONUS, CHECKIN_STREAK_7_BONUS } = require('./garden-shared');
 
 const router = express.Router();
 const WAKEUP_REWARD_DEADLINE_HOUR = 9;
+const GOOUT_REWARD_DEADLINE_HOUR = 9;
+const GOOUT_REWARD_DEADLINE_MIN = 30;
 
-function isWakeupRewardEligible(checkinType, now = new Date()) {
-    if (checkinType !== 'wakeup') return true;
-    return now.getHours() < WAKEUP_REWARD_DEADLINE_HOUR;
+function isRewardEligible(checkinType, now = new Date()) {
+    if (checkinType === 'wakeup') {
+        return now.getHours() < WAKEUP_REWARD_DEADLINE_HOUR;
+    }
+    if (checkinType === 'goout') {
+        const h = now.getHours();
+        const m = now.getMinutes();
+        return h < GOOUT_REWARD_DEADLINE_HOUR || (h === GOOUT_REWARD_DEADLINE_HOUR && m < GOOUT_REWARD_DEADLINE_MIN);
+    }
+    return true;
 }
 
 // GET /api/checkin — get records for a date + assignee
@@ -77,10 +87,10 @@ router.post('/', (req, res) => {
         const goalRow = db.prepare('SELECT goal FROM checkin_goals WHERE type = ? AND assignee = ?')
             .get(checkinType, assignee);
         // Default goal by type
-        const defaultGoals = { water: 2000, wakeup: 1, skincare: 1, steps: 10000 };
+        const defaultGoals = { water: 2000, wakeup: 1, goout: 1, skincare: 1, steps: 10000 };
         const goal = goalRow ? goalRow.goal : (defaultGoals[checkinType] || 1);
 
-        const rewardEligible = isWakeupRewardEligible(checkinType, now);
+        const rewardEligible = isRewardEligible(checkinType, now);
 
         if (total >= goal && rewardEligible) {
             // Daily goal reached — check if already rewarded today
@@ -91,11 +101,11 @@ router.post('/', (req, res) => {
 
             if (!alreadyRewardedToday) {
                 // +0.5 daily reward
-                coinsEarned = 0.5;
+                coinsEarned = CHECKIN_DAILY_REWARD;
                 db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
-                    .run(0.5, assignee);
+                    .run(CHECKIN_DAILY_REWARD, assignee);
                 db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                    .run(assignee, 0.5, 'checkin_daily', `${checkinType} 达标`);
+                    .run(assignee, CHECKIN_DAILY_REWARD, 'checkin_daily', `${checkinType} 达标`);
 
                 // Update streak
                 let newStreak = 1;
@@ -120,20 +130,20 @@ router.post('/', (req, res) => {
                 const updatedStreak = db.prepare('SELECT * FROM checkin_streaks WHERE assignee = ? AND type = ?')
                     .get(assignee, checkinType);
                 if (newStreak >= 3 && newStreak % 3 === 0 && updatedStreak.reward_3_claimed !== today) {
-                    streakBonus += 2;
-                    db.prepare('UPDATE coin_accounts SET balance = balance + 2 WHERE assignee = ?').run(assignee);
+                    streakBonus += CHECKIN_STREAK_3_BONUS;
+                    db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?').run(CHECKIN_STREAK_3_BONUS, assignee);
                     db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                        .run(assignee, 2, 'checkin_streak_3', `${checkinType} 连续${newStreak}天`);
+                        .run(assignee, CHECKIN_STREAK_3_BONUS, 'checkin_streak_3', `${checkinType} 连续${newStreak}天`);
                     db.prepare('UPDATE checkin_streaks SET reward_3_claimed = ? WHERE assignee = ? AND type = ?')
                         .run(today, assignee, checkinType);
                 }
 
                 // 7-day streak bonus + reset
                 if (newStreak >= 7 && newStreak % 7 === 0 && updatedStreak.reward_7_claimed !== today) {
-                    streakBonus += 5;
-                    db.prepare('UPDATE coin_accounts SET balance = balance + 5 WHERE assignee = ?').run(assignee);
+                    streakBonus += CHECKIN_STREAK_7_BONUS;
+                    db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?').run(CHECKIN_STREAK_7_BONUS, assignee);
                     db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                        .run(assignee, 5, 'checkin_streak_7', `${checkinType} 连续${newStreak}天`);
+                        .run(assignee, CHECKIN_STREAK_7_BONUS, 'checkin_streak_7', `${checkinType} 连续${newStreak}天`);
                     db.prepare('UPDATE checkin_streaks SET reward_7_claimed = ? WHERE assignee = ? AND type = ?')
                         .run(today, assignee, checkinType);
 
@@ -154,8 +164,12 @@ router.post('/', (req, res) => {
             currentStreak,
             streakBonus,
             rewardEligible,
-            rewardBlockedReason: checkinType === 'wakeup' && !rewardEligible
-                ? `起床打卡需在 ${WAKEUP_REWARD_DEADLINE_HOUR}:00 前才有喵喵币`
+            rewardBlockedReason: !rewardEligible
+                ? (checkinType === 'wakeup'
+                    ? `起床打卡需在 ${WAKEUP_REWARD_DEADLINE_HOUR}:00 前才有喵喵币`
+                    : checkinType === 'goout'
+                        ? `出门打卡需在 ${GOOUT_REWARD_DEADLINE_HOUR}:${String(GOOUT_REWARD_DEADLINE_MIN).padStart(2,'0')} 前才有喵喵币`
+                        : null)
                 : null,
         });
     } catch (err) {
@@ -188,7 +202,7 @@ router.get('/goal', (req, res) => {
     try {
         const row = db.prepare('SELECT goal FROM checkin_goals WHERE type = ? AND assignee = ?')
             .get(type || 'water', assignee);
-        const defaultGoals = { water: 2000, wakeup: 1, skincare: 1, steps: 10000 };
+        const defaultGoals = { water: 2000, wakeup: 1, goout: 1, skincare: 1, steps: 10000 };
         const t = type || 'water';
         res.json({ goal: row ? row.goal : (defaultGoals[t] || 1) });
     } catch (err) {

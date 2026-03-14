@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { generateRecurringInstances } = require('../services/recurring');
+const { TASK_REWARD } = require('./garden-shared');
 
 const router = express.Router();
 
@@ -215,14 +216,13 @@ router.put('/:id', (req, res) => {
         // ── Award coins when task completed ──
         let coinsEarned = 0;
         if (fields.status === 'done' && prevTask.status !== 'done') {
-            const TASK_REWARD = 1.5;
             try {
                 db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
                     .run(TASK_REWARD, task.assignee);
                 db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
                     .run(task.assignee, TASK_REWARD, 'task_done', task.title);
                 coinsEarned = TASK_REWARD;
-            } catch (e) { /* ignore coin errors */ }
+            } catch (e) { console.error('Coin reward error:', e); }
         }
 
         res.json({ ...task, coinsEarned });

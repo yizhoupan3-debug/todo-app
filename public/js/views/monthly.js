@@ -182,10 +182,12 @@ const MonthlyView = {
         });
     },
 
-    _renderMonth(y, m, grid) {
+    _renderMonth(y, m, grid, { trackRendered = true } = {}) {
         const key = this._monthKey(y, m);
-        if (this.renderedMonths.includes(key)) return;
-        this.renderedMonths.push(key);
+        if (trackRendered) {
+            if (this.renderedMonths.includes(key)) return;
+            this.renderedMonths.push(key);
+        }
 
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
@@ -351,107 +353,7 @@ const MonthlyView = {
     },
 
     _renderMonthToFragment(y, m, container) {
-        // Same as _renderMonth but into a container element
-        const key = this._monthKey(y, m);
-        const today = new Date();
-        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        const monthNames = ['一月', '二月', '三月', '四月', '五月', '六月',
-            '七月', '八月', '九月', '十月', '十一月', '十二月'];
-
-        const label = document.createElement('div');
-        label.className = 'calendar-month-label';
-        label.dataset.monthKey = key;
-        label.textContent = `${y}年 ${monthNames[m]}`;
-        container.appendChild(label);
-        this.observer.observe(label);
-
-        let tasks = this.monthTasks[key] || [];
-        if (this.statusFilter === 'todo') tasks = tasks.filter(t => t.status !== 'done');
-        else if (this.statusFilter === 'done') tasks = tasks.filter(t => t.status === 'done');
-
-        const dayTasks = {};
-        for (const task of tasks) {
-            if (!task.due_date) continue;
-            if (!dayTasks[task.due_date]) dayTasks[task.due_date] = [];
-            dayTasks[task.due_date].push(task);
-        }
-        for (const date in dayTasks) {
-            dayTasks[date].sort((a, b) => {
-                if (a.status === 'done' && b.status !== 'done') return 1;
-                if (a.status !== 'done' && b.status === 'done') return -1;
-                return a.priority - b.priority;
-            });
-        }
-
-        const firstDay = new Date(y, m, 1);
-        const lastDay = new Date(y, m + 1, 0);
-        let startDow = firstDay.getDay() - 1;
-        if (startDow < 0) startDow = 6;
-
-        const body = document.createElement('div');
-        body.className = 'calendar-body';
-
-        for (let i = 0; i < startDow; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'calendar-cell other-month';
-            body.appendChild(cell);
-        }
-
-        for (let d = 1; d <= lastDay.getDate(); d++) {
-            const dateStr = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-            const isToday = dateStr === todayStr;
-            const dTasks = dayTasks[dateStr] || [];
-
-            const cell = document.createElement('div');
-            cell.className = 'calendar-cell' + (isToday ? ' today-gold' : '');
-            cell.dataset.date = dateStr;
-
-            const numEl = document.createElement('div');
-            numEl.className = 'calendar-day-num';
-            numEl.textContent = d;
-            cell.appendChild(numEl);
-
-            if (dTasks.length > 0) {
-                const tasksEl = document.createElement('div');
-                tasksEl.className = 'calendar-tasks';
-                const maxShow = 3;
-                for (let ti = 0; ti < Math.min(dTasks.length, maxShow); ti++) {
-                    const task = dTasks[ti];
-                    const item = document.createElement('div');
-                    item.className = 'calendar-task-item' + (task.status === 'done' ? ' done' : '');
-                    item.style.setProperty('--cat-color', task.category_color || '#6366f1');
-                    item.textContent = task.title;
-                    tasksEl.appendChild(item);
-                }
-                if (dTasks.length > maxShow) {
-                    const more = document.createElement('div');
-                    more.className = 'calendar-task-more';
-                    more.textContent = `+${dTasks.length - maxShow} 更多`;
-                    tasksEl.appendChild(more);
-                }
-                cell.appendChild(tasksEl);
-            }
-
-            cell.addEventListener('click', () => {
-                const [cy, cm, cd] = dateStr.split('-').map(Number);
-                App.currentAssignee = this.localAssignee;
-                App.switchView('daily');
-                DailyView.syncPersonPills();
-                DailyView.setDate(new Date(cy, cm - 1, cd));
-            });
-
-            body.appendChild(cell);
-        }
-
-        const totalCells = startDow + lastDay.getDate();
-        const remaining = (7 - (totalCells % 7)) % 7;
-        for (let i = 0; i < remaining; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'calendar-cell other-month';
-            body.appendChild(cell);
-        }
-
-        container.appendChild(body);
+        this._renderMonth(y, m, container, { trackRendered: false });
     },
 
     escapeHtml(str) {

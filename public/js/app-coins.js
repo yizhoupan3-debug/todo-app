@@ -83,7 +83,7 @@ Object.assign(App, {
         const coinUser = this._getHeaderCoinUser();
         API.getCoins(coinUser).then(d => {
             this._renderHeaderCoins(this._normalizeCoinBalance(d.balance));
-        }).catch(() => { });
+        }).catch(e => { console.warn('Header coin sync failed:', e); });
     },
 
     _renderHeaderCoins(balance = 0) {

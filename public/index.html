@@ -19,7 +19,7 @@
   <meta name="msapplication-TileColor" content="#ffcfd0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preload" href="/css/style.css?v=42" as="style">
+  <link rel="preload" href="/css/style.css?v=43" as="style">
   <!-- Instant theme restore: runs BEFORE CSS to prevent flash of wrong theme -->
   <script>
     (function() {
@@ -37,7 +37,7 @@
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="/css/style.css?v=42">
+  <link rel="stylesheet" href="/css/style.css?v=43">
   <script src="https://unpkg.com/lucide@0.577.0/dist/umd/lucide.min.js" defer></script>
   <script>
     // SW registration + controlled reload only when an existing worker is replaced.
@@ -316,6 +316,14 @@
               </div>
               <div class="checkin-item-arrow">›</div>
             </div>
+            <div class="checkin-item-card" data-type="goout" id="card-goout">
+              <div class="checkin-item-icon">🚪</div>
+              <div class="checkin-item-info">
+                <h4>出门打卡</h4>
+                <span class="checkin-item-stats" id="card-goout-stats">今日未打卡</span>
+              </div>
+              <div class="checkin-item-arrow">›</div>
+            </div>
             <div class="checkin-item-card" data-type="skincare" id="card-skincare">
               <div class="checkin-item-icon">🧴</div>
               <div class="checkin-item-info">
@@ -403,6 +411,25 @@
             <div class="wakeup-history">
               <h4>最近 7 天</h4>
               <div class="wakeup-log" id="wakeup-log"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail: goout -->
+        <div class="checkin-detail hidden" id="checkin-detail-goout">
+          <button class="checkin-back-btn" id="checkin-back-goout">‹ 返回打卡</button>
+          <div class="wakeup-tracker">
+            <div class="wakeup-today">
+              <div class="wakeup-status" id="goout-status">今日未打卡</div>
+              <div class="wakeup-time" id="goout-time"></div>
+              <button class="goout-stamp-btn" id="goout-stamp-btn">
+                <span class="wakeup-stamp-icon">🚪</span>
+                <span>出门打卡</span>
+              </button>
+            </div>
+            <div class="wakeup-history">
+              <h4>最近 7 天</h4>
+              <div class="wakeup-log" id="goout-log"></div>
             </div>
           </div>
         </div>
@@ -858,24 +885,24 @@
   <div class="toast-container" id="toast-container"></div>
 
   <script src="/socket.io/socket.io.js" defer></script>
-  <script src="/js/utils.js?v=42" defer></script>
-  <script src="/js/api.js?v=42" defer></script>
-  <script src="/js/views/daily.js?v=42" defer></script>
-  <script src="/js/views/monthly.js?v=42" defer></script>
-  <script src="/js/views/checkin.js?v=42" defer></script>
-  <script src="/js/views/stats.js?v=42" defer></script>
-  <script src="/js/views/garden.js?v=42" defer></script>
-  <script src="/js/views/garden-island.js?v=42" defer></script>
-  <script src="/js/views/garden-shop.js?v=42" defer></script>
-  <script src="/js/components/task-modal.js?v=42" defer></script>
-  <script src="/js/components/ics-import.js?v=42" defer></script>
-  <script src="/js/components/pomodoro.js?v=42" defer></script>
-  <script src="/js/ambient.js?v=42" defer></script>
-  <script src="/js/app.js?v=42" defer></script>
-  <script src="/js/app-theme.js?v=42" defer></script>
-  <script src="/js/app-persona-nav.js?v=42" defer></script>
-  <script src="/js/app-coins.js?v=42" defer></script>
-  <script src="/js/widget-installer.js?v=42" defer></script>
+  <script src="/js/utils.js?v=43" defer></script>
+  <script src="/js/api.js?v=43" defer></script>
+  <script src="/js/views/daily.js?v=43" defer></script>
+  <script src="/js/views/monthly.js?v=43" defer></script>
+  <script src="/js/views/checkin.js?v=43" defer></script>
+  <script src="/js/views/stats.js?v=43" defer></script>
+  <script src="/js/views/garden.js?v=43" defer></script>
+  <script src="/js/views/garden-island.js?v=43" defer></script>
+  <script src="/js/views/garden-shop.js?v=43" defer></script>
+  <script src="/js/components/task-modal.js?v=43" defer></script>
+  <script src="/js/components/ics-import.js?v=43" defer></script>
+  <script src="/js/components/pomodoro.js?v=43" defer></script>
+  <script src="/js/ambient.js?v=43" defer></script>
+  <script src="/js/app.js?v=43" defer></script>
+  <script src="/js/app-theme.js?v=43" defer></script>
+  <script src="/js/app-persona-nav.js?v=43" defer></script>
+  <script src="/js/app-coins.js?v=43" defer></script>
+  <script src="/js/widget-installer.js?v=43" defer></script>
 </body>
 
 </html>

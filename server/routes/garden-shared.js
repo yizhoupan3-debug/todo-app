@@ -41,10 +41,26 @@ function randomIslandName(assignee) {
     return available[Math.floor(Math.random() * available.length)];
 }
 
+// ── Game balance constants ──
+const TREE_MATURE_MINUTES = 150;
+const SPEEDUP_COST = 5;
+const SPEEDUP_MINUTES = 50;
+const TASK_REWARD = 1.5;
+const CHECKIN_DAILY_REWARD = 0.5;
+const CHECKIN_STREAK_3_BONUS = 2;
+const CHECKIN_STREAK_7_BONUS = 5;
+
 module.exports = {
     PLANT_CATALOG,
     PLANT_TIERS,
     BOAT_CATALOG,
     CHARACTER_MAP,
     randomIslandName,
+    TREE_MATURE_MINUTES,
+    SPEEDUP_COST,
+    SPEEDUP_MINUTES,
+    TASK_REWARD,
+    CHECKIN_DAILY_REWARD,
+    CHECKIN_STREAK_3_BONUS,
+    CHECKIN_STREAK_7_BONUS,
 };

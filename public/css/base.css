@@ -1552,10 +1552,25 @@ textarea:focus {
   padding-bottom: 24px;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  animation: viewFadeIn 0.3s ease-out;
   transform: translateZ(0);
   backface-visibility: hidden;
+  contain: layout style;
+}
+
+/* Only promote to GPU layer during the brief fade-in animation */
+.view-container.view-animating {
   will-change: transform, opacity;
+  animation: viewFadeIn 0.25s ease-out;
+}
+
+/* Completely freeze hidden views: stop animations, skip layout & paint */
+.view-container.hidden {
+  display: none !important;
+  animation: none !important;
+  will-change: auto !important;
+}
+.view-container.hidden * {
+  animation-play-state: paused !important;
 }
 
 @supports (view-transition-name: none) {
@@ -1567,9 +1582,14 @@ textarea:focus {
     view-transition-name: app-view;
   }
 
+  /* When View Transition API handles the animation, skip manual viewFadeIn */
+  .view-container.view-animating {
+    animation: none;
+  }
+
   ::view-transition-group(app-view),
   ::view-transition-group(app-header) {
-    animation-duration: 220ms;
+    animation-duration: 180ms;
     animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
@@ -1717,37 +1737,37 @@ textarea:focus {
   }
 }
 
-/* Stagger animation for task cards */
+/* Stagger animation for task cards (tighter 25ms intervals) */
 .task-list .task-card:nth-child(1) {
   animation-delay: 0s;
 }
 
 .task-list .task-card:nth-child(2) {
-  animation-delay: 0.04s;
+  animation-delay: 0.025s;
 }
 
 .task-list .task-card:nth-child(3) {
-  animation-delay: 0.08s;
+  animation-delay: 0.05s;
 }
 
 .task-list .task-card:nth-child(4) {
-  animation-delay: 0.12s;
+  animation-delay: 0.075s;
 }
 
 .task-list .task-card:nth-child(5) {
-  animation-delay: 0.16s;
+  animation-delay: 0.1s;
 }
 
 .task-list .task-card:nth-child(6) {
-  animation-delay: 0.2s;
+  animation-delay: 0.125s;
 }
 
 .task-list .task-card:nth-child(7) {
-  animation-delay: 0.24s;
+  animation-delay: 0.15s;
 }
 
 .task-list .task-card:nth-child(8) {
-  animation-delay: 0.28s;
+  animation-delay: 0.175s;
 }
 
 .task-card:hover {

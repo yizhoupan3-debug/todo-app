@@ -128,10 +128,15 @@ Object.assign(App, {
     },
 
     switchView(view) {
+        // Skip redundant same-view switches (unless it's initial load)
+        if (this.currentView === view && this._viewSwitchedOnce) return;
+        this._viewSwitchedOnce = true;
+
         if (!this._viewSupportsAllAssignee(view) && this.activePersona === 'all') {
             this.setPersona(this.lastPersona, { refresh: false });
         }
-        this._runViewTransition(() => {
+
+        const transition = this._runViewTransition(() => {
             this.currentView = view;
 
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
@@ -150,9 +155,13 @@ Object.assign(App, {
                 const isTarget = vid === viewMap[view];
                 el.classList.toggle('hidden', !isTarget);
                 if (isTarget) {
-                    el.style.animation = 'none';
-                    el.offsetHeight;
-                    el.style.animation = 'viewFadeIn 0.25s ease-out';
+                    // Use CSS class for animation (auto-cleaned after animation ends)
+                    el.classList.remove('view-animating');
+                    void el.offsetHeight; // force reflow to restart animation
+                    el.classList.add('view-animating');
+                    el.addEventListener('animationend', () => {
+                        el.classList.remove('view-animating');
+                    }, { once: true });
                 }
             }
 
@@ -178,26 +187,36 @@ Object.assign(App, {
             this._refreshHeaderCoins();
         });
 
-        switch (view) {
-            case 'daily':
-                DailyView.setDate(DailyView.currentDate);
-                break;
-            case 'monthly':
-                MonthlyView.syncLocalAssignee();
-                MonthlyView.setMonth(MonthlyView.currentYear, MonthlyView.currentMonth);
-                break;
-            case 'checkin':
-                CheckinView.showLanding();
-                break;
-            case 'stats':
-                StatsView.load();
-                break;
-            case 'garden':
-                GardenView.open();
-                break;
-            case 'shop':
-                GardenView.openShop();
-                break;
+        // Defer heavy view data loading so the transition animation isn't blocked
+        const loadViewData = () => {
+            switch (view) {
+                case 'daily':
+                    DailyView.setDate(DailyView.currentDate);
+                    break;
+                case 'monthly':
+                    MonthlyView.syncLocalAssignee();
+                    MonthlyView.setMonth(MonthlyView.currentYear, MonthlyView.currentMonth);
+                    break;
+                case 'checkin':
+                    CheckinView.showLanding();
+                    break;
+                case 'stats':
+                    StatsView.load();
+                    break;
+                case 'garden':
+                    GardenView.open();
+                    break;
+                case 'shop':
+                    GardenView.openShop();
+                    break;
+            }
+        };
+
+        // If transition API is active, wait for it; otherwise use rAF
+        if (transition && transition.finished) {
+            transition.finished.then(loadViewData).catch(loadViewData);
+        } else {
+            requestAnimationFrame(loadViewData);
         }
     },
 
