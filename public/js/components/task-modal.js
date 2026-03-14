@@ -52,7 +52,14 @@ const TaskModal = {
 
         // ── NLP: listen to title input ──
         document.getElementById('task-title').addEventListener('input', (e) => {
+            const val = e.target.value;
+            // Reset dismiss state if user clears the input
+            if (!val.trim()) {
+                this._nlpDismissed = false;
+            }
+
             if (this._nlpDismissed) return;
+            
             clearTimeout(this._debounceTimer);
             this._debounceTimer = setTimeout(() => this._runNLP(e.target.value), 200);
         });
@@ -141,7 +148,6 @@ const TaskModal = {
             }, 1500);
         }
 
-        this._nlpDismissed = true; // prevent re-parsing the cleaned title
     },
 
     _hideNLPPill() {

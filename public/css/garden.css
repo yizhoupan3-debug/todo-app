@@ -3994,6 +3994,14 @@
   pointer-events: none;
 }
 
+.scene-forest-backdrop {
+  z-index: 8;
+}
+
+.scene-frontier-backdrop {
+  z-index: 9;
+}
+
 .forest-cluster {
   position: absolute;
   width: var(--cluster-size);
@@ -4178,6 +4186,28 @@
   background: linear-gradient(0deg, rgba(206, 219, 227, 0.98) 0%, rgba(206, 219, 227, 0) 100%);
 }
 
+.scene-fog::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 24% 50%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 18%),
+    radial-gradient(circle at 68% 40%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 20%);
+  filter: blur(18px);
+  opacity: 0.72;
+  animation: fogShift 12s ease-in-out infinite alternate;
+}
+
+@keyframes fogShift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  100% {
+    transform: translate3d(10px, -6px, 0);
+  }
+}
+
 .zoom-controls {
   position: absolute;
   right: 20px;
@@ -4217,6 +4247,20 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, background 0.2s ease;
 }
 
+.iplot::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 58%;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.24) 0%, rgba(0, 0, 0, 0) 72%);
+  transform: translateX(-50%) scale(1.08);
+  pointer-events: none;
+  opacity: 0.55;
+}
+
 .iplot:hover,
 .iplot.planted:hover {
   transform: translate(-50%, -50%) scale(calc(var(--plot-scale, 1) * 1.09));
@@ -4243,6 +4287,9 @@
     radial-gradient(circle at 50% 28%, rgba(125, 180, 110, 0.14) 0%, rgba(125, 180, 110, 0) 38%),
     linear-gradient(180deg, rgba(42, 89, 42, 0.26) 0%, rgba(28, 57, 27, 0.18) 100%);
   border: 1px solid rgba(126, 178, 112, 0.22);
+  box-shadow:
+    inset 0 0 0 1px rgba(153, 219, 141, 0.08),
+    0 10px 18px rgba(20, 43, 17, 0.16);
 }
 
 .iplot.zone-field.wasteland,
@@ -4251,10 +4298,22 @@
     radial-gradient(circle at 50% 28%, rgba(211, 183, 129, 0.16) 0%, rgba(211, 183, 129, 0) 36%),
     linear-gradient(180deg, rgba(139, 101, 64, 0.24) 0%, rgba(94, 68, 41, 0.18) 100%);
   border: 1px dashed rgba(196, 163, 110, 0.34);
+  box-shadow: 0 8px 14px rgba(84, 56, 25, 0.12);
 }
 
 .iplot.obstacle-wild_tree .iplot-tag {
   background: rgba(18, 62, 28, 0.68);
+}
+
+.iplot.obstacle-wild_tree .iplot-img {
+  transform: rotate(var(--plot-tilt, 0deg)) scale(var(--plot-sprite-scale, 1));
+  transform-origin: 50% 100%;
+  animation: wildTreeSway calc(4.8s * var(--plot-sway, 1)) ease-in-out infinite;
+}
+
+.iplot.obstacle-rock .iplot-img,
+.iplot.obstacle-weed .iplot-img {
+  transform: rotate(calc(var(--plot-tilt, 0deg) * 0.36)) scale(var(--plot-sprite-scale, 1));
 }
 
 .iplot.cleared {
@@ -4262,6 +4321,7 @@
     radial-gradient(circle at 50% 30%, rgba(164, 214, 119, 0.18) 0%, rgba(164, 214, 119, 0) 36%),
     linear-gradient(180deg, rgba(118, 87, 53, 0.22) 0%, rgba(93, 122, 56, 0.15) 100%);
   border: 1px dashed rgba(174, 214, 113, 0.32);
+  box-shadow: inset 0 0 0 1px rgba(190, 222, 144, 0.08), 0 10px 16px rgba(58, 77, 28, 0.12);
 }
 
 .iplot.cleared .iplot-tag {
@@ -4287,6 +4347,8 @@
 .iplot-img {
   width: 52px;
   height: 52px;
+  transform: rotate(var(--plot-tilt, 0deg)) scale(var(--plot-sprite-scale, 1));
+  transform-origin: 50% 100%;
 }
 
 .iplot.wasteland .iplot-img {
@@ -4311,6 +4373,19 @@
 .iplot-bar {
   width: 38px;
   margin-top: 4px;
+}
+
+.iplot.zone-forest .iplot-bar {
+  margin-top: 2px;
+}
+
+.iplot.zone-shore {
+  filter: saturate(0.96) brightness(1.03);
+}
+
+.iplot.zone-shore::before {
+  width: 64%;
+  background: radial-gradient(ellipse at center, rgba(98, 68, 31, 0.22) 0%, rgba(98, 68, 31, 0) 74%);
 }
 
 .island-stats-bar {
@@ -4339,6 +4414,16 @@
   transform: translateX(-50%);
   background: rgba(7, 34, 48, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+@keyframes wildTreeSway {
+  0%, 100% {
+    transform: rotate(calc(var(--plot-tilt, 0deg) - 1.5deg)) scale(var(--plot-sprite-scale, 1));
+  }
+
+  50% {
+    transform: rotate(calc(var(--plot-tilt, 0deg) + 1.8deg)) scale(var(--plot-sprite-scale, 1));
+  }
 }
 
 @media (max-width: 768px) {

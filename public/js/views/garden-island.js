@@ -251,8 +251,17 @@ Object.assign(GardenView, {
     },
 
     renderIslandPlot(plot, layout) {
-        const { left, top, zone, scale, zIndex } = layout || {};
-        const style = `left:${left ?? 50}%;top:${top ?? 60}%;--plot-scale:${scale ?? 1};z-index:${zIndex ?? 8}`;
+        const { left, top, zone, scale, zIndex, tilt, sway, spriteScale, depth } = layout || {};
+        const style = [
+            `left:${left ?? 50}%`,
+            `top:${top ?? 60}%`,
+            `--plot-scale:${scale ?? 1}`,
+            `--plot-tilt:${tilt ?? 0}deg`,
+            `--plot-sway:${sway ?? 1}`,
+            `--plot-sprite-scale:${spriteScale ?? 1}`,
+            `--plot-depth:${depth ?? 0}`,
+            `z-index:${zIndex ?? 8}`,
+        ].join(';');
         const zoneClass = zone ? `zone-${zone}` : '';
         if (plot.status === 'wasteland') {
             const obs = this.obstacleMap[plot.obstacle_type] || this.obstacleMap.rock;
@@ -291,9 +300,55 @@ Object.assign(GardenView, {
         const world = document.getElementById('island-world');
         if (!vp || !world) return;
         if (!this._dragState) {
-            this._dragState = { active: false, sx: 0, sy: 0, px: 0, py: 0 };
+            this._dragState = { active: false, sx: 0, sy: 0, px: 0, py: 0, lastX: 0, lastY: 0, lastT: 0, vx: 0, vy: 0 };
         }
         const dragState = this._dragState;
+        const stopInertia = () => {
+            if (this._inertiaFrame) {
+                cancelAnimationFrame(this._inertiaFrame);
+                this._inertiaFrame = null;
+            }
+        };
+        const startInertia = () => {
+            stopInertia();
+            let vx = dragState.vx || 0;
+            let vy = dragState.vy || 0;
+            const step = () => {
+                const liveWorld = document.getElementById('island-world');
+                const liveViewport = document.getElementById('island-viewport');
+                if (!liveWorld || !liveViewport) {
+                    this._inertiaFrame = null;
+                    return;
+                }
+                vx *= 0.92;
+                vy *= 0.92;
+                if (Math.abs(vx) < 0.18 && Math.abs(vy) < 0.18) {
+                    this._inertiaFrame = null;
+                    return;
+                }
+                this._panX += vx;
+                this._panY += vy;
+                this._clampPan(liveViewport, liveWorld);
+                this._applyWorldTransform(liveWorld);
+                this._inertiaFrame = requestAnimationFrame(step);
+            };
+            if (Math.abs(vx) > 0.18 || Math.abs(vy) > 0.18) {
+                this._inertiaFrame = requestAnimationFrame(step);
+            }
+        };
+        const trackVelocity = (pageX, pageY) => {
+            const now = performance.now();
+            if (dragState.lastT) {
+                const dt = Math.max(1, now - dragState.lastT);
+                const instantVX = (pageX - dragState.lastX) / dt * 16;
+                const instantVY = (pageY - dragState.lastY) / dt * 16;
+                dragState.vx = dragState.vx * 0.45 + instantVX * 0.55;
+                dragState.vy = dragState.vy * 0.45 + instantVY * 0.55;
+            }
+            dragState.lastX = pageX;
+            dragState.lastY = pageY;
+            dragState.lastT = now;
+        };
 
         // Initial center
         requestAnimationFrame(() => {
@@ -317,11 +372,17 @@ Object.assign(GardenView, {
         vp.addEventListener('mousedown', e => {
             if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls,.plot-menu')) return;
             this.closePlotMenu();
+            stopInertia();
             dragState.active = true;
             dragState.sx = e.pageX;
             dragState.sy = e.pageY;
             dragState.px = this._panX;
             dragState.py = this._panY;
+            dragState.lastX = e.pageX;
+            dragState.lastY = e.pageY;
+            dragState.lastT = performance.now();
+            dragState.vx = 0;
+            dragState.vy = 0;
             vp.style.cursor = 'grabbing';
         });
 
@@ -335,13 +396,16 @@ Object.assign(GardenView, {
                 if (!worldEl || !vpEl) return;
                 this._panX = this._dragState.px + (e.pageX - this._dragState.sx);
                 this._panY = this._dragState.py + (e.pageY - this._dragState.sy);
+                trackVelocity(e.pageX, e.pageY);
                 this._clampPan(vpEl, worldEl);
                 this._applyWorldTransform(worldEl);
             });
             document.addEventListener('mouseup', () => {
+                const shouldGlide = !!(this._dragState?.active && (Math.abs(this._dragState.vx) > 0.18 || Math.abs(this._dragState.vy) > 0.18));
                 if (this._dragState) this._dragState.active = false;
                 const vpEl = document.getElementById('island-viewport');
                 if (vpEl) vpEl.style.cursor = 'grab';
+                if (shouldGlide) startInertia();
             });
         }
 
@@ -349,6 +413,7 @@ Object.assign(GardenView, {
         vp.addEventListener('wheel', e => {
             e.preventDefault();
             this.closePlotMenu();
+            stopInertia();
             const factor = e.deltaY > 0 ? 0.92 : 1.08;
             this._zoomAtPoint(vp, world, this._zoom * factor, e.clientX, e.clientY);
             this._updateZoomDisplay();
@@ -361,6 +426,7 @@ Object.assign(GardenView, {
         vp.addEventListener('touchstart', e => {
             if (e.touches.length === 2) {
                 this.closePlotMenu();
+                stopInertia();
                 pinching = true;
                 dragState.active = false;
                 lastPinchDist = Math.hypot(
@@ -370,11 +436,17 @@ Object.assign(GardenView, {
             } else if (e.touches.length === 1 && !pinching) {
                 if (e.target.closest('.iplot,.boom-house,.boom-harbor,.zoom-controls,.plot-menu')) return;
                 this.closePlotMenu();
+                stopInertia();
                 dragState.active = true;
                 dragState.sx = e.touches[0].pageX;
                 dragState.sy = e.touches[0].pageY;
                 dragState.px = this._panX;
                 dragState.py = this._panY;
+                dragState.lastX = e.touches[0].pageX;
+                dragState.lastY = e.touches[0].pageY;
+                dragState.lastT = performance.now();
+                dragState.vx = 0;
+                dragState.vy = 0;
             }
         }, { passive: true });
 
@@ -395,6 +467,7 @@ Object.assign(GardenView, {
                 e.preventDefault();
                 this._panX = dragState.px + (e.touches[0].pageX - dragState.sx);
                 this._panY = dragState.py + (e.touches[0].pageY - dragState.sy);
+                trackVelocity(e.touches[0].pageX, e.touches[0].pageY);
                 this._clampPan(vp, world);
                 this._applyWorldTransform(world);
             }
@@ -402,7 +475,11 @@ Object.assign(GardenView, {
 
         vp.addEventListener('touchend', e => {
             if (e.touches.length < 2) pinching = false;
-            if (e.touches.length === 0) dragState.active = false;
+            if (e.touches.length === 0) {
+                const shouldGlide = dragState.active && (Math.abs(dragState.vx) > 0.18 || Math.abs(dragState.vy) > 0.18);
+                dragState.active = false;
+                if (shouldGlide) startInertia();
+            }
         });
 
         // ── Zoom buttons ──

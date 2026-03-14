@@ -126,8 +126,8 @@ db.exec(`
     assignee TEXT NOT NULL CHECK(assignee IN ('潘潘','蒲蒲')),
     name TEXT NOT NULL DEFAULT '起始岛',
     island_type TEXT NOT NULL DEFAULT 'starter',
-    grid_w INTEGER NOT NULL DEFAULT 6,
-    grid_h INTEGER NOT NULL DEFAULT 4,
+    grid_w INTEGER NOT NULL DEFAULT 8,
+    grid_h INTEGER NOT NULL DEFAULT 6,
     discovered INTEGER NOT NULL DEFAULT 1,
     position_x REAL NOT NULL DEFAULT 0,
     position_y REAL NOT NULL DEFAULT 0,
@@ -217,6 +217,22 @@ if (coinCount.count === 0) {
 
 // Seed starter islands if empty
 const islandCount = db.prepare('SELECT COUNT(*) as count FROM islands').get();
+const STARTER_GRID_W = 8;
+const STARTER_GRID_H = 6;
+
+function isForestPlot(x, y, gridW, gridH) {
+  const forestRows = Math.max(3, Math.floor(gridH * 0.5));
+  return y < forestRows || (y === forestRows && x > 0 && x < gridW - 1);
+}
+
+function pickObstacleForPlot(x, y, gridW, gridH) {
+  if (isForestPlot(x, y, gridW, gridH)) return 'wild_tree';
+  const frontierPool = x <= 1 || x >= gridW - 2 || y >= gridH - 1
+    ? ['weed', 'rock', 'weed', 'rock', 'weed']
+    : ['weed', 'rock', 'weed'];
+  return frontierPool[Math.floor(Math.random() * frontierPool.length)];
+}
+
 if (islandCount.count === 0) {
   const ISLAND_NAMES = [
     '骷髅礁', '翡翠湾', '珊瑚岛', '月牙岬', '雷霆岩',
@@ -227,8 +243,8 @@ if (islandCount.count === 0) {
     for (const user of ['潘潘', '蒲蒲']) {
       // Create starter island (center position)
       const starter = db.prepare(
-        "INSERT INTO islands (assignee, name, island_type, grid_w, grid_h, discovered, position_x, position_y) VALUES (?, '起始岛', 'starter', 6, 4, 1, 0, 0)"
-      ).run(user);
+        "INSERT INTO islands (assignee, name, island_type, grid_w, grid_h, discovered, position_x, position_y) VALUES (?, '起始岛', 'starter', ?, ?, 1, 0, 0)"
+      ).run(user, STARTER_GRID_W, STARTER_GRID_H);
 
       // Link existing plots to this starter island
       db.prepare('UPDATE garden_plots SET island_id = ? WHERE assignee = ? AND island_id IS NULL')
@@ -243,9 +259,8 @@ if (islandCount.count === 0) {
       ];
       for (const d of dirs) {
         const name = ISLAND_NAMES[Math.floor(Math.random() * ISLAND_NAMES.length)];
-        // Random grid size: 4-8 wide, 3-5 tall
-        const gw = 4 + Math.floor(Math.random() * 5); // 4~8
-        const gh = 3 + Math.floor(Math.random() * 3); // 3~5
+        const gw = STARTER_GRID_W + Math.floor(Math.random() * 3); // 8~10
+        const gh = STARTER_GRID_H + Math.floor(Math.random() * 2); // 6~7
         db.prepare(
           'INSERT INTO islands (assignee, name, island_type, grid_w, grid_h, discovered, position_x, position_y) VALUES (?, ?, ?, ?, ?, 0, ?, ?)'
         ).run(user, name, 'normal', gw, gh, d.dx, d.dy);
@@ -255,26 +270,28 @@ if (islandCount.count === 0) {
   seedIslands();
 }
 
-// Seed garden plots if empty (6x4 = 24 plots per user)
+// Seed garden plots if empty (starter island uses 8x6 = 48 plots per user)
 const plotCount = db.prepare('SELECT COUNT(*) as count FROM garden_plots').get();
 if (plotCount.count === 0) {
-  const obstacles = ['rock', 'weed', 'wild_tree'];
   // Get starter island IDs
-  const starterIslands = db.prepare("SELECT id, assignee FROM islands WHERE island_type = 'starter'").all();
+  const starterIslands = db.prepare("SELECT id, assignee, grid_w, grid_h FROM islands WHERE island_type = 'starter'").all();
   const insertPlot = db.prepare(
     'INSERT INTO garden_plots (assignee, x, y, status, obstacle_type, island_id) VALUES (?, ?, ?, ?, ?, ?)'
   );
   const seedPlots = db.transaction(() => {
     for (const island of starterIslands) {
-      for (let y = 0; y < 4; y++) {
-        for (let x = 0; x < 6; x++) {
-          const isCenter = (x === 2 || x === 3) && (y === 1 || y === 2);
-          if (isCenter) {
-            insertPlot.run(island.assignee, x, y, 'cleared', null, island.id);
-          } else {
-            const obs = y < 2 ? 'wild_tree' : obstacles[Math.floor(Math.random() * obstacles.length)];
-            insertPlot.run(island.assignee, x, y, 'wasteland', obs, island.id);
-          }
+      const gridW = Math.max(STARTER_GRID_W, Number(island.grid_w) || STARTER_GRID_W);
+      const gridH = Math.max(STARTER_GRID_H, Number(island.grid_h) || STARTER_GRID_H);
+      for (let y = 0; y < gridH; y++) {
+        for (let x = 0; x < gridW; x++) {
+          insertPlot.run(
+            island.assignee,
+            x,
+            y,
+            'wasteland',
+            pickObstacleForPlot(x, y, gridW, gridH),
+            island.id
+          );
         }
       }
     }
@@ -390,6 +407,53 @@ try {
       db.prepare('INSERT INTO app_meta (key, value) VALUES (?, ?)').run(migrationKey, '1');
     });
     migrateForestPlots();
+  }
+} catch (e) { /* ignore migration failures */ }
+
+// One-time migration: expand starter/default islands to 8x6 and backfill missing scene plots.
+try {
+  const migrationKey = 'garden_scene_grid_v2';
+  const alreadyDone = db.prepare('SELECT value FROM app_meta WHERE key = ?').get(migrationKey);
+  if (!alreadyDone) {
+    const islands = db.prepare('SELECT id, assignee, grid_w, grid_h FROM islands').all();
+    const updateIslandGrid = db.prepare('UPDATE islands SET grid_w = ?, grid_h = ? WHERE id = ?');
+    const getIslandPlots = db.prepare('SELECT id, x, y, status FROM garden_plots WHERE island_id = ?');
+    const insertPlot = db.prepare(
+      'INSERT INTO garden_plots (assignee, x, y, status, obstacle_type, island_id) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    const updateObstacle = db.prepare(
+      'UPDATE garden_plots SET obstacle_type = ? WHERE id = ? AND status = ?'
+    );
+
+    const migrateSceneGrid = db.transaction(() => {
+      for (const island of islands) {
+        const gridW = Math.max(STARTER_GRID_W, Number(island.grid_w) || STARTER_GRID_W);
+        const gridH = Math.max(STARTER_GRID_H, Number(island.grid_h) || STARTER_GRID_H);
+        if (gridW !== island.grid_w || gridH !== island.grid_h) {
+          updateIslandGrid.run(gridW, gridH, island.id);
+        }
+
+        const existingPlots = getIslandPlots.all(island.id);
+        const plotMap = new Map(existingPlots.map(plot => [`${plot.x},${plot.y}`, plot]));
+
+        for (let y = 0; y < gridH; y++) {
+          for (let x = 0; x < gridW; x++) {
+            const existing = plotMap.get(`${x},${y}`);
+            const obstacle = pickObstacleForPlot(x, y, gridW, gridH);
+            if (!existing) {
+              insertPlot.run(island.assignee, x, y, 'wasteland', obstacle, island.id);
+              continue;
+            }
+            if (existing.status === 'wasteland') {
+              updateObstacle.run(obstacle, existing.id, 'wasteland');
+            }
+          }
+        }
+      }
+      db.prepare('INSERT INTO app_meta (key, value) VALUES (?, ?)').run(migrationKey, '1');
+    });
+
+    migrateSceneGrid();
   }
 } catch (e) { /* ignore migration failures */ }
 

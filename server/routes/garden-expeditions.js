@@ -4,6 +4,22 @@ module.exports = function registerGardenExpeditionRoutes(router, {
     CHARACTER_MAP,
     randomIslandName,
 }) {
+    const BASE_GRID_W = 8;
+    const BASE_GRID_H = 6;
+
+    function isForestPlot(x, y, gridW, gridH) {
+        const forestRows = Math.max(3, Math.floor(gridH * 0.5));
+        return y < forestRows || (y === forestRows && x > 0 && x < gridW - 1);
+    }
+
+    function pickObstacleForPlot(x, y, gridW, gridH) {
+        if (isForestPlot(x, y, gridW, gridH)) return 'wild_tree';
+        const frontierPool = x <= 1 || x >= gridW - 2 || y >= gridH - 1
+            ? ['weed', 'rock', 'weed', 'rock', 'weed']
+            : ['weed', 'rock', 'weed'];
+        return frontierPool[Math.floor(Math.random() * frontierPool.length)];
+    }
+
     router.get('/islands/:assignee', (req, res) => {
         try {
             const islands = db.prepare(
@@ -90,11 +106,12 @@ module.exports = function registerGardenExpeditionRoutes(router, {
 
                 if (!targetIsland) {
                     const name = randomIslandName(assignee);
-                    const gw = boat.boat_type === 'galleon' ? 6 + Math.floor(Math.random() * 3)
-                        : boat.boat_type === 'sailboat' ? 5 + Math.floor(Math.random() * 2)
-                            : 4 + Math.floor(Math.random() * 2);
-                    const gh = boat.boat_type === 'galleon' ? 4 + Math.floor(Math.random() * 2)
-                        : 3 + Math.floor(Math.random() * 2);
+                    const gw = boat.boat_type === 'galleon' ? BASE_GRID_W + 2 + Math.floor(Math.random() * 2)
+                        : boat.boat_type === 'sailboat' ? BASE_GRID_W + 1 + Math.floor(Math.random() * 2)
+                            : BASE_GRID_W + Math.floor(Math.random() * 2);
+                    const gh = boat.boat_type === 'galleon' ? BASE_GRID_H + 1 + Math.floor(Math.random() * 2)
+                        : boat.boat_type === 'sailboat' ? BASE_GRID_H + Math.floor(Math.random() * 2)
+                            : BASE_GRID_H;
                     const angle = Math.random() * Math.PI * 2;
                     const dist = 1 + Math.random();
                     const px = Math.round(Math.cos(angle) * dist * 10) / 10;
@@ -146,17 +163,19 @@ module.exports = function registerGardenExpeditionRoutes(router, {
                         const island = db.prepare('SELECT * FROM islands WHERE id = ?').get(exp.to_island_id);
                         const plotExists = db.prepare('SELECT COUNT(*) as c FROM garden_plots WHERE island_id = ?').get(island.id);
                         if (plotExists.c === 0) {
-                            const obstacles = ['rock', 'weed', 'wild_tree'];
                             const insertPlot = db.prepare(
                                 'INSERT INTO garden_plots (assignee, x, y, status, obstacle_type, island_id) VALUES (?, ?, ?, ?, ?, ?)'
                             );
-                            const forestRows = Math.max(1, Math.ceil((Number(island.grid_h) || 4) * 0.5));
                             for (let y = 0; y < island.grid_h; y++) {
                                 for (let x = 0; x < island.grid_w; x++) {
-                                    const obs = y < forestRows
-                                        ? 'wild_tree'
-                                        : obstacles[Math.floor(Math.random() * obstacles.length)];
-                                    insertPlot.run(exp.assignee, x, y, 'wasteland', obs, island.id);
+                                    insertPlot.run(
+                                        exp.assignee,
+                                        x,
+                                        y,
+                                        'wasteland',
+                                        pickObstacleForPlot(x, y, island.grid_w, island.grid_h),
+                                        island.id
+                                    );
                                 }
                             }
                         }

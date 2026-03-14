@@ -250,21 +250,35 @@ const GardenView = {
         let left;
         let top;
         let scale;
+        let tilt = (n4 - 0.5) * 8;
+        let spriteScale = 0.96 + n2 * 0.2;
+        let sway = 0.88 + n3 * 0.26;
+        let depth = 0;
 
         if (zone === 'forest') {
             const forestDepth = y <= 2 ? y : 2.45;
+            depth = forestDepth;
             left = 14 + xRatio * 71 + Math.sin((x + 1) * 0.78 + y * 0.4) * 2.8 + (n1 - 0.5) * 6.2;
             top = 18 + forestDepth * 8.7 + Math.cos((x + 2) * 0.72 + y * 0.65) * 2.3 + (n2 - 0.5) * 3.6;
             scale = 0.84 + forestDepth * 0.055 + (n3 - 0.5) * 0.08;
+            tilt = (n4 - 0.5) * 14;
+            spriteScale = 1.02 + n2 * 0.28;
+            sway = 0.92 + n3 * 0.22;
         } else {
             const fieldRow = Math.max(0, y - Math.max(3, Math.floor(gridH * 0.5)));
+            depth = 2.8 + fieldRow;
             left = 15 + xRatio * 70 + Math.sin((x + 3) * 0.95 + y * 0.36) * 4.9 + (n1 - 0.5) * 8;
             top = 56 + fieldRow * 11.7 + Math.cos((x + 1) * 0.64 + y * 0.58) * 2.5 + (n2 - 0.5) * 4.4;
             scale = 0.94 + fieldRow * 0.05 + (n3 - 0.5) * 0.08;
+            tilt = (n4 - 0.5) * 6;
+            spriteScale = 0.94 + n2 * 0.18;
+            sway = 0.86 + n3 * 0.18;
             if (zone === 'shore') {
                 top += 1.4 + n4 * 2.4;
                 left += x <= 1 ? -2.8 : 2.8;
                 scale += 0.04;
+                tilt += x <= 1 ? -4 : 4;
+                spriteScale += 0.08;
             }
         }
 
@@ -272,6 +286,10 @@ const GardenView = {
             left,
             top,
             scale,
+            tilt,
+            sway,
+            spriteScale,
+            depth,
             zone,
             zIndex: Math.round(10 + top),
         };
@@ -282,15 +300,16 @@ const GardenView = {
     _panY: 0,
     _fitZoom: 0.72,
     _defaultZoom: 0.9,
-    _viewportPadding: 44,
+    _viewportPadding: 0,
+    _cameraBounds: { x: 120, y: 70, width: 1440, height: 1020 },
 
     _recalculateZoomBounds(vp, world) {
         if (!vp || !world) return;
         const fitX = vp.clientWidth / world.offsetWidth;
         const fitY = vp.clientHeight / world.offsetHeight;
         this._fitZoom = Math.max(Math.min(fitX, fitY), 0.56);
-        this._minZoom = Math.max(0.72, this._fitZoom);
-        this._defaultZoom = Math.max(this._minZoom, Math.min(1.05, this._fitZoom * 1.16));
+        this._minZoom = this._fitZoom;
+        this._defaultZoom = Math.max(this._minZoom, Math.min(1.02, this._fitZoom * 1.12));
     },
 
     _zoomAtPoint(vp, world, nextZoom, clientX, clientY) {
@@ -309,25 +328,38 @@ const GardenView = {
         this._applyWorldTransform(world);
     },
 
+    _getCameraBounds(world) {
+        const bounds = this._cameraBounds || { x: 0, y: 0, width: world.offsetWidth, height: world.offsetHeight };
+        return {
+            x: Math.max(0, Math.min(world.offsetWidth, bounds.x)),
+            y: Math.max(0, Math.min(world.offsetHeight, bounds.y)),
+            width: Math.max(1, Math.min(world.offsetWidth, bounds.width)),
+            height: Math.max(1, Math.min(world.offsetHeight, bounds.height)),
+        };
+    },
+
     _clampPan(vp, world) {
         if (!vp || !world) return;
         this._recalculateZoomBounds(vp, world);
         const vpW = vp.clientWidth;
         const vpH = vp.clientHeight;
-        const wW = world.offsetWidth * this._zoom;
-        const wH = world.offsetHeight * this._zoom;
+        const bounds = this._getCameraBounds(world);
+        const viewW = bounds.width * this._zoom;
+        const viewH = bounds.height * this._zoom;
         const edge = this._viewportPadding;
-        const minX = vpW - wW - edge;
-        const maxX = edge;
-        const minY = vpH - wH - edge;
-        const maxY = edge;
-        if (wW <= vpW) {
-            this._panX = (vpW - wW) / 2;
+        const baseX = -bounds.x * this._zoom;
+        const baseY = -bounds.y * this._zoom;
+        const minX = vpW - viewW + baseX - edge;
+        const maxX = baseX + edge;
+        const minY = vpH - viewH + baseY - edge;
+        const maxY = baseY + edge;
+        if (viewW <= vpW) {
+            this._panX = (vpW - viewW) / 2 + baseX;
         } else {
             this._panX = Math.max(minX, Math.min(maxX, this._panX));
         }
-        if (wH <= vpH) {
-            this._panY = (vpH - wH) / 2;
+        if (viewH <= vpH) {
+            this._panY = (vpH - viewH) / 2 + baseY;
         } else {
             this._panY = Math.max(minY, Math.min(maxY, this._panY));
         }
@@ -339,10 +371,11 @@ const GardenView = {
         this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._defaultZoom));
         const vpW = vp.clientWidth;
         const vpH = vp.clientHeight;
-        const wW = world.offsetWidth * this._zoom;
-        const wH = world.offsetHeight * this._zoom;
-        this._panX = (vpW - wW) / 2;
-        this._panY = (vpH - wH) / 2;
+        const bounds = this._getCameraBounds(world);
+        const viewW = bounds.width * this._zoom;
+        const viewH = bounds.height * this._zoom;
+        this._panX = (vpW - viewW) / 2 - bounds.x * this._zoom;
+        this._panY = (vpH - viewH) / 2 - bounds.y * this._zoom;
         this._clampPan(vp, world);
         this._applyWorldTransform(world);
     },
