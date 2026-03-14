@@ -130,12 +130,13 @@ const JournalView = {
             <button class="journal-tool-btn" id="j-add-photo"><span class="icon">📷</span> 照片</button>
             <button class="journal-tool-btn bg-picker-btn" id="j-bg-btn">
               <span class="icon">🎨</span> 底布
-              <div class="journal-bg-picker" id="j-bg-picker">${bgSwatches}</div>
             </button>
             <input type="file" id="j-file-input" accept="image/*" multiple hidden>
           </div>
-          <div class="journal-canvas-wrap" id="j-canvas-wrap" data-bg="${this._canvasBg}">
-            <div class="journal-canvas" id="j-canvas"></div>
+          <div class="journal-bg-picker" id="j-bg-picker">${bgSwatches}</div>
+          
+          <div class="journal-canvas-wrap" id="j-canvas-wrap" data-bg="plain">
+            <div class="journal-canvas" id="j-canvas" data-bg="${this._canvasBg}"></div>
           </div>
         </div>
         ${this._textToolbarHTML()}
@@ -277,7 +278,7 @@ const JournalView = {
                 const bg = s.dataset.bg;
                 this._canvasBg = bg;
                 localStorage.setItem('journal-bg', bg);
-                document.getElementById('j-canvas-wrap')?.setAttribute('data-bg', bg);
+                document.getElementById('j-canvas')?.setAttribute('data-bg', bg);
                 document.querySelectorAll('.journal-bg-swatch').forEach(x => x.classList.toggle('active', x.dataset.bg === bg));
                 document.getElementById('j-bg-picker')?.classList.remove('open');
             });
