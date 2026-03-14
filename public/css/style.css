@@ -930,6 +930,11 @@ html {
   text-size-adjust: 100%;
 }
 
+html,
+body {
+  overscroll-behavior: none;
+}
+
 /* Cross-platform scrollbar — slim for Windows/Linux, unchanged on Mac/iOS */
 * {
   scrollbar-width: thin;
@@ -957,6 +962,7 @@ html {
 body {
   font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-variant-numeric: tabular-nums;
+  text-rendering: optimizeLegibility;
   background: var(--bg);
   color: var(--text);
   display: flex;
@@ -965,6 +971,12 @@ body {
   overflow: hidden;
   transition: background var(--transition), color var(--transition);
   -webkit-tap-highlight-color: transparent;
+}
+
+img,
+svg {
+  -webkit-user-drag: none;
+  user-select: none;
 }
 
 button {
@@ -1369,6 +1381,7 @@ textarea:focus {
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
+  isolation: isolate;
 }
 
 .main-header {
@@ -1384,6 +1397,8 @@ textarea:focus {
   flex-shrink: 0;
   z-index: 50;
   transition: background var(--transition), box-shadow var(--transition);
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .main-header.scrolled {
@@ -1495,6 +1510,32 @@ textarea:focus {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
   animation: viewFadeIn 0.3s ease-out;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+@supports (view-transition-name: none) {
+  .main-header {
+    view-transition-name: app-header;
+  }
+
+  .view-container:not(.hidden) {
+    view-transition-name: app-view;
+  }
+
+  ::view-transition-group(app-view),
+  ::view-transition-group(app-header) {
+    animation-duration: 220ms;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  ::view-transition-old(app-view),
+  ::view-transition-new(app-view),
+  ::view-transition-old(app-header),
+  ::view-transition-new(app-header) {
+    mix-blend-mode: normal;
+  }
 }
 
 @keyframes viewFadeIn {
@@ -2156,6 +2197,7 @@ textarea:focus {
   z-index: 1000;
   animation: fadeIn 0.2s ease;
   padding: 20px;
+  contain: layout paint style;
 }
 
 @keyframes fadeIn {
@@ -4745,6 +4787,8 @@ form {
   cursor: pointer;
   transition: all 0.25s ease;
   font-family: inherit;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .persona-toggle:hover {
@@ -4808,6 +4852,8 @@ form {
   display: flex;
   align-items: center;
   gap: 5px;
+  transform: translateZ(0);
+  will-change: transform, opacity;
 }
 
 .header-coin-btn:hover {
@@ -8210,6 +8256,9 @@ form {
     radial-gradient(ellipse 460px 280px at 82% 18%, rgba(47, 198, 173, 0.2) 0%, transparent 70%),
     radial-gradient(ellipse 760px 420px at 50% 54%, rgba(49, 172, 208, 0.18) 0%, transparent 72%),
     linear-gradient(180deg, #1590ad 0%, #11738d 24%, #0b5f75 52%, #083f56 100%);
+  contain: layout paint style;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .island-viewport::-webkit-scrollbar { display: none; }
@@ -8225,6 +8274,8 @@ form {
   transform-origin: center 42.5%;
   transition: transform 0.25s ease-out;
   filter: saturate(1.08) contrast(1.03);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 /* Island SVG shape */
@@ -8249,6 +8300,7 @@ form {
   aspect-ratio: 1200 / 900;
   z-index: 5;
   overflow: visible;
+  contain: layout paint;
 }
 
 .island-land::after {
@@ -8437,6 +8489,8 @@ form {
   box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
   animation: menuPopIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   min-width: 200px;
+  transform: translate(-50%, -100%) translateZ(0);
+  backface-visibility: hidden;
 }
 
 .plot-menu.plot-menu-below {

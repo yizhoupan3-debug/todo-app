@@ -377,64 +377,83 @@ const App = {
         });
     },
 
+    _runViewTransition(work) {
+        const canTransition = typeof document !== 'undefined'
+            && typeof document.startViewTransition === 'function'
+            && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!canTransition) {
+            work();
+            return null;
+        }
+        try {
+            return document.startViewTransition(() => {
+                work();
+            });
+        } catch (e) {
+            work();
+            return null;
+        }
+    },
+
     switchView(view) {
         if (!this._viewSupportsAllAssignee(view) && this.activePersona === 'all') {
             this.setPersona(this.lastPersona, { refresh: false });
         }
-        this.currentView = view;
+        this._runViewTransition(() => {
+            this.currentView = view;
 
-        // Update desktop nav active states
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
-        // Stats/checkin sidebar buttons
-        document.getElementById('nav-stats')?.classList.toggle('active', view === 'stats');
-        document.getElementById('nav-checkin')?.classList.toggle('active', view === 'checkin');
-        // Mobile bottom nav
-        document.querySelectorAll('.bottom-nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
-        const mobileStats = document.getElementById('mobile-stats');
-        if (mobileStats) mobileStats.classList.toggle('active', view === 'stats');
-        const mobileCheckin = document.getElementById('mobile-checkin');
-        if (mobileCheckin) mobileCheckin.classList.toggle('active', view === 'checkin');
+            // Update desktop nav active states
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+            // Stats/checkin sidebar buttons
+            document.getElementById('nav-stats')?.classList.toggle('active', view === 'stats');
+            document.getElementById('nav-checkin')?.classList.toggle('active', view === 'checkin');
+            // Mobile bottom nav
+            document.querySelectorAll('.bottom-nav-btn[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+            const mobileStats = document.getElementById('mobile-stats');
+            if (mobileStats) mobileStats.classList.toggle('active', view === 'stats');
+            const mobileCheckin = document.getElementById('mobile-checkin');
+            if (mobileCheckin) mobileCheckin.classList.toggle('active', view === 'checkin');
 
-        // Show/hide view containers + trigger transition animation
-        const viewIds = ['view-daily', 'view-monthly', 'view-checkin', 'view-stats', 'view-garden', 'view-shop'];
-        const viewMap = { daily: 'view-daily', monthly: 'view-monthly', checkin: 'view-checkin', stats: 'view-stats', garden: 'view-garden', shop: 'view-shop' };
-        for (const vid of viewIds) {
-            const el = document.getElementById(vid);
-            const isTarget = vid === viewMap[view];
-            el.classList.toggle('hidden', !isTarget);
-            if (isTarget) {
-                // Re-trigger fade-in animation
-                el.style.animation = 'none';
-                el.offsetHeight; // force reflow
-                el.style.animation = 'viewFadeIn 0.25s ease-out';
+            // Show/hide view containers + trigger transition animation
+            const viewIds = ['view-daily', 'view-monthly', 'view-checkin', 'view-stats', 'view-garden', 'view-shop'];
+            const viewMap = { daily: 'view-daily', monthly: 'view-monthly', checkin: 'view-checkin', stats: 'view-stats', garden: 'view-garden', shop: 'view-shop' };
+            for (const vid of viewIds) {
+                const el = document.getElementById(vid);
+                const isTarget = vid === viewMap[view];
+                el.classList.toggle('hidden', !isTarget);
+                if (isTarget) {
+                    el.style.animation = 'none';
+                    el.offsetHeight;
+                    el.style.animation = 'viewFadeIn 0.25s ease-out';
+                }
             }
-        }
 
-        // Show/hide date navigation (only for daily/monthly)
-        const showDateNav = (view === 'daily' || view === 'monthly');
-        document.getElementById('date-nav').style.display = showDateNav ? '' : 'none';
+            // Show/hide date navigation (only for daily/monthly)
+            const showDateNav = (view === 'daily' || view === 'monthly');
+            document.getElementById('date-nav').style.display = showDateNav ? '' : 'none';
 
-        // Update header title
-        const titles = {
-            daily: '今日任务', monthly: '月度总览',
-            checkin: '打卡', stats: '统计',
-            garden: '花园', shop: '商城'
-        };
-        document.getElementById('header-title').textContent = titles[view] || '峡谷讨伐日记';
+            // Update header title
+            const titles = {
+                daily: '今日任务', monthly: '月度总览',
+                checkin: '打卡', stats: '统计',
+                garden: '花园', shop: '商城'
+            };
+            document.getElementById('header-title').textContent = titles[view] || '峡谷讨伐日记';
 
-        // Close sidebar on mobile after switching
-        this.closeSidebar();
+            // Close sidebar on mobile after switching
+            this.closeSidebar();
 
-        // Show/hide header coin button (hide in daily/monthly when assignee='all')
-        const coinBtn = document.getElementById('header-coin-btn');
-        if (coinBtn) {
-            const hideViews = ['daily', 'monthly'];
-            const shouldHide = hideViews.includes(view) && this.currentAssignee === 'all';
-            coinBtn.style.display = shouldHide ? 'none' : '';
-        }
+            // Show/hide header coin button (hide in daily/monthly when assignee='all')
+            const coinBtn = document.getElementById('header-coin-btn');
+            if (coinBtn) {
+                const hideViews = ['daily', 'monthly'];
+                const shouldHide = hideViews.includes(view) && this.currentAssignee === 'all';
+                coinBtn.style.display = shouldHide ? 'none' : '';
+            }
 
-        // Refresh header coin balance
-        this._refreshHeaderCoins();
+            // Refresh header coin balance
+            this._refreshHeaderCoins();
+        });
 
         // Load view data
         switch (view) {
