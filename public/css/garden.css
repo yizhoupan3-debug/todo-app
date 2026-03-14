@@ -3648,27 +3648,14 @@
 /* ── Island land overlay ── */
 .island-land {
   position: absolute;
-  left: 50%;
-  top: 44.2%;
-  transform: translate(-50%, -50%);
-  width: 92%;
-  aspect-ratio: 1200 / 900;
+  inset: 0;
   z-index: 5;
   overflow: visible;
-  contain: layout paint;
 }
 
 /* Sunlight dapple on land */
 .island-land::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 30% 20% at 72% 48%, rgba(255,248,218,0.16) 0%, transparent 78%),
-    radial-gradient(ellipse 24% 18% at 38% 68%, rgba(255,240,190,0.11) 0%, transparent 74%),
-    radial-gradient(ellipse 18% 14% at 56% 36%, rgba(255,255,230,0.08) 0%, transparent 68%);
-  z-index: 1;
+  display: none;
 }
 
 /* ── Boom Beach House ── */

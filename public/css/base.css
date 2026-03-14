@@ -2742,29 +2742,35 @@ form {
 
 .bottom-nav-btn.add-fab {
   flex: 0 0 auto;
-  width: 52px;
-  height: 32px;
+  width: 56px;
+  height: 42px;
   background: linear-gradient(145deg, var(--primary-light), var(--primary));
   color: white;
-  border-radius: 12px;
-  margin: -2px 8px 0;
+  border-radius: 14px;
+  margin: 4px 8px 0;
   padding: 0;
   box-shadow:
     0 3px 12px rgba(99, 102, 241, 0.35),
     0 1px 3px rgba(0, 0, 0, 0.15),
     inset 0 1px 1px rgba(255, 255, 255, 0.2);
   font-size: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .bottom-nav-btn.add-fab .nav-icon {
   font-size: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .bottom-nav-btn.add-fab .nav-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   stroke-width: 2.5;
 }
 
@@ -2980,10 +2986,10 @@ form {
 
   /* FAB button — elevated pill */
   .bottom-nav-btn.add-fab {
-    width: 52px;
-    height: 32px;
-    border-radius: 12px;
-    margin: -2px 8px 0;
+    width: 56px;
+    height: 42px;
+    border-radius: 14px;
+    margin: 4px 8px 0;
     animation: none;
   }
 
