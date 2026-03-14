@@ -7,78 +7,85 @@ const App = {
     activePersona: '潘潘', // '潘潘' | '蒲蒲' — the global persona toggle (no 'all')
     lastPersona: '潘潘',
     socket: null,
+    _initializedModules: new Set(),
     _refreshTimer: null, // Socket debounce timer
     _headerCoinBalance: 0,
     _headerCoinSyncTimer: null,
     _headerCoinGainTimer: null,
 
-    init() {
-        // Init Socket.io with debounced refresh (safe — won't crash if server is down)
+    _safeInit(label, work) {
         try {
-            this.socket = io(API.getSocketURL(), {
-                transports: ['websocket', 'polling'],
-            });
-            // Join the correct assignee room for scoped broadcasts
-            this.socket.on('connect', () => {
-                this.socket.emit('join:assignee', this.activePersona || '潘潘');
-            });
-            const debouncedRefresh = () => {
-                clearTimeout(this._refreshTimer);
-                this._refreshTimer = setTimeout(() => this.refreshCurrentView(), 150);
-            };
-            this.socket.on('task:created', debouncedRefresh);
-            this.socket.on('task:updated', debouncedRefresh);
-            this.socket.on('task:deleted', debouncedRefresh);
-            this.socket.on('task:imported', (data) => {
-                this.showToast(`📥 另一设备导入了 ${data.count} 个任务`, 'info');
-                debouncedRefresh();
-            });
-            this.socket.on('journal:updated', () => {
-                if (this.currentView === 'journal') JournalView.refresh();
-            });
+            return work();
         } catch (e) {
-            console.warn('Socket.io unavailable — real-time updates disabled.', e);
+            console.error(`[App.init] ${label} failed`, e);
+            return null;
         }
+    },
 
-        // Init modules
-        DailyView.init();
-        MonthlyView.init();
-        CheckinView.init();
-        StatsView.init();
-        GardenView.init();
-        JournalView.init();
-        TaskModal.init();
-        ICSImport.init();
-        Pomodoro.init();
+    _ensureModule(name, initFn) {
+        if (this._initializedModules.has(name)) return true;
+        const result = this._safeInit(`module:${name}`, initFn);
+        if (result !== null) this._initializedModules.add(name);
+        return this._initializedModules.has(name);
+    },
 
-        // Initialize Lucide icons
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+    _deferInit(label, work, timeout = 800) {
+        const run = () => this._safeInit(label, work);
+        if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
+            window.requestIdleCallback(run, { timeout });
+            return;
+        }
+        window.setTimeout(run, 0);
+    },
 
-        // Restore global persona from localStorage
-        this._initPersona();
+    _initSocket() {
+        this.socket = io(API.getSocketURL(), {
+            transports: ['websocket', 'polling'],
+        });
 
-        // Theme
-        this.initTheme();
+        this.socket.on('connect', () => {
+            this.socket.emit('join:assignee', this.activePersona || '潘潘');
+        });
 
-        // Render header coin button dynamically so icon and amount always share one source of truth.
-        this._renderHeaderCoins(0);
+        const debouncedRefresh = () => {
+            clearTimeout(this._refreshTimer);
+            this._refreshTimer = setTimeout(() => this.refreshCurrentView(), 150);
+        };
 
-        // View switching
-        this.bindNavigation();
+        this.socket.on('task:created', debouncedRefresh);
+        this.socket.on('task:updated', debouncedRefresh);
+        this.socket.on('task:deleted', debouncedRefresh);
+        this.socket.on('task:imported', (data) => {
+            this.showToast(`📥 另一设备导入了 ${data.count} 个任务`, 'info');
+            debouncedRefresh();
+        });
+        this.socket.on('journal:updated', () => {
+            if (this.currentView === 'journal' && typeof JournalView.refresh === 'function') {
+                JournalView.refresh();
+            }
+        });
+    },
 
-        // Date navigation
-        this.bindDateNav();
+    _ensureViewReady(view) {
+        const viewModules = {
+            daily: () => DailyView.init(),
+            monthly: () => MonthlyView.init(),
+            checkin: () => CheckinView.init(),
+            stats: () => StatsView.init(),
+            garden: () => GardenView.init(),
+            shop: () => GardenView.init(),
+            journal: () => JournalView.init(),
+        };
 
-        // Love counter (在一起天数)
-        this.initLoveCounter();
+        const initFn = viewModules[view];
+        if (initFn) this._ensureModule(view === 'shop' ? 'garden' : view, initFn);
+    },
 
-        // Add task buttons
+    _bindGlobalUI() {
         document.getElementById('btn-add-task').addEventListener('click', () => TaskModal.openCreate());
         document.getElementById('fab-add').addEventListener('click', () => TaskModal.openCreate());
-
         document.getElementById('btn-import-ics').addEventListener('click', () => ICSImport.open());
 
-        // Ambient sound panel
         const ambientBtn = document.getElementById('btn-ambient');
         const ambientPanel = document.getElementById('ambient-panel');
         ambientBtn.addEventListener('click', () => {
@@ -90,61 +97,41 @@ const App = {
         document.getElementById('ambient-close').addEventListener('click', () => {
             ambientPanel.classList.add('hidden');
         });
-        // Also build grid in pomodoro setup
-        AmbientSound.buildSoundGrid('pomodoro-sounds');
 
-        // Pomodoro from sidebar
         document.getElementById('nav-pomodoro').addEventListener('click', () => Pomodoro.open());
-
-        // Checkin from sidebar
         document.getElementById('nav-checkin').addEventListener('click', () => this.switchView('checkin'));
+        document.getElementById('nav-stats').addEventListener('click', () => this.switchView('stats'));
 
-        // Garden and Shop: handled by bindNavigation() via data-view attributes
-
-        // Header coin button — show rules popup
         document.getElementById('header-coin-btn')?.addEventListener('click', (e) => {
             e.stopPropagation();
             e.preventDefault();
             this._showCoinRules();
         });
 
-        // Persona toggle click — cycle 潘潘→蒲蒲→全部
         document.getElementById('persona-toggle')?.addEventListener('click', () => {
             const order = this._viewSupportsAllAssignee() ? ['潘潘', '蒲蒲', 'all'] : ['潘潘', '蒲蒲'];
             const idx = order.indexOf(this.activePersona);
             this.setPersona(order[(idx + 1) % order.length]);
         });
 
-        // Load initial coin balance
-        this._refreshHeaderCoins();
-
-        // Mobile pomodoro
         const mobilePomodoro = document.getElementById('mobile-pomodoro');
         if (mobilePomodoro) mobilePomodoro.addEventListener('click', () => Pomodoro.open());
 
-        // Mobile checkin
         const mobileCheckin = document.getElementById('mobile-checkin');
         if (mobileCheckin) mobileCheckin.addEventListener('click', () => this.switchView('checkin'));
 
-        // Stats from sidebar
-        document.getElementById('nav-stats').addEventListener('click', () => this.switchView('stats'));
-
-        // Mobile stats
         const mobileStats = document.getElementById('mobile-stats');
         if (mobileStats) mobileStats.addEventListener('click', () => this.switchView('stats'));
 
-        // Mobile journal
         const mobileJournal = document.getElementById('mobile-journal');
         if (mobileJournal) mobileJournal.addEventListener('click', () => this.switchView('journal'));
 
-        // Mobile menu with backdrop
         document.getElementById('btn-menu').addEventListener('click', () => {
             const sidebar = document.getElementById('sidebar');
             if (sidebar.classList.contains('open')) {
                 this.closeSidebar();
             } else {
                 sidebar.classList.add('open');
-                // Create backdrop
                 const backdrop = document.createElement('div');
                 backdrop.className = 'sidebar-backdrop';
                 backdrop.id = 'sidebar-backdrop';
@@ -153,7 +140,6 @@ const App = {
             }
         });
 
-        // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 if (TaskModal.isOpen) TaskModal.close();
@@ -168,16 +154,41 @@ const App = {
             }
         });
 
-        // Show daily view by default
-        this.switchView('daily');
-
-        // Header scroll shadow
         document.querySelectorAll('.view-container').forEach(vc => {
             vc.addEventListener('scroll', () => {
                 const header = document.getElementById('main-header');
                 header.classList.toggle('scrolled', vc.scrollTop > 8);
             });
         });
+    },
+
+    init() {
+        // Keep startup small: core shell first, non-critical views later.
+        this._ensureModule('daily', () => DailyView.init());
+        this._ensureModule('monthly', () => MonthlyView.init());
+        this._ensureModule('checkin', () => CheckinView.init());
+        this._ensureModule('task-modal', () => TaskModal.init());
+        this._ensureModule('ics-import', () => ICSImport.init());
+        this._ensureModule('pomodoro', () => Pomodoro.init());
+
+        this._safeInit('icons', () => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        });
+        this._safeInit('persona', () => this._initPersona());
+        this._safeInit('theme', () => this.initTheme());
+        this._safeInit('header-coins-render', () => this._renderHeaderCoins(0));
+        this._safeInit('navigation', () => this.bindNavigation());
+        this._safeInit('date-nav', () => this.bindDateNav());
+        this._safeInit('love-counter', () => this.initLoveCounter());
+        this._safeInit('global-ui', () => this._bindGlobalUI());
+
+        this.switchView('daily');
+
+        this._deferInit('socket', () => this._initSocket());
+        this._deferInit('stats', () => this._ensureModule('stats', () => StatsView.init()));
+        this._deferInit('garden', () => this._ensureModule('garden', () => GardenView.init()));
+        this._deferInit('journal', () => this._ensureModule('journal', () => JournalView.init()));
+        this._deferInit('header-coins-refresh', () => this._refreshHeaderCoins());
     },
 };
 

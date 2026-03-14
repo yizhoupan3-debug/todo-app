@@ -4,6 +4,7 @@
 const Pomodoro = {
     isOpen: false,
     currentTask: null,
+    _setupSoundsReady: false,
     focusMin: 25,
     restMin: 5,
     round: 1,
@@ -60,6 +61,7 @@ const Pomodoro = {
         this.currentTask = null;
         this.round = 1;
         this.phase = 'setup';
+        this._ensureSetupSounds();
         document.getElementById('pomodoro-task-label').textContent = '';
         this.showScreen('setup');
         document.getElementById('pomodoro-overlay').classList.remove('hidden');
@@ -70,12 +72,19 @@ const Pomodoro = {
         this.currentTask = task;
         this.round = 1;
         this.phase = 'setup';
+        this._ensureSetupSounds();
         const label = document.getElementById('pomodoro-task-label');
         label.innerHTML = '<span class="pomodoro-task-name"></span>';
         label.querySelector('.pomodoro-task-name').textContent = `📌 ${task.title}`;
         this.showScreen('setup');
         document.getElementById('pomodoro-overlay').classList.remove('hidden');
         this.isOpen = true;
+    },
+
+    _ensureSetupSounds() {
+        if (this._setupSoundsReady) return;
+        AmbientSound.buildSoundGrid('pomodoro-sounds');
+        this._setupSoundsReady = true;
     },
 
     close() {

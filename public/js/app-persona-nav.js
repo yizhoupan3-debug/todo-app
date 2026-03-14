@@ -209,6 +209,8 @@ Object.assign(App, {
         if (this.currentView === view && this._viewSwitchedOnce) return;
         this._viewSwitchedOnce = true;
 
+        this._ensureViewReady?.(view);
+
         if (!this._viewSupportsAllAssignee(view) && this.activePersona === 'all') {
             this.setPersona(this.lastPersona, { refresh: false });
         }

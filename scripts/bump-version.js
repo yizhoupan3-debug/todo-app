@@ -59,29 +59,19 @@ for (const relPath of FILES) {
     let content = fs.readFileSync(filePath, 'utf8');
     let count = 0;
 
-    // Replace ?v=N
+    // Replace every ?v=N so drift between files cannot accumulate.
     content = content.replace(VERSION_PARAM_RE, (match, prefix, ver) => {
-        if (parseInt(ver, 10) === currentVersion) {
-            count++;
-            return `${prefix}${newVersion}`;
-        }
-        return match; // Don't touch versions that don't match current
+        if (parseInt(ver, 10) === newVersion) return match;
+        count++;
+        return `${prefix}${newVersion}`;
     });
 
     // Replace CACHE_VERSION = 'vN'
     content = content.replace(CACHE_VERSION_RE, (match, prefix, ver, suffix) => {
-        if (parseInt(ver, 10) === currentVersion) {
-            count++;
-            return `${prefix}${newVersion}${suffix}`;
-        }
-        return match;
+        if (parseInt(ver, 10) === newVersion) return match;
+        count++;
+        return `${prefix}${newVersion}${suffix}`;
     });
-
-    // Replace CACHE_NAME pattern: panpu-todo-vN
-    content = content.replace(
-        new RegExp(`(panpu-todo-v)${currentVersion}`, 'g'),
-        (match, prefix) => { count++; return `${prefix}${newVersion}`; }
-    );
 
     if (count > 0) {
         fs.writeFileSync(filePath, content, 'utf8');
