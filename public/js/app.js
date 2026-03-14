@@ -162,6 +162,16 @@ const App = {
         });
     },
 
+    _renderShellIcons() {
+        if (typeof lucide === 'undefined') return;
+        const nodes = [
+            document.getElementById('sidebar'),
+            document.getElementById('main-header'),
+            document.querySelector('.bottom-nav'),
+        ].filter(Boolean);
+        if (nodes.length) lucide.createIcons({ attrs: {}, nodes });
+    },
+
     init() {
         // Keep startup small: core shell first, non-critical views later.
         this._ensureModule('daily', () => DailyView.init());
@@ -171,9 +181,7 @@ const App = {
         this._ensureModule('ics-import', () => ICSImport.init());
         this._ensureModule('pomodoro', () => Pomodoro.init());
 
-        this._safeInit('icons', () => {
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        });
+        this._safeInit('icons', () => this._renderShellIcons());
         this._safeInit('persona', () => this._initPersona());
         this._safeInit('theme', () => this.initTheme());
         this._safeInit('header-coins-render', () => {
@@ -187,6 +195,7 @@ const App = {
         this._safeInit('global-ui', () => this._bindGlobalUI());
 
         this.switchView('daily');
+        this._safeInit('boot-ready', () => window.__PANPU_MARK_BOOT_READY__?.());
 
         this._deferInit('socket', () => this._initSocket());
         this._deferInit('stats', () => this._ensureModule('stats', () => StatsView.init()));

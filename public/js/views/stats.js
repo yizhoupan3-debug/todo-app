@@ -74,6 +74,10 @@ const StatsView = {
         this.renderWaterChart();
         this.renderWakeupHeatmap();
         this.renderPomodoroCard();
+        if (typeof lucide !== 'undefined') {
+            const scope = document.getElementById('view-stats');
+            if (scope) lucide.createIcons({ attrs: {}, node: scope });
+        }
     },
 
     // ===== Overview summary cards =====

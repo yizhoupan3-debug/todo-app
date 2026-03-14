@@ -199,6 +199,10 @@ const TaskModal = {
     show() {
         document.getElementById('modal-overlay').classList.remove('hidden');
         this.isOpen = true;
+        if (typeof lucide !== 'undefined') {
+            const scope = document.getElementById('modal-overlay');
+            if (scope) lucide.createIcons({ attrs: {}, node: scope });
+        }
         setTimeout(() => {
             document.getElementById('task-title').focus();
         }, 100);
