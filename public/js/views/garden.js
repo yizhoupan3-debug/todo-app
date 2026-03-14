@@ -138,6 +138,9 @@ const GardenView = {
         wild_tree: { img: '/img/trees/obstacle_wild_tree.svg', name: '野树', cost: 15 },
     },
 
+    SCENE_GRID_W: 8,
+    SCENE_GRID_H: 6,
+
     _staticRendered: false,
     _backpackSort: { by: 'price', order: 'asc' },
     _plotMenuCleanup: null,
@@ -208,67 +211,116 @@ const GardenView = {
         this.updateHeaderCoins();
     },
 
-    getPlotLayout(plot, index = 0) {
+    getPlotZone(plot) {
         const island = this.currentIsland || {};
-        const gridW = Math.max(1, Number(island.grid_w) || 6);
-        const gridH = Math.max(1, Number(island.grid_h) || 4);
-        const x = Math.max(0, Number(plot?.x) || 0);
-        const y = Math.max(0, Number(plot?.y) || 0);
+        const gridW = Math.max(1, Number(island.grid_w) || this.SCENE_GRID_W);
+        const gridH = Math.max(1, Number(island.grid_h) || this.SCENE_GRID_H);
+        const x = Math.max(0, Math.min(gridW - 1, Number(plot?.x) || 0));
+        const y = Math.max(0, Math.min(gridH - 1, Number(plot?.y) || 0));
+        const forestRows = Math.max(3, Math.floor(gridH * 0.5));
+        const forestBand = y < forestRows || (y === forestRows && x > 0 && x < gridW - 1);
+
+        if (forestBand) return 'forest';
+        if (y >= gridH - 2) return x <= 1 || x >= gridW - 2 ? 'shore' : 'field';
+        return 'field';
+    },
+
+    _plotNoise(plot, salt = 0) {
+        const islandId = Number(this.currentIsland?.id) || 1;
+        const x = Number(plot?.x) || 0;
+        const y = Number(plot?.y) || 0;
+        const n = Math.sin((x + 1) * 127.1 + (y + 1) * 311.7 + islandId * 53.3 + salt * 19.7) * 43758.5453;
+        return n - Math.floor(n);
+    },
+
+    getPlotLayout(plot) {
+        const island = this.currentIsland || {};
+        const gridW = Math.max(1, Number(island.grid_w) || this.SCENE_GRID_W);
+        const gridH = Math.max(1, Number(island.grid_h) || this.SCENE_GRID_H);
+        const x = Math.max(0, Math.min(gridW - 1, Number(plot?.x) || 0));
+        const y = Math.max(0, Math.min(gridH - 1, Number(plot?.y) || 0));
         const xRatio = gridW === 1 ? 0.5 : x / Math.max(1, gridW - 1);
         const yRatio = gridH === 1 ? 0.5 : y / Math.max(1, gridH - 1);
+        const zone = this.getPlotZone(plot);
+        const n1 = this._plotNoise(plot, 1);
+        const n2 = this._plotNoise(plot, 2);
+        const n3 = this._plotNoise(plot, 3);
+        const n4 = this._plotNoise(plot, 4);
 
-        const rowTemplates = [
-            { top: 44, left: 12, right: 72, curve: 2.8, scale: 0.84 },
-            { top: 54, left: 8, right: 74, curve: 2.1, scale: 0.9 },
-            { top: 67, left: 18, right: 67, curve: 1.1, scale: 0.96 },
-            { top: 79, left: 26, right: 63, curve: 0.4, scale: 1.02 },
-            { top: 86, left: 32, right: 60, curve: -0.2, scale: 1.04 },
-        ];
+        let left;
+        let top;
+        let scale;
 
-        const rowPos = yRatio * (rowTemplates.length - 1);
-        const lowerIndex = Math.floor(rowPos);
-        const upperIndex = Math.min(rowTemplates.length - 1, lowerIndex + 1);
-        const mix = rowPos - lowerIndex;
-        const lerp = (a, b) => a + (b - a) * mix;
-        const lower = rowTemplates[lowerIndex];
-        const upper = rowTemplates[upperIndex];
-        const row = {
-            top: lerp(lower.top, upper.top),
-            left: lerp(lower.left, upper.left),
-            right: lerp(lower.right, upper.right),
-            curve: lerp(lower.curve, upper.curve),
-            scale: lerp(lower.scale, upper.scale),
-        };
-
-        const left = row.left + (row.right - row.left) * xRatio;
-        const top = row.top + Math.sin(xRatio * Math.PI) * row.curve + ((x + index) % 2 === 0 ? -0.45 : 0.45);
-        const zone = yRatio <= 0.38 ? 'forest' : yRatio >= 0.78 ? 'front' : 'field';
+        if (zone === 'forest') {
+            const forestDepth = y <= 2 ? y : 2.45;
+            left = 14 + xRatio * 71 + Math.sin((x + 1) * 0.78 + y * 0.4) * 2.8 + (n1 - 0.5) * 6.2;
+            top = 18 + forestDepth * 8.7 + Math.cos((x + 2) * 0.72 + y * 0.65) * 2.3 + (n2 - 0.5) * 3.6;
+            scale = 0.84 + forestDepth * 0.055 + (n3 - 0.5) * 0.08;
+        } else {
+            const fieldRow = Math.max(0, y - Math.max(3, Math.floor(gridH * 0.5)));
+            left = 15 + xRatio * 70 + Math.sin((x + 3) * 0.95 + y * 0.36) * 4.9 + (n1 - 0.5) * 8;
+            top = 56 + fieldRow * 11.7 + Math.cos((x + 1) * 0.64 + y * 0.58) * 2.5 + (n2 - 0.5) * 4.4;
+            scale = 0.94 + fieldRow * 0.05 + (n3 - 0.5) * 0.08;
+            if (zone === 'shore') {
+                top += 1.4 + n4 * 2.4;
+                left += x <= 1 ? -2.8 : 2.8;
+                scale += 0.04;
+            }
+        }
 
         return {
             left,
             top,
-            scale: row.scale,
+            scale,
             zone,
-            zIndex: Math.round(7 + yRatio * 12),
+            zIndex: Math.round(10 + top),
         };
     },
 
     /* ── CSS-transform based pan / zoom ── */
     _panX: 0,
     _panY: 0,
+    _fitZoom: 0.72,
+    _defaultZoom: 0.9,
+    _viewportPadding: 44,
+
+    _recalculateZoomBounds(vp, world) {
+        if (!vp || !world) return;
+        const fitX = vp.clientWidth / world.offsetWidth;
+        const fitY = vp.clientHeight / world.offsetHeight;
+        this._fitZoom = Math.max(Math.min(fitX, fitY), 0.56);
+        this._minZoom = Math.max(0.72, this._fitZoom);
+        this._defaultZoom = Math.max(this._minZoom, Math.min(1.05, this._fitZoom * 1.16));
+    },
+
+    _zoomAtPoint(vp, world, nextZoom, clientX, clientY) {
+        if (!vp || !world) return;
+        this._recalculateZoomBounds(vp, world);
+        const rect = vp.getBoundingClientRect();
+        const offsetX = clientX - rect.left;
+        const offsetY = clientY - rect.top;
+        const worldX = (offsetX - this._panX) / this._zoom;
+        const worldY = (offsetY - this._panY) / this._zoom;
+
+        this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, nextZoom));
+        this._panX = offsetX - worldX * this._zoom;
+        this._panY = offsetY - worldY * this._zoom;
+        this._clampPan(vp, world);
+        this._applyWorldTransform(world);
+    },
 
     _clampPan(vp, world) {
         if (!vp || !world) return;
+        this._recalculateZoomBounds(vp, world);
         const vpW = vp.clientWidth;
         const vpH = vp.clientHeight;
         const wW = world.offsetWidth * this._zoom;
         const wH = world.offsetHeight * this._zoom;
-        // Allow panning so that the island can be centered
-        // but prevent scrolling beyond the world edges
-        const minX = vpW - wW;
-        const maxX = 0;
-        const minY = vpH - wH;
-        const maxY = 0;
+        const edge = this._viewportPadding;
+        const minX = vpW - wW - edge;
+        const maxX = edge;
+        const minY = vpH - wH - edge;
+        const maxY = edge;
         if (wW <= vpW) {
             this._panX = (vpW - wW) / 2;
         } else {
@@ -283,6 +335,8 @@ const GardenView = {
 
     _centerViewport(vp, world) {
         if (!vp || !world) return;
+        this._recalculateZoomBounds(vp, world);
+        this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._defaultZoom));
         const vpW = vp.clientWidth;
         const vpH = vp.clientHeight;
         const wW = world.offsetWidth * this._zoom;
@@ -296,7 +350,7 @@ const GardenView = {
     _applyWorldTransform(world) {
         if (!world) world = document.getElementById('island-world');
         if (!world) return;
-        world.style.transform = `scale(${this._zoom}) translate(${this._panX / this._zoom}px, ${this._panY / this._zoom}px)`;
+        world.style.transform = `translate3d(${this._panX}px, ${this._panY}px, 0) scale(${this._zoom})`;
         world.style.transformOrigin = '0 0';
     },
 

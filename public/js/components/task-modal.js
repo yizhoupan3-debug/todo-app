@@ -83,12 +83,18 @@ const TaskModal = {
         if (result.friendlyTime) pillText += '  ' + result.friendlyTime;
 
         container.innerHTML = `
-            <div class="nlp-pill">
+            <div class="nlp-pill nlp-pill-actionable" title="点击应用日期时间">
                 <span class="nlp-pill-text">${pillText}</span>
                 <button class="nlp-pill-dismiss" title="取消识别" type="button">✕</button>
             </div>
         `;
         container.classList.add('visible');
+
+        // Click pill to apply date/time
+        container.querySelector('.nlp-pill').addEventListener('click', (e) => {
+            if (e.target.closest('.nlp-pill-dismiss')) return;
+            this._applyNLPResult();
+        });
 
         // Dismiss button
         container.querySelector('.nlp-pill-dismiss').addEventListener('click', (e) => {
@@ -97,6 +103,45 @@ const TaskModal = {
             this._nlpResult = null;
             this._hideNLPPill();
         });
+    },
+
+    /** Apply NLP result: fill date/time, clean title, show confirmed pill */
+    _applyNLPResult() {
+        const r = this._nlpResult;
+        if (!r) return;
+
+        // Fill date field
+        if (r.date) {
+            document.getElementById('task-date').value = r.date;
+        }
+        // Fill time field
+        if (r.time) {
+            document.getElementById('task-time').value = r.time;
+            document.getElementById('auto-complete-group').classList.remove('hidden');
+        }
+        // Clean title
+        if (r.cleaned) {
+            document.getElementById('task-title').value = r.cleaned;
+        }
+
+        // Show confirmed pill state
+        const container = document.getElementById('nlp-pill-container');
+        if (container) {
+            let confirmText = '✅ ';
+            if (r.friendlyDate) confirmText += r.friendlyDate;
+            if (r.friendlyTime) confirmText += '  ' + r.friendlyTime;
+            container.innerHTML = `
+                <div class="nlp-pill nlp-pill-confirmed">
+                    <span class="nlp-pill-text">${confirmText}</span>
+                </div>
+            `;
+            // Auto-hide after 1.5s
+            setTimeout(() => {
+                container.classList.remove('visible');
+            }, 1500);
+        }
+
+        this._nlpDismissed = true; // prevent re-parsing the cleaned title
     },
 
     _hideNLPPill() {

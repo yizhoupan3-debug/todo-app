@@ -3858,3 +3858,534 @@
   filter: brightness(1.15);
   z-index: 15;
 }
+
+/* Garden scene v2 */
+.island-hud {
+  padding: 12px 16px;
+  background:
+    linear-gradient(180deg, rgba(7, 36, 53, 0.82) 0%, rgba(7, 36, 53, 0.54) 72%, rgba(7, 36, 53, 0.24) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.island-viewport {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 170px);
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  border-radius: 0 0 30px 30px;
+  background:
+    radial-gradient(circle at 50% 78%, rgba(227, 242, 250, 0.18) 0%, rgba(227, 242, 250, 0) 24%),
+    linear-gradient(180deg, #7ab3c7 0%, #8cc1d0 12%, #4d97aa 30%, #176986 58%, #0c4761 100%);
+}
+
+.island-viewport::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  background:
+    radial-gradient(ellipse 62% 52% at 50% 53%,
+      rgba(255, 255, 255, 0) 44%,
+      rgba(214, 227, 234, 0.08) 54%,
+      rgba(202, 216, 224, 0.48) 67%,
+      rgba(197, 211, 221, 0.82) 81%,
+      rgba(197, 211, 221, 0.98) 100%);
+}
+
+.island-world {
+  position: relative;
+  width: 1680px;
+  height: 1240px;
+  user-select: none;
+  transform-origin: 0 0;
+  will-change: transform;
+  transition: transform 0.08s linear;
+  background:
+    radial-gradient(circle at 52% 88%, rgba(168, 232, 255, 0.14) 0%, rgba(168, 232, 255, 0) 23%),
+    radial-gradient(circle at 18% 94%, rgba(34, 119, 154, 0.32) 0%, rgba(34, 119, 154, 0) 26%),
+    radial-gradient(circle at 82% 92%, rgba(34, 119, 154, 0.28) 0%, rgba(34, 119, 154, 0) 24%),
+    linear-gradient(180deg, #92bfcd 0%, #7fbbcd 14%, #50a0b5 30%, #1d7896 49%, #155a77 67%, #0b3e59 100%);
+}
+
+.scene-backdrop {
+  position: absolute;
+  left: 50%;
+  top: 51%;
+  width: 1180px;
+  max-width: 86%;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 2;
+  filter: saturate(1.02) contrast(1.02) drop-shadow(0 38px 34px rgba(10, 33, 43, 0.26));
+}
+
+.scene-sea-glow {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 14%;
+  height: 20%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(201, 245, 255, 0.22) 0%, rgba(201, 245, 255, 0) 70%);
+  pointer-events: none;
+}
+
+.scene-surf {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  filter: blur(0.2px);
+  pointer-events: none;
+  animation: surfBreath 6.5s ease-in-out infinite;
+}
+
+.scene-surf-1 {
+  bottom: 19%;
+  height: 15%;
+}
+
+.scene-surf-2 {
+  bottom: 16%;
+  height: 18%;
+  opacity: 0.65;
+  animation-delay: 1.6s;
+}
+
+.scene-surf-3 {
+  bottom: 13%;
+  height: 22%;
+  opacity: 0.4;
+  animation-delay: 3.1s;
+}
+
+@keyframes surfBreath {
+  0%, 100% {
+    transform: scale(0.98);
+    opacity: 0.65;
+  }
+
+  50% {
+    transform: scale(1.03);
+    opacity: 0.22;
+  }
+}
+
+.scene-haze {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.03) 18%, rgba(255, 255, 255, 0) 30%),
+    radial-gradient(circle at 50% 14%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 30%);
+}
+
+.scene-forest-backdrop,
+.scene-frontier-backdrop,
+.scene-nearshore {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.forest-cluster {
+  position: absolute;
+  width: var(--cluster-size);
+  height: calc(var(--cluster-size) * 0.78);
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 18px 18px rgba(17, 44, 22, 0.24));
+  animation: forestSway calc(6.2s + var(--cluster-sway)) ease-in-out infinite;
+}
+
+.forest-cluster::before,
+.forest-cluster::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 44% 56% 42% 58% / 54% 42% 58% 46%;
+  background:
+    radial-gradient(circle at 35% 34%, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 34%),
+    linear-gradient(180deg,
+      hsl(var(--cluster-hue) 40% 34%) 0%,
+      hsl(calc(var(--cluster-hue) + 8) 48% 24%) 52%,
+      hsl(calc(var(--cluster-hue) + 2) 44% 16%) 100%);
+}
+
+.forest-cluster::after {
+  inset: auto 34% -30% 34%;
+  height: 58%;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(79, 56, 31, 0.94) 0%, rgba(50, 35, 19, 0.98) 100%);
+  box-shadow: 0 0 0 5px rgba(25, 58, 31, 0.18);
+}
+
+@keyframes forestSway {
+  0%, 100% {
+    transform: translate(-50%, -50%) rotate(-1deg);
+  }
+
+  50% {
+    transform: translate(-50%, -50%) rotate(1.5deg);
+  }
+}
+
+.frontier-patch {
+  position: absolute;
+  width: var(--patch-size);
+  height: calc(var(--patch-size) * 0.46);
+  transform: translate(-50%, -50%) rotate(var(--patch-rot));
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 42% 35%, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 28%),
+    linear-gradient(180deg, rgba(133, 102, 58, calc(0.46 * var(--patch-tone))) 0%, rgba(94, 68, 37, calc(0.74 * var(--patch-tone))) 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(245, 221, 165, 0.08),
+    0 16px 18px rgba(85, 60, 31, 0.18);
+}
+
+.scene-nearshore {
+  z-index: 18;
+}
+
+.shore-palm,
+.shore-rock {
+  position: absolute;
+  display: block;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.9;
+  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.24));
+}
+
+.shore-palm {
+  width: 110px;
+  height: 140px;
+  bottom: 16%;
+  background-image: url('/img/trees/palm.svg');
+}
+
+.shore-palm.small {
+  width: 82px;
+  height: 110px;
+  opacity: 0.76;
+}
+
+.shore-palm-left {
+  left: 13%;
+}
+
+.shore-palm-left.small {
+  left: 20%;
+  bottom: 18%;
+}
+
+.shore-palm-right {
+  right: 12%;
+}
+
+.shore-palm-right.small {
+  right: 19%;
+  bottom: 18%;
+}
+
+.shore-rock {
+  width: 84px;
+  height: 60px;
+  bottom: 18%;
+  background-image: url('/img/trees/obstacle_rock.svg');
+  opacity: 0.72;
+}
+
+.shore-rock-left {
+  left: 24%;
+}
+
+.shore-rock-right {
+  right: 25%;
+}
+
+.island-land {
+  position: absolute;
+  width: 1240px;
+  height: 860px;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  box-shadow: none;
+}
+
+.island-land::before {
+  display: none;
+}
+
+.scene-land-shadow {
+  position: absolute;
+  inset: 5% 10% 8%;
+  border-radius: 44% 56% 40% 60% / 43% 37% 63% 57%;
+  background:
+    radial-gradient(circle at 50% 10%, rgba(255, 248, 213, 0.08) 0%, rgba(255, 248, 213, 0) 22%),
+    linear-gradient(180deg, rgba(30, 53, 26, 0.2) 0%, rgba(44, 72, 29, 0.09) 32%, rgba(234, 200, 124, 0) 76%);
+  filter: blur(10px);
+  pointer-events: none;
+}
+
+.garden-landmark {
+  z-index: 36;
+}
+
+.scene-fog {
+  position: absolute;
+  pointer-events: none;
+  z-index: 45;
+}
+
+.scene-fog-top {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 22%;
+  background: linear-gradient(180deg, rgba(206, 219, 227, 0.92) 0%, rgba(206, 219, 227, 0) 100%);
+}
+
+.scene-fog-left {
+  top: 10%;
+  bottom: 7%;
+  left: 0;
+  width: 16%;
+  background: linear-gradient(90deg, rgba(206, 219, 227, 0.98) 0%, rgba(206, 219, 227, 0) 100%);
+}
+
+.scene-fog-right {
+  top: 10%;
+  bottom: 8%;
+  right: 0;
+  width: 16%;
+  background: linear-gradient(270deg, rgba(206, 219, 227, 0.98) 0%, rgba(206, 219, 227, 0) 100%);
+}
+
+.scene-fog-bottom {
+  left: 5%;
+  right: 5%;
+  bottom: 0;
+  height: 16%;
+  background: linear-gradient(0deg, rgba(206, 219, 227, 0.98) 0%, rgba(206, 219, 227, 0) 100%);
+}
+
+.zoom-controls {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  z-index: 70;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(8, 34, 48, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(18px);
+}
+
+.zoom-btn {
+  width: 30px !important;
+  height: 30px !important;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+#zoom-level-text {
+  min-width: 44px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.iplot {
+  width: 78px;
+  height: 78px;
+  transform: translate(-50%, -50%) scale(var(--plot-scale, 1));
+  border-radius: 22px;
+  z-index: 20;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease, background 0.2s ease;
+}
+
+.iplot:hover,
+.iplot.planted:hover {
+  transform: translate(-50%, -50%) scale(calc(var(--plot-scale, 1) * 1.09));
+  z-index: 44;
+}
+
+.iplot-tag {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: 0.02em;
+  background: rgba(6, 24, 27, 0.46);
+  pointer-events: none;
+}
+
+.iplot.zone-forest.wasteland {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(125, 180, 110, 0.14) 0%, rgba(125, 180, 110, 0) 38%),
+    linear-gradient(180deg, rgba(42, 89, 42, 0.26) 0%, rgba(28, 57, 27, 0.18) 100%);
+  border: 1px solid rgba(126, 178, 112, 0.22);
+}
+
+.iplot.zone-field.wasteland,
+.iplot.zone-shore.wasteland {
+  background:
+    radial-gradient(circle at 50% 28%, rgba(211, 183, 129, 0.16) 0%, rgba(211, 183, 129, 0) 36%),
+    linear-gradient(180deg, rgba(139, 101, 64, 0.24) 0%, rgba(94, 68, 41, 0.18) 100%);
+  border: 1px dashed rgba(196, 163, 110, 0.34);
+}
+
+.iplot.obstacle-wild_tree .iplot-tag {
+  background: rgba(18, 62, 28, 0.68);
+}
+
+.iplot.cleared {
+  background:
+    radial-gradient(circle at 50% 30%, rgba(164, 214, 119, 0.18) 0%, rgba(164, 214, 119, 0) 36%),
+    linear-gradient(180deg, rgba(118, 87, 53, 0.22) 0%, rgba(93, 122, 56, 0.15) 100%);
+  border: 1px dashed rgba(174, 214, 113, 0.32);
+}
+
+.iplot.cleared .iplot-tag {
+  background: rgba(77, 120, 43, 0.62);
+}
+
+.iplot.cleared.plantable {
+  background:
+    radial-gradient(circle at 50% 32%, rgba(172, 232, 135, 0.26) 0%, rgba(172, 232, 135, 0) 40%),
+    linear-gradient(180deg, rgba(93, 148, 74, 0.24) 0%, rgba(62, 104, 48, 0.18) 100%);
+}
+
+.iplot.planted {
+  background: rgba(23, 60, 30, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.iplot.planted .iplot-tag {
+  background: rgba(86, 129, 48, 0.72);
+}
+
+.iplot-img {
+  width: 52px;
+  height: 52px;
+}
+
+.iplot.wasteland .iplot-img {
+  width: 56px;
+  height: 56px;
+}
+
+.iplot-cost {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0;
+  opacity: 0.88;
+  background: rgba(0, 0, 0, 0.58);
+}
+
+.iplot.wasteland:hover .iplot-cost {
+  opacity: 1;
+}
+
+.iplot-bar {
+  width: 38px;
+  margin-top: 4px;
+}
+
+.island-stats-bar {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin: 12px 14px 0;
+  padding: 10px 16px;
+  border-radius: 18px;
+  background: rgba(6, 30, 43, 0.56);
+  color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+}
+
+.planting-toolbar {
+  margin: 12px 14px 0;
+  border-radius: 18px;
+  background: rgba(7, 41, 31, 0.82);
+  border: 1px solid rgba(165, 228, 151, 0.22);
+}
+
+.expedition-float {
+  z-index: 68;
+  left: 50%;
+  top: 18px;
+  transform: translateX(-50%);
+  background: rgba(7, 34, 48, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+@media (max-width: 768px) {
+  .island-viewport {
+    height: calc(100vh - 224px);
+    border-radius: 0 0 24px 24px;
+  }
+
+  .island-world {
+    width: 1520px;
+    height: 1180px;
+  }
+
+  .island-land {
+    width: 1180px;
+    height: 840px;
+    top: 47%;
+  }
+
+  .scene-backdrop {
+    width: 1080px;
+    max-width: 94%;
+    top: 52%;
+  }
+
+  .iplot {
+    width: 72px;
+    height: 72px;
+  }
+
+  .iplot-img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .iplot.wasteland .iplot-img {
+    width: 52px;
+    height: 52px;
+  }
+
+  .zoom-controls {
+    right: 14px;
+    bottom: 14px;
+  }
+
+  .island-stats-bar {
+    gap: 8px;
+    font-size: 12px;
+  }
+}

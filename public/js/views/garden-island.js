@@ -106,21 +106,30 @@ Object.assign(GardenView, {
 
             <div class="island-viewport" id="island-viewport">
                 <div class="island-world" id="island-world">
-                    <div class="ocean-shimmer"></div>
-                    <div class="ocean-waves">
-                        <div class="wave-ring w1"></div>
-                        <div class="wave-ring w2"></div>
-                        <div class="wave-ring w3"></div>
+                    <img class="scene-backdrop" src="/img/island-bg.png" alt="" draggable="false">
+                    <div class="scene-sea-glow"></div>
+                    <div class="scene-surf scene-surf-1"></div>
+                    <div class="scene-surf scene-surf-2"></div>
+                    <div class="scene-surf scene-surf-3"></div>
+                    <div class="scene-haze"></div>
+                    <div class="scene-forest-backdrop">${this.renderForestBackdrop()}</div>
+                    <div class="scene-frontier-backdrop">${this.renderFrontierBackdrop()}</div>
+                    <div class="scene-nearshore">
+                        <span class="shore-palm shore-palm-left"></span>
+                        <span class="shore-palm shore-palm-left small"></span>
+                        <span class="shore-palm shore-palm-right"></span>
+                        <span class="shore-palm shore-palm-right small"></span>
+                        <span class="shore-rock shore-rock-left"></span>
+                        <span class="shore-rock shore-rock-right"></span>
                     </div>
-                    <img class="island-shape" src="/img/island-bg.png" alt="" draggable="false">
 
                     <div class="island-land" id="island-land">
-                        <div class="boom-house" style="left:80%;top:54%">
+                        <div class="scene-land-shadow"></div>
+
+                        <div class="boom-house garden-landmark" style="left:73%;top:45%">
                             <svg viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg">
-                                <!-- Foundation -->
                                 <rect x="16" y="190" width="208" height="18" rx="3" fill="#7B6340"/>
                                 <rect x="20" y="192" width="200" height="14" rx="2" fill="#8B7355"/>
-                                <!-- Walls with wood grain -->
                                 <rect x="30" y="88" width="180" height="108" rx="4" fill="#E8D8B0"/>
                                 <rect x="30" y="88" width="90" height="108" fill="#F0E0C0" opacity="0.3"/>
                                 <g stroke="#C4B090" stroke-width="0.8" opacity="0.25">
@@ -131,21 +140,17 @@ Object.assign(GardenView, {
                                     <line x1="30" y1="178" x2="210" y2="178"/>
                                     <line x1="120" y1="88" x2="120" y2="196"/>
                                 </g>
-                                <!-- Roof -->
                                 <polygon points="6,90 120,22 234,90" fill="#B83224"/>
                                 <polygon points="6,90 120,22 120,90" fill="#D04838" opacity="0.4"/>
                                 <polygon points="120,22 234,90 120,90" fill="#8C261C" opacity="0.3"/>
                                 <line x1="6" y1="90" x2="234" y2="90" stroke="#6A1810" stroke-width="4"/>
                                 <line x1="120" y1="22" x2="120" y2="90" stroke="#6A1810" stroke-width="1.5" opacity="0.3"/>
-                                <!-- Roof edge overhang -->
                                 <path d="M4,90 Q120,96 236,90" stroke="#6A1810" stroke-width="2" fill="none" opacity="0.4"/>
-                                <!-- Chimney + smoke -->
                                 <rect x="170" y="28" width="18" height="48" rx="2" fill="#8B6914"/>
                                 <rect x="168" y="24" width="22" height="8" rx="2" fill="#A07018"/>
                                 <circle cx="179" cy="18" r="5" fill="rgba(200,200,200,0.5)"><animate attributeName="cy" values="18;2;-14" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0.3;0" dur="3s" repeatCount="indefinite"/></circle>
                                 <circle cx="184" cy="12" r="4" fill="rgba(200,200,200,0.4)"><animate attributeName="cy" values="12;-4;-18" dur="3.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.4;0.2;0" dur="3.5s" repeatCount="indefinite"/></circle>
                                 <circle cx="174" cy="20" r="3.5" fill="rgba(200,200,200,0.3)"><animate attributeName="cy" values="20;6;-8" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.3;0.15;0" dur="4s" repeatCount="indefinite"/></circle>
-                                <!-- Windows with warm glow -->
                                 <rect x="46" y="104" width="34" height="34" rx="3" fill="#87CEEB" stroke="#8B6914" stroke-width="2.5"/>
                                 <line x1="63" y1="104" x2="63" y2="138" stroke="#8B6914" stroke-width="2"/>
                                 <line x1="46" y1="121" x2="80" y2="121" stroke="#8B6914" stroke-width="2"/>
@@ -154,49 +159,38 @@ Object.assign(GardenView, {
                                 <line x1="175" y1="104" x2="175" y2="138" stroke="#8B6914" stroke-width="2"/>
                                 <line x1="158" y1="121" x2="192" y2="121" stroke="#8B6914" stroke-width="2"/>
                                 <rect x="158" y="104" width="34" height="34" rx="3" fill="rgba(255,220,100,0.15)"/>
-                                <!-- Door -->
                                 <rect x="93" y="138" width="54" height="58" rx="4" fill="#6B4410"/>
                                 <rect x="97" y="142" width="46" height="52" rx="3" fill="#8B5E14"/>
                                 <path d="M93,138 Q120,124 147,138" fill="#5A3A0C" opacity="0.4"/>
                                 <circle cx="135" cy="170" r="3.5" fill="#DAA520"/><circle cx="135" cy="170" r="2" fill="#FFD700"/>
-                                <!-- Window boxes with flowers -->
                                 <rect x="46" y="138" width="34" height="6" rx="1" fill="#6B4410"/>
                                 <circle cx="52" cy="136" r="4" fill="#FF6B8A"/><circle cx="63" cy="135" r="3.5" fill="#FFD700"/><circle cx="74" cy="136" r="4" fill="#FF8FAA"/>
                                 <rect x="158" y="138" width="34" height="6" rx="1" fill="#6B4410"/>
                                 <circle cx="164" cy="136" r="4" fill="#FFD700"/><circle cx="175" cy="135" r="3.5" fill="#FF6B8A"/><circle cx="186" cy="136" r="4" fill="#FFD700"/>
-                                <!-- Lantern -->
                                 <rect x="84" y="144" width="6" height="14" rx="1" fill="#DAA520"/>
                                 <circle cx="87" cy="141" r="5" fill="rgba(255,200,50,0.6)"><animate attributeName="opacity" values="0.35;0.75;0.35" dur="2.5s" repeatCount="indefinite"/></circle>
                             </svg>
                             <div class="hut-label">\u{1F3E0} 小屋</div>
                         </div>
 
-                        <div class="boom-harbor" id="harbor-building" style="left:92%;top:79%" title="港口 — 点击管理">
+                        <div class="boom-harbor garden-landmark" id="harbor-building" style="left:83%;top:78%" title="港口 — 点击管理">
                             <span class="harbor-icon">\u26F5</span>
                             <div class="hut-label">\u2693 港口</div>
                         </div>
 
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:10%;top:86%;width:78px;opacity:0.94">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:16%;top:83%;width:56px;opacity:0.78">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:24%;top:88%;width:50px;opacity:0.72">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:89%;top:83%;width:62px;opacity:0.88">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:84%;top:86%;width:44px;opacity:0.70">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:52%;top:29%;width:40px;opacity:0.50">
-                        <img class="deco-palm" src="/img/trees/palm.svg" style="left:36%;top:31%;width:36px;opacity:0.44">
-                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:18%;top:82%;width:74px;opacity:0.78">
-                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:83%;top:58%;width:58px;opacity:0.58">
-                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:68%;top:26%;width:46px;opacity:0.44">
-                        <img class="deco-rock" src="/img/trees/obstacle_rock.svg" alt="" style="left:30%;top:80%;width:38px;opacity:0.50">
-
-                        <div class="ambient-particle p1" style="font-size:12px">\u{1F54A}\uFE0F</div>
-                        <div class="ambient-particle p3" style="font-size:11px">\u{1F54A}\uFE0F</div>
+                        <div class="ambient-particle p1" style="font-size:12px">\u2601\uFE0F</div>
+                        <div class="ambient-particle p3" style="font-size:11px">\u2601\uFE0F</div>
                         <div class="ambient-particle p2">\u{1F343}</div>
                         <div class="ambient-particle p4">\u{1F98B}</div>
-                        <div class="ambient-particle p5" style="font-size:9px">\u{1F343}</div>
+                        <div class="ambient-particle p5" style="font-size:9px">\u{1F30A}</div>
 
                         ${this.plots.map((plot, i) => this.renderIslandPlot(plot, this.getPlotLayout(plot, i))).join('')}
                     </div>
 
+                    <div class="scene-fog scene-fog-top"></div>
+                    <div class="scene-fog scene-fog-left"></div>
+                    <div class="scene-fog scene-fog-right"></div>
+                    <div class="scene-fog scene-fog-bottom"></div>
                 </div>
                 ${activeExp ? '<div class="expedition-float">' + (this.assignee === '潘潘' ? '\u{1F431}' : '\u{1F430}') + ' 探索中... \u26F5</div>' : ''}
                 <div class="zoom-controls">
@@ -223,19 +217,58 @@ Object.assign(GardenView, {
         this._renderSignature = renderSignature;
     },
 
+    renderForestBackdrop() {
+        const clusters = [
+            { left: 9, top: 11, size: 138, hue: 110, sway: 0.4 },
+            { left: 17, top: 16, size: 154, hue: 118, sway: 0.9 },
+            { left: 27, top: 13, size: 126, hue: 124, sway: 0.2 },
+            { left: 34, top: 20, size: 148, hue: 116, sway: 0.7 },
+            { left: 43, top: 15, size: 166, hue: 111, sway: 0.1 },
+            { left: 55, top: 17, size: 150, hue: 121, sway: 0.6 },
+            { left: 66, top: 12, size: 142, hue: 112, sway: 0.8 },
+            { left: 76, top: 18, size: 156, hue: 118, sway: 0.3 },
+            { left: 86, top: 16, size: 132, hue: 115, sway: 0.5 },
+            { left: 22, top: 25, size: 124, hue: 108, sway: 0.4 },
+            { left: 51, top: 27, size: 134, hue: 105, sway: 0.9 },
+            { left: 72, top: 26, size: 128, hue: 109, sway: 0.2 },
+        ];
+        return clusters.map(cluster => `
+            <span class="forest-cluster" style="left:${cluster.left}%;top:${cluster.top}%;--cluster-size:${cluster.size}px;--cluster-hue:${cluster.hue};--cluster-sway:${cluster.sway}s"></span>
+        `).join('');
+    },
+
+    renderFrontierBackdrop() {
+        const patches = [
+            { left: 19, top: 60, size: 102, rot: -8, tone: 0.95 },
+            { left: 34, top: 68, size: 96, rot: 6, tone: 1.1 },
+            { left: 49, top: 63, size: 118, rot: -3, tone: 1 },
+            { left: 63, top: 69, size: 104, rot: 8, tone: 1.08 },
+            { left: 77, top: 62, size: 112, rot: -7, tone: 0.92 },
+        ];
+        return patches.map(patch => `
+            <span class="frontier-patch" style="left:${patch.left}%;top:${patch.top}%;--patch-size:${patch.size}px;--patch-rot:${patch.rot}deg;--patch-tone:${patch.tone}"></span>
+        `).join('');
+    },
+
     renderIslandPlot(plot, layout) {
         const { left, top, zone, scale, zIndex } = layout || {};
         const style = `left:${left ?? 50}%;top:${top ?? 60}%;--plot-scale:${scale ?? 1};z-index:${zIndex ?? 8}`;
         const zoneClass = zone ? `zone-${zone}` : '';
         if (plot.status === 'wasteland') {
             const obs = this.obstacleMap[plot.obstacle_type] || this.obstacleMap.rock;
-            return `<div class="iplot wasteland ${zoneClass}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="${obs.name} · 开荒 ${obs.cost} 喵喵币">
-                <img src="${obs.img}" alt="${obs.name}" class="iplot-img"><span class="iplot-cost">⛏️${obs.cost}</span></div>`;
+            const action = plot.obstacle_type === 'wild_tree' ? '砍伐' : '开发';
+            return `<div class="iplot wasteland ${zoneClass} obstacle-${plot.obstacle_type || 'rock'}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="${obs.name} · ${action} ${obs.cost} 喵喵币">
+                <img src="${obs.img}" alt="${obs.name}" class="iplot-img">
+                <span class="iplot-tag">${action}</span>
+                <span class="iplot-cost">⛏️${obs.cost}</span>
+            </div>`;
         }
         if (plot.status === 'cleared') {
             const sel = this.selectedTree;
             return `<div class="iplot cleared ${zoneClass} ${sel ? 'plantable' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="空地">
-                <div class="iplot-empty">${sel ? '🌱' : ''}</div></div>`;
+                <div class="iplot-empty">${sel ? '🌱' : ''}</div>
+                <span class="iplot-tag">${sel ? '种植' : '可种植'}</span>
+            </div>`;
         }
         const catItem = this.catalog.find(c => c.type === plot.tree_type);
         const gm = plot.growth_minutes || 0;
@@ -243,7 +276,10 @@ Object.assign(GardenView, {
         const pct = Math.min(100, Math.round(gm / 150 * 100));
         let imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.svg';
         return `<div class="iplot planted ${zoneClass} stage-${stage}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="${catItem?.name || plot.tree_type} · ${this.getGrowthLabel(gm)}">
-            <img src="${imgSrc}" alt="" class="iplot-img"><div class="iplot-bar"><div class="iplot-bar-fill" style="width:${pct}%"></div></div></div>`;
+            <img src="${imgSrc}" alt="" class="iplot-img">
+            <span class="iplot-tag">成长</span>
+            <div class="iplot-bar"><div class="iplot-bar-fill" style="width:${pct}%"></div></div>
+        </div>`;
     },
 
     _zoom: 1,
@@ -262,7 +298,20 @@ Object.assign(GardenView, {
         // Initial center
         requestAnimationFrame(() => {
             this._centerViewport(vp, world);
+            this._updateZoomDisplay();
         });
+
+        if (!this._viewportResizeBound) {
+            this._viewportResizeBound = true;
+            window.addEventListener('resize', () => {
+                const liveViewport = document.getElementById('island-viewport');
+                const liveWorld = document.getElementById('island-world');
+                if (!liveViewport || !liveWorld) return;
+                this._clampPan(liveViewport, liveWorld);
+                this._applyWorldTransform(liveWorld);
+                this._updateZoomDisplay();
+            });
+        }
 
         // ── Mouse drag ──
         vp.addEventListener('mousedown', e => {
@@ -300,10 +349,8 @@ Object.assign(GardenView, {
         vp.addEventListener('wheel', e => {
             e.preventDefault();
             this.closePlotMenu();
-            const delta = e.deltaY > 0 ? -0.08 : 0.08;
-            this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._zoom + delta));
-            this._clampPan(vp, world);
-            this._applyWorldTransform(world);
+            const factor = e.deltaY > 0 ? 0.92 : 1.08;
+            this._zoomAtPoint(vp, world, this._zoom * factor, e.clientX, e.clientY);
             this._updateZoomDisplay();
         }, { passive: false });
 
@@ -333,23 +380,25 @@ Object.assign(GardenView, {
 
         vp.addEventListener('touchmove', e => {
             if (pinching && e.touches.length === 2) {
+                e.preventDefault();
                 const dist = Math.hypot(
                     e.touches[0].pageX - e.touches[1].pageX,
                     e.touches[0].pageY - e.touches[1].pageY
                 );
-                const pinchDelta = (dist - lastPinchDist) * 0.005;
-                this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._zoom + pinchDelta));
-                this._clampPan(vp, world);
-                this._applyWorldTransform(world);
+                const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+                const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+                const nextZoom = lastPinchDist ? this._zoom * (dist / lastPinchDist) : this._zoom;
+                this._zoomAtPoint(vp, world, nextZoom, centerX, centerY);
                 this._updateZoomDisplay();
                 lastPinchDist = dist;
             } else if (dragState.active && e.touches.length === 1) {
+                e.preventDefault();
                 this._panX = dragState.px + (e.touches[0].pageX - dragState.sx);
                 this._panY = dragState.py + (e.touches[0].pageY - dragState.sy);
                 this._clampPan(vp, world);
                 this._applyWorldTransform(world);
             }
-        }, { passive: true });
+        }, { passive: false });
 
         vp.addEventListener('touchend', e => {
             if (e.touches.length < 2) pinching = false;
@@ -359,21 +408,18 @@ Object.assign(GardenView, {
         // ── Zoom buttons ──
         document.getElementById('zoom-in-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
-            this._zoom = Math.min(this._maxZoom, this._zoom + 0.15);
-            this._clampPan(vp, world);
-            this._applyWorldTransform(world);
+            const rect = vp.getBoundingClientRect();
+            this._zoomAtPoint(vp, world, this._zoom + 0.15, rect.left + rect.width / 2, rect.top + rect.height / 2);
             this._updateZoomDisplay();
         });
         document.getElementById('zoom-out-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
-            this._zoom = Math.max(this._minZoom, this._zoom - 0.15);
-            this._clampPan(vp, world);
-            this._applyWorldTransform(world);
+            const rect = vp.getBoundingClientRect();
+            this._zoomAtPoint(vp, world, this._zoom - 0.15, rect.left + rect.width / 2, rect.top + rect.height / 2);
             this._updateZoomDisplay();
         });
         document.getElementById('zoom-reset-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
-            this._zoom = 1;
             this._centerViewport(vp, world);
             this._updateZoomDisplay();
         });
