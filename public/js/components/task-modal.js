@@ -48,15 +48,26 @@ const TaskModal = {
         document.getElementById('task-time').addEventListener('input', (e) => {
             const hasTime = !!e.target.value;
             document.getElementById('auto-complete-group').classList.toggle('hidden', !hasTime);
-            // Auto-fill end time = start + 1h when end is empty
-            if (hasTime && !document.getElementById('task-end-time').value) {
-                document.getElementById('task-end-time').value = this._addHour(e.target.value);
+            const endTimeEl = document.getElementById('task-end-time');
+            if (hasTime) {
+                // Auto-fill end time = start + 1h when end is empty or end < start
+                if (!endTimeEl.value || endTimeEl.value <= e.target.value) {
+                    endTimeEl.value = this._addHour(e.target.value);
+                }
+            } else {
+                // Clear end time when start is cleared
+                endTimeEl.value = '';
             }
         });
 
         document.getElementById('task-end-time').addEventListener('input', (e) => {
-            const hasTime = !!e.target.value || !!document.getElementById('task-time').value;
+            const startTime = document.getElementById('task-time').value;
+            const hasTime = !!e.target.value || !!startTime;
             document.getElementById('auto-complete-group').classList.toggle('hidden', !hasTime);
+            // If end time is before start time, auto-correct to start + 1h
+            if (e.target.value && startTime && e.target.value <= startTime) {
+                e.target.value = this._addHour(startTime);
+            }
         });
 
         // ── NLP: listen to title input ──

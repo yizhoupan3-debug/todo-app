@@ -183,8 +183,10 @@ Object.assign(GardenView, {
         ].join(';');
         const zoneClass = zone ? `zone-${zone}` : '';
         if (plot.status === 'wasteland') {
-            /* Wasteland: invisible by default — no border, no image, no button */
+            const obs = this.getObstacleVisual(plot);
+            /* Wasteland: show obstacle image, no background/border/frame */
             return `<div class="iplot wasteland ${zoneClass} obstacle-${plot.obstacle_type || 'rock'} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
+                <img src="${obs.img}" alt="${obs.name}" class="iplot-img">
             </div>`;
         }
         if (plot.status === 'cleared') {

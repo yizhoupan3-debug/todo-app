@@ -2857,6 +2857,24 @@ form {
   gap: 10px;
 }
 
+.form-row-time {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.form-row-time .form-group {
+  flex: 1;
+}
+
+.time-separator {
+  color: var(--text-tertiary);
+  font-size: 1rem;
+  font-weight: 500;
+  padding-bottom: 10px;
+  user-select: none;
+}
+
 .checkbox-label {
   flex-direction: row !important;
   align-items: center;
