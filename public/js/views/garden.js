@@ -1,4 +1,44 @@
 /* ── Garden & Shop View ── */
+/* ── White-background removal via canvas ── */
+const _wbCache = {};
+function removeWhiteBg(container) {
+    if (!container) return;
+    const imgs = container.querySelectorAll
+        ? container.querySelectorAll('img[src*="/img/trees/"]')
+        : [];
+    imgs.forEach(img => {
+        const process = () => {
+            if (!img.naturalWidth) return;
+            const src = img.src;
+            if (_wbCache[src]) { img.src = _wbCache[src]; return; }
+            const c = document.createElement('canvas');
+            const w = img.naturalWidth, h = img.naturalHeight;
+            c.width = w; c.height = h;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const id = ctx.getImageData(0, 0, w, h);
+            const d = id.data;
+            for (let i = 0; i < d.length; i += 4) {
+                const r = d[i], g = d[i+1], b = d[i+2];
+                /* luminance-weighted whiteness */
+                const lum = r * 0.299 + g * 0.587 + b * 0.114;
+                if (r > 200 && g > 200 && b > 200) {
+                    /* smooth falloff: the whiter, the more transparent */
+                    const minC = Math.min(r, g, b);
+                    const alpha = Math.max(0, 255 - (minC - 200) * (255 / 55));
+                    d[i+3] = Math.min(d[i+3], Math.round(alpha));
+                }
+            }
+            ctx.putImageData(id, 0, 0);
+            const dataUrl = c.toDataURL('image/png');
+            _wbCache[src] = dataUrl;
+            img.src = dataUrl;
+        };
+        if (img.complete && img.naturalWidth) process();
+        else img.addEventListener('load', process, { once: true });
+    });
+}
+
 const GardenView = {
     plots: [],
     trees: [],
@@ -137,9 +177,9 @@ const GardenView = {
         weed: { name: '杂草堆', cost: 5 },
         wild_tree: { name: '野树', cost: 15 },
     },
-    rockVariants: ['/img/garden/rock_pile_1.png', '/img/garden/rock_pile_2.png'],
-    weedVariants: ['/img/garden/weed_pile_1.png', '/img/garden/weed_pile_2.png'],
-    wildTreeVariants: ['/img/garden/wild_tree_1.png', '/img/garden/wild_tree_2.png', '/img/garden/wild_tree_3.png'],
+    rockVariants: ['/img/garden/rock_pile_1.png?v=2', '/img/garden/rock_pile_2.png?v=2'],
+    weedVariants: ['/img/garden/weed_pile_1.png?v=2', '/img/garden/weed_pile_2.png?v=2'],
+    wildTreeVariants: ['/img/garden/wild_tree_1.png?v=2', '/img/garden/wild_tree_2.png?v=2', '/img/garden/wild_tree_3.png?v=2'],
 
     SCENE_GRID_W: 8,
     SCENE_GRID_H: 6,
@@ -530,6 +570,7 @@ const GardenView = {
                 this._backpackSort.by,
                 this._backpackSort.order
             );
+            removeWhiteBg(this._backpackContentEl);
         });
     },
 
@@ -546,6 +587,7 @@ const GardenView = {
             }).join('');
             land.insertAdjacentHTML('beforeend', plotsHtml);
             this._bindPlotInteractions(land);
+            removeWhiteBg(land);
         }
 
         // Update HUD balance

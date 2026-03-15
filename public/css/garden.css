@@ -2256,9 +2256,7 @@
   object-fit: contain;
   margin-bottom: 8px;
   transition: transform 0.3s ease;
-  background: rgba(245, 240, 235, 0.92);
-  border-radius: 14px;
-  padding: 6px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
 
 .shop-card:hover:not(.locked) .shop-card-img {
@@ -2331,9 +2329,6 @@
   object-fit: contain;
   margin-bottom: 12px;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
-  background: rgba(245, 240, 235, 0.92);
-  border-radius: 18px;
-  padding: 10px;
 }
 
 .tree-detail-name {
@@ -2378,7 +2373,6 @@
   width: 56px;
   height: 56px;
   object-fit: contain;
-  background: rgba(245, 240, 235, 0.92);
   border-radius: 12px;
   padding: 6px;
   transition: transform 0.2s;
@@ -2830,7 +2824,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(245, 240, 235, 0.92);
+  background: transparent;
   border-radius: 12px;
   position: relative;
   overflow: hidden;
@@ -5092,27 +5086,53 @@
    These rules sit at the end to guarantee they win in cascade order.
    ================================================================ */
 
-/* Wasteland: fully transparent container, only obstacle image visible */
+/* ── Wasteland: invisible container, only obstacle image visible ── */
 .island-land .iplot.wasteland,
-.iplot.wasteland {
+.iplot.wasteland,
+.iplot.zone-back.wasteland,
+.iplot.zone-field.wasteland,
+.iplot.zone-shore.wasteland,
+.iplot.zone-forest.wasteland {
   background: transparent !important;
   background-color: transparent !important;
   background-image: none !important;
   border: none !important;
   box-shadow: none !important;
   outline: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
+/* Kill ALL pseudo-elements on wasteland plots */
 .iplot.wasteland::before,
-.iplot.wasteland::after {
+.iplot.wasteland::after,
+.island-land .iplot.wasteland::before,
+.island-land .iplot.wasteland::after {
   content: none !important;
   display: none !important;
   background: none !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
-/* Cleared: fully transparent container, only tilled land image visible */
+/* Wasteland hover: very subtle, no box */
+.iplot.wasteland:hover {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Cleared: transparent container, only tilled land image visible ── */
 .island-land .iplot.cleared,
-.iplot.cleared {
+.iplot.cleared,
+.iplot.zone-back.cleared,
+.iplot.zone-field.cleared,
+.iplot.zone-shore.cleared,
+.iplot.zone-forest.cleared {
   background: transparent !important;
   background-color: transparent !important;
   background-image: none !important;
@@ -5121,13 +5141,23 @@
   outline: none !important;
 }
 
+/* Kill ALL pseudo-elements on cleared plots */
 .iplot.cleared::before,
-.iplot.cleared::after {
+.iplot.cleared::after,
+.island-land .iplot.cleared::before,
+.island-land .iplot.cleared::after {
   content: none !important;
   display: none !important;
   background: none !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
+/* Plantable glow (no border, just soft glow) */
 .iplot.cleared.plantable {
   border: none !important;
   box-shadow: 0 0 12px rgba(164, 214, 119, 0.5) !important;

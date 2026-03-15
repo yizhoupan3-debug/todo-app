@@ -164,6 +164,7 @@ Object.assign(GardenView, {
         this.bindGardenEvents();
         this._bindPlotInteractions(el);
         this.initDrag();
+        removeWhiteBg(el);
         this._staticRendered = true;
         this._renderSignature = renderSignature;
     },
@@ -192,7 +193,7 @@ Object.assign(GardenView, {
         if (plot.status === 'cleared') {
             const sel = this.selectedTree;
             return `<div class="iplot cleared ${zoneClass} ${sel ? 'plantable' : ''} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
-                <img src="/img/garden/tilled_land.png" alt="" class="iplot-tilled">
+                <img src="/img/garden/tilled_land.png?v=2" alt="" class="iplot-tilled">
                 ${isSelected && sel ? '<button class="iplot-action" data-action="plant" title="">🌱</button>' : ''}
             </div>`;
         }

@@ -46,6 +46,7 @@ Object.assign(GardenView, {
         `;
 
         this.bindShopEvents();
+        removeWhiteBg(el);
     },
 
     showTreeDetail(treeType) {
@@ -89,6 +90,7 @@ Object.assign(GardenView, {
         `;
         document.body.appendChild(overlay);
         requestAnimationFrame(() => overlay.classList.add('active'));
+        removeWhiteBg(overlay);
 
         overlay.querySelector('#tree-detail-close').addEventListener('click', () => {
             overlay.classList.remove('active');
