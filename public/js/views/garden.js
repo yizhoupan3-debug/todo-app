@@ -4,7 +4,7 @@ const _wbCache = {};
 function removeWhiteBg(container) {
     if (!container) return;
     const imgs = container.querySelectorAll
-        ? container.querySelectorAll('img[src*="/img/trees/"]')
+        ? container.querySelectorAll('img[src*="/img/trees/"], img[src*="/img/garden/"]')
         : [];
     imgs.forEach(img => {
         const process = () => {
@@ -177,9 +177,9 @@ const GardenView = {
         weed: { name: '杂草堆', cost: 5 },
         wild_tree: { name: '野树', cost: 15 },
     },
-    rockVariants: ['/img/garden/rock_pile_1.png?v=2', '/img/garden/rock_pile_2.png?v=2'],
-    weedVariants: ['/img/garden/weed_pile_1.png?v=2', '/img/garden/weed_pile_2.png?v=2'],
-    wildTreeVariants: ['/img/garden/wild_tree_1.png?v=2', '/img/garden/wild_tree_2.png?v=2', '/img/garden/wild_tree_3.png?v=2'],
+    rockVariants: ['/img/garden/rock_pile_1.png?v=3', '/img/garden/rock_pile_2.png?v=3'],
+    weedVariants: ['/img/garden/weed_pile_1.png?v=3', '/img/garden/weed_pile_2.png?v=3'],
+    wildTreeVariants: ['/img/garden/wild_tree_1.png?v=3', '/img/garden/wild_tree_2.png?v=3', '/img/garden/wild_tree_3.png?v=3'],
 
     SCENE_GRID_W: 8,
     SCENE_GRID_H: 6,
