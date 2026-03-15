@@ -4883,32 +4883,35 @@
 }
 
 .iplot.wasteland {
-  background: transparent;
-  border: none;
-  box-shadow: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
-.iplot.wasteland::after {
-  background: none;
-  display: none;
-}
-
+.iplot.wasteland::after,
 .iplot.wasteland::before {
-  display: none;
+  display: none !important;
 }
 
-.iplot.zone-back.wasteland {
-  background: transparent;
-}
-
+.iplot.zone-back.wasteland,
 .iplot.zone-shore.wasteland {
-  background: transparent;
+  background: transparent !important;
 }
 
 .iplot.cleared {
-  background: transparent;
-  border: none;
-  box-shadow: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.iplot.cleared::after,
+.iplot.cleared::before {
+  display: none !important;
+}
+
+.iplot.cleared.plantable {
+  border: none !important;
+  box-shadow: 0 0 15px rgba(164, 214, 119, 0.4) !important;
 }
 
 .iplot.planted {
@@ -4919,25 +4922,12 @@
     0 10px 18px rgba(54, 29, 11, 0.2);
 }
 
-.iplot.cleared::before {
-  display: none;
-}
-
-.iplot.cleared::after {
-  display: none;
-}
-
 .iplot.planted::after {
   background: repeating-linear-gradient(
     180deg,
     rgba(72, 41, 16, 0.26) 0 10px,
     rgba(148, 95, 47, 0.14) 10px 18px
   );
-}
-
-.iplot.cleared.plantable {
-  border: none;
-  box-shadow: 0 0 15px rgba(164, 214, 119, 0.4);
 }
 
 .iplot.planted {
@@ -4959,10 +4949,17 @@
   height: 74px;
 }
 
-.iplot.obstacle-wild_tree .iplot-img,
+.iplot.obstacle-wild_tree .iplot-img {
+  width: 80px;
+  height: 90px;
+  filter: drop-shadow(0 8px 10px rgba(16, 36, 11, 0.3));
+}
+
 .iplot.obstacle-rock .iplot-img,
 .iplot.obstacle-weed .iplot-img {
-  display: none;
+  width: 64px;
+  height: 64px;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.2));
 }
 
 .iplot.stage-seed .iplot-img {
@@ -5088,4 +5085,50 @@
     width: 54px;
     height: 54px;
   }
+}
+
+/* ================================================================
+   FINAL OVERRIDES — Frameless wasteland & cleared plots
+   These rules sit at the end to guarantee they win in cascade order.
+   ================================================================ */
+
+/* Wasteland: fully transparent container, only obstacle image visible */
+.island-land .iplot.wasteland,
+.iplot.wasteland {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.iplot.wasteland::before,
+.iplot.wasteland::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+/* Cleared: fully transparent container, only tilled land image visible */
+.island-land .iplot.cleared,
+.iplot.cleared {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.iplot.cleared::before,
+.iplot.cleared::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+}
+
+.iplot.cleared.plantable {
+  border: none !important;
+  box-shadow: 0 0 12px rgba(164, 214, 119, 0.5) !important;
 }
