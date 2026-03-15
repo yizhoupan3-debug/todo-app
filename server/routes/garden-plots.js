@@ -7,12 +7,28 @@ module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, 
         return y < forestRows || (y === forestRows && x > 0 && x < gridW - 1);
     }
 
+    function isStarterInitialClearedPlot(x, y, gridW, gridH) {
+        const unlockedRow = Math.min(gridH - 2, Math.max(1, Math.floor(gridH * 0.58)));
+        const startX = Math.max(0, Math.floor((gridW - 3) / 2));
+        return y === unlockedRow && x >= startX && x < Math.min(gridW, startX + 3);
+    }
+
     function pickObstacleForPlot(x, y, gridW, gridH) {
         if (isForestPlot(x, y, gridW, gridH)) return 'wild_tree';
         const frontierPool = x <= 1 || x >= gridW - 2 || y >= gridH - 1
             ? ['weed', 'rock', 'weed', 'rock', 'weed']
             : ['weed', 'rock', 'weed'];
         return frontierPool[Math.floor(Math.random() * frontierPool.length)];
+    }
+
+    function getPlotSeedState(islandType, x, y, gridW, gridH) {
+        if (islandType === 'starter' && isStarterInitialClearedPlot(x, y, gridW, gridH)) {
+            return { status: 'cleared', obstacle: null };
+        }
+        return {
+            status: 'wasteland',
+            obstacle: pickObstacleForPlot(x, y, gridW, gridH),
+        };
     }
 
     function ensureIslandSceneGrid(islandId, assignee = null) {
@@ -31,6 +47,9 @@ module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, 
         const updateObstacle = db.prepare(
             'UPDATE garden_plots SET obstacle_type = ? WHERE id = ? AND status = ?'
         );
+        const unlockStarterPlot = db.prepare(
+            "UPDATE garden_plots SET status = 'cleared', obstacle_type = NULL WHERE id = ? AND status = 'wasteland'"
+        );
 
         const ensure = db.transaction(() => {
             if (gridW !== island.grid_w || gridH !== island.grid_h) {
@@ -38,16 +57,23 @@ module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, 
             }
 
             const plotMap = new Map(existingPlots.map(plot => [`${plot.x},${plot.y}`, plot]));
+            const hasUnlockedPlots = existingPlots.some(plot => plot.status !== 'wasteland');
             for (let y = 0; y < gridH; y++) {
                 for (let x = 0; x < gridW; x++) {
-                    const obstacle = pickObstacleForPlot(x, y, gridW, gridH);
+                    const seedState = getPlotSeedState(island.island_type, x, y, gridW, gridH);
                     const existing = plotMap.get(`${x},${y}`);
                     if (!existing) {
-                        insertPlot.run(island.assignee, x, y, 'wasteland', obstacle, island.id);
+                        insertPlot.run(island.assignee, x, y, seedState.status, seedState.obstacle, island.id);
                         continue;
                     }
                     if (existing.status === 'wasteland') {
-                        updateObstacle.run(obstacle, existing.id, 'wasteland');
+                        if (!hasUnlockedPlots && seedState.status === 'cleared') {
+                            unlockStarterPlot.run(existing.id);
+                            continue;
+                        }
+                        if (seedState.obstacle) {
+                            updateObstacle.run(seedState.obstacle, existing.id, 'wasteland');
+                        }
                     }
                 }
             }

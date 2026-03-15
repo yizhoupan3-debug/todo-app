@@ -16,128 +16,130 @@ const GardenView = {
     catalog: [
         {
             type: 'sprout', icon: '🌱', name: '小草', cost: 0, desc: '万物起始',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/sprout_growing.svg', mature: '/img/trees/sprout.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/sprout_growing.png', mature: '/img/trees/sprout.png' }
         },
         {
             type: 'rice', icon: '🌾', name: '稻穗', cost: 5, desc: '粒粒皆辛苦',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/rice_growing.svg', mature: '/img/trees/rice.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/rice_growing.png', mature: '/img/trees/rice.png' }
         },
         {
             type: 'strawberry', icon: '🍓', name: '草莓', cost: 8, desc: '甜蜜小确幸',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/strawberry_growing.svg', mature: '/img/trees/strawberry.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/strawberry_growing.png', mature: '/img/trees/strawberry.png' }
         },
         {
             type: 'sunflower', icon: '🌻', name: '向日葵', cost: 10, desc: '追逐阳光',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/sunflower_growing.svg', mature: '/img/trees/sunflower.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/sunflower_growing.png', mature: '/img/trees/sunflower.png' }
         },
         {
             type: 'corn', icon: '🌽', name: '玉米', cost: 12, desc: '金色丰收',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/corn_growing.svg', mature: '/img/trees/corn.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/corn_growing.png', mature: '/img/trees/corn.png' }
         },
         {
             type: 'mushroom', icon: '🍄', name: '蘑菇', cost: 15, desc: '雨后精灵',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/mushroom_growing.svg', mature: '/img/trees/mushroom.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/mushroom_growing.png', mature: '/img/trees/mushroom.png' }
         },
         {
             type: 'tulip', icon: '🌷', name: '郁金香', cost: 20, desc: '优雅绽放',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/tulip_growing.svg', mature: '/img/trees/tulip.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/tulip_growing.png', mature: '/img/trees/tulip.png' }
         },
         {
             type: 'daisy', icon: '🌼', name: '雏菊', cost: 22, desc: '天真烂漫',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/daisy_growing.svg', mature: '/img/trees/daisy.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/daisy_growing.png', mature: '/img/trees/daisy.png' }
         },
         {
             type: 'hibiscus', icon: '🌺', name: '芙蓉花', cost: 25, desc: '热情似火',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/hibiscus_growing.svg', mature: '/img/trees/hibiscus.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/hibiscus_growing.png', mature: '/img/trees/hibiscus.png' }
         },
         {
             type: 'sakura', icon: '🌸', name: '樱花树', cost: 30, desc: '浪漫满开',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/sakura_growing.svg', mature: '/img/trees/sakura.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/sakura_growing.png', mature: '/img/trees/sakura.png' }
         },
         {
             type: 'chrysanthemum', icon: '💐', name: '菊花', cost: 35, desc: '傲霜斗雪',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/chrysanthemum_growing.svg', mature: '/img/trees/chrysanthemum.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/chrysanthemum_growing.png', mature: '/img/trees/chrysanthemum.png' }
         },
         {
             type: 'true_lavender', icon: '💜', name: '薰衣草', cost: 38, desc: '普罗旺斯之梦',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/true_lavender_growing.svg', mature: '/img/trees/true_lavender.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/true_lavender_growing.png', mature: '/img/trees/true_lavender.png' }
         },
         {
             type: 'pumpkin', icon: '🎃', name: '南瓜', cost: 42, desc: '万圣精灵',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/pumpkin_growing.svg', mature: '/img/trees/pumpkin.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/pumpkin_growing.png', mature: '/img/trees/pumpkin.png' }
         },
         {
             type: 'bamboo', icon: '🎋', name: '竹子', cost: 45, desc: '节节高升',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/bamboo_growing.svg', mature: '/img/trees/bamboo.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/bamboo_growing.png', mature: '/img/trees/bamboo.png' }
         },
         {
             type: 'pine', icon: '🌲', name: '松树', cost: 50, desc: '四季常青',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/pine_growing.svg', mature: '/img/trees/pine.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/pine_growing.png', mature: '/img/trees/pine.png' }
         },
         {
             type: 'oak', icon: '🌳', name: '落叶树', cost: 50, desc: '枝繁叶茂',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/oak_growing.svg', mature: '/img/trees/oak.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/oak_growing.png', mature: '/img/trees/oak.png' }
         },
         {
             type: 'peach', icon: '🍑', name: '桃树', cost: 55, desc: '人面桃花',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/peach_growing.svg', mature: '/img/trees/peach.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/peach_growing.png', mature: '/img/trees/peach.png' }
         },
         {
             type: 'mint', icon: '🌿', name: '薄荷', cost: 60, desc: '清凉一夏',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/mint_growing.svg', mature: '/img/trees/mint.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/mint_growing.png', mature: '/img/trees/mint.png' }
         },
         {
             type: 'orange_tree', icon: '🍊', name: '橘子树', cost: 65, desc: '大吉大利',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/orange_tree_growing.svg', mature: '/img/trees/orange_tree.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/orange_tree_growing.png', mature: '/img/trees/orange_tree.png' }
         },
         {
             type: 'lotus', icon: '🪷', name: '莲花', cost: 70, desc: '出淤泥不染',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/lotus_growing.svg', mature: '/img/trees/lotus.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/lotus_growing.png', mature: '/img/trees/lotus.png' }
         },
         {
             type: 'palm', icon: '🌴', name: '棕榈树', cost: 80, desc: '热带风情',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/palm_growing.svg', mature: '/img/trees/palm.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/palm_growing.png', mature: '/img/trees/palm.png' }
         },
         {
             type: 'christmas', icon: '🎄', name: '圣诞树', cost: 80, desc: '节日快乐',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/christmas_growing.svg', mature: '/img/trees/christmas.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/christmas_growing.png', mature: '/img/trees/christmas.png' }
         },
         {
             type: 'maple', icon: '🍁', name: '枫树', cost: 95, desc: '霜叶红于花',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/maple_growing.svg', mature: '/img/trees/maple.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/maple_growing.png', mature: '/img/trees/maple.png' }
         },
         {
             type: 'cactus', icon: '🌵', name: '仙人掌', cost: 100, desc: '沙漠之花',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/cactus_growing.svg', mature: '/img/trees/cactus.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/cactus_growing.png', mature: '/img/trees/cactus.png' }
         },
         {
             type: 'rose', icon: '🌹', name: '玫瑰', cost: 100, desc: '爱的承诺',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/rose_growing.svg', mature: '/img/trees/rose.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/rose_growing.png', mature: '/img/trees/rose.png' }
         },
         {
             type: 'peony', icon: '🏵️', name: '牡丹', cost: 110, desc: '国色天香',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/peony_growing.svg', mature: '/img/trees/peony.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/peony_growing.png', mature: '/img/trees/peony.png' }
         },
         {
             type: 'grape', icon: '🍇', name: '葡萄藤', cost: 120, desc: '硕果累累',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/grape_growing.svg', mature: '/img/trees/grape.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/grape_growing.png', mature: '/img/trees/grape.png' }
         },
         {
             type: 'clover', icon: '🍀', name: '四叶草', cost: 150, desc: '幸运降临',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/clover_growing.svg', mature: '/img/trees/clover.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/clover_growing.png', mature: '/img/trees/clover.png' }
         },
         {
             type: 'lavender', icon: '🪻', name: '彩虹花', cost: 200, desc: '传说之花',
-            stages: { seed: '/img/trees/seed.svg', sprout: '/img/trees/sprout_stage.svg', growing: '/img/trees/lavender_growing.svg', mature: '/img/trees/lavender.svg' }
+            stages: { seed: '/img/trees/seed.png', sprout: '/img/trees/sprout_stage.png', growing: '/img/trees/lavender_growing.png', mature: '/img/trees/lavender.png' }
         },
     ],
 
     obstacleMap: {
-        rock: { img: '/img/trees/obstacle_rock.svg', name: '石头', cost: 10 },
-        weed: { img: '/img/trees/obstacle_weed.svg', name: '杂草', cost: 5 },
-        wild_tree: { img: '/img/trees/obstacle_wild_tree.svg', name: '野树', cost: 15 },
+        rock: { name: '石头堆', cost: 10 },
+        weed: { name: '杂草堆', cost: 5 },
+        wild_tree: { name: '野树', cost: 15 },
     },
-    wildTreeVariants: ['/img/trees/oak.svg', '/img/trees/pine.svg', '/img/trees/maple.svg', '/img/trees/oak.svg', '/img/trees/pine.svg'],
+    rockVariants: ['/img/garden/rock_pile_1.png', '/img/garden/rock_pile_2.png'],
+    weedVariants: ['/img/garden/weed_pile_1.png', '/img/garden/weed_pile_2.png'],
+    wildTreeVariants: ['/img/garden/wild_tree_1.png', '/img/garden/wild_tree_2.png', '/img/garden/wild_tree_3.png'],
 
     SCENE_GRID_W: 8,
     SCENE_GRID_H: 6,
@@ -253,15 +255,10 @@ const GardenView = {
 
     getPlotZone(plot) {
         const island = this.currentIsland || {};
-        const gridW = Math.max(1, Number(island.grid_w) || this.SCENE_GRID_W);
         const gridH = Math.max(1, Number(island.grid_h) || this.SCENE_GRID_H);
-        const x = Math.max(0, Math.min(gridW - 1, Number(plot?.x) || 0));
         const y = Math.max(0, Math.min(gridH - 1, Number(plot?.y) || 0));
-        const forestRows = Math.max(3, Math.floor(gridH * 0.5));
-        const forestBand = y < forestRows || (y === forestRows && x > 0 && x < gridW - 1);
-
-        if (forestBand) return 'forest';
-        if (y >= gridH - 2) return x <= 1 || x >= gridW - 2 ? 'shore' : 'field';
+        if (y <= 1) return 'back';
+        if (y >= gridH - 2) return 'shore';
         return 'field';
     },
 
@@ -275,11 +272,15 @@ const GardenView = {
 
     getObstacleVisual(plot) {
         const obstacle = this.obstacleMap[plot?.obstacle_type] || this.obstacleMap.rock;
-        if (plot?.obstacle_type !== 'wild_tree') return obstacle;
         const x = Number(plot?.x) || 0;
         const y = Number(plot?.y) || 0;
-        const variant = this.wildTreeVariants[(x * 3 + y * 5) % this.wildTreeVariants.length];
-        return { ...obstacle, img: variant };
+        const hash = (x * 3 + y * 5);
+        let variants;
+        if (plot?.obstacle_type === 'wild_tree') variants = this.wildTreeVariants;
+        else if (plot?.obstacle_type === 'weed') variants = this.weedVariants;
+        else variants = this.rockVariants;
+        const img = variants[hash % variants.length];
+        return { ...obstacle, img };
     },
 
     _getForestLayoutIndex(x, y) {
@@ -304,29 +305,19 @@ const GardenView = {
         const zone = this.getPlotZone(plot);
         const n1 = this._plotNoise(plot, 1);
         const n2 = this._plotNoise(plot, 2);
-        const n3 = this._plotNoise(plot, 3);
-        const n4 = this._plotNoise(plot, 4);
-
-        const base = zone === 'forest'
-            ? this.FOREST_LAYOUTS[this._getForestLayoutIndex(x, y)]
-            : this.FRONTIER_LAYOUTS[this._getFrontierLayoutIndex(x, y)];
-        let left = (base?.left ?? (14 + xRatio * 70)) + (n1 - 0.5) * 0.4;
-        let top = (base?.top ?? (56 + yRatio * 24)) + (n2 - 0.5) * 0.3;
-        let scale = (base?.scale ?? 1) + (n3 - 0.5) * 0.06;
-        let tilt = (n4 - 0.5) * (zone === 'forest' ? 10 : 6);
-        let spriteScale = zone === 'forest' ? 1.08 + n2 * 0.18 : 0.94 + n2 * 0.18;
-        let sway = zone === 'forest' ? 0.94 + n3 * 0.22 : 0.88 + n3 * 0.16;
+        const colStart = 21;
+        const colSpan = 58;
+        const rowStart = 29;
+        const rowSpan = 47;
+        const left = colStart + xRatio * colSpan;
+        const top = rowStart + yRatio * rowSpan;
+        const scale = 0.94 + yRatio * 0.12;
+        let tilt = plot?.status === 'wasteland' ? (n1 - 0.5) * 2.4 : 0;
+        let spriteScale = plot?.status === 'wasteland'
+            ? 0.88
+            : 0.88 + yRatio * 0.14;
+        let sway = plot?.obstacle_type === 'wild_tree' ? 0.94 + n2 * 0.12 : 1;
         const depth = top / 10;
-
-        if (zone === 'shore') {
-            tilt += x <= 1 ? -3 : 3;
-            spriteScale += 0.06;
-        }
-
-        if (zone === 'shore') {
-            tilt += x <= 1 ? -3 : 3;
-            spriteScale += 0.06;
-        }
 
         return {
             left,
@@ -347,15 +338,15 @@ const GardenView = {
     _fitZoom: 0.72,
     _defaultZoom: 0.9,
     _viewportPadding: 0,
-    _cameraBounds: { x: 300, y: 150, width: 1380, height: 1200 },
+    _cameraBounds: { x: 110, y: 115, width: 1760, height: 1310 },
 
     _recalculateZoomBounds(vp, world) {
         if (!vp || !world) return;
         const fitX = vp.clientWidth / world.offsetWidth;
         const fitY = vp.clientHeight / world.offsetHeight;
-        this._fitZoom = Math.max(Math.min(fitX, fitY), 0.58);
+        this._fitZoom = Math.max(Math.min(fitX, fitY), 0.52);
         this._minZoom = this._fitZoom;
-        this._defaultZoom = Math.max(this._minZoom, Math.min(1.08, this._fitZoom * 1.18));
+        this._defaultZoom = Math.max(this._minZoom, Math.min(1.02, this._fitZoom * 1.08));
     },
 
     _zoomAtPoint(vp, world, nextZoom, clientX, clientY) {

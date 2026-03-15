@@ -174,6 +174,14 @@ db.exec(`
     db.exec("ALTER TABLE tasks ADD COLUMN auto_complete INTEGER NOT NULL DEFAULT 1");
   }
 }
+
+// Migrate: add end_time column if missing
+{
+  const cols = db.pragma('table_info(tasks)').map(c => c.name);
+  if (!cols.includes('end_time')) {
+    db.exec("ALTER TABLE tasks ADD COLUMN end_time TEXT DEFAULT NULL");
+  }
+}
 const catCount = db.prepare('SELECT COUNT(*) as count FROM categories').get();
 if (catCount.count === 0) {
   const insertCat = db.prepare('INSERT INTO categories (name, color, icon, sort_order) VALUES (?, ?, ?, ?)');
@@ -225,12 +233,28 @@ function isForestPlot(x, y, gridW, gridH) {
   return y < forestRows || (y === forestRows && x > 0 && x < gridW - 1);
 }
 
+function isStarterInitialClearedPlot(x, y, gridW, gridH) {
+  const unlockedRow = Math.min(gridH - 2, Math.max(1, Math.floor(gridH * 0.58)));
+  const startX = Math.max(0, Math.floor((gridW - 3) / 2));
+  return y === unlockedRow && x >= startX && x < Math.min(gridW, startX + 3);
+}
+
 function pickObstacleForPlot(x, y, gridW, gridH) {
   if (isForestPlot(x, y, gridW, gridH)) return 'wild_tree';
   const frontierPool = x <= 1 || x >= gridW - 2 || y >= gridH - 1
     ? ['weed', 'rock', 'weed', 'rock', 'weed']
     : ['weed', 'rock', 'weed'];
   return frontierPool[Math.floor(Math.random() * frontierPool.length)];
+}
+
+function getPlotSeedState(islandType, x, y, gridW, gridH) {
+  if (islandType === 'starter' && isStarterInitialClearedPlot(x, y, gridW, gridH)) {
+    return { status: 'cleared', obstacle: null };
+  }
+  return {
+    status: 'wasteland',
+    obstacle: pickObstacleForPlot(x, y, gridW, gridH),
+  };
 }
 
 if (islandCount.count === 0) {
@@ -274,7 +298,7 @@ if (islandCount.count === 0) {
 const plotCount = db.prepare('SELECT COUNT(*) as count FROM garden_plots').get();
 if (plotCount.count === 0) {
   // Get starter island IDs
-  const starterIslands = db.prepare("SELECT id, assignee, grid_w, grid_h FROM islands WHERE island_type = 'starter'").all();
+  const starterIslands = db.prepare("SELECT id, assignee, island_type, grid_w, grid_h FROM islands WHERE island_type = 'starter'").all();
   const insertPlot = db.prepare(
     'INSERT INTO garden_plots (assignee, x, y, status, obstacle_type, island_id) VALUES (?, ?, ?, ?, ?, ?)'
   );
@@ -284,12 +308,13 @@ if (plotCount.count === 0) {
       const gridH = Math.max(STARTER_GRID_H, Number(island.grid_h) || STARTER_GRID_H);
       for (let y = 0; y < gridH; y++) {
         for (let x = 0; x < gridW; x++) {
+          const seedState = getPlotSeedState(island.island_type, x, y, gridW, gridH);
           insertPlot.run(
             island.assignee,
             x,
             y,
-            'wasteland',
-            pickObstacleForPlot(x, y, gridW, gridH),
+            seedState.status,
+            seedState.obstacle,
             island.id
           );
         }
@@ -415,7 +440,7 @@ try {
   const migrationKey = 'garden_scene_grid_v2';
   const alreadyDone = db.prepare('SELECT value FROM app_meta WHERE key = ?').get(migrationKey);
   if (!alreadyDone) {
-    const islands = db.prepare('SELECT id, assignee, grid_w, grid_h FROM islands').all();
+    const islands = db.prepare('SELECT id, assignee, island_type, grid_w, grid_h FROM islands').all();
     const updateIslandGrid = db.prepare('UPDATE islands SET grid_w = ?, grid_h = ? WHERE id = ?');
     const getIslandPlots = db.prepare('SELECT id, x, y, status FROM garden_plots WHERE island_id = ?');
     const insertPlot = db.prepare(
@@ -439,13 +464,13 @@ try {
         for (let y = 0; y < gridH; y++) {
           for (let x = 0; x < gridW; x++) {
             const existing = plotMap.get(`${x},${y}`);
-            const obstacle = pickObstacleForPlot(x, y, gridW, gridH);
+            const seedState = getPlotSeedState(island.island_type, x, y, gridW, gridH);
             if (!existing) {
-              insertPlot.run(island.assignee, x, y, 'wasteland', obstacle, island.id);
+              insertPlot.run(island.assignee, x, y, seedState.status, seedState.obstacle, island.id);
               continue;
             }
-            if (existing.status === 'wasteland') {
-              updateObstacle.run(obstacle, existing.id, 'wasteland');
+            if (existing.status === 'wasteland' && seedState.obstacle) {
+              updateObstacle.run(seedState.obstacle, existing.id, 'wasteland');
             }
           }
         }
@@ -454,6 +479,40 @@ try {
     });
 
     migrateSceneGrid();
+  }
+} catch (e) { /* ignore migration failures */ }
+
+// One-time migration: unlock the starter island's first 3 farm plots for accounts that still have no progress.
+try {
+  const migrationKey = 'starter_initial_plots_v1';
+  const alreadyDone = db.prepare('SELECT value FROM app_meta WHERE key = ?').get(migrationKey);
+  if (!alreadyDone) {
+    const starterIslands = db.prepare(
+      "SELECT id, grid_w, grid_h FROM islands WHERE island_type = 'starter'"
+    ).all();
+    const getUnlockedCount = db.prepare(
+      "SELECT COUNT(*) as count FROM garden_plots WHERE island_id = ? AND status <> 'wasteland'"
+    );
+    const unlockStarterPlot = db.prepare(
+      "UPDATE garden_plots SET status = 'cleared', obstacle_type = NULL WHERE island_id = ? AND x = ? AND y = ? AND status = 'wasteland'"
+    );
+
+    const migrateStarterUnlocks = db.transaction(() => {
+      for (const island of starterIslands) {
+        if (getUnlockedCount.get(island.id).count > 0) continue;
+        const gridW = Math.max(STARTER_GRID_W, Number(island.grid_w) || STARTER_GRID_W);
+        const gridH = Math.max(STARTER_GRID_H, Number(island.grid_h) || STARTER_GRID_H);
+        for (let y = 0; y < gridH; y++) {
+          for (let x = 0; x < gridW; x++) {
+            if (!isStarterInitialClearedPlot(x, y, gridW, gridH)) continue;
+            unlockStarterPlot.run(island.id, x, y);
+          }
+        }
+      }
+      db.prepare('INSERT INTO app_meta (key, value) VALUES (?, ?)').run(migrationKey, '1');
+    });
+
+    migrateStarterUnlocks();
   }
 } catch (e) { /* ignore migration failures */ }
 

@@ -55,52 +55,22 @@ Object.assign(GardenView, {
     },
 
     renderBackdropDecor() {
-        const cliffTrees = [
-            { left: 14.2, top: 19.4, type: 'pine', scale: 0.78, rotate: -8, depth: 6 },
-            { left: 18.4, top: 17.6, type: 'oak', scale: 0.86, rotate: -4, depth: 6 },
-            { left: 23.2, top: 18.1, type: 'pine', scale: 0.74, rotate: 6, depth: 6 },
-            { left: 30.6, top: 16.1, type: 'oak', scale: 0.72, rotate: -3, depth: 6 },
-            { left: 36.8, top: 14.8, type: 'pine', scale: 0.76, rotate: 4, depth: 6 },
-            { left: 42.8, top: 13.7, type: 'oak', scale: 0.9, rotate: -2, depth: 6 },
-            { left: 49.1, top: 13.1, type: 'pine', scale: 0.84, rotate: 3, depth: 6 },
-            { left: 55.4, top: 13.8, type: 'oak', scale: 0.92, rotate: 1, depth: 6 },
-            { left: 61.6, top: 15.4, type: 'pine', scale: 0.8, rotate: -5, depth: 6 },
-            { left: 67.5, top: 16.8, type: 'oak', scale: 0.86, rotate: 5, depth: 6 },
-            { left: 73.6, top: 18.2, type: 'pine', scale: 0.74, rotate: -3, depth: 6 },
-            { left: 79.8, top: 20.2, type: 'oak', scale: 0.82, rotate: 6, depth: 6 },
-            { left: 86.5, top: 24.7, type: 'oak', scale: 0.72, rotate: 8, depth: 6 },
-            { left: 10.6, top: 29.8, type: 'pine', scale: 0.7, rotate: -8, depth: 6 },
-        ];
-
-        const rockTrees = [
-            { left: 13.1, top: 25.9, type: 'oak', scale: 0.62, rotate: -10, depth: 7 },
-            { left: 74.3, top: 24.1, type: 'pine', scale: 0.58, rotate: 8, depth: 7 },
-            { left: 90.2, top: 35.5, type: 'oak', scale: 0.56, rotate: 10, depth: 7 },
-        ];
-
         return `
-            <div class="scene-waterfall scene-waterfall-main" aria-hidden="true">
-                <span class="waterfall-stream stream-1"></span>
-                <span class="waterfall-stream stream-2"></span>
-                <span class="waterfall-stream stream-3"></span>
-                <span class="waterfall-stream stream-4"></span>
-                <span class="waterfall-sheen"></span>
-                <span class="waterfall-mist"></span>
-                <span class="waterfall-pool"></span>
+            <div class="scene-nearshore" aria-hidden="true">
+                <span class="shore-palm shore-palm-left"></span>
+                <span class="shore-palm shore-palm-left small"></span>
+                <span class="shore-palm shore-palm-right"></span>
+                <span class="shore-palm shore-palm-right small"></span>
+                <span class="shore-rock shore-rock-left"></span>
+                <span class="shore-rock shore-rock-right"></span>
+                <span class="nearshore-foam foam-1"></span>
+                <span class="nearshore-foam foam-2"></span>
+                <span class="nearshore-foam foam-3"></span>
             </div>
-            <div class="scene-waterfall scene-waterfall-side" aria-hidden="true">
-                <span class="waterfall-stream stream-1"></span>
-                <span class="waterfall-stream stream-2"></span>
-                <span class="waterfall-mist"></span>
-            </div>
-            <div class="scene-cliff-forest" aria-hidden="true">
-                ${cliffTrees.map(tree => `
-                    <span class="cliff-tree tree-${tree.type}" style="left:${tree.left}%;top:${tree.top}%;--tree-scale:${tree.scale};--tree-rotate:${tree.rotate}deg;z-index:${tree.depth}"></span>
-                `).join('')}
-                ${rockTrees.map(tree => `
-                    <span class="cliff-tree cliff-tree-rock tree-${tree.type}" style="left:${tree.left}%;top:${tree.top}%;--tree-scale:${tree.scale};--tree-rotate:${tree.rotate}deg;z-index:${tree.depth}"></span>
-                `).join('')}
-            </div>
+            <button class="island-harbor scene-harbor" id="scene-harbor-btn" type="button" title="港口">
+                <span class="harbor-building"></span>
+                <span class="harbor-label">港口</span>
+            </button>
         `;
     },
 
@@ -172,11 +142,6 @@ Object.assign(GardenView, {
 
                         ${this.plots.map((plot, i) => this.renderIslandPlot(plot, this.getPlotLayout(plot, i))).join('')}
                     </div>
-
-                    <div class="scene-fog scene-fog-top"></div>
-                    <div class="scene-fog scene-fog-left"></div>
-                    <div class="scene-fog scene-fog-right"></div>
-                    <div class="scene-fog scene-fog-bottom"></div>
                 </div>
                 ${activeExp ? '<div class="expedition-float">' + (this.assignee === '潘潘' ? '\u{1F431}' : '\u{1F430}') + ' 探索中... \u26F5</div>' : ''}
                 <div class="zoom-controls">
@@ -218,17 +183,14 @@ Object.assign(GardenView, {
         ].join(';');
         const zoneClass = zone ? `zone-${zone}` : '';
         if (plot.status === 'wasteland') {
-            const obs = this.getObstacleVisual(plot);
-            const glyph = plot.obstacle_type === 'wild_tree' ? '🪓' : '⛏';
+            /* Wasteland: invisible by default — no border, no image, no button */
             return `<div class="iplot wasteland ${zoneClass} obstacle-${plot.obstacle_type || 'rock'} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
-                <img src="${obs.img}" alt="${obs.name}" class="iplot-img">
-                ${isSelected ? `<button class="iplot-action" data-action="clear" title="">${glyph} ${obs.cost}</button>` : ''}
             </div>`;
         }
         if (plot.status === 'cleared') {
             const sel = this.selectedTree;
             return `<div class="iplot cleared ${zoneClass} ${sel ? 'plantable' : ''} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
-                <div class="iplot-empty">${sel ? '🌱' : ''}</div>
+                <img src="/img/garden/tilled_land.png" alt="" class="iplot-tilled">
                 ${isSelected && sel ? '<button class="iplot-action" data-action="plant" title="">🌱</button>' : ''}
             </div>`;
         }
@@ -236,7 +198,7 @@ Object.assign(GardenView, {
         const gm = plot.growth_minutes || 0;
         const stage = this.getGrowthStage(gm);
         const pct = Math.min(100, Math.round(gm / 150 * 100));
-        let imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.svg';
+        let imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.png';
         return `<div class="iplot planted ${zoneClass} stage-${stage} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
             <img src="${imgSrc}" alt="" class="iplot-img">
             <div class="iplot-bar"><div class="iplot-bar-fill" style="width:${pct}%"></div></div>
@@ -323,7 +285,7 @@ Object.assign(GardenView, {
 
         // ── Mouse drag ──
         vp.addEventListener('mousedown', e => {
-            if (e.target.closest('.iplot,.zoom-controls,.plot-menu')) return;
+            if (e.target.closest('.iplot,.zoom-controls,.plot-menu,.island-harbor')) return;
             this.closePlotMenu();
             stopInertia();
             dragState.active = true;
@@ -387,7 +349,7 @@ Object.assign(GardenView, {
                     e.touches[0].pageY - e.touches[1].pageY
                 );
             } else if (e.touches.length === 1 && !pinching) {
-                if (e.target.closest('.iplot,.zoom-controls,.plot-menu')) return;
+                if (e.target.closest('.iplot,.zoom-controls,.plot-menu,.island-harbor')) return;
                 this.closePlotMenu();
                 stopInertia();
                 dragState.active = true;
@@ -495,10 +457,13 @@ Object.assign(GardenView, {
             this.showWorldMap();
         });
 
-        document.getElementById('garden-harbor-btn')?.addEventListener('click', () => {
+        const openHarbor = () => {
             this.closePlotMenu();
             this.showHarborPanel();
-        });
+        };
+
+        document.getElementById('garden-harbor-btn')?.addEventListener('click', openHarbor);
+        document.getElementById('scene-harbor-btn')?.addEventListener('click', openHarbor);
 
         document.getElementById('cancel-plant-btn')?.addEventListener('click', () => {
             this.selectedTree = null;
@@ -517,6 +482,54 @@ Object.assign(GardenView, {
     },
 
     _movingPlotId: null,
+
+    showWastelandMenu(plotId, plotEl) {
+        this.closePlotMenu();
+        this._selectedPlotId = plotId;
+        const plot = this.plots.find(p => p.id === plotId);
+        if (!plot) return;
+
+        const obs = this.getObstacleVisual(plot);
+        const glyph = plot.obstacle_type === 'wild_tree' ? '🪓' : '⛏';
+
+        const menu = document.createElement('div');
+        menu.className = 'plot-menu wasteland-menu';
+        menu.innerHTML = `
+            <div class="plot-menu-header">
+                <img src="${obs.img}" alt="" class="wasteland-menu-img">
+                <strong>${obs.name}</strong>
+                <small>清除费用: ${obs.cost} 喵喵币</small>
+            </div>
+            <div class="plot-menu-actions">
+                <button class="pm-btn pm-clear" data-action="clear" title="清除">
+                    ${glyph}
+                    <span>开荒<br><small>${obs.cost}币</small></span>
+                </button>
+            </div>
+        `;
+
+        menu.style.position = 'fixed';
+        document.body.appendChild(menu);
+        this._positionPlotMenu(menu, plotEl);
+        this._activePlotMenu = { plotId, plotEl, menuEl: menu };
+
+        const outsideHandler = (e) => {
+            if (e.target.closest('.plot-menu')) return;
+            if (e.target.closest(`.iplot[data-plot-id="${plotId}"]`)) return;
+            this.closePlotMenu();
+        };
+        document.addEventListener('mousedown', outsideHandler, true);
+        this._plotMenuCleanup = () => {
+            document.removeEventListener('mousedown', outsideHandler, true);
+            this._activePlotMenu = null;
+            this._plotMenuCleanup = null;
+        };
+
+        menu.querySelector('.pm-clear')?.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            await this.clearPlot(plotId, plot.obstacle_type);
+        });
+    },
 
     showPlotMenu(plotId, plotEl) {
         this.closePlotMenu();

@@ -344,7 +344,7 @@ Object.assign(GardenView, {
             const stage = this.getGrowthStage(gm);
             const stageLabel = this.getGrowthLabel(gm);
             const pct = Math.min(100, Math.round(gm / 150 * 100));
-            const imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.svg';
+            const imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.png';
             const name = catItem?.name || plant.tree_type;
             const icon = catItem?.icon || '\u{1F331}';
             const rarity = this._getPlantRarity(plant.price);

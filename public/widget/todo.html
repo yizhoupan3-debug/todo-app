@@ -408,6 +408,8 @@
                 const isDone = t.status === 'done';
                 const pClass = `p${t.priority || 2}`;
                 const time = t.due_time ? t.due_time.slice(0, 5) : '';
+                const endTime = t.end_time ? t.end_time.slice(0, 5) : '';
+                const timeDisplay = time ? (endTime ? `${time} - ${endTime}` : time) : '';
                 const cat = t.category_name
                     ? `<span class="task-cat"><span class="cat-dot" style="background:${t.category_color || '#6366f1'}"></span>${t.category_icon || ''} ${t.category_name}</span>`
                     : '';
@@ -417,7 +419,7 @@
         <div class="task-body">
           <div class="task-title">${t.title}</div>
           <div class="task-meta">
-            ${time ? `<span class="task-time">${time}</span>` : ''}
+            ${timeDisplay ? `<span class="task-time">${timeDisplay}</span>` : ''}
             ${cat}
           </div>
         </div>

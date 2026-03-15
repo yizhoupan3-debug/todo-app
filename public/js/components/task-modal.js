@@ -48,6 +48,15 @@ const TaskModal = {
         document.getElementById('task-time').addEventListener('input', (e) => {
             const hasTime = !!e.target.value;
             document.getElementById('auto-complete-group').classList.toggle('hidden', !hasTime);
+            // Auto-fill end time = start + 1h when end is empty
+            if (hasTime && !document.getElementById('task-end-time').value) {
+                document.getElementById('task-end-time').value = this._addHour(e.target.value);
+            }
+        });
+
+        document.getElementById('task-end-time').addEventListener('input', (e) => {
+            const hasTime = !!e.target.value || !!document.getElementById('task-time').value;
+            document.getElementById('auto-complete-group').classList.toggle('hidden', !hasTime);
         });
 
         // ── NLP: listen to title input ──
@@ -125,6 +134,10 @@ const TaskModal = {
         if (r.time) {
             document.getElementById('task-time').value = r.time;
             document.getElementById('auto-complete-group').classList.remove('hidden');
+            // Auto-fill end time if empty
+            if (!document.getElementById('task-end-time').value) {
+                document.getElementById('task-end-time').value = this._addHour(r.time);
+            }
         }
         // Clean title
         if (r.cleaned) {
@@ -189,6 +202,7 @@ const TaskModal = {
         // Reset form
         document.getElementById('task-form').reset();
         document.getElementById('task-id').value = '';
+        document.getElementById('task-end-time').value = '';
         document.getElementById('recurring-options').classList.add('hidden');
         document.getElementById('auto-complete-group').classList.add('hidden');
         document.getElementById('task-auto-complete').checked = true;
@@ -225,9 +239,10 @@ const TaskModal = {
         document.getElementById('task-priority').value = task.priority;
         document.getElementById('task-date').value = task.due_date || '';
         document.getElementById('task-time').value = task.due_time || '';
+        document.getElementById('task-end-time').value = task.end_time || '';
 
         // Auto-complete checkbox
-        const hasTime = !!task.due_time;
+        const hasTime = !!task.due_time || !!task.end_time;
         document.getElementById('auto-complete-group').classList.toggle('hidden', !hasTime);
         document.getElementById('task-auto-complete').checked = task.auto_complete !== 0;
 
@@ -266,10 +281,18 @@ const TaskModal = {
         this._resetNLPState();
     },
 
+    /** Add 1 hour to a HH:MM string, capping at 23:59 */
+    _addHour(timeStr) {
+        const [h, m] = timeStr.split(':').map(Number);
+        const newH = Math.min(h + 1, 23);
+        return `${String(newH).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    },
+
     async save() {
         let title = document.getElementById('task-title').value.trim();
         let dateVal = document.getElementById('task-date').value || null;
         let timeVal = document.getElementById('task-time').value || null;
+        let endTimeVal = document.getElementById('task-end-time').value || null;
 
         // ── Apply NLP result if active ──
         if (this._nlpResult && !this._nlpDismissed) {
@@ -287,6 +310,7 @@ const TaskModal = {
             priority: parseInt(document.getElementById('task-priority').value),
             due_date: dateVal,
             due_time: timeVal,
+            end_time: endTimeVal,
             is_recurring: document.getElementById('task-recurring').checked,
             recurring_type: document.getElementById('task-recurring-type').value,
             recurring_interval: parseInt(document.getElementById('task-recurring-interval').value) || 1,

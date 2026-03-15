@@ -188,7 +188,9 @@ const DailyView = {
             metaTags += `<span class="task-tag category" style="background:${task.category_color}22;color:${task.category_color}">${task.category_icon || ''} ${task.category_name}</span>`;
         }
         if (task.due_time) {
-            metaTags += `<span class="task-tag time">🕐 ${task.due_time}</span>`;
+            let timeDisplay = task.due_time;
+            if (task.end_time) timeDisplay += ` - ${task.end_time}`;
+            metaTags += `<span class="task-tag time">🕐 ${timeDisplay}</span>`;
         }
         if (App.currentAssignee === 'all') {
             metaTags += `<span class="task-tag assignee">${assigneeImg} ${task.assignee}</span>`;

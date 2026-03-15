@@ -145,7 +145,7 @@ router.delete('/clear-done', (req, res) => {
 
 // POST /api/tasks — create task
 router.post('/', (req, res) => {
-    const { title, description, assignee, category_id, priority, due_date, due_time,
+    const { title, description, assignee, category_id, priority, due_date, due_time, end_time,
         is_recurring, recurring_type, recurring_interval, recurring_end_date, auto_complete } = req.body;
 
     if (!title || !assignee) {
@@ -157,9 +157,9 @@ router.post('/', (req, res) => {
 
     try {
         const result = db.prepare(`
-      INSERT INTO tasks (title, description, assignee, category_id, priority, due_date, due_time,
+      INSERT INTO tasks (title, description, assignee, category_id, priority, due_date, due_time, end_time,
         is_recurring, recurring_type, recurring_interval, recurring_end_date, auto_complete)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
             title,
             description || '',
@@ -168,6 +168,7 @@ router.post('/', (req, res) => {
             priority || 2,
             due_date || null,
             due_time || null,
+            end_time || null,
             is_recurring ? 1 : 0,
             recurring_type || null,
             recurring_interval || 1,
@@ -193,7 +194,7 @@ router.put('/:id', (req, res) => {
     const fields = req.body;
 
     const allowedFields = ['title', 'description', 'assignee', 'category_id', 'priority',
-        'due_date', 'due_time', 'status', 'is_recurring', 'recurring_type',
+        'due_date', 'due_time', 'end_time', 'status', 'is_recurring', 'recurring_type',
         'recurring_interval', 'recurring_end_date', 'auto_complete'];
 
     const updates = [];

@@ -175,10 +175,12 @@ setInterval(() => {
         const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-        // Find tasks to auto-complete (need their info for coin rewards)
+        // Find tasks to auto-complete: use end_time if set, else due_time
         const tasksToComplete = db.prepare(`
             SELECT id, assignee, title FROM tasks
-            WHERE auto_complete = 1 AND status = 'todo' AND due_date = ? AND due_time IS NOT NULL AND due_time <= ?
+            WHERE auto_complete = 1 AND status = 'todo' AND due_date = ?
+              AND (due_time IS NOT NULL OR end_time IS NOT NULL)
+              AND COALESCE(end_time, due_time) <= ?
         `).all(todayStr, timeStr);
 
         if (tasksToComplete.length > 0) {
