@@ -150,6 +150,9 @@ Object.assign(App, {
                         case 'coins':
                             document.getElementById('header-coin-btn')?.click();
                             break;
+                        case 'codex':
+                            if (typeof CodexManager !== 'undefined') CodexManager.open();
+                            break;
                         case 'settings':
                             // Open sidebar settings on mobile
                             const sidebar = document.getElementById('sidebar');

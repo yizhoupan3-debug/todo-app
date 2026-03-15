@@ -552,4 +552,19 @@ db.exec(`
   }
 }
 
+// ── Codex account management ──
+db.exec(`
+  CREATE TABLE IF NOT EXISTS codex_accounts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    account TEXT NOT NULL,
+    password TEXT NOT NULL,
+    email TEXT DEFAULT '',
+    email_password TEXT DEFAULT '',
+    access_token TEXT DEFAULT '',
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+  );
+`);
+
 module.exports = db;

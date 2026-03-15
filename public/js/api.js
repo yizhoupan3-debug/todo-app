@@ -245,4 +245,24 @@ const API = {
     deleteElement(id) {
         return this.request(`/journal/element/${id}`, { method: 'DELETE' });
     },
+
+    // ── Codex accounts ──
+    getCodexAccounts() {
+        return this.request('/codex');
+    },
+    getCodexAccount(id) {
+        return this.request(`/codex/${id}`);
+    },
+    createCodexAccount(data) {
+        return this.request('/codex', { method: 'POST', body: data });
+    },
+    updateCodexAccount(id, data) {
+        return this.request(`/codex/${id}`, { method: 'PUT', body: data });
+    },
+    deleteCodexAccount(id) {
+        return this.request(`/codex/${id}`, { method: 'DELETE' });
+    },
+    getCodexLocalToken() {
+        return this.request('/codex/local-token');
+    },
 };

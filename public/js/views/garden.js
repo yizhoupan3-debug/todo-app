@@ -22,10 +22,10 @@ function removeWhiteBg(container) {
                 const r = d[i], g = d[i+1], b = d[i+2];
                 /* luminance-weighted whiteness */
                 const lum = r * 0.299 + g * 0.587 + b * 0.114;
-                if (r > 200 && g > 200 && b > 200) {
+                if (r > 180 && g > 180 && b > 180) {
                     /* smooth falloff: the whiter, the more transparent */
                     const minC = Math.min(r, g, b);
-                    const alpha = Math.max(0, 255 - (minC - 200) * (255 / 55));
+                    const alpha = Math.max(0, 255 - (minC - 180) * (255 / 75));
                     d[i+3] = Math.min(d[i+3], Math.round(alpha));
                 }
             }
@@ -345,10 +345,10 @@ const GardenView = {
         const zone = this.getPlotZone(plot);
         const n1 = this._plotNoise(plot, 1);
         const n2 = this._plotNoise(plot, 2);
-        const colStart = 21;
-        const colSpan = 58;
-        const rowStart = 29;
-        const rowSpan = 47;
+        const colStart = 12;
+        const colSpan = 76;
+        const rowStart = 16;
+        const rowSpan = 64;
         const left = colStart + xRatio * colSpan;
         const top = rowStart + yRatio * rowSpan;
         const scale = 0.94 + yRatio * 0.12;
