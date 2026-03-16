@@ -5,14 +5,16 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-// ── Quota cache (in-memory, 2-min TTL) ──
+// ── Quota cache (in-memory, 2-min TTL for success, 30s for errors) ──
 const quotaCache = new Map();
-const CACHE_TTL = 2 * 60 * 1000;
+const CACHE_TTL_OK = 2 * 60 * 1000;
+const CACHE_TTL_ERR = 30 * 1000;
 
 function getCachedQuota(accountId) {
   const entry = quotaCache.get(accountId);
   if (!entry) return null;
-  if (Date.now() - entry.ts > CACHE_TTL) {
+  const ttl = entry.data.error ? CACHE_TTL_ERR : CACHE_TTL_OK;
+  if (Date.now() - entry.ts > ttl) {
     quotaCache.delete(accountId);
     return null;
   }
@@ -55,7 +57,7 @@ async function fetchQuota(accessToken) {
 
     // Fallback on 404
     if (res.status === 404) {
-      try { res = await doFetch(FALLBACK_URL); } catch (_) { /* use original error */ }
+      try { res = await doFetch(FALLBACK_URL); } catch (_) { /* use original */ }
     }
 
     if (res.status === 401 || res.status === 403) {
@@ -66,15 +68,16 @@ async function fetchQuota(accessToken) {
     }
 
     const data = await res.json();
-    const result = {
+    return {
       plan_type: data.plan_type || 'unknown',
       primary_used: data.rate_limit?.primary_window?.used_percent ?? null,
       primary_reset: data.rate_limit?.primary_window?.reset_at ?? null,
+      primary_window_secs: data.rate_limit?.primary_window?.limit_window_seconds ?? null,
       secondary_used: data.rate_limit?.secondary_window?.used_percent ?? null,
       secondary_reset: data.rate_limit?.secondary_window?.reset_at ?? null,
+      secondary_window_secs: data.rate_limit?.secondary_window?.limit_window_seconds ?? null,
       credits_balance: data.credits?.balance ?? null,
     };
-    return result;
   } catch (e) {
     if (e.name === 'AbortError') return { error: 'timeout' };
     return { error: 'network_error', message: e.message };
@@ -92,52 +95,10 @@ const updateAccount = db.prepare(`
   UPDATE codex_accounts SET name=?, account=?, password=?, email=?, email_password=?, access_token=?, updated_at=datetime('now','localtime')
   WHERE id = ?
 `);
-const deleteAccount = db.prepare('DELETE FROM codex_accounts WHERE id = ?');
+const deleteAccountStmt = db.prepare('DELETE FROM codex_accounts WHERE id = ?');
 
 // ── Routes ──
-
-// GET /api/codex — list all accounts with live quota
-router.get('/', async (req, res) => {
-  try {
-    const accounts = listAccounts.all();
-
-    // Fetch quota for each account in parallel
-    const results = await Promise.allSettled(
-      accounts.map(async (acc) => {
-        const hasToken = !!(acc.access_token && acc.access_token.trim());
-        let quota = null;
-
-        if (hasToken) {
-          quota = getCachedQuota(acc.id);
-          if (!quota) {
-            quota = await fetchQuota(acc.access_token);
-            if (!quota.error) {
-              setCachedQuota(acc.id, quota);
-            }
-          }
-        }
-
-        return {
-          id: acc.id,
-          name: acc.name,
-          account: acc.account,
-          email: acc.email,
-          has_token: hasToken,
-          quota,
-        };
-      })
-    );
-
-    const list = results.map(r =>
-      r.status === 'fulfilled' ? r.value : { ...r.reason, quota: { error: 'internal' } }
-    );
-
-    res.json(list);
-  } catch (e) {
-    console.error('Codex list error:', e);
-    res.status(500).json({ error: e.message });
-  }
-});
+// IMPORTANT: /local-token MUST come before /:id to avoid route collision
 
 // GET /api/codex/local-token — read token from ~/.codex/auth.json
 router.get('/local-token', (req, res) => {
@@ -157,6 +118,52 @@ router.get('/local-token', (req, res) => {
     res.json({ token });
   } catch (e) {
     res.json({ token: null, error: `读取失败: ${e.message}` });
+  }
+});
+
+// GET /api/codex — list all accounts with live quota
+router.get('/', async (req, res) => {
+  try {
+    const accounts = listAccounts.all();
+    const forceRefresh = req.query.refresh === '1';
+
+    // Fetch quota for each account in parallel
+    const results = await Promise.allSettled(
+      accounts.map(async (acc) => {
+        const hasToken = !!(acc.access_token && acc.access_token.trim());
+        let quota = null;
+
+        if (hasToken) {
+          if (!forceRefresh) {
+            quota = getCachedQuota(acc.id);
+          }
+          if (!quota) {
+            quota = await fetchQuota(acc.access_token);
+            setCachedQuota(acc.id, quota);
+          }
+        }
+
+        return {
+          id: acc.id,
+          name: acc.name,
+          account: acc.account,
+          email: acc.email,
+          has_token: hasToken,
+          quota,
+        };
+      })
+    );
+
+    const list = results.map(r => {
+      if (r.status === 'fulfilled') return r.value;
+      // Promise rejected — should not happen but handle gracefully
+      return { id: 0, name: '?', account: '?', has_token: false, quota: { error: 'internal' } };
+    });
+
+    res.json(list);
+  } catch (e) {
+    console.error('Codex list error:', e);
+    res.status(500).json({ error: e.message });
   }
 });
 
@@ -217,7 +224,7 @@ router.put('/:id', (req, res) => {
 // DELETE /api/codex/:id
 router.delete('/:id', (req, res) => {
   try {
-    const result = deleteAccount.run(req.params.id);
+    const result = deleteAccountStmt.run(req.params.id);
     if (result.changes === 0) return res.status(404).json({ error: '账号不存在' });
     quotaCache.delete(Number(req.params.id));
     res.json({ success: true });

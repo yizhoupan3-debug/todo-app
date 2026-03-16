@@ -1,5 +1,5 @@
 /* ────────────────────────────────────
-   CodexManager — Codex 多账号管理
+   CodexManager — Codex 多账号管理 v2
    ──────────────────────────────────── */
 const CodexManager = {
   _overlay: null,
@@ -16,6 +16,9 @@ const CodexManager = {
         <div class="codex-header">
           <h3>Codex 账号</h3>
           <div class="codex-header-actions">
+            <button class="codex-btn-refresh" title="刷新额度">
+              <i data-lucide="refresh-cw"></i>
+            </button>
             <button class="codex-btn-add" title="添加账号">
               <i data-lucide="plus"></i>
             </button>
@@ -38,12 +41,13 @@ const CodexManager = {
 
     requestAnimationFrame(() => {
       overlay.classList.add('active');
-      if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [overlay] });
+      this._initIcons(overlay);
     });
 
     // Events
     overlay.querySelector('.codex-btn-close').addEventListener('click', () => this.close());
     overlay.querySelector('.codex-btn-add').addEventListener('click', () => this.showForm());
+    overlay.querySelector('.codex-btn-refresh').addEventListener('click', () => this.loadList(true));
     overlay.addEventListener('click', (e) => { if (e.target === overlay) this.close(); });
 
     this.loadList();
@@ -59,22 +63,31 @@ const CodexManager = {
   },
 
   // ── Load + render list ──
-  async loadList() {
+  async loadList(forceRefresh = false) {
     const body = document.getElementById('codex-body');
     if (!body) return;
 
-    body.innerHTML = `
-      <div class="codex-loading">
-        <div class="codex-shimmer"></div>
-        <div class="codex-shimmer"></div>
-      </div>
-    `;
+    // Spin refresh icon
+    const refreshBtn = this._overlay?.querySelector('.codex-btn-refresh');
+    if (refreshBtn) refreshBtn.classList.add('codex-spinning');
+
+    if (!forceRefresh) {
+      body.innerHTML = `
+        <div class="codex-loading">
+          <div class="codex-shimmer"></div>
+          <div class="codex-shimmer"></div>
+        </div>
+      `;
+    }
 
     try {
-      this._accounts = await API.getCodexAccounts();
+      const url = forceRefresh ? '/codex?refresh=1' : '/codex';
+      this._accounts = await API.request(url);
       this.renderList();
     } catch (e) {
       body.innerHTML = `<div class="codex-empty">加载失败，请重试</div>`;
+    } finally {
+      if (refreshBtn) refreshBtn.classList.remove('codex-spinning');
     }
   },
 
@@ -109,21 +122,33 @@ const CodexManager = {
         const errMsg = errMap[q?.error] || '❌ 获取失败';
         quotaHtml = `<div class="codex-quota-badge codex-badge-error">${errMsg}</div>`;
       } else {
-        const used7d = q.secondary_used ?? q.primary_used ?? 0;
-        const remaining = Math.max(0, 100 - used7d);
-        const statusClass = used7d >= 95 ? 'critical' : used7d >= 80 ? 'danger' : used7d >= 50 ? 'warning' : 'healthy';
+        // Determine 7-day and 5-hour quotas
+        const has7d = q.secondary_used != null;
+        const has5h = q.primary_used != null && has7d; // primary is 5h only when secondary exists
+        const used7d = has7d ? q.secondary_used : (q.primary_used ?? 0);
+        const remaining7d = Math.max(0, 100 - used7d);
+        const status7d = this._statusClass(used7d);
         const planLabel = (q.plan_type || 'unknown').toUpperCase();
-        const resetInfo = this._formatReset(q.secondary_reset || q.primary_reset);
+        const resetInfo = this._formatReset(has7d ? q.secondary_reset : q.primary_reset);
 
         quotaHtml = `
           <div class="codex-quota-info">
             <div class="codex-quota-top">
               <span class="codex-plan-badge">${planLabel}</span>
-              <span class="codex-quota-pct">${remaining.toFixed(0)}% 剩余</span>
+              <span class="codex-quota-pct">${remaining7d.toFixed(0)}% 剩余</span>
             </div>
             <div class="codex-progress-track">
-              <div class="codex-progress-bar codex-progress-${statusClass}" style="width:${used7d}%"></div>
+              <div class="codex-progress-bar codex-progress-${status7d}" style="width:${used7d}%"></div>
             </div>
+            ${has5h ? `
+              <div class="codex-sub-quota">
+                <span class="codex-sub-label">5h</span>
+                <div class="codex-sub-track">
+                  <div class="codex-progress-bar codex-progress-${this._statusClass(q.primary_used)}" style="width:${q.primary_used}%"></div>
+                </div>
+                <span class="codex-sub-pct">${Math.max(0, 100 - q.primary_used).toFixed(0)}%</span>
+              </div>
+            ` : ''}
             ${resetInfo ? `<div class="codex-reset-info">${resetInfo}</div>` : ''}
           </div>
         `;
@@ -141,12 +166,11 @@ const CodexManager = {
       `;
     }).join('');
 
-    // Card click → detail
     body.querySelectorAll('.codex-card').forEach(card => {
       card.addEventListener('click', () => this.showDetail(card.dataset.id));
     });
 
-    if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [body] });
+    this._initIcons(body);
   },
 
   // ── Detail view ──
@@ -158,6 +182,45 @@ const CodexManager = {
 
     try {
       const acc = await API.getCodexAccount(id);
+      // Find quota from cached list
+      const listItem = this._accounts.find(a => a.id == id);
+      const q = listItem?.quota;
+
+      let quotaSection = '';
+      if (listItem?.has_token && q && !q.error) {
+        const has7d = q.secondary_used != null;
+        const has5h = q.primary_used != null && has7d;
+        const used7d = has7d ? q.secondary_used : (q.primary_used ?? 0);
+        const remaining7d = Math.max(0, 100 - used7d);
+        const planLabel = (q.plan_type || 'unknown').toUpperCase();
+        const resetInfo = this._formatReset(has7d ? q.secondary_reset : q.primary_reset);
+
+        quotaSection = `
+          <div class="codex-detail-quota">
+            <div class="codex-quota-top">
+              <span class="codex-plan-badge">${planLabel}</span>
+              <span class="codex-quota-pct">${remaining7d.toFixed(0)}% 剩余 (7天)</span>
+            </div>
+            <div class="codex-progress-track codex-progress-lg">
+              <div class="codex-progress-bar codex-progress-${this._statusClass(used7d)}" style="width:${used7d}%"></div>
+            </div>
+            ${has5h ? `
+              <div class="codex-sub-quota">
+                <span class="codex-sub-label">5h 窗口</span>
+                <div class="codex-sub-track">
+                  <div class="codex-progress-bar codex-progress-${this._statusClass(q.primary_used)}" style="width:${q.primary_used}%"></div>
+                </div>
+                <span class="codex-sub-pct">${Math.max(0, 100 - q.primary_used).toFixed(0)}%</span>
+              </div>
+            ` : ''}
+            ${resetInfo ? `<div class="codex-reset-info">${resetInfo}</div>` : ''}
+          </div>
+        `;
+      } else if (listItem?.has_token && q?.error) {
+        const errMap = { expired: '⚠️ Token 已过期', timeout: '⏱ 请求超时', network_error: '🌐 网络错误', fetch_failed: '❌ 获取失败' };
+        quotaSection = `<div class="codex-detail-quota"><div class="codex-quota-badge codex-badge-error">${errMap[q.error] || '❌ 获取失败'}</div></div>`;
+      }
+
       body.innerHTML = `
         <div class="codex-detail">
           <button class="codex-back" onclick="CodexManager.loadList()">
@@ -165,54 +228,12 @@ const CodexManager = {
           </button>
 
           <div class="codex-detail-title">${this._esc(acc.name)}</div>
+          ${quotaSection}
 
-          <div class="codex-field-group">
-            <label>账号</label>
-            <div class="codex-field-value">
-              <span>${this._esc(acc.account)}</span>
-              <button class="codex-copy-btn" data-copy="${this._esc(acc.account)}" title="复制">
-                <i data-lucide="copy"></i>
-              </button>
-            </div>
-          </div>
-
-          <div class="codex-field-group">
-            <label>密码</label>
-            <div class="codex-field-value">
-              <span class="codex-masked" data-secret="${this._esc(acc.password)}">••••••••</span>
-              <button class="codex-eye-btn" title="显示">
-                <i data-lucide="eye"></i>
-              </button>
-              <button class="codex-copy-btn" data-copy="${this._esc(acc.password)}" title="复制">
-                <i data-lucide="copy"></i>
-              </button>
-            </div>
-          </div>
-
-          ${acc.email ? `
-          <div class="codex-field-group">
-            <label>邮箱</label>
-            <div class="codex-field-value">
-              <span>${this._esc(acc.email)}</span>
-              <button class="codex-copy-btn" data-copy="${this._esc(acc.email)}" title="复制">
-                <i data-lucide="copy"></i>
-              </button>
-            </div>
-          </div>` : ''}
-
-          ${acc.email_password ? `
-          <div class="codex-field-group">
-            <label>邮箱密码</label>
-            <div class="codex-field-value">
-              <span class="codex-masked" data-secret="${this._esc(acc.email_password)}">••••••••</span>
-              <button class="codex-eye-btn" title="显示">
-                <i data-lucide="eye"></i>
-              </button>
-              <button class="codex-copy-btn" data-copy="${this._esc(acc.email_password)}" title="复制">
-                <i data-lucide="copy"></i>
-              </button>
-            </div>
-          </div>` : ''}
+          ${this._fieldRow('账号', acc.account, false)}
+          ${this._fieldRow('密码', acc.password, true)}
+          ${acc.email ? this._fieldRow('邮箱', acc.email, false) : ''}
+          ${acc.email_password ? this._fieldRow('邮箱密码', acc.email_password, true) : ''}
 
           <div class="codex-field-group">
             <label>Access Token</label>
@@ -232,44 +253,91 @@ const CodexManager = {
         </div>
       `;
 
-      // Eye toggle
-      body.querySelectorAll('.codex-eye-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const span = btn.closest('.codex-field-value').querySelector('.codex-masked');
-          if (!span) return;
-          const secret = span.dataset.secret;
-          if (span.textContent === '••••••••') {
-            span.textContent = secret;
-            btn.querySelector('i')?.setAttribute('data-lucide', 'eye-off');
-            // Auto-hide after 3s
-            setTimeout(() => {
-              span.textContent = '••••••••';
-              btn.querySelector('i')?.setAttribute('data-lucide', 'eye');
-              if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [btn] });
-            }, 3000);
-          } else {
-            span.textContent = '••••••••';
-            btn.querySelector('i')?.setAttribute('data-lucide', 'eye');
-          }
-          if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [btn] });
-        });
-      });
-
-      // Copy buttons
-      body.querySelectorAll('.codex-copy-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const text = btn.dataset.copy;
-          navigator.clipboard.writeText(text).then(() => {
-            if (typeof App !== 'undefined' && App.showToast) App.showToast('已复制', 'info');
-          }).catch(() => {});
-        });
-      });
-
-      if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [body] });
+      this._bindDetailEvents(body);
+      this._initIcons(body);
     } catch (e) {
       body.innerHTML = `<div class="codex-empty">加载失败</div>`;
     }
+  },
+
+  // Generate a field row (safe against XSS in attributes)
+  _fieldRow(label, value, masked) {
+    const safe = this._esc(value);
+    if (masked) {
+      return `
+        <div class="codex-field-group">
+          <label>${label}</label>
+          <div class="codex-field-value">
+            <span class="codex-masked" data-secret>••••••••</span>
+            <button class="codex-eye-btn" title="显示"><i data-lucide="eye"></i></button>
+            <button class="codex-copy-btn" data-masked-copy title="复制"><i data-lucide="copy"></i></button>
+          </div>
+          <input type="hidden" class="codex-secret-store" value="${safe}">
+        </div>
+      `;
+    }
+    return `
+      <div class="codex-field-group">
+        <label>${label}</label>
+        <div class="codex-field-value">
+          <span>${safe}</span>
+          <button class="codex-copy-btn" data-masked-copy title="复制"><i data-lucide="copy"></i></button>
+        </div>
+        <input type="hidden" class="codex-secret-store" value="${safe}">
+      </div>
+    `;
+  },
+
+  _bindDetailEvents(body) {
+    // Eye toggle — read secret from hidden input (XSS safe)
+    body.querySelectorAll('.codex-eye-btn').forEach(btn => {
+      let hideTimer = null;
+      btn.addEventListener('click', () => {
+        const group = btn.closest('.codex-field-group');
+        const span = group?.querySelector('.codex-masked');
+        const store = group?.querySelector('.codex-secret-store');
+        if (!span || !store) return;
+
+        clearTimeout(hideTimer);
+        if (span.textContent === '••••••••') {
+          span.textContent = store.value;
+          btn.querySelector('i')?.setAttribute('data-lucide', 'eye-off');
+          hideTimer = setTimeout(() => {
+            span.textContent = '••••••••';
+            btn.querySelector('i')?.setAttribute('data-lucide', 'eye');
+            this._initIcons(btn);
+          }, 3000);
+        } else {
+          span.textContent = '••••••••';
+          btn.querySelector('i')?.setAttribute('data-lucide', 'eye');
+        }
+        this._initIcons(btn);
+      });
+    });
+
+    // Copy buttons — read from hidden input (XSS safe)
+    body.querySelectorAll('.codex-copy-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const group = btn.closest('.codex-field-group');
+        const store = group?.querySelector('.codex-secret-store');
+        if (!store) return;
+
+        navigator.clipboard.writeText(store.value).then(() => {
+          // Flash checkmark
+          const icon = btn.querySelector('i');
+          if (icon) {
+            icon.setAttribute('data-lucide', 'check');
+            this._initIcons(btn);
+            setTimeout(() => {
+              icon.setAttribute('data-lucide', 'copy');
+              this._initIcons(btn);
+            }, 1200);
+          }
+          this._toast('已复制');
+        }).catch(() => {});
+      });
+    });
   },
 
   // ── Form (add/edit) ──
@@ -279,9 +347,7 @@ const CodexManager = {
 
     let existing = null;
     if (editId) {
-      try {
-        existing = await API.getCodexAccount(editId);
-      } catch (_) {}
+      try { existing = await API.getCodexAccount(editId); } catch (_) {}
     }
 
     body.innerHTML = `
@@ -342,20 +408,20 @@ const CodexManager = {
         const result = await API.getCodexLocalToken();
         if (result.token) {
           body.querySelector('#codex-f-token').value = result.token;
-          if (typeof App !== 'undefined' && App.showToast) App.showToast('Token 已读取', 'info');
+          this._toast('Token 已读取');
         } else {
-          if (typeof App !== 'undefined' && App.showToast) App.showToast(result.error || '未找到 Token', 'error');
+          this._toast(result.error || '未找到 Token', 'error');
         }
       } catch (e) {
-        if (typeof App !== 'undefined' && App.showToast) App.showToast('读取失败', 'error');
+        this._toast('读取失败', 'error');
       } finally {
         btn.textContent = '🔑 从本地读取';
         btn.disabled = false;
       }
     });
 
-    // Save
-    body.querySelector('#codex-save-btn').addEventListener('click', async () => {
+    // Save handler
+    const doSave = async () => {
       const data = {
         name: body.querySelector('#codex-f-name').value.trim(),
         account: body.querySelector('#codex-f-account').value.trim(),
@@ -366,7 +432,7 @@ const CodexManager = {
       };
 
       if (!data.name || !data.account || !data.password) {
-        if (typeof App !== 'undefined' && App.showToast) App.showToast('名称、账号、密码为必填', 'error');
+        this._toast('名称、账号、密码为必填', 'error');
         return;
       }
 
@@ -380,16 +446,25 @@ const CodexManager = {
         } else {
           await API.createCodexAccount(data);
         }
-        if (typeof App !== 'undefined' && App.showToast) App.showToast(existing ? '已更新' : '已添加', 'info');
+        this._toast(existing ? '已更新' : '已添加');
         this.loadList();
       } catch (e) {
-        if (typeof App !== 'undefined' && App.showToast) App.showToast('保存失败: ' + (e.message || ''), 'error');
+        this._toast('保存失败: ' + (e.message || ''), 'error');
         btn.disabled = false;
         btn.textContent = existing ? '保存修改' : '添加';
       }
+    };
+
+    body.querySelector('#codex-save-btn').addEventListener('click', doSave);
+
+    // Enter key to submit (except in textarea)
+    body.querySelectorAll('#codex-f-name, #codex-f-account, #codex-f-password, #codex-f-email, #codex-f-email-pw').forEach(input => {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); doSave(); }
+      });
     });
 
-    if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [body] });
+    this._initIcons(body);
   },
 
   // ── Delete ──
@@ -397,10 +472,10 @@ const CodexManager = {
     if (!confirm('确定删除此账号？')) return;
     try {
       await API.deleteCodexAccount(id);
-      if (typeof App !== 'undefined' && App.showToast) App.showToast('已删除', 'info');
+      this._toast('已删除');
       this.loadList();
     } catch (e) {
-      if (typeof App !== 'undefined' && App.showToast) App.showToast('删除失败', 'error');
+      this._toast('删除失败', 'error');
     }
   },
 
@@ -410,6 +485,21 @@ const CodexManager = {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+  },
+
+  _toast(msg, type = 'info') {
+    if (typeof App !== 'undefined' && App.showToast) App.showToast(msg, type);
+  },
+
+  _initIcons(el) {
+    if (typeof lucide !== 'undefined') lucide.createIcons({ nodes: [el] });
+  },
+
+  _statusClass(used) {
+    if (used >= 95) return 'critical';
+    if (used >= 80) return 'danger';
+    if (used >= 50) return 'warning';
+    return 'healthy';
   },
 
   _formatReset(unix) {
@@ -422,6 +512,8 @@ const CodexManager = {
     const days = Math.floor(hours / 24);
     const remainHours = hours % 24;
     if (days > 0) return `${days}天${remainHours}小时后重置`;
-    return `${hours}小时后重置`;
+    if (hours > 0) return `${hours}小时后重置`;
+    const mins = Math.ceil(diffMs / 60000);
+    return `${mins}分钟后重置`;
   },
 };

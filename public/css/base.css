@@ -4113,6 +4113,55 @@ form {
   margin-top: 4px;
 }
 
+/* ── 5-hour sub-quota bar ── */
+.codex-sub-quota {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+}
+.codex-sub-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text-tertiary, #999);
+  min-width: 18px;
+}
+.codex-sub-track {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-secondary, rgba(0,0,0,0.06));
+  overflow: hidden;
+}
+.codex-sub-pct {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-tertiary, #999);
+  min-width: 24px;
+  text-align: right;
+}
+
+/* ── Refresh spin ── */
+.codex-spinning svg {
+  animation: codexSpin 0.8s linear infinite;
+}
+@keyframes codexSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Detail quota block ── */
+.codex-detail-quota {
+  margin-bottom: 18px;
+  padding: 14px;
+  border-radius: 14px;
+  background: var(--card-bg, #f8f8f8);
+  border: 1px solid var(--border, rgba(0,0,0,0.06));
+}
+.codex-progress-lg { height: 8px; border-radius: 4px; }
+
+/* ── Secret store (hidden) ── */
+.codex-secret-store { display: none !important; }
+
 /* ── Detail view ── */
 .codex-back {
   display: inline-flex;
