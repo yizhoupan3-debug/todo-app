@@ -53,12 +53,31 @@
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-bounce);
+  transform-style: preserve-3d;
+  perspective: 600px;
 }
 
 .checkin-item-card:hover {
   border-color: var(--primary);
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(99, 102, 241, 0.18);
+  transform: translateY(-3px) perspective(600px) rotateX(-1.5deg);
+}
+
+.checkin-item-card:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 0.1s;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+}
+
+/* Success flash when check-in completes */
+.checkin-item-card.success-flash {
+  animation: checkinSuccessGlow 0.6s ease;
+}
+
+@keyframes checkinSuccessGlow {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  40% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0.2), 0 4px 20px rgba(34, 197, 94, 0.15); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
 }
 
 .checkin-item-icon {
@@ -127,11 +146,28 @@
   font-weight: 500;
   cursor: pointer;
   border-radius: var(--radius-md);
-  transition: background var(--transition);
+  transition: background var(--transition), transform 0.2s ease;
 }
 
 .checkin-back-btn:hover {
   background: var(--primary-glow);
+  transform: translateX(-2px);
+}
+
+/* Checkin detail page slide-in */
+.checkin-detail-entering {
+  animation: checkinSlideIn 0.35s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+
+@keyframes checkinSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Goal editor */

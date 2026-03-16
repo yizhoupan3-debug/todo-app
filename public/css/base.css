@@ -61,6 +61,7 @@
   --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-spring: 0.35s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* ===== DARK MODE — Surfaces Only ===== */
@@ -366,7 +367,7 @@
   box-shadow: var(--shadow-lg);
   padding: 14px;
   transform-origin: bottom center;
-  animation: settingsSlideUp 0.22s ease;
+  animation: settingsSlideUp 0.28s cubic-bezier(0.25, 1, 0.5, 1);
   z-index: 100;
   max-height: 70vh;
   overflow-y: auto;
@@ -380,7 +381,7 @@
 @keyframes settingsSlideUp {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.97);
+    transform: translateY(12px) scale(0.96);
   }
 
   to {
@@ -1360,7 +1361,7 @@ textarea:focus {
   border-radius: var(--radius-md);
   font-size: 0.9rem;
   font-weight: 500;
-  transition: all var(--transition);
+  transition: all var(--transition-spring);
   color: var(--text-secondary);
   position: relative;
 }
@@ -1368,6 +1369,11 @@ textarea:focus {
 .nav-btn:hover {
   background: var(--bg-secondary);
   color: var(--text);
+  transform: translateX(4px);
+}
+
+.nav-btn:active {
+  transform: translateX(2px) scale(0.97);
 }
 
 .nav-btn.active {
@@ -1386,6 +1392,18 @@ textarea:focus {
   height: 60%;
   border-radius: 0 3px 3px 0;
   background: var(--primary);
+  animation: navIndicatorIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes navIndicatorIn {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: 60%;
+    opacity: 1;
+  }
 }
 
 .nav-icon {
@@ -1904,6 +1922,7 @@ textarea:focus {
   padding-bottom: 24px;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  scroll-behavior: smooth;
   transform: translateZ(0);
   backface-visibility: hidden;
   contain: layout style;
@@ -1912,7 +1931,7 @@ textarea:focus {
 /* Only promote to GPU layer during the brief fade-in animation */
 .view-container.view-animating {
   will-change: transform, opacity;
-  animation: viewFadeIn 0.25s ease-out;
+  animation: viewFadeIn 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* Completely freeze hidden views: stop animations, skip layout & paint */
@@ -1941,8 +1960,16 @@ textarea:focus {
 
   ::view-transition-group(app-view),
   ::view-transition-group(app-header) {
-    animation-duration: 180ms;
-    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    animation-duration: 220ms;
+    animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  ::view-transition-old(app-view) {
+    animation: viewFadeOut 180ms ease both;
+  }
+
+  ::view-transition-new(app-view) {
+    animation: viewFadeIn 220ms cubic-bezier(0.25, 1, 0.5, 1) both;
   }
 
   ::view-transition-old(app-view),
@@ -1956,12 +1983,23 @@ textarea:focus {
 @keyframes viewFadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px) scale(0.99);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes viewFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.98);
   }
 }
 
@@ -1976,6 +2014,17 @@ textarea:focus {
 .view-container::-webkit-scrollbar-thumb {
   background: var(--border-strong);
   border-radius: 3px;
+  transition: background 0.3s;
+}
+
+.view-container:hover::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+}
+
+/* Global selection color */
+::selection {
+  background: color-mix(in srgb, var(--primary) 30%, transparent);
+  color: var(--text);
 }
 
 /* ===== TASK COLUMNS (Daily View) ===== */
@@ -2071,10 +2120,10 @@ textarea:focus {
   padding: 14px 16px;
   border: 1px solid var(--border);
   cursor: pointer;
-  transition: all var(--transition);
+  transition: all var(--transition-spring);
   position: relative;
   overflow: visible;
-  animation: cardSlideIn 0.35s ease-out both;
+  animation: cardSlideIn 0.35s cubic-bezier(0.25, 1, 0.5, 1) both;
 }
 
 @keyframes cardSlideIn {
@@ -2125,7 +2174,12 @@ textarea:focus {
 .task-card:hover {
   border-color: var(--primary-light);
   box-shadow: var(--shadow-md), 0 0 0 1px var(--primary-glow);
-  transform: translateY(-2px);
+  transform: translateY(-3px) scale(1.005);
+}
+
+.task-card:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 0.1s;
 }
 
 .task-card::before {
@@ -2190,15 +2244,19 @@ textarea:focus {
 
 @keyframes checkPop {
   0% {
-    transform: scale(0.8);
+    transform: scale(0.8) rotate(-10deg);
   }
 
-  50% {
-    transform: scale(1.2);
+  40% {
+    transform: scale(1.25) rotate(5deg);
+  }
+
+  70% {
+    transform: scale(0.95) rotate(-2deg);
   }
 
   100% {
-    transform: scale(1);
+    transform: scale(1) rotate(0deg);
   }
 }
 
@@ -2214,6 +2272,7 @@ textarea:focus {
   font-weight: 500;
   line-height: 1.4;
   flex: 1;
+  transition: color 0.3s ease, opacity 0.3s ease;
 }
 
 .task-card.done .task-card-title {
@@ -2224,11 +2283,31 @@ textarea:focus {
 
 .task-card.done {
   opacity: 0.75;
-  transition: opacity var(--transition), transform var(--transition);
+  transform: scale(0.98);
+  transition: opacity var(--transition-spring), transform var(--transition-spring);
 }
 
 .task-card.done:hover {
   opacity: 1;
+  transform: scale(1);
+}
+
+/* Task card slide-out for deletion */
+.task-card.removing {
+  animation: cardSlideOut 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+  pointer-events: none;
+}
+
+@keyframes cardSlideOut {
+  to {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.95);
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
 }
 
 .task-card-meta {
@@ -2333,6 +2412,13 @@ textarea:focus {
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-bounce);
+  position: relative;
+  overflow: hidden;
+}
+
+.filter-pill:active {
+  transform: scale(0.93);
+  transition-duration: 0.1s;
 }
 
 .filter-pill:hover {
@@ -2604,15 +2690,28 @@ textarea:focus {
   position: fixed;
   inset: 0;
   background: var(--overlay-bg);
-  backdrop-filter: blur(6px) saturate(1.2);
-  -webkit-backdrop-filter: blur(6px) saturate(1.2);
+  backdrop-filter: blur(8px) saturate(1.3);
+  -webkit-backdrop-filter: blur(8px) saturate(1.3);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
+  animation: overlayFadeIn 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   padding: 20px;
   contain: layout paint style;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(8px) saturate(1.3);
+    -webkit-backdrop-filter: blur(8px) saturate(1.3);
+  }
 }
 
 @keyframes fadeIn {
@@ -2635,7 +2734,7 @@ textarea:focus {
   max-height: 85vh;
   overflow-y: auto;
   box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  animation: modalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: modalSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   transition: background var(--transition);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
@@ -2647,7 +2746,12 @@ textarea:focus {
 @keyframes modalSlideUp {
   from {
     opacity: 0;
-    transform: translateY(30px) scale(0.97);
+    transform: translateY(40px) scale(0.92);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.01);
   }
 
   to {
@@ -3059,14 +3163,15 @@ form {
   box-shadow: var(--shadow-lg);
   font-size: 0.85rem;
   font-weight: 500;
-  animation: toastIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: toastIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: flex;
   align-items: center;
   gap: 8px;
   max-width: 300px;
   position: relative;
   overflow: hidden;
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
 }
 
 .toast::after {
@@ -3104,7 +3209,11 @@ form {
 @keyframes toastIn {
   from {
     opacity: 0;
-    transform: translateX(30px) scale(0.95);
+    transform: translateX(40px) scale(0.92);
+  }
+
+  60% {
+    transform: translateX(-4px) scale(1.01);
   }
 
   to {
@@ -3116,7 +3225,7 @@ form {
 @keyframes toastOut {
   to {
     opacity: 0;
-    transform: translateX(30px) scale(0.95);
+    transform: translateX(40px) scale(0.92);
   }
 }
 
@@ -3163,6 +3272,18 @@ form {
   height: 2.5px;
   border-radius: 2px;
   background: var(--primary);
+  animation: bottomNavIndicatorIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes bottomNavIndicatorIn {
+  from {
+    transform: translateX(-50%) scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 1;
+  }
 }
 
 .bottom-nav-btn .nav-icon {

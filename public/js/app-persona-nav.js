@@ -383,6 +383,12 @@ Object.assign(App, {
     closeSidebar() {
         document.getElementById('sidebar').classList.remove('open');
         const backdrop = document.getElementById('sidebar-backdrop');
-        if (backdrop) backdrop.remove();
+        if (backdrop) {
+            backdrop.style.transition = 'opacity 0.25s ease';
+            backdrop.style.opacity = '0';
+            backdrop.addEventListener('transitionend', () => backdrop.remove(), { once: true });
+            // Fallback removal in case transitionend doesn't fire
+            setTimeout(() => { if (backdrop.parentNode) backdrop.remove(); }, 300);
+        }
     },
 });

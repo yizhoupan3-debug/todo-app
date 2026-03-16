@@ -197,6 +197,10 @@ const API = {
         return this.request(`/garden/coins/history/${encodeURIComponent(assignee)}?limit=${limit}`);
     },
 
+    undoCoinTransaction(id) {
+        return this.request(`/garden/coins/undo/${id}`, { method: 'DELETE' });
+    },
+
     getShop(assignee) {
         return this.request(`/garden/shop/${encodeURIComponent(assignee)}`);
     },

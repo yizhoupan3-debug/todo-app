@@ -213,12 +213,13 @@ Object.assign(App, {
         try {
             const history = await API.getCoinHistory(assignee, 30);
             const html = history.map(h => `
-                <div style="display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(0,0,0,0.06);align-items:center">
-                    <span style="font-size:14px;color:#333;display:flex;align-items:center;gap:8px">
+                <div class="coin-history-row" data-tx-id="${h.id}" style="display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(0,0,0,0.06);align-items:center;gap:8px">
+                    <span style="font-size:14px;color:#333;display:flex;align-items:center;gap:8px;flex:1;min-width:0">
                         <span style="font-size:16px">${h.reason === 'pomodoro' ? '🍅' : h.reason === 'checkin' ? '✅' : h.reason === 'purchase' ? '🛒' : '⛏️'}</span> 
-                        ${h.detail || h.reason}
+                        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.detail || h.reason}</span>
                     </span>
-                    <span style="color:${h.amount > 0 ? '#4CAF50' : '#E53935'};font-weight:600;font-size:15px">${h.amount > 0 ? '+' : ''}${h.amount}</span>
+                    <span style="color:${h.amount > 0 ? '#4CAF50' : '#E53935'};font-weight:600;font-size:15px;white-space:nowrap">${h.amount > 0 ? '+' : ''}${h.amount}</span>
+                    ${h.amount > 0 ? '<button class="coin-undo-btn" style="background:none;border:1px solid #e0e0e0;border-radius:8px;padding:3px 10px;font-size:12px;color:#999;cursor:pointer;white-space:nowrap;transition:all 0.15s" title="撤销">↩</button>' : ''}
                 </div>
             `).join('') || '<div style="text-align:center;padding:32px;color:#999;font-size:14px">暂无记录</div>';
 
@@ -248,6 +249,31 @@ Object.assign(App, {
             const close = () => { overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 250); };
             overlay.querySelector('.history-modal-close').addEventListener('click', close);
             overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+            // Undo button handlers
+            overlay.querySelectorAll('.coin-undo-btn').forEach(btn => {
+                btn.addEventListener('mouseenter', () => { btn.style.borderColor = '#f44336'; btn.style.color = '#f44336'; });
+                btn.addEventListener('mouseleave', () => { btn.style.borderColor = '#e0e0e0'; btn.style.color = '#999'; });
+                btn.addEventListener('click', async () => {
+                    const row = btn.closest('.coin-history-row');
+                    const txId = row?.dataset.txId;
+                    if (!txId || !confirm('确定撤销这笔喵喵币吗？')) return;
+                    btn.disabled = true;
+                    btn.textContent = '…';
+                    try {
+                        const result = await API.undoCoinTransaction(txId);
+                        row.style.transition = 'opacity 0.25s, transform 0.25s';
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(30px)';
+                        setTimeout(() => row.remove(), 260);
+                        this.syncCoins({ assignee: result.assignee, balance: result.balance });
+                    } catch (e) {
+                        this.showToast(e.message || '撤销失败', 'error');
+                        btn.disabled = false;
+                        btn.textContent = '↩';
+                    }
+                });
+            });
         } catch (e) {
             this.showToast('加载记录失败', 'error');
         }

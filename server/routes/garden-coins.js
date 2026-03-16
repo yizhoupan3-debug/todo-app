@@ -45,6 +45,31 @@ module.exports = function registerGardenCoinRoutes(router, { db }) {
         }
     });
 
+    router.delete('/coins/undo/:id', (req, res) => {
+        try {
+            const txId = parseInt(req.params.id, 10);
+            if (!txId) return res.status(400).json({ error: 'invalid id' });
+
+            const tx = db.prepare('SELECT * FROM coin_transactions WHERE id = ?').get(txId);
+            if (!tx) return res.status(404).json({ error: '记录不存在' });
+            if (tx.amount <= 0) return res.status(400).json({ error: '只能撤销收入记录' });
+
+            const undo = db.transaction(() => {
+                db.prepare('UPDATE coin_accounts SET balance = MAX(balance - ?, 0) WHERE assignee = ?')
+                    .run(tx.amount, tx.assignee);
+                db.prepare('DELETE FROM coin_transactions WHERE id = ?').run(txId);
+                const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
+                    .get(tx.assignee);
+                return balance;
+            });
+
+            const balance = undo();
+            res.json({ balance, undone: tx.amount, assignee: tx.assignee });
+        } catch (err) {
+            res.status(500).json({ error: err.message });
+        }
+    });
+
     router.get('/coins/history/:assignee', (req, res) => {
         try {
             const limit = parseInt(req.query.limit, 10) || 20;

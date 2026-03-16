@@ -18,15 +18,32 @@ function removeWhiteBg(container) {
             ctx.drawImage(img, 0, 0);
             const id = ctx.getImageData(0, 0, w, h);
             const d = id.data;
+            /* Pass 1: detect white/near-white and make transparent */
             for (let i = 0; i < d.length; i += 4) {
                 const r = d[i], g = d[i+1], b = d[i+2];
-                /* luminance-weighted whiteness */
-                const lum = r * 0.299 + g * 0.587 + b * 0.114;
-                if (r > 200 && g > 200 && b > 200) {
-                    /* smooth falloff: the whiter, the more transparent */
+                if (r > 190 && g > 190 && b > 190) {
                     const minC = Math.min(r, g, b);
-                    const alpha = Math.max(0, 255 - (minC - 200) * (255 / 55));
-                    d[i+3] = Math.min(d[i+3], Math.round(alpha));
+                    const t = Math.min(1, (minC - 190) / 65);
+                    const alpha = Math.round(255 * (1 - t * t));
+                    d[i+3] = Math.min(d[i+3], alpha);
+                }
+            }
+            /* Pass 2+3: double edge erosion for cleaner edges */
+            for (let pass = 0; pass < 2; pass++) {
+                const prev = new Uint8ClampedArray(d);
+                for (let py = 1; py < h - 1; py++) {
+                    for (let px = 1; px < w - 1; px++) {
+                        const idx = (py * w + px) * 4 + 3;
+                        if (prev[idx] < 255) continue;
+                        const up = prev[((py-1)*w+px)*4+3];
+                        const dn = prev[((py+1)*w+px)*4+3];
+                        const lt = prev[(py*w+px-1)*4+3];
+                        const rt = prev[(py*w+px+1)*4+3];
+                        const minN = Math.min(up, dn, lt, rt);
+                        if (minN < 128) {
+                            d[idx] = Math.min(d[idx], Math.round(d[idx] * 0.35));
+                        }
+                    }
                 }
             }
             ctx.putImageData(id, 0, 0);
@@ -347,19 +364,21 @@ const GardenView = {
         const n2 = this._plotNoise(plot, 2);
         const n3 = this._plotNoise(plot, 3);
         const n4 = this._plotNoise(plot, 4);
-        const colStart = 12;
-        const colSpan = 76;
-        const rowStart = 22;
-        const rowSpan = 52;
+        const colStart = 6;
+        const colSpan = 88;
+        const rowStart = 14;
+        const rowSpan = 66;
         /* Deterministic jitter so plots don't sit on a rigid grid */
-        const jitterX = (n3 - 0.5) * 5;    /* ±2.5% horizontal */
-        const jitterY = (n4 - 0.5) * 3.6;  /* ±1.8% vertical */
+        const jitterX = (n3 - 0.5) * 8;    /* ±4% horizontal */
+        const jitterY = (n4 - 0.5) * 6;    /* ±3% vertical */
         const left = colStart + xRatio * colSpan + jitterX;
         const top = rowStart + yRatio * rowSpan + jitterY;
-        const scaleJitter = (n1 - 0.5) * 0.12; /* ±6% size variation */
+        const scaleJitter = (n1 - 0.5) * 0.14; /* ±7% size variation */
         const scale = 0.94 + yRatio * 0.12 + scaleJitter;
-        let tilt = plot?.status === 'wasteland' ? (n1 - 0.5) * 12 : 0; /* ±6° variety */
-        const obstacleScaleNoise = (n2 - 0.5) * 0.16; /* ±8% size variety */
+        let tilt = plot?.status === 'wasteland' ? (n1 - 0.5) * 20 : 0; /* ±10° variety */
+        /* Cleared plots also get rotation for tilled_land variety */
+        if (plot?.status === 'cleared') tilt = (n1 - 0.5) * 30; /* ±15° */
+        const obstacleScaleNoise = (n2 - 0.5) * 0.28; /* ±14% size variety */
         let spriteScale = plot?.status === 'wasteland'
             ? 1.05 + yRatio * 0.15 + obstacleScaleNoise
             : 0.88 + yRatio * 0.14;
@@ -383,17 +402,17 @@ const GardenView = {
     _panX: 0,
     _panY: 0,
     _fitZoom: 0.72,
-    _defaultZoom: 0.9,
+    _defaultZoom: 1.1,
     _viewportPadding: 0,
-    _cameraBounds: { x: 110, y: 115, width: 1760, height: 1310 },
+    _cameraBounds: { x: 200, y: 200, width: 1560, height: 1100 },
 
     _recalculateZoomBounds(vp, world) {
         if (!vp || !world) return;
         const fitX = vp.clientWidth / world.offsetWidth;
         const fitY = vp.clientHeight / world.offsetHeight;
-        this._fitZoom = Math.max(Math.min(fitX, fitY), 0.52);
+        this._fitZoom = Math.max(Math.min(fitX, fitY), 0.48);
         this._minZoom = this._fitZoom;
-        this._defaultZoom = Math.max(this._minZoom, Math.min(1.02, this._fitZoom * 1.08));
+        this._defaultZoom = Math.max(this._minZoom, Math.min(1.2, this._fitZoom * 1.35));
     },
 
     _zoomAtPoint(vp, world, nextZoom, clientX, clientY) {
