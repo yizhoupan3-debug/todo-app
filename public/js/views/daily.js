@@ -148,24 +148,37 @@ const DailyView = {
                 if (!task) return;
 
                 const nextStatus = task.status === 'done' ? 'todo' : 'done';
+                const isCompleting = nextStatus === 'done';
 
                 // Optimistic UI: instantly update visual state
                 task.status = nextStatus;
-                card.classList.toggle('done', nextStatus === 'done');
-                cb.classList.toggle('checked', nextStatus === 'done');
-                card.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
-                card.style.opacity = '0.6';
-                card.style.transform = 'scale(0.97)';
+                card.classList.toggle('done', isCompleting);
+                cb.classList.toggle('checked', isCompleting);
+
+                if (isCompleting) {
+                    // Completion animation: check pop → card shrinks gently → holds → re-renders
+                    cb.style.animation = 'none';
+                    void cb.offsetWidth;
+                    cb.style.animation = '';
+                    card.style.transition = 'opacity 0.35s var(--transition-spring), transform 0.35s var(--transition-spring)';
+                    card.style.opacity = '0.55';
+                    card.style.transform = 'scale(0.96) translateX(6px)';
+                } else {
+                    card.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                    card.style.opacity = '0.7';
+                    card.style.transform = 'scale(0.98)';
+                }
 
                 try {
                     const updated = await API.updateTask(taskId, { status: nextStatus });
                     App.socket.emit('task:updated', updated);
-                    if (nextStatus === 'done' && updated.coinsEarned > 0) {
+                    if (isCompleting && updated.coinsEarned > 0) {
                         App.syncCoins({ assignee: task.assignee, delta: updated.coinsEarned, animate: true });
                     }
-                    // Full re-render to move card to correct column
+                    // Hold briefly so animation completes before re-render
+                    await new Promise(r => setTimeout(r, isCompleting ? 500 : 250));
                     this.loadTasks();
-                    if (nextStatus === 'done') {
+                    if (isCompleting) {
                         const rewardMsg = updated.coinsEarned > 0 ? ` +${updated.coinsEarned} 喵喵币` : '';
                         App.showToast(`✅ 任务完成！${rewardMsg}`, 'success');
                     }

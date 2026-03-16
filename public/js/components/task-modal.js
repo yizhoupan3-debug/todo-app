@@ -286,7 +286,11 @@ const TaskModal = {
     },
 
     close() {
-        document.getElementById('modal-overlay').classList.add('hidden');
+        const overlay = document.getElementById('modal-overlay');
+        if (!overlay || overlay.classList.contains('hidden')) return;
+
+        Utils.closeModalAnimated(overlay);
+
         this.isOpen = false;
         this.editingTask = null;
         this._resetNLPState();

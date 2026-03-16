@@ -381,14 +381,36 @@ Object.assign(App, {
     },
 
     closeSidebar() {
-        document.getElementById('sidebar').classList.remove('open');
+        const sidebar = document.getElementById('sidebar');
         const backdrop = document.getElementById('sidebar-backdrop');
-        if (backdrop) {
-            backdrop.style.transition = 'opacity 0.25s ease';
-            backdrop.style.opacity = '0';
-            backdrop.addEventListener('transitionend', () => backdrop.remove(), { once: true });
-            // Fallback removal in case transitionend doesn't fire
-            setTimeout(() => { if (backdrop.parentNode) backdrop.remove(); }, 300);
+        
+        // On mobile, animate the sidebar slide-out
+        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+            sidebar.style.transition = 'transform 0.25s cubic-bezier(0.4, 0, 1, 1)';
+            sidebar.style.transform = 'translateX(-100%)';
+            
+            if (backdrop) {
+                backdrop.style.transition = 'opacity 0.25s ease';
+                backdrop.style.opacity = '0';
+            }
+            
+            const cleanup = () => {
+                sidebar.classList.remove('open');
+                sidebar.style.transition = '';
+                sidebar.style.transform = '';
+                if (backdrop && backdrop.parentNode) backdrop.remove();
+            };
+            
+            sidebar.addEventListener('transitionend', cleanup, { once: true });
+            setTimeout(cleanup, 300);
+        } else {
+            sidebar.classList.remove('open');
+            if (backdrop) {
+                backdrop.style.transition = 'opacity 0.25s ease';
+                backdrop.style.opacity = '0';
+                backdrop.addEventListener('transitionend', () => backdrop.remove(), { once: true });
+                setTimeout(() => { if (backdrop.parentNode) backdrop.remove(); }, 300);
+            }
         }
     },
 });

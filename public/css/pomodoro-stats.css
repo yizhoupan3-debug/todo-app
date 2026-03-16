@@ -91,6 +91,11 @@
   transform: scale(1.08);
 }
 
+.time-pick-btn:active {
+  transform: scale(0.92);
+  transition-duration: 0.08s;
+}
+
 .pomodoro-start-btn {
   margin-top: 20px;
   width: 100%;
@@ -337,10 +342,16 @@
   background: var(--primary);
   color: white;
   box-shadow: 0 2px 8px var(--primary-glow);
+  transform: scale(1.02);
 }
 
 .stats-range-btn:hover:not(.active) {
   color: var(--primary);
+}
+
+.stats-range-btn:active {
+  transform: scale(0.95);
+  transition-duration: 0.08s;
 }
 
 /* Overview Cards */

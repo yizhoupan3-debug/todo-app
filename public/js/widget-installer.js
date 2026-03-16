@@ -100,6 +100,6 @@ function installWidget(widgetType) {
         App.showToast(`已在新标签页打开「${meta.name}」✨`, 'success');
     };
 
-    document.getElementById('widget-modal-close').onclick = () => overlay.classList.add('hidden');
-    overlay.onclick = (e) => { if (e.target === overlay) overlay.classList.add('hidden'); };
+    document.getElementById('widget-modal-close').onclick = () => Utils.closeModalAnimated(overlay);
+    overlay.onclick = (e) => { if (e.target === overlay) Utils.closeModalAnimated(overlay); };
 }

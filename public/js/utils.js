@@ -50,4 +50,48 @@ const Utils = {
         if (!Number.isFinite(n)) return '0';
         return Number.isInteger(n) ? String(n) : n.toFixed(1);
     },
+
+    /**
+     * Animate a modal overlay closed (fade out + scale down), then apply cleanup.
+     * @param {HTMLElement|string} overlayEl — overlay element or its ID
+     * @param {Function} [onDone] — callback after animation finishes
+     */
+    closeModalAnimated(overlayEl, onDone) {
+        const el = typeof overlayEl === 'string' ? document.getElementById(overlayEl) : overlayEl;
+        if (!el) return;
+
+        const isMobile = window.innerWidth <= 768;
+        const modal = el.querySelector('.modal, .widget-modal, .ics-modal, [class*="modal-box"]');
+
+        el.style.transition = 'opacity 0.25s ease';
+        el.style.opacity = '0';
+
+        if (modal) {
+            if (isMobile) {
+                // Mobile: slide the sheet back down
+                modal.style.transition = 'transform 0.28s cubic-bezier(0.4, 0, 1, 1)';
+                modal.style.transform = 'translateY(100%)';
+            } else {
+                // Desktop: fade + scale down
+                modal.style.transition = 'transform 0.22s ease, opacity 0.22s ease';
+                modal.style.transform = 'translateY(20px) scale(0.95)';
+                modal.style.opacity = '0';
+            }
+        }
+
+        const cleanup = () => {
+            el.classList.add('hidden');
+            el.style.transition = '';
+            el.style.opacity = '';
+            if (modal) {
+                modal.style.transition = '';
+                modal.style.transform = '';
+                modal.style.opacity = '';
+            }
+            if (onDone) onDone();
+        };
+
+        el.addEventListener('transitionend', cleanup, { once: true });
+        setTimeout(cleanup, 320); // fallback
+    },
 };

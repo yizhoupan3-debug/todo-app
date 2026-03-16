@@ -40,6 +40,7 @@
 /* Landing page item cards */
 .checkin-items-grid {
   display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 
@@ -48,6 +49,7 @@
   align-items: center;
   gap: 16px;
   padding: 20px 24px;
+  min-height: 90px;
   background: var(--card-bg);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
@@ -781,3 +783,113 @@
   font-weight: 400;
 }
 
+/* ===== MOBILE OVERRIDES ===== */
+@media (max-width: 768px) {
+  .checkin-container {
+    padding-bottom: 12px;
+  }
+
+  /* Single column layout on mobile */
+  .checkin-items-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* Compact checkin cards with bigger touch area */
+  .checkin-item-card {
+    padding: 16px 18px;
+    min-height: 70px;
+    gap: 14px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .checkin-item-card:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--border);
+  }
+
+  .checkin-item-card:active {
+    transform: scale(0.97);
+    transition-duration: 0.08s;
+    background: var(--card-hover);
+  }
+
+  .checkin-item-icon {
+    font-size: 1.6rem;
+  }
+
+  .checkin-item-info h4 {
+    font-size: 0.92rem;
+    margin-bottom: 6px;
+  }
+
+  /* Person toggle scrollable */
+  .checkin-person-toggle {
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .checkin-person-btn {
+    padding: 7px 16px;
+    font-size: 0.82rem;
+  }
+
+  /* Detail pages: tighter layout */
+  .checkin-detail-header {
+    padding: 12px 0;
+    margin-bottom: 12px;
+  }
+
+  .checkin-detail-header h3 {
+    font-size: 1.1rem;
+  }
+
+  /* Water tracker: compact buttons */
+  .water-quick-btns {
+    gap: 8px;
+  }
+
+  .water-quick-btn {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    min-height: 44px;
+  }
+
+  /* Progress ring smaller on mobile */
+  .water-ring-section svg {
+    width: 140px;
+    height: 140px;
+  }
+
+  /* Back button bigger touch target */
+  .checkin-back-btn {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+
+  /* Step counter */
+  .step-input-group input {
+    font-size: 1.6rem;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 420px) {
+  .checkin-item-card {
+    padding: 14px 14px;
+    min-height: 60px;
+    gap: 12px;
+  }
+
+  .checkin-item-icon {
+    font-size: 1.4rem;
+  }
+
+  .checkin-person-btn {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+  }
+}

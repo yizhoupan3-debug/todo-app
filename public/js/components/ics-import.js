@@ -53,7 +53,7 @@ const ICSImport = {
     },
 
     close() {
-        document.getElementById('ics-modal-overlay').classList.add('hidden');
+        Utils.closeModalAnimated('ics-modal-overlay');
         this.parsedTasks = [];
     },
 

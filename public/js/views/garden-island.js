@@ -140,6 +140,7 @@ Object.assign(GardenView, {
                     <div class="island-land" id="island-land">
                         <div class="scene-land-shadow"></div>
 
+                        ${this._renderGroundDecor()}
                         ${this.plots.map((plot, i) => this.renderIslandPlot(plot, this.getPlotLayout(plot, i))).join('')}
                     </div>
                 </div>
@@ -875,6 +876,43 @@ Object.assign(GardenView, {
         } catch (e) {
             App.showToast(e.message || '种植失败', 'error');
         }
+    },
+    _renderGroundDecor() {
+        const islandId = Number(this.currentIsland?.id) || 1;
+        const DECOR_ITEMS = ['🌾', '🌿', '🍃', '🌼', '🍀', '🌸', '🍄', '🌻', '🦋', '💮', '☘️', '🪻'];
+        const COUNT = 20;
+        let html = '';
+        /* ── Emoji scatter ── */
+        for (let i = 0; i < COUNT; i++) {
+            const seed  = Math.sin((i + 1) * 127.1 + islandId * 311.7) * 43758.5453;
+            const n  = seed  - Math.floor(seed);
+            const seed2 = Math.sin((i + 1) * 269.3 + islandId * 183.1) * 29387.2137;
+            const n2 = seed2 - Math.floor(seed2);
+            const seed3 = Math.sin((i + 1) * 419.7 + islandId * 97.3)  * 17291.8413;
+            const n3 = seed3 - Math.floor(seed3);
+            const left = 4 + n * 92;       // 4%–96%
+            const top  = 8 + n2 * 82;      // 8%–90%
+            const emoji = DECOR_ITEMS[Math.floor(n3 * DECOR_ITEMS.length)];
+            const size = 18 + Math.floor(n * 20);   // 18–38px
+            const opacity = 0.45 + n2 * 0.35;       // 0.45–0.80
+            const rotate = Math.floor((n3 - 0.5) * 50); // ±25°
+            const delay = (n * 6).toFixed(1);
+            html += `<span class="ground-decor ground-decor-${i % 4}" style="left:${left.toFixed(1)}%;top:${top.toFixed(1)}%;font-size:${size}px;opacity:${opacity.toFixed(2)};--gd-rotate:${rotate}deg;animation-delay:${delay}s" aria-hidden="true">${emoji}</span>`;
+        }
+        /* ── Grass texture patches — subtle dark-green blobs to break up flat grass ── */
+        const PATCHES = 8;
+        for (let j = 0; j < PATCHES; j++) {
+            const ps = Math.sin((j + 1) * 331.7 + islandId * 73.9) * 51293.1;
+            const pn = ps - Math.floor(ps);
+            const ps2 = Math.sin((j + 1) * 197.3 + islandId * 157.1) * 38291.7;
+            const pn2 = ps2 - Math.floor(ps2);
+            const pl = 8 + pn * 84;
+            const pt = 12 + pn2 * 76;
+            const pw = 60 + Math.floor(pn * 80);
+            const ph = 40 + Math.floor(pn2 * 50);
+            html += `<span class="grass-patch" style="left:${pl.toFixed(1)}%;top:${pt.toFixed(1)}%;width:${pw}px;height:${ph}px" aria-hidden="true"></span>`;
+        }
+        return html;
     },
 
 });
