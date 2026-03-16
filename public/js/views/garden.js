@@ -22,10 +22,10 @@ function removeWhiteBg(container) {
                 const r = d[i], g = d[i+1], b = d[i+2];
                 /* luminance-weighted whiteness */
                 const lum = r * 0.299 + g * 0.587 + b * 0.114;
-                if (r > 180 && g > 180 && b > 180) {
+                if (r > 200 && g > 200 && b > 200) {
                     /* smooth falloff: the whiter, the more transparent */
                     const minC = Math.min(r, g, b);
-                    const alpha = Math.max(0, 255 - (minC - 180) * (255 / 75));
+                    const alpha = Math.max(0, 255 - (minC - 200) * (255 / 55));
                     d[i+3] = Math.min(d[i+3], Math.round(alpha));
                 }
             }
@@ -345,16 +345,23 @@ const GardenView = {
         const zone = this.getPlotZone(plot);
         const n1 = this._plotNoise(plot, 1);
         const n2 = this._plotNoise(plot, 2);
+        const n3 = this._plotNoise(plot, 3);
+        const n4 = this._plotNoise(plot, 4);
         const colStart = 12;
         const colSpan = 76;
-        const rowStart = 16;
-        const rowSpan = 64;
-        const left = colStart + xRatio * colSpan;
-        const top = rowStart + yRatio * rowSpan;
-        const scale = 0.94 + yRatio * 0.12;
-        let tilt = plot?.status === 'wasteland' ? (n1 - 0.5) * 2.4 : 0;
+        const rowStart = 22;
+        const rowSpan = 52;
+        /* Deterministic jitter so plots don't sit on a rigid grid */
+        const jitterX = (n3 - 0.5) * 5;    /* ±2.5% horizontal */
+        const jitterY = (n4 - 0.5) * 3.6;  /* ±1.8% vertical */
+        const left = colStart + xRatio * colSpan + jitterX;
+        const top = rowStart + yRatio * rowSpan + jitterY;
+        const scaleJitter = (n1 - 0.5) * 0.12; /* ±6% size variation */
+        const scale = 0.94 + yRatio * 0.12 + scaleJitter;
+        let tilt = plot?.status === 'wasteland' ? (n1 - 0.5) * 12 : 0; /* ±6° variety */
+        const obstacleScaleNoise = (n2 - 0.5) * 0.16; /* ±8% size variety */
         let spriteScale = plot?.status === 'wasteland'
-            ? 0.88
+            ? 1.05 + yRatio * 0.15 + obstacleScaleNoise
             : 0.88 + yRatio * 0.14;
         let sway = plot?.obstacle_type === 'wild_tree' ? 0.94 + n2 * 0.12 : 1;
         const depth = top / 10;
