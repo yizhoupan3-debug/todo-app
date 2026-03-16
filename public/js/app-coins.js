@@ -208,40 +208,54 @@ Object.assign(App, {
         overlay.querySelector('.coin-rules-goto-history').onclick = () => { close(); this._showCoinHistory(); };
     },
 
+    _coinReasonIcon(reason) {
+        const map = {
+            task_done: '✅', pomodoro: '🍅',
+            checkin_daily: '📅', checkin_streak_3: '🔥', checkin_streak_7: '🔥',
+            purchase: '🛒', plant_drop: '🌳', harvest: '🌾',
+            speedup: '⏩', clear_obstacle: '⛏️',
+        };
+        return map[reason] || (reason?.startsWith('checkin') ? '📅' : '📝');
+    },
+
+    _coinTimeAgo(dateStr) {
+        if (!dateStr) return '';
+        const d = new Date(dateStr.replace(' ', 'T'));
+        const now = new Date();
+        const days = Math.floor((now - d) / 86400000);
+        if (days === 0) return '今天';
+        if (days === 1) return '昨天';
+        if (days < 30) return `${days}天前`;
+        return `${d.getMonth() + 1}/${d.getDate()}`;
+    },
+
     async _showCoinHistory() {
         const assignee = this._getHeaderCoinUser();
         try {
             const history = await API.getCoinHistory(assignee, 30);
             const html = history.map(h => `
-                <div class="coin-history-row" data-tx-id="${h.id}" style="display:flex;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(0,0,0,0.06);align-items:center;gap:8px">
-                    <span style="font-size:14px;color:#333;display:flex;align-items:center;gap:8px;flex:1;min-width:0">
-                        <span style="font-size:16px">${h.reason === 'pomodoro' ? '🍅' : h.reason === 'checkin' ? '✅' : h.reason === 'purchase' ? '🛒' : '⛏️'}</span> 
-                        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.detail || h.reason}</span>
+                <div class="coin-history-row" data-tx-id="${h.id}" data-amount="${h.amount}" data-detail="${(h.detail || h.reason || '').replace(/"/g, '&quot;')}" style="display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(0,0,0,0.05);gap:10px">
+                    <span style="font-size:18px;flex-shrink:0">${this._coinReasonIcon(h.reason)}</span>
+                    <span style="flex:1;min-width:0">
+                        <span style="font-size:14px;color:#333;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.detail || h.reason}</span>
+                        <span style="font-size:11px;color:#bbb">${this._coinTimeAgo(h.created_at)}</span>
                     </span>
-                    <span style="color:${h.amount > 0 ? '#4CAF50' : '#E53935'};font-weight:600;font-size:15px;white-space:nowrap">${h.amount > 0 ? '+' : ''}${h.amount}</span>
-                    ${h.amount > 0 ? '<button class="coin-undo-btn" style="background:none;border:1px solid #e0e0e0;border-radius:8px;padding:3px 10px;font-size:12px;color:#999;cursor:pointer;white-space:nowrap;transition:all 0.15s" title="撤销">↩</button>' : ''}
+                    <span style="color:${h.amount > 0 ? '#4CAF50' : '#E53935'};font-weight:600;font-size:15px;white-space:nowrap;min-width:42px;text-align:right">${h.amount > 0 ? '+' : ''}${h.amount}</span>
+                    ${h.amount > 0 ? '<button class="coin-undo-btn" style="background:none;border:1px solid #e0e0e0;border-radius:8px;padding:4px 8px;font-size:12px;color:#aaa;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0" title="撤销此记录">↩</button>' : '<span style="width:34px;flex-shrink:0"></span>'}
                 </div>
             `).join('') || '<div style="text-align:center;padding:32px;color:#999;font-size:14px">暂无记录</div>';
 
             const overlay = document.createElement('div');
             overlay.className = 'history-modal-overlay';
-            overlay.innerHTML = `<div class="modal-box history-modal-box" style="width:360px; max-width:92vw; background:#fff; border-radius:24px; box-shadow:0 12px 48px rgba(0,0,0,0.2); overflow:hidden;">
+            overlay.innerHTML = `<div class="modal-box history-modal-box" style="width:380px; max-width:92vw; background:#fff; border-radius:24px; box-shadow:0 12px 48px rgba(0,0,0,0.2); overflow:hidden;">
                 <div style="padding:16px 20px; border-bottom:1px solid rgba(0,0,0,0.06); display:flex; justify-content:space-between; align-items:center; background:#fdfdfd;">
                     <h3 style="margin:0; font-size:16px; font-weight:700;">📊 喵喵币明细 - ${assignee}</h3>
-                    <button class="history-modal-close" style="background:none; border:none; font-size:16px; color:#999; cursor:pointer;">✕</button>
+                    <button class="history-modal-close" style="background:none; border:none; font-size:18px; color:#999; cursor:pointer; padding:4px 8px; border-radius:8px; transition:background 0.15s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='none'">✕</button>
                 </div>
-                <div class="history-modal-body" style="max-height:60vh; overflow-y:auto; padding:8px 0;">${html}</div>
+                <div class="history-modal-body" style="max-height:60vh; overflow-y:auto; padding:4px 0;">${html}</div>
             </div>`;
             
-            overlay.style.position = 'fixed';
-            overlay.style.inset = '0';
-            overlay.style.background = 'rgba(0,0,0,0.4)';
-            overlay.style.zIndex = '2100';
-            overlay.style.display = 'flex';
-            overlay.style.alignItems = 'center';
-            overlay.style.justifyContent = 'center';
-            overlay.style.opacity = '0';
-            overlay.style.transition = 'opacity 0.2s';
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:2100;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s';
             
             document.body.appendChild(overlay);
             requestAnimationFrame(() => overlay.style.opacity = '1');
@@ -252,21 +266,26 @@ Object.assign(App, {
 
             // Undo button handlers
             overlay.querySelectorAll('.coin-undo-btn').forEach(btn => {
-                btn.addEventListener('mouseenter', () => { btn.style.borderColor = '#f44336'; btn.style.color = '#f44336'; });
-                btn.addEventListener('mouseleave', () => { btn.style.borderColor = '#e0e0e0'; btn.style.color = '#999'; });
+                btn.addEventListener('mouseenter', () => { btn.style.borderColor = '#f44336'; btn.style.color = '#f44336'; btn.style.background = '#fff5f5'; });
+                btn.addEventListener('mouseleave', () => { btn.style.borderColor = '#e0e0e0'; btn.style.color = '#aaa'; btn.style.background = 'none'; });
                 btn.addEventListener('click', async () => {
                     const row = btn.closest('.coin-history-row');
                     const txId = row?.dataset.txId;
-                    if (!txId || !confirm('确定撤销这笔喵喵币吗？')) return;
+                    const detail = row?.dataset.detail || '';
+                    const amount = row?.dataset.amount || '';
+                    if (!txId || !confirm(`撤销「${detail}」(+${amount} 喵喵币)？`)) return;
                     btn.disabled = true;
                     btn.textContent = '…';
                     try {
                         const result = await API.undoCoinTransaction(txId);
-                        row.style.transition = 'opacity 0.25s, transform 0.25s';
+                        row.style.transition = 'opacity 0.25s, max-height 0.3s 0.1s, padding 0.3s 0.1s, margin 0.3s 0.1s';
                         row.style.opacity = '0';
-                        row.style.transform = 'translateX(30px)';
-                        setTimeout(() => row.remove(), 260);
+                        row.style.maxHeight = '0';
+                        row.style.padding = '0 16px';
+                        row.style.overflow = 'hidden';
+                        setTimeout(() => row.remove(), 350);
                         this.syncCoins({ assignee: result.assignee, balance: result.balance });
+                        this.showToast(`已撤销 -${result.undone} 喵喵币`, 'success');
                     } catch (e) {
                         this.showToast(e.message || '撤销失败', 'error');
                         btn.disabled = false;

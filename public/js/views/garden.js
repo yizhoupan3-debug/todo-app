@@ -364,10 +364,10 @@ const GardenView = {
         const n2 = this._plotNoise(plot, 2);
         const n3 = this._plotNoise(plot, 3);
         const n4 = this._plotNoise(plot, 4);
-        const colStart = 6;
-        const colSpan = 88;
-        const rowStart = 14;
-        const rowSpan = 66;
+        const colStart = 4;
+        const colSpan = 92;
+        const rowStart = 10;
+        const rowSpan = 72;
         /* Deterministic jitter so plots don't sit on a rigid grid */
         const jitterX = (n3 - 0.5) * 8;    /* ±4% horizontal */
         const jitterY = (n4 - 0.5) * 6;    /* ±3% vertical */
@@ -403,16 +403,16 @@ const GardenView = {
     _panY: 0,
     _fitZoom: 0.72,
     _defaultZoom: 1.1,
-    _viewportPadding: 0,
-    _cameraBounds: { x: 200, y: 200, width: 1560, height: 1100 },
+    _viewportPadding: 40,
+    _cameraBounds: { x: 0, y: 0, width: 2400, height: 1800 },
 
     _recalculateZoomBounds(vp, world) {
         if (!vp || !world) return;
         const fitX = vp.clientWidth / world.offsetWidth;
         const fitY = vp.clientHeight / world.offsetHeight;
-        this._fitZoom = Math.max(Math.min(fitX, fitY), 0.48);
+        this._fitZoom = Math.max(Math.min(fitX, fitY), 0.38);
         this._minZoom = this._fitZoom;
-        this._defaultZoom = Math.max(this._minZoom, Math.min(1.2, this._fitZoom * 1.35));
+        this._defaultZoom = Math.max(this._minZoom, Math.min(1.15, this._fitZoom * 1.45));
     },
 
     _zoomAtPoint(vp, world, nextZoom, clientX, clientY) {
