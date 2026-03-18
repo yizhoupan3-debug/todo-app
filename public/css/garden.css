@@ -1119,6 +1119,8 @@
   z-index: 5;
   border-radius: 14px;
   overflow: visible;
+  content-visibility: auto;
+  contain-intrinsic-size: 64px 64px;
 }
 
 .iplot:hover {
@@ -4897,6 +4899,7 @@
   z-index: 1;
   transform: rotate(var(--gd-rotate, 0deg));
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.18));
+  will-change: transform;
   animation: groundDecorBob 5s ease-in-out infinite alternate;
 }
 

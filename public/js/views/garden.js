@@ -550,16 +550,40 @@ const GardenView = {
     _updateDynamicContent() {
         this.closePlotMenu();
 
-        // Update plots
+        // Differential plot update: only rebuild plots whose state changed
         const land = document.getElementById('island-land');
         if (land) {
-            land.querySelectorAll('.iplot').forEach(p => p.remove());
-            const plotsHtml = this.plots.map((plot, i) => {
-                return this.renderIslandPlot(plot, this.getPlotLayout(plot, i));
-            }).join('');
-            land.insertAdjacentHTML('beforeend', plotsHtml);
+            const existingPlots = land.querySelectorAll('.iplot[data-plot-id]');
+            const existingMap = new Map();
+            existingPlots.forEach(el => existingMap.set(el.dataset.plotId, el));
+
+            const currentIds = new Set();
+            this.plots.forEach((plot, i) => {
+                currentIds.add(String(plot.id));
+                const layout = this.getPlotLayout(plot, i);
+                // Build a signature to detect changes
+                const sig = `${plot.status}|${plot.tree_type || ''}|${plot.growth_minutes || 0}|${plot.obstacle_type || ''}|${this._selectedPlotId === plot.id ? '1' : '0'}`;
+                const existing = existingMap.get(String(plot.id));
+                if (existing && existing.dataset.sig === sig) return; // unchanged
+                // Replace or insert
+                const html = this.renderIslandPlot(plot, layout);
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                const newEl = temp.firstElementChild;
+                newEl.dataset.sig = sig;
+                if (existing) {
+                    existing.replaceWith(newEl);
+                } else {
+                    land.insertAdjacentHTML('beforeend', html);
+                }
+            });
+
+            // Remove plots that no longer exist
+            existingPlots.forEach(el => {
+                if (!currentIds.has(el.dataset.plotId)) el.remove();
+            });
+
             this._bindPlotInteractions(land);
-            removeWhiteBg(land);
         }
 
         // Update HUD balance
