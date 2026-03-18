@@ -5315,3 +5315,51 @@
   border: none !important;
   box-shadow: 0 0 12px rgba(164, 214, 119, 0.5) !important;
 }
+
+/* =========================================
+   ROUND 3 & 4: Ultimate Aesthetic Polish
+   ========================================= */
+
+/* 1. Glassmorphism HUD (Premium UI) */
+.island-hud {
+  background: transparent !important;
+  border-bottom: none !important;
+}
+.garden-balance,
+.hud-btn,
+.filter-pill,
+.zoom-controls,
+.island-stats-bar,
+.island-harbor {
+  background: rgba(24, 32, 42, 0.45) !important;
+  backdrop-filter: blur(16px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+  transition: transform 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28), background 0.2s !important;
+}
+.hud-btn:hover, .filter-pill:hover, .zoom-btn:hover {
+  background: rgba(45, 60, 80, 0.6) !important;
+  transform: scale(1.08);
+}
+.hud-btn:active, .zoom-btn:active, .island-harbor:active, .filter-pill:active {
+  transform: scale(0.92);
+}
+.filter-pill.active {
+  background: rgba(60, 140, 220, 0.4) !important;
+  border-color: rgba(100, 180, 255, 0.5) !important;
+  box-shadow: 0 4px 16px rgba(60, 140, 220, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+/* 2. Deep Environmental Drop Shadows (3D Depth) */
+.island-viewport .iplot.planted .iplot-img {
+  filter: drop-shadow(0 14px 22px rgba(10, 25, 5, 0.6)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35)) !important;
+}
+.island-viewport .iplot.obstacle-wild_tree .iplot-img {
+  filter: saturate(0.85) contrast(1.02) brightness(0.95) drop-shadow(0 20px 32px rgba(8, 20, 4, 0.7)) drop-shadow(0 8px 14px rgba(0, 0, 0, 0.4)) !important;
+}
+.island-viewport .iplot.obstacle-rock .iplot-img,
+.island-viewport .iplot.obstacle-weed .iplot-img {
+  filter: drop-shadow(0 14px 20px rgba(15, 30, 8, 0.5)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.3)) !important;
+}
