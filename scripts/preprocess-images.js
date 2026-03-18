@@ -94,9 +94,12 @@ async function processImage(filePath) {
             const pi = i * 4;
             if (isBg[i]) {
                 d[pi + 3] = 0;
-            } else if (d[pi] >= 230 && d[pi + 1] >= 230 && d[pi + 2] >= 230) {
-                // Also kill trapped white background inside the canopy
-                d[pi + 3] = 0;
+            } else {
+                const r = d[pi], g = d[pi + 1], b = d[pi + 2];
+                // Kill any light gray / near white (low saturation)
+                if (r > 180 && g > 180 && b > 180 && (Math.max(r, g, b) - Math.min(r, g, b)) < 30) {
+                    d[pi + 3] = 0;
+                }
             }
         }
 
