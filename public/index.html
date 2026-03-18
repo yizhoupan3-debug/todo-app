@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="峡谷讨伐日记 — 潘潘和蒲蒲的任务管理">
   <meta name="theme-color" content="#6366f1">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>峡谷讨伐日记</title>
   <link rel="manifest" href="/manifest.json?v=__ASSET_VERSION__">
@@ -233,6 +233,8 @@
 
   <!-- Main Content -->
   <main class="main-content" id="main-content">
+    <!-- Loading Progress Bar -->
+    <div class="loading-bar" id="loading-bar"></div>
     <!-- Header Bar -->
     <header class="main-header" id="main-header">
       <button class="menu-toggle" id="btn-menu"><i data-lucide="menu"></i></button>
@@ -1051,6 +1053,7 @@
   <script src="/js/views/journal.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/utils/date-nlp.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/components/task-modal.js?v=__ASSET_VERSION__" defer></script>
+  <script src="/js/components/swipe-gesture.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/components/ics-import.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/components/pomodoro.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/components/codex.js?v=__ASSET_VERSION__" defer></script>

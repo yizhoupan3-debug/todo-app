@@ -94,4 +94,154 @@ const Utils = {
         el.addEventListener('transitionend', cleanup, { once: true });
         setTimeout(cleanup, 320); // fallback
     },
+
+    /** Show the top loading progress bar */
+    showLoading() {
+        const bar = document.getElementById('loading-bar');
+        if (bar) bar.classList.add('active');
+    },
+
+    /** Hide the top loading progress bar */
+    hideLoading() {
+        const bar = document.getElementById('loading-bar');
+        if (bar) bar.classList.remove('active');
+    },
+
+    /**
+     * Animate a number counter from 0 → end.
+     * @param {HTMLElement} el - target element
+     * @param {number|string} end - final value (can include units like 'L', 'ml')
+     * @param {number} duration - ms (default 600)
+     */
+    animateCounter(el, end, duration = 600) {
+        if (!el) return;
+        // Extract numeric part and suffix
+        const match = String(end).match(/^([\d.]+)(.*)$/);
+        if (!match) { el.textContent = end; return; }
+
+        const target = parseFloat(match[1]);
+        const suffix = match[2] || '';
+        const isFloat = match[1].includes('.');
+        const start = performance.now();
+
+        el.classList.add('count-animate');
+
+        const step = (now) => {
+            const progress = Math.min((now - start) / duration, 1);
+            // Ease out cubic
+            const ease = 1 - Math.pow(1 - progress, 3);
+            const current = target * ease;
+            el.textContent = (isFloat ? current.toFixed(1) : Math.round(current)) + suffix;
+            if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    },
+
+    /** Haptic feedback (vibration API) */
+    haptic(style = 'light') {
+        if (!navigator.vibrate) return;
+        const patterns = {
+            light: [10],
+            medium: [20],
+            heavy: [30],
+            success: [10, 50, 20],
+            error: [30, 50, 30, 50, 30],
+        };
+        navigator.vibrate(patterns[style] || patterns.light);
+    },
+
+    /** Mini confetti burst */
+    confetti(container) {
+        const colors = ['#f59e0b', '#22c55e', '#6366f1', '#ec4899', '#3b82f6', '#ef4444'];
+        const count = 30;
+        const wrapper = document.createElement('div');
+        wrapper.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10000;overflow:hidden;';
+
+        for (let i = 0; i < count; i++) {
+            const particle = document.createElement('div');
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            const x = 40 + Math.random() * 20; // 40-60% from left
+            const size = 6 + Math.random() * 6;
+            const angle = -70 - Math.random() * 40; // upward spread
+            const distance = 300 + Math.random() * 400;
+            const rotation = Math.random() * 720 - 360;
+            const dx = Math.cos(angle * Math.PI / 180) * distance * (Math.random() > 0.5 ? 1 : -1);
+            const dy = Math.sin(angle * Math.PI / 180) * distance;
+
+            particle.style.cssText = `
+                position:absolute;left:${x}%;top:60%;width:${size}px;height:${size}px;
+                background:${color};border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+                opacity:1;pointer-events:none;
+                animation:confettiBurst 1s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+                --dx:${dx}px;--dy:${dy}px;--rot:${rotation}deg;
+                animation-delay:${Math.random() * 0.15}s;
+            `;
+            wrapper.appendChild(particle);
+        }
+
+        (container || document.body).appendChild(wrapper);
+        setTimeout(() => wrapper.remove(), 1500);
+    },
+
+    /** Pull-to-refresh for mobile views */
+    initPullToRefresh(el, onRefresh) {
+        if (!el || !('ontouchstart' in window)) return;
+
+        let startY = 0, pulling = false, pullDist = 0;
+        const MAX_PULL = 80;
+        const TRIGGER = 60;
+
+        // Create pull indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'pull-indicator';
+        indicator.innerHTML = '↓ 下拉刷新';
+        el.style.position = 'relative';
+        el.prepend(indicator);
+
+        el.addEventListener('touchstart', (e) => {
+            if (el.scrollTop > 5) return; // only at top
+            startY = e.touches[0].clientY;
+            pulling = true;
+            pullDist = 0;
+        }, { passive: true });
+
+        el.addEventListener('touchmove', (e) => {
+            if (!pulling) return;
+            const dy = e.touches[0].clientY - startY;
+            if (dy < 0) { pulling = false; return; }
+
+            pullDist = Math.min(dy * 0.5, MAX_PULL); // resistance
+            indicator.style.transform = `translateY(${pullDist - 40}px)`;
+            indicator.style.opacity = Math.min(pullDist / TRIGGER, 1);
+
+            if (pullDist >= TRIGGER) {
+                indicator.innerHTML = '↑ 松开刷新';
+                indicator.classList.add('ready');
+            } else {
+                indicator.innerHTML = '↓ 下拉刷新';
+                indicator.classList.remove('ready');
+            }
+        }, { passive: true });
+
+        el.addEventListener('touchend', () => {
+            if (!pulling) return;
+            pulling = false;
+
+            if (pullDist >= TRIGGER) {
+                indicator.innerHTML = '⟳ 刷新中...';
+                indicator.style.transform = 'translateY(0)';
+                this.haptic('medium');
+                if (onRefresh) onRefresh();
+                setTimeout(() => {
+                    indicator.style.transform = 'translateY(-40px)';
+                    indicator.style.opacity = '0';
+                    indicator.classList.remove('ready');
+                }, 800);
+            } else {
+                indicator.style.transform = 'translateY(-40px)';
+                indicator.style.opacity = '0';
+                indicator.classList.remove('ready');
+            }
+        }, { passive: true });
+    },
 };

@@ -129,7 +129,6 @@ Object.assign(GardenView, {
 
             <div class="island-viewport" id="island-viewport">
                 <div class="island-world" id="island-world">
-                    <img class="scene-backdrop scene-backdrop-bleed" src="/img/boom_beach_island_bg_v2.png" alt="" draggable="false">
                     <img class="scene-backdrop" src="/img/boom_beach_island_bg_v2.png" alt="" draggable="false">
                     <div class="scene-sea-glow"></div>
                     <div class="scene-surf scene-surf-1"></div>
@@ -899,18 +898,19 @@ Object.assign(GardenView, {
             const delay = (n * 6).toFixed(1);
             html += `<span class="ground-decor ground-decor-${i % 4}" style="left:${left.toFixed(1)}%;top:${top.toFixed(1)}%;font-size:${size}px;opacity:${opacity.toFixed(2)};--gd-rotate:${rotate}deg;animation-delay:${delay}s" aria-hidden="true">${emoji}</span>`;
         }
-        /* ── Grass texture patches — subtle dark-green blobs to break up flat grass ── */
-        const PATCHES = 8;
+        /* ── Grass texture patches — varied tones to break up flat grass ── */
+        const PATCHES = 14;
         for (let j = 0; j < PATCHES; j++) {
             const ps = Math.sin((j + 1) * 331.7 + islandId * 73.9) * 51293.1;
             const pn = ps - Math.floor(ps);
             const ps2 = Math.sin((j + 1) * 197.3 + islandId * 157.1) * 38291.7;
             const pn2 = ps2 - Math.floor(ps2);
-            const pl = 8 + pn * 84;
-            const pt = 12 + pn2 * 76;
-            const pw = 60 + Math.floor(pn * 80);
-            const ph = 40 + Math.floor(pn2 * 50);
-            html += `<span class="grass-patch" style="left:${pl.toFixed(1)}%;top:${pt.toFixed(1)}%;width:${pw}px;height:${ph}px" aria-hidden="true"></span>`;
+            const pl = 5 + pn * 88;
+            const pt = 8 + pn2 * 82;
+            const pw = 80 + Math.floor(pn * 100);
+            const ph = 60 + Math.floor(pn2 * 70);
+            const warm = j % 3 === 0 ? ' grass-patch-warm' : '';
+            html += `<span class="grass-patch${warm}" style="left:${pl.toFixed(1)}%;top:${pt.toFixed(1)}%;width:${pw}px;height:${ph}px" aria-hidden="true"></span>`;
         }
         return html;
     },

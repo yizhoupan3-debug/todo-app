@@ -97,7 +97,7 @@ const Pomodoro = {
         }
         this.phase = 'setup';
         this.isPaused = false;
-        document.getElementById('pomodoro-overlay').classList.add('hidden');
+        Utils.closeModalAnimated(document.getElementById('pomodoro-overlay'));
         this.isOpen = false;
     },
 

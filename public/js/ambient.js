@@ -439,18 +439,32 @@ const AmbientSound = (() => {
             if (!gen) return;
             const entry = gen();
             entry.volume = 0.5;
+            // Smooth fade-in
+            const ac = getCtx();
+            entry.gain.gain.setValueAtTime(0.01, ac.currentTime);
+            entry.gain.gain.exponentialRampToValueAtTime(0.5, ac.currentTime + 0.5);
             active[soundId] = entry;
         },
 
         stop(soundId) {
             const entry = active[soundId];
             if (!entry) return;
+            // Smooth fade-out before cleanup
+            const ac = getCtx();
+            const fadeTime = 0.6;
             try {
-                if (entry.source) entry.source.stop();
-                if (entry.extras) entry.extras.forEach(e => { try { e.stop(); } catch (x) { } });
-                if (entry.interval) clearInterval(entry.interval);
-                if (entry.gain) entry.gain.disconnect();
-            } catch (e) { }
+                entry.gain.gain.setValueAtTime(entry.gain.gain.value, ac.currentTime);
+                entry.gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + fadeTime);
+            } catch (_) {}
+            // Schedule actual cleanup after fade completes
+            setTimeout(() => {
+                try {
+                    if (entry.source) entry.source.stop();
+                    if (entry.extras) entry.extras.forEach(e => { try { e.stop(); } catch (x) { } });
+                    if (entry.interval) clearInterval(entry.interval);
+                    if (entry.gain) entry.gain.disconnect();
+                } catch (e) { }
+            }, fadeTime * 1000 + 50);
             delete active[soundId];
         },
 

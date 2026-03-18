@@ -4629,3 +4629,552 @@ button:not(:disabled):active,
   100% { transform: scale(1.1); }
 }
 
+/* ===== SKELETON LOADING ===== */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  animation: shimmer 1.8s ease-in-out infinite;
+  background-image: linear-gradient(
+    90deg,
+    var(--bg-secondary) 0%,
+    var(--card-bg) 40%,
+    var(--bg-secondary) 80%
+  );
+  background-size: 200% 100%;
+}
+
+/* Specific skeleton shapes */
+.skeleton-card {
+  height: 70px;
+  margin-bottom: 10px;
+  border-radius: var(--radius-lg);
+}
+
+.skeleton-card:nth-child(2) {
+  width: 85%;
+  animation-delay: 0.15s;
+}
+
+.skeleton-card:nth-child(3) {
+  width: 70%;
+  animation-delay: 0.3s;
+}
+
+.skeleton-line {
+  height: 14px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+
+.skeleton-line.short {
+  width: 40%;
+}
+
+.skeleton-line.medium {
+  width: 65%;
+}
+
+.skeleton-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Skeleton column for daily view */
+.skeleton-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+/* Enhanced skeleton card with sub-elements */
+.skeleton-card-rich {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 10px;
+}
+
+.skeleton-card-rich .skeleton-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.skeleton-card-rich .skeleton-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeleton-card-rich .skeleton-title {
+  height: 14px;
+  width: 75%;
+  border-radius: 4px;
+}
+
+.skeleton-card-rich .skeleton-meta {
+  height: 10px;
+  width: 45%;
+  border-radius: 3px;
+}
+
+.skeleton-card-rich:nth-child(2) .skeleton-title { width: 60%; }
+.skeleton-card-rich:nth-child(3) .skeleton-title { width: 85%; }
+.skeleton-card-rich:nth-child(2) { animation-delay: 0.15s; }
+.skeleton-card-rich:nth-child(3) { animation-delay: 0.3s; }
+
+/* ===== THEME COLOR TRANSITION ===== */
+body:not(.notransition),
+body:not(.notransition) .sidebar,
+body:not(.notransition) .main-header,
+body:not(.notransition) .bottom-nav,
+body:not(.notransition) .task-card,
+body:not(.notransition) .modal,
+body:not(.notransition) .view-container,
+body:not(.notransition) .toast,
+body:not(.notransition) .column-header,
+body:not(.notransition) .checkin-item-card,
+body:not(.notransition) .stats-card {
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+/* ===== SWIPE HINT — first-time mobile ===== */
+@media (hover: none) and (pointer: coarse) {
+  .task-card {
+    /* Remove any conflicting transitions during swipe */
+    will-change: transform;
+  }
+
+  /* Subtle touch hint on first card */
+  .task-list .task-card:first-child {
+    position: relative;
+  }
+}
+
+/* ===== LOADING PROGRESS BAR ===== */
+.loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg,
+    transparent,
+    var(--primary-light),
+    var(--primary),
+    var(--primary-light),
+    transparent
+  );
+  background-size: 200% 100%;
+  transition: opacity 0.2s ease;
+}
+
+.loading-bar.active {
+  opacity: 1;
+  animation: loadingSlide 1.2s ease-in-out infinite;
+}
+
+@keyframes loadingSlide {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* ===== EMPTY STATE ANIMATION ===== */
+@keyframes emptyBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes emptyFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.empty-state {
+  animation: emptyFadeIn 0.4s ease-out both;
+}
+
+.empty-state-text {
+  animation: emptyBob 3s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+/* ===== ANIMATED COUNTER ===== */
+@keyframes countPop {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.count-animate {
+  animation: countPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ===== CONFETTI BURST ===== */
+@keyframes confettiBurst {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.4);
+    opacity: 0;
+  }
+}
+
+/* ===== PULL TO REFRESH ===== */
+.pull-indicator {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) translateY(-40px);
+  opacity: 0;
+  padding: 6px 16px;
+  border-radius: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  z-index: 50;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.pull-indicator.ready {
+  color: var(--primary);
+  font-weight: 600;
+  border-color: var(--primary-light);
+  box-shadow: 0 2px 12px var(--primary-glow);
+}
+
+/* ===== DIRECTIONAL VIEW TRANSITIONS ===== */
+@keyframes viewSlideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes viewSlideRight {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.view-slide-left {
+  animation: viewSlideLeft 0.28s cubic-bezier(0.25, 1, 0.5, 1) both !important;
+}
+
+.view-slide-right {
+  animation: viewSlideRight 0.28s cubic-bezier(0.25, 1, 0.5, 1) both !important;
+}
+
+/* ===== SCROLL TO TOP BUTTON ===== */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(12px) scale(0.8);
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s ease;
+  pointer-events: none;
+  z-index: 900;
+  box-shadow: var(--shadow-md);
+}
+
+.scroll-top-btn.visible {
+  opacity: 0.85;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.scroll-top-btn:hover {
+  opacity: 1;
+  background: var(--primary-hover);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.scroll-top-btn:active {
+  transform: scale(0.92);
+}
+
+@media (max-width: 768px) {
+  .scroll-top-btn {
+    bottom: 90px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+}
+
+/* ===== TASK CARD DELETE ANIMATION ===== */
+@keyframes cardDeleteShrink {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    max-height: 120px;
+    margin-bottom: 8px;
+  }
+  50% {
+    opacity: 0.3;
+    transform: translateX(-20px) scale(0.95);
+    max-height: 120px;
+    margin-bottom: 8px;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-40px) scale(0.9);
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+.task-card.deleting {
+  animation: cardDeleteShrink 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* ===== TOAST IMPROVEMENTS ===== */
+.toast-container .toast:nth-child(n+4) {
+  opacity: 0;
+  max-height: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+  overflow: hidden;
+  animation: none;
+}
+
+/* ===== R10: CHECKBOX RIPPLE ===== */
+.task-checkbox {
+  position: relative;
+  overflow: visible;
+}
+
+.task-checkbox::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-glow);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  pointer-events: none;
+  transition: none;
+}
+
+.task-checkbox.checked::before {
+  animation: checkRipple 0.5s cubic-bezier(0, 0, 0.2, 1);
+}
+
+@keyframes checkRipple {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2.5);
+    opacity: 0;
+  }
+}
+
+/* ===== R10: COUNT BADGE BOUNCE ===== */
+@keyframes countBounce {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.35); }
+  60% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.section-count.bounce {
+  animation: countBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ===== R10: COMPLETION GLOW ===== */
+@keyframes completionGlow {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { box-shadow: 0 0 12px 4px rgba(34, 197, 94, 0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.task-card.completing-glow {
+  animation: completionGlow 0.6s ease-out;
+}
+
+/* ===== R10: NAV ICON ACTIVE SCALE ===== */
+.bottom-nav-btn.active .nav-icon {
+  transform: scale(1.12);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bottom-nav-btn .nav-icon {
+  transition: transform 0.2s ease;
+}
+
+/* ===== R10: EXTENDED STAGGER (9-12) ===== */
+.task-list .task-card:nth-child(9) { animation-delay: 0.2s; }
+.task-list .task-card:nth-child(10) { animation-delay: 0.225s; }
+.task-list .task-card:nth-child(11) { animation-delay: 0.25s; }
+.task-list .task-card:nth-child(12) { animation-delay: 0.275s; }
+
+/* ===== R10: SMOOTHER CARD INTERACTIONS ===== */
+.task-card {
+  will-change: transform, box-shadow;
+}
+
+.task-card:hover {
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Smoother section headers */
+.section-header {
+  transition: opacity 0.2s ease;
+}
+
+/* Task tag hover shimmer */
+.task-tag {
+  transition: all 0.15s ease;
+}
+
+.task-tag:hover {
+  filter: brightness(1.1);
+}
+
+/* ===== R12: NOTIFICATION GUIDE CARD ===== */
+.notif-guide-card {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(120%);
+  width: min(92%, 380px);
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.06);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.3s ease;
+  opacity: 0;
+}
+
+.notif-guide-card.visible {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.notif-guide-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+}
+
+.notif-guide-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-guide-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.notif-guide-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.notif-guide-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.notif-guide-btn {
+  padding: 5px 14px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.notif-guide-btn.primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.notif-guide-btn:active {
+  transform: scale(0.95);
+}
+

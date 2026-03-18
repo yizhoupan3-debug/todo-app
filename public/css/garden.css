@@ -1238,17 +1238,34 @@
 /* Tilled land image for cleared plots — organic soil patch with per-plot variety */
 .iplot-tilled {
   position: absolute;
-  inset: -14%;
-  width: 128%;
-  height: 128%;
+  inset: -16%;
+  width: 132%;
+  height: 132%;
   object-fit: contain;
   border-radius: 50%;
-  mask-image: radial-gradient(ellipse 52% 48% at 50% 52%, #000 22%, rgba(0,0,0,0.4) 44%, rgba(0,0,0,0.12) 62%, transparent 76%);
-  -webkit-mask-image: radial-gradient(ellipse 52% 48% at 50% 52%, #000 22%, rgba(0,0,0,0.4) 44%, rgba(0,0,0,0.12) 62%, transparent 76%);
-  filter: blur(0.6px) brightness(0.95);
+  mask-image: radial-gradient(ellipse 54% 50% at 50% 52%, #000 26%, rgba(0,0,0,0.45) 46%, rgba(0,0,0,0.14) 64%, transparent 82%);
+  -webkit-mask-image: radial-gradient(ellipse 54% 50% at 50% 52%, #000 26%, rgba(0,0,0,0.45) 46%, rgba(0,0,0,0.14) 64%, transparent 82%);
+  filter: blur(0.4px) brightness(0.93);
   transition: all 0.3s;
   transform: rotate(var(--plot-tilt, 0deg)) scale(var(--plot-sway, 1));
-  opacity: 0.85;
+  opacity: 0.88;
+}
+
+/* Green-tinted edge around tilled land for natural soil→grass blend */
+.iplot.cleared::before {
+  content: '';
+  position: absolute;
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 52%,
+    rgba(72, 90, 34, 0) 40%,
+    rgba(72, 90, 34, 0.10) 55%,
+    rgba(68, 84, 30, 0.05) 70%,
+    transparent 85%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .iplot.cleared:hover .iplot-tilled {
@@ -4892,18 +4909,27 @@
   100% { transform: rotate(var(--gd-rotate, 0deg)) translateY(-4px); }
 }
 
-/* Grass texture patches — subtle dark blobs to break up flat green */
+/* Grass texture patches — warm-toned blobs for natural color variation */
 .grass-patch {
   position: absolute;
   pointer-events: none;
   z-index: 0;
   border-radius: 50%;
   background: radial-gradient(ellipse at 50% 55%,
-    rgba(58, 100, 32, 0.22) 0%,
-    rgba(58, 100, 32, 0.10) 40%,
-    transparent 70%);
-  filter: blur(6px);
+    rgba(72, 88, 28, 0.20) 0%,
+    rgba(86, 92, 34, 0.12) 35%,
+    rgba(100, 96, 40, 0.06) 60%,
+    transparent 75%);
+  filter: blur(8px);
   mix-blend-mode: multiply;
+}
+
+.grass-patch-warm {
+  background: radial-gradient(ellipse at 50% 55%,
+    rgba(110, 105, 40, 0.18) 0%,
+    rgba(120, 110, 45, 0.10) 35%,
+    rgba(130, 115, 50, 0.04) 60%,
+    transparent 75%);
 }
 
 .scene-land-shadow {
@@ -4949,17 +4975,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 140px;
-  height: 120px;
-  border-radius: 28px;
+  width: 200px;
+  height: 180px;
+  border-radius: 36px;
   overflow: visible;
 }
 
 .iplot::before {
-  bottom: 6px;
-  width: 78%;
-  height: 14px;
-  opacity: 0.36;
+  bottom: 8px;
+  width: 80%;
+  height: 18px;
+  opacity: 0.38;
 }
 
 .iplot::after {
@@ -5005,24 +5031,47 @@
 
 .iplot.planted {
   background:
-    /* Outer feathered ring */
-    radial-gradient(ellipse at 50% 55%,
-      rgba(80, 52, 22, 0) 55%,
-      rgba(72, 44, 16, 0.12) 65%,
-      rgba(60, 36, 12, 0.06) 80%,
-      transparent 92%),
-    /* Main soil */
-    radial-gradient(ellipse at 50% 55%,
-      #8f6034 0%, #7a4e29 30%, rgba(102, 63, 31, 0.7) 52%,
-      rgba(82, 50, 22, 0.35) 72%, transparent 88%);
+    /* Outermost green-brown transition — blends soil into grass */
+    radial-gradient(ellipse at 50% 58%,
+      rgba(68, 82, 32, 0) 44%,
+      rgba(68, 82, 32, 0.12) 54%,
+      rgba(62, 72, 28, 0.06) 68%,
+      transparent 82%),
+    /* Mid ring — warm earth tone */
+    radial-gradient(ellipse at 50% 58%,
+      rgba(70, 45, 18, 0) 38%,
+      rgba(65, 40, 14, 0.18) 50%,
+      rgba(55, 32, 10, 0.08) 66%,
+      transparent 82%),
+    /* Core soil */
+    radial-gradient(ellipse at 50% 58%,
+      #6e451e 0%, #5e3a18 26%, rgba(78, 48, 20, 0.72) 44%,
+      rgba(62, 38, 14, 0.38) 60%, transparent 78%);
   border: none;
   border-radius: 50%;
-  box-shadow: 0 8px 20px rgba(54, 29, 11, 0.22), 0 3px 6px rgba(54, 29, 11, 0.14);
+  box-shadow: 0 10px 24px rgba(48, 26, 8, 0.26), 0 4px 8px rgba(48, 26, 8, 0.16);
 }
 
 .iplot.planted::after {
-  background: radial-gradient(ellipse at 50% 50%, rgba(72, 41, 16, 0.2) 0%, transparent 70%);
+  content: '';
+  position: absolute;
+  inset: 0;
   border-radius: 50%;
+  background:
+    /* Green-brown blend ring for grass transition */
+    radial-gradient(ellipse at 50% 65%,
+      rgba(58, 68, 24, 0.18) 0%,
+      rgba(52, 42, 16, 0.12) 35%,
+      transparent 62%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Mask planted tree sprites — tight ellipse to hide white base (island view only) */
+.island-viewport .iplot.planted .iplot-img {
+  mask-image: radial-gradient(ellipse 50% 42% at 50% 36%, #000 0%, #000 52%, rgba(0,0,0,0.45) 70%, rgba(0,0,0,0.08) 86%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 50% 42% at 50% 36%, #000 0%, #000 52%, rgba(0,0,0,0.45) 70%, rgba(0,0,0,0.08) 86%, transparent 100%);
+  filter: drop-shadow(0 6px 12px rgba(30, 52, 18, 0.30)) drop-shadow(0 2px 4px rgba(0,0,0,0.15));
 }
 
 .iplot.selected {
@@ -5035,8 +5084,8 @@
 .iplot-img {
   position: relative;
   z-index: 2;
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
 }
 
 .iplot-tilled {
@@ -5046,36 +5095,38 @@
 }
 
 .iplot.obstacle-wild_tree .iplot-img {
-  width: 220px;
-  height: 240px;
-  filter: saturate(0.80) contrast(1.06) brightness(0.97) drop-shadow(0 14px 16px rgba(10, 30, 8, 0.35));
+  width: 300px;
+  height: 320px;
+  filter: saturate(0.82) contrast(1.04) brightness(0.96)
+    drop-shadow(0 14px 18px rgba(22, 44, 14, 0.36))
+    drop-shadow(0 4px 6px rgba(0,0,0,0.12));
 }
 
 .iplot.obstacle-rock .iplot-img,
 .iplot.obstacle-weed .iplot-img {
-  width: 160px;
-  height: 160px;
-  filter: drop-shadow(0 8px 10px rgba(10, 30, 8, 0.3));
+  width: 220px;
+  height: 220px;
+  filter: drop-shadow(0 8px 12px rgba(22, 44, 14, 0.28)) drop-shadow(0 2px 4px rgba(0,0,0,0.10));
 }
 
 .iplot.stage-seed .iplot-img {
-  width: 38px;
-  height: 38px;
+  width: 52px;
+  height: 52px;
 }
 
 .iplot.stage-sprout .iplot-img {
-  width: 54px;
-  height: 54px;
+  width: 80px;
+  height: 80px;
 }
 
 .iplot.stage-growing .iplot-img {
-  width: 76px;
-  height: 76px;
+  width: 115px;
+  height: 115px;
 }
 
 .iplot.stage-mature .iplot-img {
-  width: 100px;
-  height: 100px;
+  width: 155px;
+  height: 155px;
 }
 
 .iplot-empty {
@@ -5097,8 +5148,8 @@
 .iplot-bar {
   position: absolute;
   left: 50%;
-  bottom: 8px;
-  width: 52px;
+  bottom: 10px;
+  width: 68px;
   margin-top: 0;
   transform: translateX(-50%);
   z-index: 3;
@@ -5142,44 +5193,44 @@
   }
 
   .iplot {
-    width: 108px;
-    height: 90px;
+    width: 160px;
+    height: 140px;
   }
 
   .iplot-img {
-    width: 72px;
-    height: 72px;
+    width: 110px;
+    height: 110px;
   }
 
   .iplot.obstacle-wild_tree .iplot-img {
-    width: 56px;
-    height: 66px;
+    width: 200px;
+    height: 220px;
   }
 
   .iplot.obstacle-rock .iplot-img,
   .iplot.obstacle-weed .iplot-img {
-    width: 42px;
-    height: 42px;
+    width: 150px;
+    height: 150px;
   }
 
   .iplot.stage-seed .iplot-img {
-    width: 30px;
-    height: 30px;
-  }
-
-  .iplot.stage-sprout .iplot-img {
     width: 42px;
     height: 42px;
   }
 
+  .iplot.stage-sprout .iplot-img {
+    width: 60px;
+    height: 60px;
+  }
+
   .iplot.stage-growing .iplot-img {
-    width: 56px;
-    height: 56px;
+    width: 85px;
+    height: 85px;
   }
 
   .iplot.stage-mature .iplot-img {
-    width: 72px;
-    height: 72px;
+    width: 115px;
+    height: 115px;
   }
 }
 

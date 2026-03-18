@@ -39,6 +39,81 @@ const DailyView = {
                 App.showToast('清除失败: ' + err.message, 'error');
             }
         });
+
+        // Date swipe gesture (mobile: swipe left/right to switch days)
+        this._initDateSwipe();
+
+        // Pull-to-refresh (mobile)
+        const mainContent = document.getElementById('main-content');
+        Utils.initPullToRefresh(mainContent, () => this.loadTasks());
+    },
+
+    _initDateSwipe() {
+        if (!('ontouchstart' in window)) return;
+        const view = document.getElementById('view-daily');
+        if (!view) return;
+
+        let startX = 0, startY = 0, isHoriz = null;
+        const THRESHOLD = 60;
+
+        view.addEventListener('touchstart', (e) => {
+            // Don't capture swipe from task cards (they have their own swipe)
+            if (e.target.closest('.task-card')) return;
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            isHoriz = null;
+        }, { passive: true });
+
+        view.addEventListener('touchmove', (e) => {
+            if (e.target.closest('.task-card')) return;
+            if (isHoriz !== null) return; // already determined
+            const dx = Math.abs(e.touches[0].clientX - startX);
+            const dy = Math.abs(e.touches[0].clientY - startY);
+            if (dx + dy > 10) { // enough movement to determine direction
+                isHoriz = dx > dy * 1.2;
+            }
+        }, { passive: true });
+
+        view.addEventListener('touchend', (e) => {
+            if (e.target.closest('.task-card')) return;
+            if (isHoriz === false) return; // was vertical scroll
+
+            const dx = e.changedTouches[0].clientX - startX;
+            const dy = e.changedTouches[0].clientY - startY;
+
+            // Only trigger if mostly horizontal and passes threshold
+            if (Math.abs(dx) < THRESHOLD || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+
+            const columns = view.querySelector('.task-columns');
+            const direction = dx > 0 ? 'right' : 'left';
+
+            if (columns) {
+                // Slide out animation
+                columns.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+                columns.style.transform = `translateX(${direction === 'right' ? '30px' : '-30px'})`;
+                columns.style.opacity = '0.3';
+
+                setTimeout(() => {
+                    // Change date
+                    if (direction === 'right') this.prevDay();
+                    else this.nextDay();
+
+                    // Slide in from opposite side
+                    columns.style.transition = 'none';
+                    columns.style.transform = `translateX(${direction === 'right' ? '-30px' : '30px'})`;
+                    columns.style.opacity = '0.3';
+
+                    requestAnimationFrame(() => {
+                        columns.style.transition = 'transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.25s ease';
+                        columns.style.transform = '';
+                        columns.style.opacity = '';
+                    });
+                }, 200);
+            } else {
+                if (direction === 'right') this.prevDay();
+                else this.nextDay();
+            }
+        }, { passive: true });
     },
 
     syncPersonPills() {
@@ -67,6 +142,22 @@ const DailyView = {
     async loadTasks() {
         const dateStr = this.formatDate(this.currentDate);
         const loadId = ++this._loadId;
+
+        // Show loading progress bar
+        Utils.showLoading();
+
+        // Show skeleton loading state (only if lists are empty or first load)
+        const todoList = document.getElementById('list-todo');
+        const doneList = document.getElementById('list-done');
+        if (todoList && !todoList.querySelector('.task-card')) {
+            const skeletonHTML = `<div class="skeleton-task-list">
+                <div class="skeleton skeleton-card-rich"><div class="skeleton skeleton-check"></div><div class="skeleton-text"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-meta"></div></div></div>
+                <div class="skeleton skeleton-card-rich"><div class="skeleton skeleton-check"></div><div class="skeleton-text"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-meta"></div></div></div>
+                <div class="skeleton skeleton-card-rich"><div class="skeleton skeleton-check"></div><div class="skeleton-text"><div class="skeleton skeleton-title"></div><div class="skeleton skeleton-meta"></div></div></div>
+            </div>`;
+            todoList.innerHTML = skeletonHTML;
+        }
+
         try {
             const assignee = App.currentAssignee;
             const params = { date: dateStr };
@@ -80,6 +171,8 @@ const DailyView = {
         } catch (err) {
             if (loadId !== this._loadId) return;
             App.showToast('加载失败: ' + err.message, 'error');
+        } finally {
+            Utils.hideLoading();
         }
     },
 
@@ -89,8 +182,9 @@ const DailyView = {
             done: this.tasks.filter(t => t.status === 'done'),
         };
 
-        document.getElementById('count-todo').textContent = groups.todo.length;
-        document.getElementById('count-done').textContent = groups.done.length;
+        // Update counts with bounce animation
+        this._updateCount('count-todo', groups.todo.length);
+        this._updateCount('count-done', groups.done.length);
 
         this.renderColumn('list-todo', groups.todo, 'todo');
         this.renderColumn('list-done', groups.done, 'done');
@@ -99,6 +193,58 @@ const DailyView = {
         if (typeof lucide !== 'undefined') {
             const scope = document.getElementById('view-daily');
             if (scope) lucide.createIcons({ attrs: {}, node: scope });
+        }
+
+        // Bind swipe gestures (mobile only)
+        if (typeof SwipeGesture !== 'undefined') {
+            const todoContainer = document.getElementById('list-todo');
+            const doneContainer = document.getElementById('list-done');
+            const swipeHandlers = {
+                onComplete: (taskId) => {
+                    const task = this.tasks.find(t => t.id === taskId);
+                    if (!task) return;
+                    const nextStatus = task.status === 'done' ? 'todo' : 'done';
+                    task.status = nextStatus;
+                    API.updateTask(taskId, { status: nextStatus }).then(updated => {
+                        App.socket.emit('task:updated', updated);
+                        if (nextStatus === 'done' && updated.coinsEarned > 0) {
+                            App.syncCoins({ assignee: task.assignee, delta: updated.coinsEarned, animate: true });
+                            App.showToast(`✅ 任务完成！ +${updated.coinsEarned} 喵喵币`, 'success');
+                        } else if (nextStatus === 'done') {
+                            App.showToast('✅ 任务完成！', 'success');
+                        }
+                        this.loadTasks();
+                    }).catch(() => {
+                        task.status = nextStatus === 'done' ? 'todo' : 'done';
+                        this.render();
+                        App.showToast('更新失败', 'error');
+                    });
+                },
+                onDelete: async (taskId) => {
+                    const task = this.tasks.find(t => t.id === taskId);
+                    if (!task) return;
+                    if (!confirm(`确定要删除「${task.title}」吗？`)) {
+                        this.render();
+                        return;
+                    }
+                    // Animate card out
+                    const card = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+                    if (card) card.classList.add('deleting');
+                    try {
+                        await API.deleteTask(taskId);
+                        App.socket.emit('task:deleted', { id: taskId });
+                        // Wait for delete animation to complete
+                        await new Promise(r => setTimeout(r, 400));
+                        this.loadTasks();
+                        App.showToast('🗑️ 已删除', 'success');
+                    } catch (err) {
+                        if (card) card.classList.remove('deleting');
+                        App.showToast('删除失败', 'error');
+                    }
+                }
+            };
+            SwipeGesture.bind(todoContainer, swipeHandlers);
+            SwipeGesture.bind(doneContainer, swipeHandlers);
         }
     },
 
@@ -149,6 +295,8 @@ const DailyView = {
 
                 const nextStatus = task.status === 'done' ? 'todo' : 'done';
                 const isCompleting = nextStatus === 'done';
+                // Count remaining todos BEFORE the optimistic flip for accurate confetti check
+                const todosBefore = this.tasks.filter(t => t.status === 'todo' || t.status === 'in_progress').length;
 
                 // Optimistic UI: instantly update visual state
                 task.status = nextStatus;
@@ -156,13 +304,15 @@ const DailyView = {
                 cb.classList.toggle('checked', isCompleting);
 
                 if (isCompleting) {
-                    // Completion animation: check pop → card shrinks gently → holds → re-renders
+                    // Completion animation: glow + check pop → card shrinks gently → holds → re-renders
+                    card.classList.add('completing-glow');
                     cb.style.animation = 'none';
                     void cb.offsetWidth;
                     cb.style.animation = '';
                     card.style.transition = 'opacity 0.35s var(--transition-spring), transform 0.35s var(--transition-spring)';
                     card.style.opacity = '0.55';
                     card.style.transform = 'scale(0.96) translateX(6px)';
+                    Utils.haptic('light');
                 } else {
                     card.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
                     card.style.opacity = '0.7';
@@ -180,7 +330,14 @@ const DailyView = {
                     this.loadTasks();
                     if (isCompleting) {
                         const rewardMsg = updated.coinsEarned > 0 ? ` +${updated.coinsEarned} 喵喵币` : '';
-                        App.showToast(`✅ 任务完成！${rewardMsg}`, 'success');
+                        // This was the last remaining todo → confetti!
+                        if (todosBefore === 1) {
+                            Utils.haptic('success');
+                            Utils.confetti();
+                            App.showToast(`🎊 全部完成！太棒了！${rewardMsg}`, 'success');
+                        } else {
+                            App.showToast(`✅ 任务完成！${rewardMsg}`, 'success');
+                        }
                     }
                 } catch (err) {
                     // Rollback optimistic update
@@ -249,6 +406,18 @@ const DailyView = {
 
     escapeHtml(str) {
         return Utils.escapeHtml(str);
+    },
+
+    /** Update a count badge with bounce animation when value changes */
+    _updateCount(id, value) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const oldVal = el.textContent;
+        el.textContent = value;
+        if (oldVal !== String(value)) {
+            el.classList.add('section-count', 'bounce');
+            el.addEventListener('animationend', () => el.classList.remove('bounce'), { once: true });
+        }
     },
 
     refresh() {

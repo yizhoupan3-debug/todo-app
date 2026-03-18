@@ -305,9 +305,14 @@ Object.assign(App, {
         toast.textContent = message;
         container.appendChild(toast);
 
+        // Limit max visible toasts
+        while (container.children.length > 3) {
+            container.firstChild.remove();
+        }
+
         setTimeout(() => {
             toast.style.animation = 'toastOut 0.3s ease forwards';
             setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        }, 2500);
     },
 });

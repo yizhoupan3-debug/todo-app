@@ -191,16 +191,26 @@ const TaskModal = {
     async loadCategories() {
         try {
             this.categories = await API.getCategories();
-            const select = document.getElementById('task-category');
-            select.innerHTML = '<option value="">无分类</option>';
-            for (const cat of this.categories) {
-                const opt = document.createElement('option');
-                opt.value = cat.id;
-                opt.textContent = `${cat.icon || ''} ${cat.name}`;
-                select.appendChild(opt);
-            }
         } catch (err) {
             console.error('Failed to load categories:', err);
+        }
+        this._populateCategorySelect();
+    },
+
+    /** Rebuild the category <option> list from cached data */
+    _populateCategorySelect(selectedId) {
+        const select = document.getElementById('task-category');
+        if (!select) return;
+        // Always rebuild from scratch in case form.reset() wiped the options
+        select.innerHTML = '<option value="">无分类</option>';
+        for (const cat of this.categories) {
+            const opt = document.createElement('option');
+            opt.value = cat.id;
+            opt.textContent = `${cat.icon || ''} ${cat.name}`;
+            select.appendChild(opt);
+        }
+        if (selectedId !== undefined) {
+            select.value = selectedId || '';
         }
     },
 
@@ -210,7 +220,7 @@ const TaskModal = {
         document.getElementById('modal-title').textContent = '新建任务';
         document.getElementById('btn-delete').classList.add('hidden');
 
-        // Reset form
+        // Reset form FIRST — this clears everything including <select> options
         document.getElementById('task-form').reset();
         document.getElementById('task-id').value = '';
         document.getElementById('task-end-time').value = '';
@@ -233,6 +243,7 @@ const TaskModal = {
             assigneeSel.value = App.currentAssignee;
         }
 
+        // Load categories AFTER form.reset() so options don't get wiped
         this.loadCategories().then(() => this.show());
     },
 
@@ -267,8 +278,9 @@ const TaskModal = {
             document.getElementById('task-recurring-end').value = task.recurring_end_date || '';
         }
 
+        // Load categories and set the correct one selected
         this.loadCategories().then(() => {
-            document.getElementById('task-category').value = task.category_id || '';
+            this._populateCategorySelect(task.category_id);
             this.show();
         });
     },
@@ -299,8 +311,8 @@ const TaskModal = {
     /** Add 1 hour to a HH:MM string, capping at 23:59 */
     _addHour(timeStr) {
         const [h, m] = timeStr.split(':').map(Number);
-        const newH = Math.min(h + 1, 23);
-        return `${String(newH).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        if (h >= 23) return '23:59';
+        return `${String(h + 1).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
     },
 
     async save() {
@@ -321,7 +333,7 @@ const TaskModal = {
             title: title,
             description: document.getElementById('task-description').value.trim(),
             assignee: document.getElementById('task-assignee').value,
-            category_id: document.getElementById('task-category').value || null,
+            category_id: document.getElementById('task-category').value || null,  // '' → null for DB
             priority: parseInt(document.getElementById('task-priority').value),
             due_date: dateVal,
             due_time: timeVal,
@@ -333,10 +345,6 @@ const TaskModal = {
             auto_complete: document.getElementById('task-auto-complete').checked ? 1 : 0,
         };
 
-        // Show auto-complete group if NLP set a time
-        if (this._nlpResult && this._nlpResult.time && !this._nlpDismissed) {
-            data.auto_complete = document.getElementById('task-auto-complete').checked ? 1 : 0;
-        }
 
         if (!data.title) {
             App.showToast('请输入任务标题', 'error');

@@ -248,18 +248,23 @@ Object.assign(App, {
                 el.classList.toggle('hidden', !isTarget);
                 if (isTarget) {
                     if (isInitialSwitch) {
-                        el.classList.remove('view-animating');
+                        el.classList.remove('view-animating', 'view-slide-left', 'view-slide-right');
                         continue;
                     }
-                    // Use CSS class for animation (auto-cleaned after animation ends)
-                    el.classList.remove('view-animating');
+                    // Determine direction based on view order
+                    const prevIdx = viewIds.indexOf(viewMap[this._prevView] || 'view-daily');
+                    const nextIdx = viewIds.indexOf(vid);
+                    const slideClass = nextIdx > prevIdx ? 'view-slide-left' : 'view-slide-right';
+
+                    el.classList.remove('view-animating', 'view-slide-left', 'view-slide-right');
                     void el.offsetHeight; // force reflow to restart animation
-                    el.classList.add('view-animating');
+                    el.classList.add(slideClass);
                     el.addEventListener('animationend', () => {
-                        el.classList.remove('view-animating');
+                        el.classList.remove('view-slide-left', 'view-slide-right');
                     }, { once: true });
                 }
             }
+            this._prevView = view;
 
             const showDateNav = view === 'daily' || view === 'monthly';
             document.getElementById('date-nav').style.display = showDateNav ? '' : 'none';

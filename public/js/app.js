@@ -141,16 +141,35 @@ const App = {
         });
 
         document.addEventListener('keydown', (e) => {
+            const isFocusedInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName);
             if (e.key === 'Escape') {
                 if (TaskModal.isOpen) TaskModal.close();
                 document.getElementById('ics-modal-overlay').classList.add('hidden');
                 document.getElementById('widget-modal-overlay').classList.add('hidden');
                 this.closeSidebar();
             }
-            if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !TaskModal.isOpen &&
-                document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+            if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !TaskModal.isOpen && !isFocusedInput) {
                 e.preventDefault();
                 TaskModal.openCreate();
+            }
+            // Arrow keys for date navigation (daily/monthly view)
+            if (!isFocusedInput && !TaskModal.isOpen) {
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    if (this.currentView === 'daily') DailyView.prevDay();
+                    else if (this.currentView === 'monthly') MonthlyView.prevMonth();
+                }
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    if (this.currentView === 'daily') DailyView.nextDay();
+                    else if (this.currentView === 'monthly') MonthlyView.nextMonth();
+                }
+                // 't' to jump to today
+                if (e.key === 't') {
+                    e.preventDefault();
+                    if (this.currentView === 'daily') DailyView.goToday();
+                    else if (this.currentView === 'monthly') MonthlyView.goToday();
+                }
             }
         });
 
@@ -158,8 +177,23 @@ const App = {
             vc.addEventListener('scroll', () => {
                 const header = document.getElementById('main-header');
                 header.classList.toggle('scrolled', vc.scrollTop > 8);
+                // Scroll-to-top button
+                const btn = document.getElementById('scroll-top-btn');
+                if (btn) btn.classList.toggle('visible', vc.scrollTop > 200);
             });
         });
+
+        // Create scroll-to-top button
+        const scrollBtn = document.createElement('button');
+        scrollBtn.id = 'scroll-top-btn';
+        scrollBtn.className = 'scroll-top-btn';
+        scrollBtn.innerHTML = '↑';
+        scrollBtn.title = '回到顶部';
+        scrollBtn.addEventListener('click', () => {
+            const activeView = document.querySelector('.view-container:not(.hidden)');
+            if (activeView) activeView.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        document.body.appendChild(scrollBtn);
     },
 
     _renderShellIcons() {
@@ -202,6 +236,45 @@ const App = {
         this._deferInit('garden', () => this._ensureModule('garden', () => GardenView.init()));
         this._deferInit('journal', () => this._ensureModule('journal', () => JournalView.init()));
         this._deferInit('header-coins-refresh', () => this._refreshHeaderCoins());
+        this._deferInit('notification-guide', () => this._showNotificationGuide(), 3000);
+    },
+
+    /** Show a friendly notification permission card (once, non-intrusive) */
+    _showNotificationGuide() {
+        if (typeof Notification === 'undefined') return;
+        if (Notification.permission !== 'default') return;
+        if (localStorage.getItem('panpu-notif-asked')) return;
+
+        const card = document.createElement('div');
+        card.className = 'notif-guide-card';
+        card.innerHTML = `
+            <div class="notif-guide-icon">🔔</div>
+            <div class="notif-guide-body">
+                <div class="notif-guide-title">开启通知提醒</div>
+                <div class="notif-guide-desc">番茄钟结束时收到提醒，不错过每次专注</div>
+            </div>
+            <div class="notif-guide-actions">
+                <button class="notif-guide-btn primary" id="notif-enable">开启</button>
+                <button class="notif-guide-btn" id="notif-dismiss">稍后</button>
+            </div>
+        `;
+        document.body.appendChild(card);
+        // Slide in after paint
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => card.classList.add('visible'));
+        });
+
+        const dismiss = () => {
+            localStorage.setItem('panpu-notif-asked', '1');
+            card.classList.remove('visible');
+            setTimeout(() => card.remove(), 400);
+        };
+
+        card.querySelector('#notif-enable').addEventListener('click', async () => {
+            try { await Notification.requestPermission(); } catch (_) {}
+            dismiss();
+        });
+        card.querySelector('#notif-dismiss').addEventListener('click', dismiss);
     },
 };
 

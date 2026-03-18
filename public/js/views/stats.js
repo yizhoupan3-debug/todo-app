@@ -74,6 +74,8 @@ const StatsView = {
         this.renderWaterChart();
         this.renderWakeupHeatmap();
         this.renderPomodoroCard();
+        // Animate bars from 0 after DOM paint
+        this._animateBars();
         if (typeof lucide !== 'undefined') {
             const scope = document.getElementById('view-stats');
             if (scope) lucide.createIcons({ attrs: {}, node: scope });
@@ -88,15 +90,20 @@ const StatsView = {
         const wakeupDays = d.wakeup.filter(w => w !== null).length;
         const totalPomoMinutes = d.pomodoro.reduce((a, b) => a + b.minutes, 0);
         const totalPomoRounds = d.pomodoro.reduce((a, b) => a + b.rounds, 0);
-        const rangeDays = d.dates.length;
+        const rangeDays = d.dates.length || 1; // guard against division by zero
 
-        document.getElementById('stat-total-tasks').textContent = totalTasks;
-        document.getElementById('stat-avg-tasks').textContent = (totalTasks / rangeDays).toFixed(1);
-        document.getElementById('stat-total-water').textContent = (totalWater / 1000).toFixed(1) + 'L';
-        document.getElementById('stat-avg-water').textContent = Math.round(totalWater / rangeDays) + 'ml';
-        document.getElementById('stat-wakeup-days').textContent = `${wakeupDays}/${rangeDays}`;
-        document.getElementById('stat-pomo-minutes').textContent = totalPomoMinutes;
-        document.getElementById('stat-pomo-rounds').textContent = totalPomoRounds;
+        // Animated counters with staggered delays
+        Utils.animateCounter(document.getElementById('stat-total-tasks'), String(totalTasks), 600);
+        Utils.animateCounter(document.getElementById('stat-avg-tasks'), (totalTasks / rangeDays).toFixed(1), 700);
+        setTimeout(() => {
+            Utils.animateCounter(document.getElementById('stat-total-water'), (totalWater / 1000).toFixed(1) + 'L', 600);
+            Utils.animateCounter(document.getElementById('stat-avg-water'), Math.round(totalWater / rangeDays) + 'ml', 700);
+        }, 100);
+        document.getElementById('stat-wakeup-days').textContent = `${wakeupDays}/${d.dates.length}`;
+        setTimeout(() => {
+            Utils.animateCounter(document.getElementById('stat-pomo-minutes'), String(totalPomoMinutes), 600);
+            Utils.animateCounter(document.getElementById('stat-pomo-rounds'), String(totalPomoRounds), 600);
+        }, 200);
     },
 
     // ===== Task completion bar chart =====
@@ -112,7 +119,7 @@ const StatsView = {
             const isToday = date === this._getToday();
             return `<div class="chart-bar-wrapper${isToday ? ' today' : ''}">
                 <div class="chart-bar-value">${count || ''}</div>
-                <div class="chart-bar" style="height:${h}%"
+                <div class="chart-bar" data-target-h="${h}" style="height:0%"
                      title="${date}: ${count} 个任务完成"></div>
                 <div class="chart-bar-label">${label}</div>
             </div>`;
@@ -140,7 +147,7 @@ const StatsView = {
             const isToday = date === this._getToday();
             return `<div class="chart-bar-wrapper${isToday ? ' today' : ''}">
                     <div class="chart-bar-value">${amount > 0 ? (amount >= 1000 ? (amount / 1000).toFixed(1) + 'L' : amount + 'ml') : ''}</div>
-                    <div class="chart-bar water${reached ? ' reached' : ''}" style="height:${h}%"
+                    <div class="chart-bar water${reached ? ' reached' : ''}" data-target-h="${h}" style="height:0%"
                          title="${date}: ${amount}ml"></div>
                     <div class="chart-bar-label">${label}</div>
                 </div>`;
@@ -207,5 +214,39 @@ const StatsView = {
     _getToday() {
         const now = new Date();
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    },
+
+    /** Animate chart bars from 0 to target height with stagger */
+    _animateBars() {
+        requestAnimationFrame(() => {
+            // Stagger task + water chart bars
+            const bars = document.querySelectorAll('#view-stats .chart-bar[data-target-h]');
+            bars.forEach((bar, i) => {
+                setTimeout(() => {
+                    bar.style.height = bar.dataset.targetH + '%';
+                }, i * 30);
+            });
+
+            // Stagger heatmap cell pop-in
+            const cells = document.querySelectorAll('#view-stats .heatmap-cell');
+            cells.forEach((cell, i) => {
+                cell.style.opacity = '0';
+                cell.style.transform = 'scale(0.7)';
+                cell.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                setTimeout(() => {
+                    cell.style.opacity = '1';
+                    cell.style.transform = 'scale(1)';
+                }, 80 + i * 25);
+            });
+
+            // Pomodoro mini bars grow
+            const pomoBars = document.querySelectorAll('#view-stats .pomo-mini-bar');
+            pomoBars.forEach((bar, i) => {
+                const h = bar.style.height;
+                bar.style.height = '0%';
+                bar.style.transition = 'height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                setTimeout(() => { bar.style.height = h; }, 150 + i * 20);
+            });
+        });
     }
 };

@@ -1,60 +1,6 @@
 /* ── Garden & Shop View ── */
-/* ── White-background removal via canvas ── */
-const _wbCache = {};
-function removeWhiteBg(container) {
-    if (!container) return;
-    const imgs = container.querySelectorAll
-        ? container.querySelectorAll('img[src*="/img/trees/"], img[src*="/img/garden/"]')
-        : [];
-    imgs.forEach(img => {
-        const process = () => {
-            if (!img.naturalWidth) return;
-            const src = img.src;
-            if (_wbCache[src]) { img.src = _wbCache[src]; return; }
-            const c = document.createElement('canvas');
-            const w = img.naturalWidth, h = img.naturalHeight;
-            c.width = w; c.height = h;
-            const ctx = c.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            const id = ctx.getImageData(0, 0, w, h);
-            const d = id.data;
-            /* Pass 1: detect white/near-white and make transparent */
-            for (let i = 0; i < d.length; i += 4) {
-                const r = d[i], g = d[i+1], b = d[i+2];
-                if (r > 190 && g > 190 && b > 190) {
-                    const minC = Math.min(r, g, b);
-                    const t = Math.min(1, (minC - 190) / 65);
-                    const alpha = Math.round(255 * (1 - t * t));
-                    d[i+3] = Math.min(d[i+3], alpha);
-                }
-            }
-            /* Pass 2+3: double edge erosion for cleaner edges */
-            for (let pass = 0; pass < 2; pass++) {
-                const prev = new Uint8ClampedArray(d);
-                for (let py = 1; py < h - 1; py++) {
-                    for (let px = 1; px < w - 1; px++) {
-                        const idx = (py * w + px) * 4 + 3;
-                        if (prev[idx] < 255) continue;
-                        const up = prev[((py-1)*w+px)*4+3];
-                        const dn = prev[((py+1)*w+px)*4+3];
-                        const lt = prev[(py*w+px-1)*4+3];
-                        const rt = prev[(py*w+px+1)*4+3];
-                        const minN = Math.min(up, dn, lt, rt);
-                        if (minN < 128) {
-                            d[idx] = Math.min(d[idx], Math.round(d[idx] * 0.35));
-                        }
-                    }
-                }
-            }
-            ctx.putImageData(id, 0, 0);
-            const dataUrl = c.toDataURL('image/png');
-            _wbCache[src] = dataUrl;
-            img.src = dataUrl;
-        };
-        if (img.complete && img.naturalWidth) process();
-        else img.addEventListener('load', process, { once: true });
-    });
-}
+/* ── White-background removal — images are pre-processed, this is a no-op ── */
+function removeWhiteBg(_container) { /* no-op: PNGs already have transparent bg */ }
 
 const GardenView = {
     plots: [],
