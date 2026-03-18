@@ -24,8 +24,6 @@ async function processImage(filePath) {
     const img = await loadImage(filePath);
     const w = img.width;
     const h = img.height;
-
-    // --- Phase 1: Flood-fill white background removal ---
     const canvas = createCanvas(w, h);
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0);
@@ -34,27 +32,32 @@ async function processImage(filePath) {
     const d = imageData.data;
     const total = w * h;
 
-    const visited = new Uint8Array(total);
     const isBg = new Uint8Array(total);
+    const visited = new Uint8Array(total);
 
+    // Extremely aggressive flood fill for the outside background
     function canFloodFill(idx) {
         const pi = idx * 4;
-        return d[pi] > FILL_THRESHOLD && d[pi + 1] > FILL_THRESHOLD && d[pi + 2] > FILL_THRESHOLD && d[pi + 3] > 0;
+        const r = d[pi], g = d[pi + 1], b = d[pi + 2];
+        const maxC = Math.max(r, g, b);
+        const minC = Math.min(r, g, b);
+        // Any light, unsaturated pixel is background
+        return maxC > 140 && (maxC - minC < 40);
     }
 
-    // Seed from ALL edge pixels
     const queue = [];
+    // Seed from all edges
     for (let x = 0; x < w; x++) {
         let idx = x;
-        if (canFloodFill(idx) && !visited[idx]) { visited[idx] = 1; queue.push(idx); }
+        if (canFloodFill(idx)) { visited[idx] = 1; queue.push(idx); }
         idx = (h - 1) * w + x;
-        if (canFloodFill(idx) && !visited[idx]) { visited[idx] = 1; queue.push(idx); }
+        if (canFloodFill(idx)) { visited[idx] = 1; queue.push(idx); }
     }
     for (let y = 1; y < h - 1; y++) {
         let idx = y * w;
-        if (canFloodFill(idx) && !visited[idx]) { visited[idx] = 1; queue.push(idx); }
+        if (canFloodFill(idx)) { visited[idx] = 1; queue.push(idx); }
         idx = y * w + (w - 1);
-        if (canFloodFill(idx) && !visited[idx]) { visited[idx] = 1; queue.push(idx); }
+        if (canFloodFill(idx)) { visited[idx] = 1; queue.push(idx); }
     }
 
     while (queue.length > 0) {
@@ -62,93 +65,99 @@ async function processImage(filePath) {
         isBg[idx] = 1;
         const x = idx % w;
         const y = Math.floor(idx / w);
-
-        const neighbors = [];
-        if (x > 0) neighbors.push(idx - 1);
-        if (x < w - 1) neighbors.push(idx + 1);
-        if (y > 0) neighbors.push(idx - w);
-        if (y < h - 1) neighbors.push(idx + w);
-        if (x > 0 && y > 0) neighbors.push(idx - w - 1);
-        if (x < w - 1 && y > 0) neighbors.push(idx - w + 1);
-        if (x > 0 && y < h - 1) neighbors.push(idx + w - 1);
-        if (x < w - 1 && y < h - 1) neighbors.push(idx + w + 1);
-
+        const neighbors = [idx - 1, idx + 1, idx - w, idx + w];
+        if (x === 0) neighbors[0] = -1;
+        if (x === w - 1) neighbors[1] = -1;
+        
         for (const ni of neighbors) {
-            if (visited[ni]) continue;
-            visited[ni] = 1;
-            if (canFloodFill(ni)) {
-                queue.push(ni);
+            if (ni >= 0 && ni < total && !visited[ni]) {
+                visited[ni] = 1;
+                if (canFloodFill(ni)) {
+                    queue.push(ni);
+                }
             }
         }
     }
 
-    let bgCount = 0;
+    // Compute distance field (Matte Choker) up to 3 pixels from background
+    const dist = new Uint8Array(total);
+    dist.fill(255);
+    let edgeQueue = [];
     for (let i = 0; i < total; i++) {
-        if (isBg[i]) bgCount++;
+        if (isBg[i]) {
+            dist[i] = 0;
+            edgeQueue.push(i);
+        }
     }
 
-    const hasBg = bgCount >= total * 0.03;
-
-    if (hasBg) {
-        for (let i = 0; i < total; i++) {
-            const pi = i * 4;
-            if (isBg[i]) {
-                d[pi + 3] = 0;
-            } else {
-                const r = d[pi], g = d[pi + 1], b = d[pi + 2];
-                // Kill any light gray / near white (low saturation)
-                if (r > 180 && g > 180 && b > 180 && (Math.max(r, g, b) - Math.min(r, g, b)) < 30) {
-                    d[pi + 3] = 0;
+    for (let level = 1; level <= 3; level++) {
+        const nextQueue = [];
+        for (const idx of edgeQueue) {
+            const x = idx % w;
+            const y = Math.floor(idx / w);
+            const neighbors = [idx - 1, idx + 1, idx - w, idx + w];
+            if (x === 0) neighbors[0] = -1;
+            if (x === w - 1) neighbors[1] = -1;
+            for (const ni of neighbors) {
+                if (ni >= 0 && ni < total && dist[ni] === 255) {
+                    dist[ni] = level;
+                    nextQueue.push(ni);
                 }
             }
         }
-
-        // 3-pass edge feathering
-        for (let pass = 0; pass < 3; pass++) {
-            for (let y = 0; y < h; y++) {
-                for (let x = 0; x < w; x++) {
-                    const idx = y * w + x;
-                    if (d[idx * 4 + 3] === 0) continue;
-                    let adjacentTransparent = 0, totalNeighbors = 0;
-                    const neighbors = [];
-                    if (x > 0) neighbors.push(idx - 1);
-                    if (x < w - 1) neighbors.push(idx + 1);
-                    if (y > 0) neighbors.push(idx - w);
-                    if (y < h - 1) neighbors.push(idx + w);
-                    for (const ni of neighbors) {
-                        totalNeighbors++;
-                        if (d[ni * 4 + 3] === 0) adjacentTransparent++;
-                    }
-                    if (adjacentTransparent > 0) {
-                        const pi = idx * 4;
-                        if (d[pi] > EDGE_THRESHOLD && d[pi + 1] > EDGE_THRESHOLD && d[pi + 2] > EDGE_THRESHOLD) {
-                            const ratio = adjacentTransparent / totalNeighbors;
-                            const newAlpha = Math.round(d[pi + 3] * (1 - ratio * 0.7));
-                            d[pi + 3] = newAlpha < 20 ? 0 : newAlpha;
-                        }
-                    }
-                }
-            }
-        }
-        ctx.putImageData(imageData, 0, 0);
+        edgeQueue = nextQueue;
     }
 
-    // --- Phase 2: Resize to TARGET_SIZE ---
+    for (let i = 0; i < total; i++) {
+        const pi = i * 4;
+        const r = d[pi], g = d[pi + 1], b = d[pi + 2];
+        const maxC = Math.max(r, g, b);
+        const minC = Math.min(r, g, b);
+
+        // 1. Handle actual background and fringe (Edge Decontamination)
+        if (dist[i] === 0) {
+            d[pi + 3] = 0;
+            continue;
+        } else if (dist[i] <= 3) {
+            // Un-premultiply alpha: assume original was blended with solid white
+            let alphaRaw = dist[i] === 1 ? 0.35 : dist[i] === 2 ? 0.65 : 0.85;
+            
+            // Reconstruct original object color
+            let fgR = Math.min(255, Math.max(0, (r - 255 * (1 - alphaRaw)) / alphaRaw));
+            let fgG = Math.min(255, Math.max(0, (g - 255 * (1 - alphaRaw)) / alphaRaw));
+            let fgB = Math.min(255, Math.max(0, (b - 255 * (1 - alphaRaw)) / alphaRaw));
+            
+            d[pi] = fgR; d[pi + 1] = fgG; d[pi + 2] = fgB;
+            d[pi + 3] = Math.round(d[pi + 3] * alphaRaw);
+        } 
+        
+        // 2. Handle inner trapped white spots
+        if (dist[i] > 0) {
+            // Overwhelmingly white/light gray colors that escaped flood fill
+            if (maxC > 200 && maxC - minC < 30) {
+                // Dim them and make them significantly transparent so they blend into whatever is behind them
+                const fadeAlpha = 255 - Math.min(255, (minC - 180) * 3); 
+                d[pi + 3] = Math.max(0, Math.min(d[pi + 3], fadeAlpha));
+                d[pi] = Math.min(d[pi], 190);
+                d[pi + 1] = Math.min(d[pi + 1], 190);
+                d[pi + 2] = Math.min(d[pi + 2], 190);
+            }
+        }
+    }
+    ctx.putImageData(imageData, 0, 0);
+
     const needsResize = w > TARGET_SIZE || h > TARGET_SIZE;
-    let outCanvas;
+    let outCanvas = canvas;
     if (needsResize) {
         outCanvas = createCanvas(TARGET_SIZE, TARGET_SIZE);
         const outCtx = outCanvas.getContext('2d');
         outCtx.imageSmoothingEnabled = true;
         outCtx.imageSmoothingQuality = 'high';
         outCtx.drawImage(canvas, 0, 0, TARGET_SIZE, TARGET_SIZE);
-    } else {
-        outCanvas = canvas;
     }
 
-    const buffer = outCanvas.toBuffer('image/png');
-    fs.writeFileSync(filePath, buffer);
-    return { bgRemoved: hasBg, resized: needsResize };
+    fs.writeFileSync(filePath, outCanvas.toBuffer('image/png'));
+    return { bgRemoved: true, resized: needsResize };
 }
 
 async function main() {
