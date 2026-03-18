@@ -386,9 +386,9 @@ const GardenView = {
         const viewW = world.offsetWidth * this._zoom;
         const viewH = world.offsetHeight * this._zoom;
         
-        // Smart screen-relative elasticity (30% of viewport) to guarantee edge visibility
-        const padX = Math.min(300, vpW * 0.35);
-        const padY = Math.min(300, vpH * 0.35);
+        // Strict boundaries: Do not allow panning outside the exact map template (no blue floorboard)
+        const padX = 0;
+        const padY = 0;
 
         // Calculate absolute mathematical pan limits
         const minX = vpW - viewW - padX;

@@ -125,15 +125,17 @@ async function processImage(filePath) {
             d[pi+3] = 0;
         } else {
             // a === 1.0 (Interior pixels)
-            // If it's pure white/gray inside the tree (trapped spots)
-            if (maxC > 200 && maxC - minC < 20) {
-                // Dim it to shadow level (100) so it doesn't stand out 
-                const factor = 100 / Math.max(100, maxC);
-                d[pi] = Math.round(r * factor);
-                d[pi+1] = Math.round(g * factor);
-                d[pi+2] = Math.round(b * factor);
-                // Also give it 70% opacity to blend with background organically
-                d[pi+3] = 180;
+            // Absolute eradication of internal white/gray patches
+            let maxDelta = 45;
+            let targetLuma = 150;
+            // Wild trees and rocks are dark, they shouldn't have any bright pixels.
+            // Any bright pixel is purely a trapped background artifact (often yellow/blue tinted from lighting, so high delta).
+            if (filePath.includes('wild_tree') || filePath.includes('rock') || filePath.includes('weed')) {
+                maxDelta = 90;
+                targetLuma = 140;
+            }
+            if (maxC >= targetLuma && (maxC - minC) < maxDelta) {
+                d[pi + 3] = 0;
             }
         }
     }
