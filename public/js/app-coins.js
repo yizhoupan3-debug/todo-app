@@ -173,7 +173,7 @@ Object.assign(App, {
                         <div class="coin-rule-icon">📅</div>
                         <div class="coin-rule-text">
                             <strong>每日打卡</strong>
-                            <span>每项达标 <b>0.5</b> 币，连续3天 <b>+2</b>，7天 <b>+5</b></span>
+                            <span>每项达标 <b>2</b> 币，连续3天 <b>+3</b>，7天 <b>+10</b></span>
                         </div>
                     </div>
                     <div class="coin-rule-card">
