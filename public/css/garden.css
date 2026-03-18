@@ -157,18 +157,13 @@
   background: #b4c8dc;
 }
 
-/* Thick fog frame — stays fixed over viewport */
+/* Thick fog vignette — sits above island world but below plot menus */
 .island-viewport::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 30;
-  position: sticky;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
   background: radial-gradient(
     ellipse 48% 48% at 50% 50%,
     transparent 0%,

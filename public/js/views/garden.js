@@ -475,6 +475,32 @@ const GardenView = {
                     await this.executeMoveToPlot(plotId);
                     return;
                 }
+                // Wasteland: immediately pop the clear menu
+                if (plot.status === 'wasteland') {
+                    if (this._selectedPlotId === plotId) {
+                        this._selectedPlotId = null;
+                        this.closePlotMenu();
+                        this._updateDynamicContent();
+                    } else {
+                        this._selectedPlotId = plotId;
+                        this._updateDynamicContent();
+                        this.showWastelandMenu(plotId, plotEl);
+                    }
+                    return;
+                }
+                // Planted: immediately pop the manage menu
+                if (plot.status === 'planted') {
+                    if (this._selectedPlotId === plotId) {
+                        this._selectedPlotId = null;
+                        this.closePlotMenu();
+                        this._updateDynamicContent();
+                    } else {
+                        this._selectedPlotId = plotId;
+                        this._updateDynamicContent();
+                        this.showPlotMenu(plotId, plotEl);
+                    }
+                    return;
+                }
                 if (this._selectedPlotId === plotId) {
                     this._selectedPlotId = null;
                     this._updateDynamicContent();

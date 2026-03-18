@@ -131,6 +131,11 @@ const CheckinView = {
     },
 
     open() {
+        // Sync persona with App state before loading
+        const appPersona = (App.scopedPersona || App.currentAssignee || '').trim();
+        if (appPersona === '潘潘' || appPersona === '蒲蒲') {
+            this.currentAssignee = appPersona;
+        }
         // Delegate to unified switchView to ensure consistent state
         if (App.currentView !== 'checkin') {
             App.switchView('checkin');
@@ -582,9 +587,39 @@ const CheckinView = {
             this.stepsTotal = data.total || 0;
             this.stepsRecords = data.records || [];
             this.renderSteps();
+            this.loadStepsHistory();
         } catch (err) {
-            App.showToast('加载步数数据失败', 'error');
+            App.showToast('\u52a0\u8f7d\u6b65\u6570\u6570\u636e\u5931\u8d25', 'error');
         }
+    },
+
+    async loadStepsHistory() {
+        const logEl = document.getElementById('steps-history-log');
+        if (!logEl) return;
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            days.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+        }
+        const results = await Promise.allSettled(
+            days.map(date => API.getCheckin({ date, assignee: this.currentAssignee, type: 'steps' })
+                .then(data => ({ date, total: data.total || 0 })))
+        );
+        const weekday = ['\u65e5', '\u4e00', '\u4e8c', '\u4e09', '\u56db', '\u4e94', '\u516d'];
+        let html = '';
+        for (const result of results) {
+            if (result.status !== 'fulfilled') continue;
+            const { date, total } = result.value;
+            const d = new Date(date);
+            const dayLabel = `${date.slice(5)} \u5468${weekday[d.getDay()]}`;
+            const reached = total >= this.stepsGoal;
+            html += `<div class="wakeup-log-item">
+                <span class="wakeup-log-date">${dayLabel}</span>
+                <span class="wakeup-log-time ${total > 0 ? 'checked' : 'missed'}">${total > 0 ? '\ud83d\udeb6 ' + total + '\u6b65' : '\u672a\u8bb0\u5f55'}${reached ? ' \ud83c\udf89' : ''}</span>
+            </div>`;
+        }
+        logEl.innerHTML = html || '<div class="water-log-empty">\u6682\u65e0\u8bb0\u5f55</div>';
     },
 
     renderSteps() {
