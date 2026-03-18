@@ -1170,13 +1170,17 @@
   width: 46px;
   height: 46px;
   object-fit: contain;
-  /* mix-blend-mode: multiply neutralizes any remaining white/gray anti-aliasing fringes
-     by multiplying pixel colors with the background, so white*background = background */
-  mix-blend-mode: multiply;
   filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35)) contrast(1.04);
   transition: all 0.3s cubic-bezier(.34, 1.56, .64, 1);
   position: relative;
   z-index: 1;
+}
+
+/* Apply mix-blend-mode only on the grass area where it helps remove white fringes.
+   On ocean/blue areas it causes undesirable darkening. */
+.island-land .iplot.planted .iplot-img,
+.island-land .iplot.cleared .iplot-img {
+  mix-blend-mode: multiply;
 }
 
 /* Obstacle sprites: larger, with gentle bottom-fade into grass */
@@ -4947,8 +4951,8 @@
 }
 
 .scene-harbor {
-  left: 15.5%;
-  top: 79%;
+  left: 76%;
+  top: 62%;
   z-index: 22;
 }
 

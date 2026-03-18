@@ -310,10 +310,10 @@ const GardenView = {
         const n2 = this._plotNoise(plot, 2);
         const n3 = this._plotNoise(plot, 3);
         const n4 = this._plotNoise(plot, 4);
-        const colStart = 2;
-        const colSpan = 96;
-        const rowStart = 6;
-        const rowSpan = 80;
+        const colStart = 4;
+        const colSpan = 90;
+        const rowStart = 8;
+        const rowSpan = 59;     // 8% + 59% = 67% max — stays on green grass, not sand
         /* Deterministic jitter so plots don't sit on a rigid grid */
         const jitterX = (n3 - 0.5) * 5;    /* ±2.5% horizontal */
         const jitterY = (n4 - 0.5) * 4;    /* ±2% vertical */

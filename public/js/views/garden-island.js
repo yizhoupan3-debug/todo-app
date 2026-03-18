@@ -287,14 +287,24 @@ Object.assign(GardenView, {
             document.addEventListener('mousemove', e => {
                 if (!this._dragState?.active) return;
                 e.preventDefault();
-                const worldEl = document.getElementById('island-world');
-                const vpEl = document.getElementById('island-viewport');
-                if (!worldEl || !vpEl) return;
-                this._panX = this._dragState.px + (e.pageX - this._dragState.sx);
-                this._panY = this._dragState.py + (e.pageY - this._dragState.sy);
+                // Buffer the position — only commit to DOM on next animation frame
+                this._dragState._pendingX = this._dragState.px + (e.pageX - this._dragState.sx);
+                this._dragState._pendingY = this._dragState.py + (e.pageY - this._dragState.sy);
                 trackVelocity(e.pageX, e.pageY);
-                this._clampPan(vpEl, worldEl);
-                this._applyWorldTransform(worldEl);
+                if (!this._dragRafPending) {
+                    this._dragRafPending = true;
+                    requestAnimationFrame(() => {
+                        this._dragRafPending = false;
+                        if (!this._dragState?.active) return;
+                        const worldEl = document.getElementById('island-world');
+                        const vpEl = document.getElementById('island-viewport');
+                        if (!worldEl || !vpEl) return;
+                        this._panX = this._dragState._pendingX;
+                        this._panY = this._dragState._pendingY;
+                        this._clampPan(vpEl, worldEl);
+                        this._applyWorldTransform(worldEl);
+                    });
+                }
             });
             document.addEventListener('mouseup', () => {
                 const shouldGlide = !!(this._dragState?.active && (Math.abs(this._dragState.vx) > 0.18 || Math.abs(this._dragState.vy) > 0.18));
@@ -361,11 +371,20 @@ Object.assign(GardenView, {
                 lastPinchDist = dist;
             } else if (dragState.active && e.touches.length === 1) {
                 e.preventDefault();
-                this._panX = dragState.px + (e.touches[0].pageX - dragState.sx);
-                this._panY = dragState.py + (e.touches[0].pageY - dragState.sy);
+                dragState._pendingX = dragState.px + (e.touches[0].pageX - dragState.sx);
+                dragState._pendingY = dragState.py + (e.touches[0].pageY - dragState.sy);
                 trackVelocity(e.touches[0].pageX, e.touches[0].pageY);
-                this._clampPan(vp, world);
-                this._applyWorldTransform(world);
+                if (!this._dragRafPending) {
+                    this._dragRafPending = true;
+                    requestAnimationFrame(() => {
+                        this._dragRafPending = false;
+                        if (!dragState.active) return;
+                        this._panX = dragState._pendingX;
+                        this._panY = dragState._pendingY;
+                        this._clampPan(vp, world);
+                        this._applyWorldTransform(world);
+                    });
+                }
             }
         }, { passive: false });
 
