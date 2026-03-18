@@ -1170,6 +1170,9 @@
   width: 46px;
   height: 46px;
   object-fit: contain;
+  /* mix-blend-mode: multiply neutralizes any remaining white/gray anti-aliasing fringes
+     by multiplying pixel colors with the background, so white*background = background */
+  mix-blend-mode: multiply;
   filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35)) contrast(1.04);
   transition: all 0.3s cubic-bezier(.34, 1.56, .64, 1);
   position: relative;
@@ -1190,6 +1193,9 @@
   height: 68px;
   transform-origin: 50% 100%;
   animation: wildTreeSway 6s ease-in-out infinite;
+  /* Stronger blend to kill off the stubborn white glow on dead tree bark */
+  mix-blend-mode: multiply;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5)) contrast(1.08) saturate(0.85);
 }
 
 @keyframes wildTreeSway {

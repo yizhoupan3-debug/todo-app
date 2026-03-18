@@ -1,10 +1,18 @@
 #!/usr/bin/env node
 /**
  * preprocess-images.js
- * 
- * 1. Remove white/light backgrounds via flood-fill from edges
- * 2. Resize 640×640 → 128×128 (2x of max display size 68px)
- * 
+ *
+ * CONSERVATIVE APPROACH:
+ *   1. Flood-fill from edges to identify the white background.
+ *   2. Background pixels → Alpha = 0 (fully transparent, original RGB kept).
+ *   3. Non-background pixels → completely untouched (original RGBA kept).
+ *      NO Box Blur, NO un-premultiply, NO interior pixel deletion.
+ *   4. Resize 640×640 → 128×128 using high-quality interpolation.
+ *
+ * For any remaining faint white fringes on complex trees, we use
+ * CSS `mix-blend-mode: multiply` at the display layer instead of
+ * risking damage to the sprite's actual colors.
+ *
  * Usage:  node scripts/preprocess-images.js
  * Deps:   npm install canvas
  */
@@ -17,9 +25,27 @@ const ROOT = path.resolve(__dirname, '..', 'public', 'img');
 const DIRS = ['trees', 'garden'];
 const TARGET_SIZE = 128;
 
-const FILL_THRESHOLD = 200;
-const EDGE_THRESHOLD = 180;
+/**
+ * Determines if a pixel is part of the white/light background.
+ * Uses a strict check: very bright AND very low saturation.
+ * @param {Uint8ClampedArray} d - Image data array
+ * @param {number} pi - Pixel index (start of RGBA group)
+ * @returns {boolean}
+ */
+function isBackground(d, pi) {
+    const r = d[pi], g = d[pi + 1], b = d[pi + 2];
+    const maxC = Math.max(r, g, b);
+    const minC = Math.min(r, g, b);
+    // Must be very bright (>200) AND nearly achromatic (delta <25)
+    // This is strict enough to not touch colored pixels
+    return maxC > 200 && (maxC - minC) < 25;
+}
 
+/**
+ * Processes a single image: removes white background via flood-fill,
+ * then resizes to TARGET_SIZE.
+ * @param {string} filePath - Absolute path to the PNG file
+ */
 async function processImage(filePath) {
     const img = await loadImage(filePath);
     const w = img.width;
@@ -33,115 +59,57 @@ async function processImage(filePath) {
     const imageData = ctx.getImageData(0, 0, w, h);
     const d = imageData.data;
 
-    // 1. Identify Background (Flood Fill)
-    const isBg = new Uint8Array(total);
+    // --- Step 1: Flood-fill BFS from all 4 edges to mark background pixels ---
+    const isBg = new Uint8Array(total); // 1 = confirmed background
     const visited = new Uint8Array(total);
-
-    function isWhiteish(pi) {
-        const r = d[pi], g = d[pi+1], b = d[pi+2];
-        const maxC = Math.max(r,g,b), minC = Math.min(r,g,b);
-        return maxC > 140 && (maxC - minC < 30);
-    }
-
     const queue = [];
+
+    // Seed from top and bottom edges
     for (let x = 0; x < w; x++) {
-        const top = x, bottom = (h-1)*w + x;
-        if (isWhiteish(top*4)) { visited[top]=1; queue.push(top); }
-        if (isWhiteish(bottom*4)) { visited[bottom]=1; queue.push(bottom); }
+        const topIdx = x;
+        const botIdx = (h - 1) * w + x;
+        if (isBackground(d, topIdx * 4)) { visited[topIdx] = 1; queue.push(topIdx); }
+        if (isBackground(d, botIdx * 4)) { visited[botIdx] = 1; queue.push(botIdx); }
     }
+    // Seed from left and right edges
     for (let y = 1; y < h - 1; y++) {
-        const left = y*w, right = y*w + (w-1);
-        if (isWhiteish(left*4)) { visited[left]=1; queue.push(left); }
-        if (isWhiteish(right*4)) { visited[right]=1; queue.push(right); }
+        const leftIdx = y * w;
+        const rightIdx = y * w + (w - 1);
+        if (isBackground(d, leftIdx * 4)) { visited[leftIdx] = 1; queue.push(leftIdx); }
+        if (isBackground(d, rightIdx * 4)) { visited[rightIdx] = 1; queue.push(rightIdx); }
     }
 
+    // BFS expand
     while (queue.length > 0) {
         const idx = queue.pop();
         isBg[idx] = 1;
-        const x = idx % w, y = Math.floor(idx / w);
-        const neighbors = [idx-1, idx+1, idx-w, idx+w];
-        if (x === 0) neighbors[0] = -1;
-        if (x === w-1) neighbors[1] = -1;
-        
+        const x = idx % w;
+        // 4-connectivity neighbors
+        const neighbors = [idx - 1, idx + 1, idx - w, idx + w];
+        if (x === 0) neighbors[0] = -1;         // no left-wrap
+        if (x === w - 1) neighbors[1] = -1;     // no right-wrap
+
         for (const ni of neighbors) {
             if (ni >= 0 && ni < total && !visited[ni]) {
                 visited[ni] = 1;
-                if (isWhiteish(ni*4)) queue.push(ni);
-            }
-        }
-    }
-
-    // 2. Continuous Alpha Mask via Box Blur (Radius 2 = 5x5 kernel)
-    const alphaMask = new Float32Array(total);
-    for(let i=0; i<total; i++) alphaMask[i] = isBg[i] ? 0.0 : 1.0;
-
-    const blurTemp = new Float32Array(total);
-    const R = 2; // radius
-    
-    // Horizontal blur
-    for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-            let sum = 0, count = 0;
-            for (let k = -R; k <= R; k++) {
-                const nx = x + k;
-                if (nx >= 0 && nx < w) {
-                    sum += alphaMask[y * w + nx];
-                    count++;
+                if (isBackground(d, ni * 4)) {
+                    queue.push(ni);
                 }
             }
-            blurTemp[y * w + x] = sum / count;
-        }
-    }
-    // Vertical blur
-    for (let x = 0; x < w; x++) {
-        for (let y = 0; y < h; y++) {
-            let sum = 0, count = 0;
-            for (let k = -R; k <= R; k++) {
-                const ny = y + k;
-                if (ny >= 0 && ny < h) {
-                    sum += blurTemp[ny * w + x];
-                    count++;
-                }
-            }
-            alphaMask[y * w + x] = sum / count;
         }
     }
 
-    // 3. Exact Un-premultiply (Decontamination) & Internal Spot Dimming
+    // --- Step 2: Apply transparency ONLY to confirmed background pixels ---
+    // Interior pixels are left 100% untouched.
     for (let i = 0; i < total; i++) {
-        const pi = i * 4;
-        const r = d[pi], g = d[pi+1], b = d[pi+2];
-        const maxC = Math.max(r,g,b), minC = Math.min(r,g,b);
-        let a = alphaMask[i];
-
-        if (a < 1.0 && a > 0.0) {
-            // It's an edge pixel, remove the white glow
-            let fgR = Math.max(0, Math.min(255, (r - 255 * (1 - a)) / a));
-            let fgG = Math.max(0, Math.min(255, (g - 255 * (1 - a)) / a));
-            let fgB = Math.max(0, Math.min(255, (b - 255 * (1 - a)) / a));
-            d[pi] = fgR; d[pi+1] = fgG; d[pi+2] = fgB;
-            d[pi+3] = Math.round(a * 255);
-        } else if (a === 0.0) {
-            d[pi+3] = 0;
-        } else {
-            // a === 1.0 (Interior pixels)
-            // Absolute eradication of internal white/gray patches
-            let maxDelta = 45;
-            let targetLuma = 150;
-            // Wild trees and rocks are dark, they shouldn't have any bright pixels.
-            // Any bright pixel is purely a trapped background artifact (often yellow/blue tinted from lighting, so high delta).
-            if (filePath.includes('wild_tree') || filePath.includes('rock') || filePath.includes('weed')) {
-                maxDelta = 90;
-                targetLuma = 140;
-            }
-            if (maxC >= targetLuma && (maxC - minC) < maxDelta) {
-                d[pi + 3] = 0;
-            }
+        if (isBg[i]) {
+            d[i * 4 + 3] = 0;
         }
     }
 
     ctx.putImageData(imageData, 0, 0);
 
+    // --- Step 3: High-quality resize to TARGET_SIZE ---
     const needsResize = w > TARGET_SIZE || h > TARGET_SIZE;
     let outCanvas = canvas;
     if (needsResize) {
@@ -171,11 +139,11 @@ async function main() {
             const origBytes = fs.statSync(filePath).size;
             origSize.bytes += origBytes;
             try {
-                const result = await processImage(filePath);
+                await processImage(filePath);
                 const newBytes = fs.statSync(filePath).size;
                 newSize.bytes += newBytes;
                 const pct = ((1 - newBytes / origBytes) * 100).toFixed(0);
-                console.log(`  ✅ ${file} (${(origBytes/1024).toFixed(0)}K → ${(newBytes/1024).toFixed(0)}K, -${pct}%)`);
+                console.log(`  ✅ ${file} (${(origBytes / 1024).toFixed(0)}K → ${(newBytes / 1024).toFixed(0)}K, -${pct}%)`);
                 processed++;
             } catch (err) {
                 console.error(`  ❌ ${file}: ${err.message}`);
@@ -185,7 +153,7 @@ async function main() {
     }
 
     console.log(`\n🏁 Done! ${processed} files processed, ${errors} errors`);
-    console.log(`   Total: ${(origSize.bytes/1024/1024).toFixed(1)}MB → ${(newSize.bytes/1024/1024).toFixed(1)}MB (-${((1-newSize.bytes/origSize.bytes)*100).toFixed(0)}%)`);
+    console.log(`   Total: ${(origSize.bytes / 1024 / 1024).toFixed(1)}MB → ${(newSize.bytes / 1024 / 1024).toFixed(1)}MB (-${((1 - newSize.bytes / origSize.bytes) * 100).toFixed(0)}%)`);
 }
 
 main().catch(err => { console.error('Fatal:', err); process.exit(1); });
