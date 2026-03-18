@@ -24,126 +24,120 @@ async function processImage(filePath) {
     const img = await loadImage(filePath);
     const w = img.width;
     const h = img.height;
+    const total = w * h;
+
     const canvas = createCanvas(w, h);
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0);
 
     const imageData = ctx.getImageData(0, 0, w, h);
     const d = imageData.data;
-    const total = w * h;
 
+    // 1. Identify Background (Flood Fill)
     const isBg = new Uint8Array(total);
     const visited = new Uint8Array(total);
 
-    // Extremely aggressive flood fill for the outside background
-    function canFloodFill(idx) {
-        const pi = idx * 4;
-        const r = d[pi], g = d[pi + 1], b = d[pi + 2];
-        const maxC = Math.max(r, g, b);
-        const minC = Math.min(r, g, b);
-        // Any light, unsaturated pixel is background
-        return maxC > 140 && (maxC - minC < 40);
+    function isWhiteish(pi) {
+        const r = d[pi], g = d[pi+1], b = d[pi+2];
+        const maxC = Math.max(r,g,b), minC = Math.min(r,g,b);
+        return maxC > 140 && (maxC - minC < 30);
     }
 
     const queue = [];
-    // Seed from all edges
     for (let x = 0; x < w; x++) {
-        let idx = x;
-        if (canFloodFill(idx)) { visited[idx] = 1; queue.push(idx); }
-        idx = (h - 1) * w + x;
-        if (canFloodFill(idx)) { visited[idx] = 1; queue.push(idx); }
+        const top = x, bottom = (h-1)*w + x;
+        if (isWhiteish(top*4)) { visited[top]=1; queue.push(top); }
+        if (isWhiteish(bottom*4)) { visited[bottom]=1; queue.push(bottom); }
     }
     for (let y = 1; y < h - 1; y++) {
-        let idx = y * w;
-        if (canFloodFill(idx)) { visited[idx] = 1; queue.push(idx); }
-        idx = y * w + (w - 1);
-        if (canFloodFill(idx)) { visited[idx] = 1; queue.push(idx); }
+        const left = y*w, right = y*w + (w-1);
+        if (isWhiteish(left*4)) { visited[left]=1; queue.push(left); }
+        if (isWhiteish(right*4)) { visited[right]=1; queue.push(right); }
     }
 
     while (queue.length > 0) {
         const idx = queue.pop();
         isBg[idx] = 1;
-        const x = idx % w;
-        const y = Math.floor(idx / w);
-        const neighbors = [idx - 1, idx + 1, idx - w, idx + w];
+        const x = idx % w, y = Math.floor(idx / w);
+        const neighbors = [idx-1, idx+1, idx-w, idx+w];
         if (x === 0) neighbors[0] = -1;
-        if (x === w - 1) neighbors[1] = -1;
+        if (x === w-1) neighbors[1] = -1;
         
         for (const ni of neighbors) {
             if (ni >= 0 && ni < total && !visited[ni]) {
                 visited[ni] = 1;
-                if (canFloodFill(ni)) {
-                    queue.push(ni);
-                }
+                if (isWhiteish(ni*4)) queue.push(ni);
             }
         }
     }
 
-    // Compute distance field (Matte Choker) up to 3 pixels from background
-    const dist = new Uint8Array(total);
-    dist.fill(255);
-    let edgeQueue = [];
-    for (let i = 0; i < total; i++) {
-        if (isBg[i]) {
-            dist[i] = 0;
-            edgeQueue.push(i);
-        }
-    }
+    // 2. Continuous Alpha Mask via Box Blur (Radius 2 = 5x5 kernel)
+    const alphaMask = new Float32Array(total);
+    for(let i=0; i<total; i++) alphaMask[i] = isBg[i] ? 0.0 : 1.0;
 
-    for (let level = 1; level <= 3; level++) {
-        const nextQueue = [];
-        for (const idx of edgeQueue) {
-            const x = idx % w;
-            const y = Math.floor(idx / w);
-            const neighbors = [idx - 1, idx + 1, idx - w, idx + w];
-            if (x === 0) neighbors[0] = -1;
-            if (x === w - 1) neighbors[1] = -1;
-            for (const ni of neighbors) {
-                if (ni >= 0 && ni < total && dist[ni] === 255) {
-                    dist[ni] = level;
-                    nextQueue.push(ni);
+    const blurTemp = new Float32Array(total);
+    const R = 2; // radius
+    
+    // Horizontal blur
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            let sum = 0, count = 0;
+            for (let k = -R; k <= R; k++) {
+                const nx = x + k;
+                if (nx >= 0 && nx < w) {
+                    sum += alphaMask[y * w + nx];
+                    count++;
                 }
             }
+            blurTemp[y * w + x] = sum / count;
         }
-        edgeQueue = nextQueue;
+    }
+    // Vertical blur
+    for (let x = 0; x < w; x++) {
+        for (let y = 0; y < h; y++) {
+            let sum = 0, count = 0;
+            for (let k = -R; k <= R; k++) {
+                const ny = y + k;
+                if (ny >= 0 && ny < h) {
+                    sum += blurTemp[ny * w + x];
+                    count++;
+                }
+            }
+            alphaMask[y * w + x] = sum / count;
+        }
     }
 
+    // 3. Exact Un-premultiply (Decontamination) & Internal Spot Dimming
     for (let i = 0; i < total; i++) {
         const pi = i * 4;
-        const r = d[pi], g = d[pi + 1], b = d[pi + 2];
-        const maxC = Math.max(r, g, b);
-        const minC = Math.min(r, g, b);
+        const r = d[pi], g = d[pi+1], b = d[pi+2];
+        const maxC = Math.max(r,g,b), minC = Math.min(r,g,b);
+        let a = alphaMask[i];
 
-        // 1. Handle actual background and fringe (Edge Decontamination)
-        if (dist[i] === 0) {
-            d[pi + 3] = 0;
-            continue;
-        } else if (dist[i] <= 3) {
-            // Un-premultiply alpha: assume original was blended with solid white
-            let alphaRaw = dist[i] === 1 ? 0.35 : dist[i] === 2 ? 0.65 : 0.85;
-            
-            // Reconstruct original object color
-            let fgR = Math.min(255, Math.max(0, (r - 255 * (1 - alphaRaw)) / alphaRaw));
-            let fgG = Math.min(255, Math.max(0, (g - 255 * (1 - alphaRaw)) / alphaRaw));
-            let fgB = Math.min(255, Math.max(0, (b - 255 * (1 - alphaRaw)) / alphaRaw));
-            
-            d[pi] = fgR; d[pi + 1] = fgG; d[pi + 2] = fgB;
-            d[pi + 3] = Math.round(d[pi + 3] * alphaRaw);
-        } 
-        
-        // 2. Handle inner trapped white spots
-        if (dist[i] > 0) {
-            // Overwhelmingly white/light gray colors that escaped flood fill
-            if (maxC > 200 && maxC - minC < 30) {
-                // Dim them and make them significantly transparent so they blend into whatever is behind them
-                const fadeAlpha = 255 - Math.min(255, (minC - 180) * 3); 
-                d[pi + 3] = Math.max(0, Math.min(d[pi + 3], fadeAlpha));
-                d[pi] = Math.min(d[pi], 190);
-                d[pi + 1] = Math.min(d[pi + 1], 190);
-                d[pi + 2] = Math.min(d[pi + 2], 190);
+        if (a < 1.0 && a > 0.0) {
+            // It's an edge pixel, remove the white glow
+            let fgR = Math.max(0, Math.min(255, (r - 255 * (1 - a)) / a));
+            let fgG = Math.max(0, Math.min(255, (g - 255 * (1 - a)) / a));
+            let fgB = Math.max(0, Math.min(255, (b - 255 * (1 - a)) / a));
+            d[pi] = fgR; d[pi+1] = fgG; d[pi+2] = fgB;
+            d[pi+3] = Math.round(a * 255);
+        } else if (a === 0.0) {
+            d[pi+3] = 0;
+        } else {
+            // a === 1.0 (Interior pixels)
+            // If it's pure white/gray inside the tree (trapped spots)
+            if (maxC > 200 && maxC - minC < 20) {
+                // Dim it to shadow level (100) so it doesn't stand out 
+                const factor = 100 / Math.max(100, maxC);
+                d[pi] = Math.round(r * factor);
+                d[pi+1] = Math.round(g * factor);
+                d[pi+2] = Math.round(b * factor);
+                // Also give it 70% opacity to blend with background organically
+                d[pi+3] = 180;
             }
         }
     }
+
     ctx.putImageData(imageData, 0, 0);
 
     const needsResize = w > TARGET_SIZE || h > TARGET_SIZE;

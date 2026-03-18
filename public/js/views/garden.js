@@ -377,38 +377,33 @@ const GardenView = {
         this._applyWorldTransform(world);
     },
 
-    _getCameraBounds(world) {
-        const bounds = this._cameraBounds || { x: 0, y: 0, width: world.offsetWidth, height: world.offsetHeight };
-        return {
-            x: Math.max(0, Math.min(world.offsetWidth, bounds.x)),
-            y: Math.max(0, Math.min(world.offsetHeight, bounds.y)),
-            width: Math.max(1, Math.min(world.offsetWidth, bounds.width)),
-            height: Math.max(1, Math.min(world.offsetHeight, bounds.height)),
-        };
-    },
-
     _clampPan(vp, world) {
         if (!vp || !world) return;
-        this._recalculateZoomBounds(vp, world);
         const vpW = vp.clientWidth;
         const vpH = vp.clientHeight;
-        const bounds = this._getCameraBounds(world);
-        const viewW = bounds.width * this._zoom;
-        const viewH = bounds.height * this._zoom;
-        const edge = this._viewportPadding;
-        const baseX = -bounds.x * this._zoom;
-        const baseY = -bounds.y * this._zoom;
-        const minX = vpW - viewW + baseX - edge;
-        const maxX = baseX + edge;
-        const minY = vpH - viewH + baseY - edge;
-        const maxY = baseY + edge;
+        
+        // Real-time scaled dimensions
+        const viewW = world.offsetWidth * this._zoom;
+        const viewH = world.offsetHeight * this._zoom;
+        
+        // Smart screen-relative elasticity (30% of viewport) to guarantee edge visibility
+        const padX = Math.min(300, vpW * 0.35);
+        const padY = Math.min(300, vpH * 0.35);
+
+        // Calculate absolute mathematical pan limits
+        const minX = vpW - viewW - padX;
+        const maxX = padX;
+        const minY = vpH - viewH - padY;
+        const maxY = padY;
+
         if (viewW <= vpW) {
-            this._panX = (vpW - viewW) / 2 + baseX;
+            this._panX = (vpW - viewW) / 2;
         } else {
             this._panX = Math.max(minX, Math.min(maxX, this._panX));
         }
+
         if (viewH <= vpH) {
-            this._panY = (vpH - viewH) / 2 + baseY;
+            this._panY = (vpH - viewH) / 2;
         } else {
             this._panY = Math.max(minY, Math.min(maxY, this._panY));
         }
@@ -416,16 +411,14 @@ const GardenView = {
 
     _centerViewport(vp, world) {
         if (!vp || !world) return;
-        this._recalculateZoomBounds(vp, world);
-        this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, this._defaultZoom));
         const vpW = vp.clientWidth;
         const vpH = vp.clientHeight;
-        const bounds = this._getCameraBounds(world);
-        const viewW = bounds.width * this._zoom;
-        const viewH = bounds.height * this._zoom;
-        this._panX = (vpW - viewW) / 2 - bounds.x * this._zoom;
-        this._panY = (vpH - viewH) / 2 - bounds.y * this._zoom;
-        this._clampPan(vp, world);
+        const viewW = world.offsetWidth * this._fitZoom;
+        const viewH = world.offsetHeight * this._fitZoom;
+
+        this._panX = (vpW - viewW) / 2;
+        this._panY = (vpH - viewH) / 2;
+        this._zoom = this._fitZoom;
         this._applyWorldTransform(world);
     },
 
