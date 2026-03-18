@@ -4012,7 +4012,6 @@
   user-select: none;
   transform-origin: 0 0;
   will-change: transform;
-  transition: transform 0.08s linear;
   background:
     radial-gradient(circle at 52% 90%, rgba(172, 238, 255, 0.16) 0%, rgba(172, 238, 255, 0) 26%),
     radial-gradient(circle at 16% 94%, rgba(26, 119, 153, 0.34) 0%, rgba(26, 119, 153, 0) 28%),

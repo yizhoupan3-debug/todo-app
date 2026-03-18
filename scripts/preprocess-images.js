@@ -91,7 +91,13 @@ async function processImage(filePath) {
 
     if (hasBg) {
         for (let i = 0; i < total; i++) {
-            if (isBg[i]) d[i * 4 + 3] = 0;
+            const pi = i * 4;
+            if (isBg[i]) {
+                d[pi + 3] = 0;
+            } else if (d[pi] >= 230 && d[pi + 1] >= 230 && d[pi + 2] >= 230) {
+                // Also kill trapped white background inside the canopy
+                d[pi + 3] = 0;
+            }
         }
 
         // 3-pass edge feathering

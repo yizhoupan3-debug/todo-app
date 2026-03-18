@@ -349,8 +349,8 @@ const GardenView = {
     _panY: 0,
     _fitZoom: 0.72,
     _defaultZoom: 1.1,
-    _viewportPadding: 40,
-    _cameraBounds: { x: 0, y: 0, width: 2400, height: 1800 },
+    _viewportPadding: 200,
+    _cameraBounds: { x: 0, y: 0, width: 1980, height: 1500 },
 
     _recalculateZoomBounds(vp, world) {
         if (!vp || !world) return;
