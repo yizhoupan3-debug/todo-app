@@ -1,16 +1,9 @@
 module.exports = function registerGardenPlotRoutes(router, {
     db, PLANT_CATALOG, PLANT_TIERS, TREE_MATURE_MINUTES, SPEEDUP_COST, SPEEDUP_MINUTES,
     BASE_GRID_W, BASE_GRID_H, isForestPlot, isStarterInitialClearedPlot,
-    pickObstacleForPlot, getPlotSeedState,
+    pickObstacleForPlot, getPlotSeedState, ensureAccount,
 }) {
 
-    /**
-     * Ensure a coin_accounts row exists for the given assignee.
-     * Prevents undefined balance on first interaction.
-     */
-    function ensureAccount(assignee) {
-        db.prepare('INSERT OR IGNORE INTO coin_accounts (assignee, balance) VALUES (?, 0)').run(assignee);
-    }
 
 
     function ensureIslandSceneGrid(islandId, assignee = null) {

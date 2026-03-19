@@ -22,6 +22,24 @@ module.exports = function registerGardenCoinRoutes(router, { db }) {
                 return res.status(403).json({ error: '非法的获取途径' });
             }
 
+            // Rate limit: max calls per reason per day to prevent abuse
+            const DAILY_LIMITS = {
+                pomodoro: 20,
+                task_done: 30,
+                checkin_daily: 2,
+                checkin_streak_3: 2,
+                checkin_streak_7: 2,
+                plant_drop: 100,
+                harvest: 100,
+            };
+            const maxPerDay = DAILY_LIMITS[reason] || 10;
+            const todayCount = db.prepare(
+                "SELECT COUNT(*) as c FROM coin_transactions WHERE assignee = ? AND reason = ? AND created_at >= date('now','localtime')"
+            ).get(assignee, reason);
+            if (todayCount && todayCount.c >= maxPerDay) {
+                return res.status(429).json({ error: `今日 ${reason} 已达上限 (${maxPerDay})` });
+            }
+
             // Sanity-check: cap single earn to prevent abuse (max 50 coins per call)
             const safeAmount = Math.min(Math.max(0, Number(amount) || 0), 50);
             if (safeAmount <= 0) {

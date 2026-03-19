@@ -308,13 +308,16 @@ const CheckinView = {
                 type: 'wakeup'
             });
             const statsEl = document.getElementById('card-wakeup-stats');
+            const card = document.getElementById('card-wakeup');
             if (data.records.length > 0) {
                 const time = data.records[0].created_at?.split(' ')[1]?.slice(0, 5) || '';
                 statsEl.textContent = `✅ ${time} 已打卡`;
                 statsEl.style.color = '#22c55e';
+                card?.classList.add('checked-done');
             } else {
                 statsEl.textContent = '今日未打卡';
                 statsEl.style.color = '';
+                card?.classList.remove('checked-done');
             }
         } catch (err) { /* ignore */ }
     },
@@ -420,13 +423,16 @@ const CheckinView = {
                 type: 'goout'
             });
             const statsEl = document.getElementById('card-goout-stats');
+            const card = document.getElementById('card-goout');
             if (data.records.length > 0) {
                 const time = data.records[0].created_at?.split(' ')[1]?.slice(0, 5) || '';
                 statsEl.textContent = `✅ ${time} 已打卡`;
                 statsEl.style.color = '#22c55e';
+                card?.classList.add('checked-done');
             } else {
                 statsEl.textContent = '今日未打卡';
                 statsEl.style.color = '';
+                card?.classList.remove('checked-done');
             }
         } catch (err) { /* ignore */ }
     },
@@ -492,13 +498,16 @@ const CheckinView = {
                 type: 'skincare'
             });
             const statsEl = document.getElementById('card-skincare-stats');
+            const card = document.getElementById('card-skincare');
             if (data.records.length > 0) {
                 const time = data.records[0].created_at?.split(' ')[1]?.slice(0, 5) || '';
                 statsEl.textContent = `✅ ${time} 已打卡`;
                 statsEl.style.color = '#22c55e';
+                card?.classList.add('checked-done');
             } else {
                 statsEl.textContent = '今日未打卡';
                 statsEl.style.color = '';
+                card?.classList.remove('checked-done');
             }
         } catch (err) { /* ignore */ }
     },

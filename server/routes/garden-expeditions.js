@@ -5,15 +5,10 @@ module.exports = function registerGardenExpeditionRoutes(router, {
     randomIslandName,
     BASE_GRID_W,
     BASE_GRID_H,
-    initIslandPlots,
+    ensureAccount,
+    resolveCompletedExpeditions,
 }) {
 
-    /**
-     * Ensure a coin_accounts row exists for the given assignee.
-     */
-    function ensureAccount(assignee) {
-        db.prepare('INSERT OR IGNORE INTO coin_accounts (assignee, balance) VALUES (?, 0)').run(assignee);
-    }
 
     router.get('/islands/:assignee', (req, res) => {
         try {
@@ -144,24 +139,7 @@ module.exports = function registerGardenExpeditionRoutes(router, {
                 'SELECT * FROM expeditions WHERE assignee = ? ORDER BY started_at DESC LIMIT 10'
             ).all(req.params.assignee);
 
-            const now = new Date();
-            for (const exp of expeditions) {
-                if (exp.status === 'sailing') {
-                    const startTime = new Date(exp.started_at.replace(' ', 'T') + '+08:00');
-                    const elapsed = (now - startTime) / 60000;
-                    if (elapsed >= exp.duration_min) {
-                        db.prepare("UPDATE expeditions SET status = 'completed', completed_at = datetime('now','localtime') WHERE id = ?")
-                            .run(exp.id);
-                        db.prepare('UPDATE islands SET discovered = 1 WHERE id = ?')
-                            .run(exp.to_island_id);
-                        db.prepare("UPDATE boats SET status = 'docked' WHERE id = ?")
-                            .run(exp.boat_id);
-                        const island = db.prepare('SELECT * FROM islands WHERE id = ?').get(exp.to_island_id);
-                        if (island) initIslandPlots(db, island);
-                        exp.status = 'completed';
-                    }
-                }
-            }
+            resolveCompletedExpeditions(db, expeditions);
 
             res.json(expeditions);
         } catch (err) {

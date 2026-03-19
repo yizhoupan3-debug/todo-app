@@ -186,6 +186,9 @@ const DailyView = {
         this._updateCount('count-todo', groups.todo.length);
         this._updateCount('count-done', groups.done.length);
 
+        // Update progress bar
+        this._updateProgressBar(groups.todo.length, groups.done.length);
+
         this.renderColumn('list-todo', groups.todo, 'todo');
         this.renderColumn('list-done', groups.done, 'done');
 
@@ -418,6 +421,34 @@ const DailyView = {
             el.classList.add('section-count', 'bounce');
             el.addEventListener('animationend', () => el.classList.remove('bounce'), { once: true });
         }
+    },
+
+    /** Render or update a progress bar above the task columns */
+    _updateProgressBar(todoCount, doneCount) {
+        const total = todoCount + doneCount;
+        const pct = total === 0 ? 0 : Math.round((doneCount / total) * 100);
+        let wrap = document.getElementById('daily-progress');
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.id = 'daily-progress';
+            wrap.className = 'daily-progress-wrap';
+            const columns = document.querySelector('#view-daily .task-columns');
+            if (columns) columns.parentNode.insertBefore(wrap, columns);
+        }
+        if (total === 0) {
+            wrap.innerHTML = '';
+            return;
+        }
+        const isComplete = pct >= 100;
+        wrap.innerHTML = `
+            <div class="daily-progress-bar">
+                <div class="daily-progress-fill${isComplete ? ' complete' : ''}" style="width:${pct}%"></div>
+            </div>
+            <div class="daily-progress-label">
+                <span>已完成 ${doneCount}/${total}</span>
+                <span class="progress-pct">${pct}%${isComplete ? ' 🎉' : ''}</span>
+            </div>
+        `;
     },
 
     refresh() {

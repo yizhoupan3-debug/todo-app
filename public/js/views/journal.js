@@ -187,7 +187,13 @@ const JournalView = {
         canvas.style.minHeight = maxBottom + 'px';
 
         if (this.elements.length === 0) {
-            canvas.innerHTML = '';
+            canvas.innerHTML = `
+                <div class="journal-empty">
+                    <div class="journal-empty-icon">📖✨</div>
+                    <div class="journal-empty-title">今天的手帐还是空白的</div>
+                    <div class="journal-empty-hint">点击上方「文字」或「照片」<br>开始记录今天的故事吧 💕</div>
+                </div>
+            `;
             return;
         }
 

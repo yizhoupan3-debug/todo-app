@@ -252,6 +252,14 @@ const MonthlyView = {
             cell.className = 'calendar-cell' + (isToday ? ' today-gold' : '');
             cell.dataset.date = dateStr;
 
+            // Heatmap coloring based on task completion ratio
+            if (dTasks.length > 0) {
+                const doneTasks = dTasks.filter(t => t.status === 'done').length;
+                const ratio = doneTasks / dTasks.length;
+                if (ratio >= 1) cell.classList.add('heat-done');
+                else if (ratio > 0) cell.classList.add('heat-partial');
+            }
+
             // Day number
             const numEl = document.createElement('div');
             numEl.className = 'calendar-day-num';

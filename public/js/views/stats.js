@@ -104,6 +104,10 @@ const StatsView = {
             Utils.animateCounter(document.getElementById('stat-pomo-minutes'), String(totalPomoMinutes), 600);
             Utils.animateCounter(document.getElementById('stat-pomo-rounds'), String(totalPomoRounds), 600);
         }, 200);
+
+        // Trend indicators: compare first half vs second half of the period
+        this._renderTrend('stat-total-tasks', d.tasks);
+        this._renderTrend('stat-total-water', d.water);
     },
 
     // ===== Task completion bar chart =====
@@ -248,5 +252,41 @@ const StatsView = {
                 setTimeout(() => { bar.style.height = h; }, 150 + i * 20);
             });
         });
+    },
+
+    /**
+     * Render a trend arrow badge next to a stats value element.
+     * Compares first half vs second half averages of the data array.
+     */
+    _renderTrend(valueElId, dataArr) {
+        const el = document.getElementById(valueElId);
+        if (!el || !dataArr || dataArr.length < 2) return;
+
+        // Remove existing trend badge
+        const existing = el.parentElement.querySelector('.stats-trend');
+        if (existing) existing.remove();
+
+        const mid = Math.floor(dataArr.length / 2);
+        const firstHalf = dataArr.slice(0, mid);
+        const secondHalf = dataArr.slice(mid);
+        const avgFirst = firstHalf.reduce((a, b) => a + b, 0) / (firstHalf.length || 1);
+        const avgSecond = secondHalf.reduce((a, b) => a + b, 0) / (secondHalf.length || 1);
+
+        let cls, text;
+        if (avgSecond > avgFirst * 1.05) {
+            cls = 'up';
+            text = '↑';
+        } else if (avgSecond < avgFirst * 0.95) {
+            cls = 'down';
+            text = '↓';
+        } else {
+            cls = 'flat';
+            text = '—';
+        }
+
+        const badge = document.createElement('span');
+        badge.className = `stats-trend ${cls}`;
+        badge.textContent = text;
+        el.parentElement.appendChild(badge);
     }
 };

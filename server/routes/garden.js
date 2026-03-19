@@ -7,7 +7,25 @@ require('./garden-coins')(router, { db, ...shared });
 require('./garden-plots')(router, { db, ...shared });
 require('./garden-expeditions')(router, { db, ...shared });
 
-const { initIslandPlots, BASE_GRID_W, BASE_GRID_H } = shared;
+const { resolveCompletedExpeditions } = shared;
+
+/* ── POST: explicitly resolve completed expeditions ── */
+router.post('/resolve-expeditions', (req, res) => {
+    try {
+        const { assignee } = req.body;
+        if (!assignee) return res.status(400).json({ error: 'assignee required' });
+
+        const expeditions = db.prepare(
+            'SELECT * FROM expeditions WHERE assignee = ? ORDER BY started_at DESC LIMIT 10'
+        ).all(assignee);
+
+        resolveCompletedExpeditions(db, expeditions);
+
+        res.json({ expeditions });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 /* ── Consolidated endpoint: one round-trip for garden open() ── */
 router.get('/all/:assignee', (req, res) => {
@@ -42,27 +60,12 @@ router.get('/all/:assignee', (req, res) => {
         // 5) Boats
         const boats = db.prepare('SELECT * FROM boats WHERE assignee = ? ORDER BY id').all(assignee);
 
-        // 6) Expeditions (with completion side-effects)
+        // 6) Expeditions — resolve any completed ones via shared helper
         const expeditions = db.prepare(
             'SELECT * FROM expeditions WHERE assignee = ? ORDER BY started_at DESC LIMIT 10'
         ).all(assignee);
 
-        const now = new Date();
-        for (const exp of expeditions) {
-            if (exp.status === 'sailing') {
-                const startTime = new Date(exp.started_at.replace(' ', 'T') + '+08:00');
-                const elapsed = (now - startTime) / 60000;
-                if (elapsed >= exp.duration_min) {
-                    db.prepare("UPDATE expeditions SET status = 'completed', completed_at = datetime('now','localtime') WHERE id = ?").run(exp.id);
-                    db.prepare('UPDATE islands SET discovered = 1 WHERE id = ?').run(exp.to_island_id);
-                    db.prepare("UPDATE boats SET status = 'docked' WHERE id = ?").run(exp.boat_id);
-                    // Initialize plots for the newly discovered island
-                    const newIsland = db.prepare('SELECT * FROM islands WHERE id = ?').get(exp.to_island_id);
-                    if (newIsland) initIslandPlots(db, newIsland);
-                    exp.status = 'completed';
-                }
-            }
-        }
+        resolveCompletedExpeditions(db, expeditions);
 
         res.json({ balance, islands, plots, boats, expeditions });
     } catch (err) {

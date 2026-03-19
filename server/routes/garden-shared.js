@@ -1,5 +1,14 @@
 const db = require('../db');
 
+/**
+ * Ensure a coin_accounts row exists for the given assignee.
+ * Prevents undefined balance on first interaction.
+ * @param {string} assignee
+ */
+function ensureAccount(assignee) {
+    db.prepare('INSERT OR IGNORE INTO coin_accounts (assignee, balance) VALUES (?, 0)').run(assignee);
+}
+
 const PLANT_CATALOG = {
     sprout: 0, rice: 5, strawberry: 8, sunflower: 10, corn: 12,
     mushroom: 15, tulip: 20, daisy: 22, hibiscus: 25, sakura: 30,
@@ -137,12 +146,36 @@ function initIslandPlots(db, island) {
     }
 }
 
+/**
+ * Resolve completed expeditions in-place: update DB status for any
+ * sailing expedition whose duration has elapsed.
+ * @param {object} db - database instance
+ * @param {Array} expeditions - expedition rows (mutated in place)
+ */
+function resolveCompletedExpeditions(db, expeditions) {
+    const now = new Date();
+    for (const exp of expeditions) {
+        if (exp.status !== 'sailing') continue;
+        const startTime = new Date(exp.started_at.replace(' ', 'T') + '+08:00');
+        const elapsed = (now - startTime) / 60000;
+        if (elapsed >= exp.duration_min) {
+            db.prepare("UPDATE expeditions SET status = 'completed', completed_at = datetime('now','localtime') WHERE id = ?").run(exp.id);
+            db.prepare('UPDATE islands SET discovered = 1 WHERE id = ?').run(exp.to_island_id);
+            db.prepare("UPDATE boats SET status = 'docked' WHERE id = ?").run(exp.boat_id);
+            const newIsland = db.prepare('SELECT * FROM islands WHERE id = ?').get(exp.to_island_id);
+            if (newIsland) initIslandPlots(db, newIsland);
+            exp.status = 'completed';
+        }
+    }
+}
+
 module.exports = {
     PLANT_CATALOG,
     PLANT_TIERS,
     BOAT_CATALOG,
     CHARACTER_MAP,
     randomIslandName,
+    ensureAccount,
     BASE_GRID_W,
     BASE_GRID_H,
     TREE_MATURE_MINUTES,
@@ -157,4 +190,5 @@ module.exports = {
     pickObstacleForPlot,
     getPlotSeedState,
     initIslandPlots,
+    resolveCompletedExpeditions,
 };
