@@ -1,330 +1,352 @@
 /* ────────────────────────────────────
-   CodexManager — Codex 多账号管理 v2
+   CodexView — Codex Quota Card View
    ──────────────────────────────────── */
-const CodexManager = {
-  _overlay: null,
+
+const CodexView = {
   _accounts: [],
+  _expandedId: null,
+  _detailCache: {},
+  _formOverlay: null,
 
-  // ── Open modal ──
-  open() {
-    if (this._overlay) return;
+  /** Initialize the view (called from App._initModules). */
+  init() {
+    // Nothing eager — rendering happens on show()
+  },
 
-    const overlay = document.createElement('div');
-    overlay.className = 'codex-overlay';
-    overlay.innerHTML = `
-      <div class="codex-modal">
-        <div class="codex-header">
-          <h3>Codex 账号</h3>
-          <div class="codex-header-actions">
-            <button class="codex-btn-refresh" title="刷新额度">
-              <i data-lucide="refresh-cw"></i>
-            </button>
-            <button class="codex-btn-add" title="添加账号">
-              <i data-lucide="plus"></i>
-            </button>
-            <button class="codex-btn-close" title="关闭">
-              <i data-lucide="x"></i>
-            </button>
-          </div>
-        </div>
-        <div class="codex-body" id="codex-body">
-          <div class="codex-loading">
-            <div class="codex-shimmer"></div>
-            <div class="codex-shimmer"></div>
-            <div class="codex-shimmer"></div>
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-    this._overlay = overlay;
+  /** Show the view (called from App.switchView). */
+  show() {
+    const container = document.getElementById('view-codex');
+    if (!container) return;
 
-    requestAnimationFrame(() => {
-      overlay.classList.add('active');
-      this._initIcons(overlay);
-    });
-
-    // Events
-    overlay.querySelector('.codex-btn-close').addEventListener('click', () => this.close());
-    overlay.querySelector('.codex-btn-add').addEventListener('click', () => this.showForm());
-    overlay.querySelector('.codex-btn-refresh').addEventListener('click', () => this.loadList(true));
-    overlay.addEventListener('click', (e) => { if (e.target === overlay) this.close(); });
+    // Render skeleton if first load
+    if (!container.querySelector('.codex-view')) {
+      container.innerHTML = this._shell();
+      this._bindHeaderEvents(container);
+      this._initIcons(container);
+    }
 
     this.loadList();
   },
 
-  close() {
-    if (!this._overlay) return;
-    this._overlay.classList.remove('active');
-    setTimeout(() => {
-      this._overlay?.remove();
-      this._overlay = null;
-    }, 250);
+  /** Hide the view. */
+  hide() {
+    // nothing to tear down
   },
 
-  // ── Load + render list ──
-  async loadList(forceRefresh = false) {
-    const body = document.getElementById('codex-body');
-    if (!body) return;
-
-    // Spin refresh icon
-    const refreshBtn = this._overlay?.querySelector('.codex-btn-refresh');
-    if (refreshBtn) refreshBtn.classList.add('codex-spinning');
-
-    if (!forceRefresh) {
-      body.innerHTML = `
-        <div class="codex-loading">
-          <div class="codex-shimmer"></div>
-          <div class="codex-shimmer"></div>
+  // ── Shell ──
+  _shell() {
+    return `
+      <div class="codex-view">
+        <div class="codex-view-header">
+          <div class="codex-view-title">
+            <i data-lucide="key-round"></i> Codex 账号
+          </div>
+          <div class="codex-view-actions">
+            <button class="codex-icon-btn" id="codex-refresh-btn" title="刷新额度">
+              <i data-lucide="refresh-cw"></i>
+            </button>
+            <button class="codex-icon-btn" id="codex-add-btn" title="添加账号">
+              <i data-lucide="plus"></i>
+            </button>
+          </div>
         </div>
-      `;
+        <div class="codex-grid" id="codex-grid">
+          ${this._shimmerCards(3)}
+        </div>
+      </div>
+    `;
+  },
+
+  _bindHeaderEvents(container) {
+    container.querySelector('#codex-refresh-btn')
+      ?.addEventListener('click', () => this.loadList(true));
+    container.querySelector('#codex-add-btn')
+      ?.addEventListener('click', () => this.openForm());
+  },
+
+  // ── Load account list ──
+  async loadList(forceRefresh = false) {
+    const grid = document.getElementById('codex-grid');
+    if (!grid) return;
+
+    const refreshBtn = document.getElementById('codex-refresh-btn');
+    if (refreshBtn) refreshBtn.classList.add('spinning');
+
+    if (!forceRefresh && !this._accounts.length) {
+      grid.innerHTML = this._shimmerCards(3);
     }
 
     try {
       const url = forceRefresh ? '/codex?refresh=1' : '/codex';
       this._accounts = await API.request(url);
-      this.renderList();
+      this._renderCards();
     } catch (e) {
-      body.innerHTML = `<div class="codex-empty">加载失败，请重试</div>`;
+      grid.innerHTML = `<div class="codex-empty-state"><p>加载失败，请重试</p></div>`;
     } finally {
-      if (refreshBtn) refreshBtn.classList.remove('codex-spinning');
+      if (refreshBtn) refreshBtn.classList.remove('spinning');
     }
   },
 
-  renderList() {
-    const body = document.getElementById('codex-body');
-    if (!body) return;
+  // ── Render card grid ──
+  _renderCards() {
+    const grid = document.getElementById('codex-grid');
+    if (!grid) return;
 
     if (!this._accounts.length) {
-      body.innerHTML = `
-        <div class="codex-empty">
+      grid.innerHTML = `
+        <div class="codex-empty-state">
           <div class="codex-empty-icon">🔑</div>
           <p>还没有 Codex 账号</p>
-          <button class="codex-empty-btn" onclick="CodexManager.showForm()">添加第一个账号</button>
+          <button class="codex-empty-add-btn" id="codex-empty-add">
+            <i data-lucide="plus"></i> 添加第一个账号
+          </button>
         </div>
       `;
+      grid.querySelector('#codex-empty-add')
+        ?.addEventListener('click', () => this.openForm());
+      this._initIcons(grid);
       return;
     }
 
-    body.innerHTML = this._accounts.map(acc => {
-      const q = acc.quota;
-      let quotaHtml = '';
+    grid.innerHTML = this._accounts.map(acc => this._cardHTML(acc)).join('');
 
-      if (!acc.has_token) {
-        quotaHtml = '<div class="codex-quota-badge codex-badge-notoken">🔒 未认证</div>';
-      } else if (!q || q.error) {
-        const errMap = {
-          expired: '⚠️ Token 已过期',
-          timeout: '⏱ 请求超时',
-          network_error: '🌐 网络错误',
-          fetch_failed: '❌ 获取失败',
-        };
-        const errMsg = errMap[q?.error] || '❌ 获取失败';
-        quotaHtml = `<div class="codex-quota-badge codex-badge-error">${errMsg}</div>`;
-      } else {
-        // Determine 7-day and 5-hour quotas
-        const has7d = q.secondary_used != null;
-        const has5h = q.primary_used != null && has7d; // primary is 5h only when secondary exists
-        const used7d = has7d ? q.secondary_used : (q.primary_used ?? 0);
-        const remaining7d = Math.max(0, 100 - used7d);
-        const status7d = this._statusClass(used7d);
-        const planLabel = (q.plan_type || 'unknown').toUpperCase();
-        const resetInfo = this._formatReset(has7d ? q.secondary_reset : q.primary_reset);
-
-        quotaHtml = `
-          <div class="codex-quota-info">
-            <div class="codex-quota-top">
-              <span class="codex-plan-badge">${planLabel}</span>
-              <span class="codex-quota-pct">${remaining7d.toFixed(0)}% 剩余</span>
-            </div>
-            <div class="codex-progress-track">
-              <div class="codex-progress-bar codex-progress-${status7d}" style="width:${used7d}%"></div>
-            </div>
-            ${has5h ? `
-              <div class="codex-sub-quota">
-                <span class="codex-sub-label">5h</span>
-                <div class="codex-sub-track">
-                  <div class="codex-progress-bar codex-progress-${this._statusClass(q.primary_used)}" style="width:${q.primary_used}%"></div>
-                </div>
-                <span class="codex-sub-pct">${Math.max(0, 100 - q.primary_used).toFixed(0)}%</span>
-              </div>
-            ` : ''}
-            ${resetInfo ? `<div class="codex-reset-info">${resetInfo}</div>` : ''}
-          </div>
-        `;
-      }
-
-      return `
-        <div class="codex-card" data-id="${acc.id}">
-          <div class="codex-card-main">
-            <div class="codex-card-name">${this._esc(acc.name)}</div>
-            <div class="codex-card-account">${this._esc(acc.account)}</div>
-            ${quotaHtml}
-          </div>
-          <div class="codex-card-arrow"><i data-lucide="chevron-right"></i></div>
-        </div>
-      `;
-    }).join('');
-
-    body.querySelectorAll('.codex-card').forEach(card => {
-      card.addEventListener('click', () => this.showDetail(card.dataset.id));
+    // Bind card clicks
+    grid.querySelectorAll('.codex-quota-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        // Ignore clicks on buttons inside detail panel
+        if (e.target.closest('.codex-detail-actions') ||
+            e.target.closest('.codex-mini-btn')) return;
+        this._toggleDetail(card.dataset.id);
+      });
     });
 
-    this._initIcons(body);
+    this._initIcons(grid);
+
+    // Re-expand previously expanded card
+    if (this._expandedId) {
+      const card = grid.querySelector(`.codex-quota-card[data-id="${this._expandedId}"]`);
+      if (card) this._showDetailInCard(card, this._expandedId);
+    }
   },
 
-  // ── Detail view ──
-  async showDetail(id) {
-    const body = document.getElementById('codex-body');
-    if (!body) return;
+  _cardHTML(acc) {
+    const q = acc.quota;
+    let quotaHTML = '';
 
-    body.innerHTML = `<div class="codex-loading"><div class="codex-shimmer"></div></div>`;
+    if (!acc.has_token) {
+      quotaHTML = '<div class="codex-status-badge notoken">🔒 未认证</div>';
+    } else if (!q || q.error) {
+      const errMap = {
+        expired: '⚠️ Token 已过期',
+        timeout: '⏱ 请求超时',
+        network_error: '🌐 网络错误',
+        fetch_failed: '❌ 获取失败',
+      };
+      quotaHTML = `<div class="codex-status-badge error">${errMap[q?.error] || '❌ 获取失败'}</div>`;
+    } else {
+      quotaHTML = this._quotaBarsHTML(q);
+    }
+
+    return `
+      <div class="codex-quota-card" data-id="${acc.id}">
+        <div class="codex-card-head">
+          <div>
+            <div class="codex-card-name">${this._esc(acc.name)}</div>
+            <div class="codex-card-account-label">${this._esc(acc.account)}</div>
+          </div>
+          ${(q && !q.error && acc.has_token)
+            ? `<span class="codex-card-plan">${(q.plan_type || 'UNKNOWN').toUpperCase()}</span>`
+            : ''}
+        </div>
+        ${quotaHTML}
+        <div class="codex-detail-slot"></div>
+      </div>
+    `;
+  },
+
+  _quotaBarsHTML(q) {
+    const has7d = q.secondary_used != null;
+    const has5h = q.primary_used != null && has7d;
+    const used7d = has7d ? q.secondary_used : (q.primary_used ?? 0);
+    const remaining7d = Math.max(0, 100 - used7d).toFixed(0);
+    const status7d = this._statusClass(used7d);
+
+    let html = `<div class="codex-quota-section">`;
+
+    // 7d bar
+    html += `
+      <div class="codex-quota-row">
+        <span class="codex-quota-label">7d</span>
+        <div class="codex-quota-track large">
+          <div class="codex-quota-fill codex-fill-${status7d}" style="width:${used7d}%"></div>
+        </div>
+        <span class="codex-quota-pct codex-pct-${status7d}">${remaining7d}%</span>
+      </div>
+    `;
+
+    // 5h bar
+    if (has5h) {
+      const remaining5h = Math.max(0, 100 - q.primary_used).toFixed(0);
+      const status5h = this._statusClass(q.primary_used);
+      html += `
+        <div class="codex-quota-row">
+          <span class="codex-quota-label">5h</span>
+          <div class="codex-quota-track">
+            <div class="codex-quota-fill codex-fill-${status5h}" style="width:${q.primary_used}%"></div>
+          </div>
+          <span class="codex-quota-pct codex-pct-${status5h}">${remaining5h}%</span>
+        </div>
+      `;
+    }
+
+    // Reset info
+    const resetText = this._formatReset(has7d ? q.secondary_reset : q.primary_reset);
+    if (resetText) {
+      html += `<div class="codex-reset-text">${resetText}</div>`;
+    }
+
+    html += `</div>`;
+    return html;
+  },
+
+  // ── Toggle detail panel inside card ──
+  async _toggleDetail(id) {
+    const grid = document.getElementById('codex-grid');
+    if (!grid) return;
+
+    const card = grid.querySelector(`.codex-quota-card[data-id="${id}"]`);
+    if (!card) return;
+
+    // If already expanded, collapse
+    if (card.classList.contains('expanded')) {
+      card.classList.remove('expanded');
+      card.querySelector('.codex-detail-slot').innerHTML = '';
+      this._expandedId = null;
+      return;
+    }
+
+    // Collapse any other expanded cards
+    grid.querySelectorAll('.codex-quota-card.expanded').forEach(c => {
+      c.classList.remove('expanded');
+      c.querySelector('.codex-detail-slot').innerHTML = '';
+    });
+
+    this._expandedId = id;
+    await this._showDetailInCard(card, id);
+  },
+
+  async _showDetailInCard(card, id) {
+    const slot = card.querySelector('.codex-detail-slot');
+    if (!slot) return;
+
+    card.classList.add('expanded');
+    slot.innerHTML = '<div class="codex-shimmer-line" style="width:70%;margin-top:16px"></div>';
 
     try {
-      const acc = await API.getCodexAccount(id);
-      // Find quota from cached list
-      const listItem = this._accounts.find(a => a.id == id);
-      const q = listItem?.quota;
-
-      let quotaSection = '';
-      if (listItem?.has_token && q && !q.error) {
-        const has7d = q.secondary_used != null;
-        const has5h = q.primary_used != null && has7d;
-        const used7d = has7d ? q.secondary_used : (q.primary_used ?? 0);
-        const remaining7d = Math.max(0, 100 - used7d);
-        const planLabel = (q.plan_type || 'unknown').toUpperCase();
-        const resetInfo = this._formatReset(has7d ? q.secondary_reset : q.primary_reset);
-
-        quotaSection = `
-          <div class="codex-detail-quota">
-            <div class="codex-quota-top">
-              <span class="codex-plan-badge">${planLabel}</span>
-              <span class="codex-quota-pct">${remaining7d.toFixed(0)}% 剩余 (7天)</span>
-            </div>
-            <div class="codex-progress-track codex-progress-lg">
-              <div class="codex-progress-bar codex-progress-${this._statusClass(used7d)}" style="width:${used7d}%"></div>
-            </div>
-            ${has5h ? `
-              <div class="codex-sub-quota">
-                <span class="codex-sub-label">5h 窗口</span>
-                <div class="codex-sub-track">
-                  <div class="codex-progress-bar codex-progress-${this._statusClass(q.primary_used)}" style="width:${q.primary_used}%"></div>
-                </div>
-                <span class="codex-sub-pct">${Math.max(0, 100 - q.primary_used).toFixed(0)}%</span>
-              </div>
-            ` : ''}
-            ${resetInfo ? `<div class="codex-reset-info">${resetInfo}</div>` : ''}
-          </div>
-        `;
-      } else if (listItem?.has_token && q?.error) {
-        const errMap = { expired: '⚠️ Token 已过期', timeout: '⏱ 请求超时', network_error: '🌐 网络错误', fetch_failed: '❌ 获取失败' };
-        quotaSection = `<div class="codex-detail-quota"><div class="codex-quota-badge codex-badge-error">${errMap[q.error] || '❌ 获取失败'}</div></div>`;
+      let acc = this._detailCache[id];
+      if (!acc) {
+        acc = await API.getCodexAccount(id);
+        this._detailCache[id] = acc;
       }
 
-      body.innerHTML = `
-        <div class="codex-detail">
-          <button class="codex-back" onclick="CodexManager.loadList()">
-            <i data-lucide="arrow-left"></i> 返回
-          </button>
-
-          <div class="codex-detail-title">${this._esc(acc.name)}</div>
-          ${quotaSection}
-
-          ${this._fieldRow('账号', acc.account, false)}
-          ${this._fieldRow('密码', acc.password, true)}
-          ${acc.email ? this._fieldRow('邮箱', acc.email, false) : ''}
-          ${acc.email_password ? this._fieldRow('邮箱密码', acc.email_password, true) : ''}
-
-          <div class="codex-field-group">
-            <label>Access Token</label>
-            <div class="codex-field-value">
-              <span class="codex-token-preview">${acc.access_token ? (acc.access_token.substring(0, 20) + '...') : '未设置'}</span>
-            </div>
-          </div>
-
+      slot.innerHTML = `
+        <div class="codex-detail-panel">
+          ${this._detailField('账号', acc.account, false)}
+          ${this._detailField('密码', acc.password, true)}
+          ${acc.email ? this._detailField('邮箱', acc.email, false) : ''}
+          ${acc.email_password ? this._detailField('邮箱密码', acc.email_password, true) : ''}
+          ${acc.access_token ? this._detailField('Token', acc.access_token.substring(0, 20) + '...', false) : ''}
           <div class="codex-detail-actions">
-            <button class="codex-action-btn codex-edit-btn" onclick="CodexManager.showForm(${acc.id})">
+            <button class="codex-btn-edit" data-edit="${acc.id}">
               <i data-lucide="pencil"></i> 编辑
             </button>
-            <button class="codex-action-btn codex-delete-btn" onclick="CodexManager.deleteAccount(${acc.id})">
+            <button class="codex-btn-delete" data-del="${acc.id}">
               <i data-lucide="trash-2"></i> 删除
             </button>
           </div>
         </div>
       `;
 
-      this._bindDetailEvents(body);
-      this._initIcons(body);
+      this._bindDetailEvents(slot, acc);
+      this._initIcons(slot);
     } catch (e) {
-      body.innerHTML = `<div class="codex-empty">加载失败</div>`;
+      slot.innerHTML = '<div style="padding:16px;color:#ef4444;">加载详情失败</div>';
     }
   },
 
-  // Generate a field row (safe against XSS in attributes)
-  _fieldRow(label, value, masked) {
-    const safe = this._esc(value);
+  _detailField(label, value, masked) {
+    const safe = this._esc(value || '');
     if (masked) {
       return `
-        <div class="codex-field-group">
-          <label>${label}</label>
-          <div class="codex-field-value">
-            <span class="codex-masked" data-secret>••••••••</span>
-            <button class="codex-eye-btn" title="显示"><i data-lucide="eye"></i></button>
-            <button class="codex-copy-btn" data-masked-copy title="复制"><i data-lucide="copy"></i></button>
+        <div class="codex-detail-field">
+          <span class="codex-detail-label">${label}</span>
+          <div class="codex-detail-value">
+            <span class="masked" data-secret>••••••••</span>
+            <button class="codex-mini-btn codex-eye-toggle" title="显示">
+              <i data-lucide="eye"></i>
+            </button>
+            <button class="codex-mini-btn codex-copy-trigger" title="复制">
+              <i data-lucide="copy"></i>
+            </button>
           </div>
-          <input type="hidden" class="codex-secret-store" value="${safe}">
+          <input type="hidden" class="codex-secret-val" value="${safe}">
         </div>
       `;
     }
     return `
-      <div class="codex-field-group">
-        <label>${label}</label>
-        <div class="codex-field-value">
+      <div class="codex-detail-field">
+        <span class="codex-detail-label">${label}</span>
+        <div class="codex-detail-value">
           <span>${safe}</span>
-          <button class="codex-copy-btn" data-masked-copy title="复制"><i data-lucide="copy"></i></button>
+          <button class="codex-mini-btn codex-copy-trigger" title="复制">
+            <i data-lucide="copy"></i>
+          </button>
         </div>
-        <input type="hidden" class="codex-secret-store" value="${safe}">
+        <input type="hidden" class="codex-secret-val" value="${safe}">
       </div>
     `;
   },
 
-  _bindDetailEvents(body) {
-    // Eye toggle — read secret from hidden input (XSS safe)
-    body.querySelectorAll('.codex-eye-btn').forEach(btn => {
-      let hideTimer = null;
-      btn.addEventListener('click', () => {
-        const group = btn.closest('.codex-field-group');
-        const span = group?.querySelector('.codex-masked');
-        const store = group?.querySelector('.codex-secret-store');
+  _bindDetailEvents(slot, acc) {
+    // Eye toggle
+    slot.querySelectorAll('.codex-eye-toggle').forEach(btn => {
+      let timer = null;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const field = btn.closest('.codex-detail-field');
+        const span = field?.querySelector('.masked');
+        const store = field?.querySelector('.codex-secret-val');
         if (!span || !store) return;
 
-        clearTimeout(hideTimer);
+        clearTimeout(timer);
         if (span.textContent === '••••••••') {
           span.textContent = store.value;
+          span.classList.remove('masked');
           btn.querySelector('i')?.setAttribute('data-lucide', 'eye-off');
-          hideTimer = setTimeout(() => {
+          timer = setTimeout(() => {
             span.textContent = '••••••••';
+            span.classList.add('masked');
             btn.querySelector('i')?.setAttribute('data-lucide', 'eye');
             this._initIcons(btn);
-          }, 3000);
+          }, 5000);
         } else {
           span.textContent = '••••••••';
+          span.classList.add('masked');
           btn.querySelector('i')?.setAttribute('data-lucide', 'eye');
         }
         this._initIcons(btn);
       });
     });
 
-    // Copy buttons — read from hidden input (XSS safe)
-    body.querySelectorAll('.codex-copy-btn').forEach(btn => {
+    // Copy buttons
+    slot.querySelectorAll('.codex-copy-trigger').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const group = btn.closest('.codex-field-group');
-        const store = group?.querySelector('.codex-secret-store');
+        const field = btn.closest('.codex-detail-field');
+        const store = field?.querySelector('.codex-secret-val');
         if (!store) return;
 
         navigator.clipboard.writeText(store.value).then(() => {
-          // Flash checkmark
           const icon = btn.querySelector('i');
           if (icon) {
             icon.setAttribute('data-lucide', 'check');
@@ -338,81 +360,89 @@ const CodexManager = {
         }).catch(() => {});
       });
     });
+
+    // Edit
+    slot.querySelector('[data-edit]')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.openForm(acc.id);
+    });
+
+    // Delete
+    slot.querySelector('[data-del]')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.deleteAccount(acc.id);
+    });
   },
 
-  // ── Form (add/edit) ──
-  async showForm(editId) {
-    const body = document.getElementById('codex-body');
-    if (!body) return;
-
+  // ── Form (add / edit) ──
+  async openForm(editId) {
     let existing = null;
     if (editId) {
       try { existing = await API.getCodexAccount(editId); } catch (_) {}
     }
 
-    body.innerHTML = `
-      <div class="codex-form">
-        <button class="codex-back" onclick="CodexManager.loadList()">
-          <i data-lucide="arrow-left"></i> 返回
-        </button>
-        <h4>${existing ? '编辑账号' : '添加账号'}</h4>
-
-        <div class="codex-form-field">
+    const overlay = document.createElement('div');
+    overlay.className = 'codex-form-overlay';
+    overlay.innerHTML = `
+      <div class="codex-form-panel">
+        <div class="codex-form-title">${existing ? '编辑账号' : '添加账号'}</div>
+        <div class="codex-form-group">
           <label>名称 *</label>
-          <input type="text" id="codex-f-name" value="${this._esc(existing?.name || '')}" placeholder="如: 主力号" autocomplete="off">
+          <input type="text" id="cx-f-name" value="${this._esc(existing?.name || '')}" placeholder="如: 主力号" autocomplete="off">
         </div>
-        <div class="codex-form-field">
+        <div class="codex-form-group">
           <label>账号 *</label>
-          <input type="text" id="codex-f-account" value="${this._esc(existing?.account || '')}" placeholder="登录邮箱/用户名" autocomplete="off">
+          <input type="text" id="cx-f-account" value="${this._esc(existing?.account || '')}" placeholder="登录邮箱/用户名" autocomplete="off">
         </div>
-        <div class="codex-form-field">
+        <div class="codex-form-group">
           <label>密码 *</label>
-          <input type="password" id="codex-f-password" value="${this._esc(existing?.password || '')}" placeholder="账号密码" autocomplete="off">
+          <input type="password" id="cx-f-password" value="${this._esc(existing?.password || '')}" placeholder="账号密码" autocomplete="off">
         </div>
-        <div class="codex-form-field">
+        <div class="codex-form-group">
           <label>邮箱</label>
-          <input type="text" id="codex-f-email" value="${this._esc(existing?.email || '')}" placeholder="可选" autocomplete="off">
+          <input type="text" id="cx-f-email" value="${this._esc(existing?.email || '')}" placeholder="可选" autocomplete="off">
         </div>
-        <div class="codex-form-field">
+        <div class="codex-form-group">
           <label>邮箱密码</label>
-          <input type="password" id="codex-f-email-pw" value="${this._esc(existing?.email_password || '')}" placeholder="可选" autocomplete="off">
+          <input type="password" id="cx-f-email-pw" value="${this._esc(existing?.email_password || '')}" placeholder="可选" autocomplete="off">
         </div>
-
-        <div class="codex-form-field codex-token-field">
+        <div class="codex-form-group">
           <label>Access Token</label>
-          <textarea id="codex-f-token" rows="2" placeholder="用于动态获取额度（可选）">${this._esc(existing?.access_token || '')}</textarea>
-          <div class="codex-token-actions">
-            <button class="codex-token-btn" id="codex-read-local">
-              🔑 从本地读取
-            </button>
-            <a class="codex-token-btn codex-token-link" href="https://chatgpt.com" target="_blank" rel="noopener">
-              🌐 前往登录
-            </a>
+          <textarea id="cx-f-token" rows="2" placeholder="用于动态获取额度（可选）">${this._esc(existing?.access_token || '')}</textarea>
+          <div class="codex-token-btns">
+            <button id="cx-read-local">🔑 从本地读取</button>
+            <a href="https://chatgpt.com" target="_blank" rel="noopener">🌐 前往登录</a>
           </div>
         </div>
-
-        <div class="codex-form-actions">
-          <button class="codex-save-btn" id="codex-save-btn">
-            ${existing ? '保存修改' : '添加'}
-          </button>
-        </div>
+        <button class="codex-form-submit" id="cx-save">
+          ${existing ? '保存修改' : '添加'}
+        </button>
       </div>
     `;
 
+    document.body.appendChild(overlay);
+    this._formOverlay = overlay;
+    requestAnimationFrame(() => overlay.classList.add('active'));
+
+    // Close on backdrop
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) this._closeForm();
+    });
+
     // Read local token
-    body.querySelector('#codex-read-local').addEventListener('click', async () => {
-      const btn = body.querySelector('#codex-read-local');
+    overlay.querySelector('#cx-read-local').addEventListener('click', async () => {
+      const btn = overlay.querySelector('#cx-read-local');
       btn.textContent = '读取中...';
       btn.disabled = true;
       try {
         const result = await API.getCodexLocalToken();
         if (result.token) {
-          body.querySelector('#codex-f-token').value = result.token;
+          overlay.querySelector('#cx-f-token').value = result.token;
           this._toast('Token 已读取');
         } else {
           this._toast(result.error || '未找到 Token', 'error');
         }
-      } catch (e) {
+      } catch (_) {
         this._toast('读取失败', 'error');
       } finally {
         btn.textContent = '🔑 从本地读取';
@@ -420,15 +450,15 @@ const CodexManager = {
       }
     });
 
-    // Save handler
+    // Save
     const doSave = async () => {
       const data = {
-        name: body.querySelector('#codex-f-name').value.trim(),
-        account: body.querySelector('#codex-f-account').value.trim(),
-        password: body.querySelector('#codex-f-password').value,
-        email: body.querySelector('#codex-f-email').value.trim(),
-        email_password: body.querySelector('#codex-f-email-pw').value,
-        access_token: body.querySelector('#codex-f-token').value.trim(),
+        name: overlay.querySelector('#cx-f-name').value.trim(),
+        account: overlay.querySelector('#cx-f-account').value.trim(),
+        password: overlay.querySelector('#cx-f-password').value,
+        email: overlay.querySelector('#cx-f-email').value.trim(),
+        email_password: overlay.querySelector('#cx-f-email-pw').value,
+        access_token: overlay.querySelector('#cx-f-token').value.trim(),
       };
 
       if (!data.name || !data.account || !data.password) {
@@ -436,7 +466,7 @@ const CodexManager = {
         return;
       }
 
-      const btn = body.querySelector('#codex-save-btn');
+      const btn = overlay.querySelector('#cx-save');
       btn.disabled = true;
       btn.textContent = '保存中...';
 
@@ -447,6 +477,8 @@ const CodexManager = {
           await API.createCodexAccount(data);
         }
         this._toast(existing ? '已更新' : '已添加');
+        this._detailCache = {};
+        this._closeForm();
         this.loadList();
       } catch (e) {
         this._toast('保存失败: ' + (e.message || ''), 'error');
@@ -455,16 +487,20 @@ const CodexManager = {
       }
     };
 
-    body.querySelector('#codex-save-btn').addEventListener('click', doSave);
-
-    // Enter key to submit (except in textarea)
-    body.querySelectorAll('#codex-f-name, #codex-f-account, #codex-f-password, #codex-f-email, #codex-f-email-pw').forEach(input => {
-      input.addEventListener('keydown', (e) => {
+    overlay.querySelector('#cx-save').addEventListener('click', doSave);
+    overlay.querySelectorAll('#cx-f-name, #cx-f-account, #cx-f-password, #cx-f-email, #cx-f-email-pw')
+      .forEach(input => input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); doSave(); }
-      });
-    });
+      }));
+  },
 
-    this._initIcons(body);
+  _closeForm() {
+    if (!this._formOverlay) return;
+    this._formOverlay.classList.remove('active');
+    setTimeout(() => {
+      this._formOverlay?.remove();
+      this._formOverlay = null;
+    }, 250);
   },
 
   // ── Delete ──
@@ -473,6 +509,8 @@ const CodexManager = {
     try {
       await API.deleteCodexAccount(id);
       this._toast('已删除');
+      this._expandedId = null;
+      delete this._detailCache[id];
       this.loadList();
     } catch (e) {
       this._toast('删除失败', 'error');
@@ -480,6 +518,16 @@ const CodexManager = {
   },
 
   // ── Helpers ──
+  _shimmerCards(n) {
+    return Array(n).fill(`
+      <div class="codex-shimmer-card">
+        <div class="codex-shimmer-line"></div>
+        <div class="codex-shimmer-line"></div>
+        <div class="codex-shimmer-line"></div>
+      </div>
+    `).join('');
+  },
+
   _esc(str) {
     if (!str) return '';
     const div = document.createElement('div');
@@ -505,15 +553,20 @@ const CodexManager = {
   _formatReset(unix) {
     if (!unix) return '';
     const reset = new Date(unix * 1000);
-    const now = new Date();
-    const diffMs = reset - now;
+    const diffMs = reset - new Date();
     if (diffMs <= 0) return '已重置';
     const hours = Math.floor(diffMs / 3600000);
     const days = Math.floor(hours / 24);
     const remainHours = hours % 24;
     if (days > 0) return `${days}天${remainHours}小时后重置`;
     if (hours > 0) return `${hours}小时后重置`;
-    const mins = Math.ceil(diffMs / 60000);
-    return `${mins}分钟后重置`;
+    return `${Math.ceil(diffMs / 60000)}分钟后重置`;
+  },
+};
+
+// Backward compat — old mobile panel references CodexManager
+const CodexManager = {
+  open() {
+    if (typeof App !== 'undefined') App.switchView('codex');
   },
 };

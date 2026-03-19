@@ -29,6 +29,8 @@ module.exports = function registerGardenCoinRoutes(router, { db }) {
             }
 
             const earn = db.transaction(() => {
+                db.prepare('INSERT OR IGNORE INTO coin_accounts (assignee, balance) VALUES (?, 0)')
+                    .run(assignee);
                 db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
                     .run(safeAmount, assignee);
                 db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')

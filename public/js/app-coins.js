@@ -1,16 +1,18 @@
-Object.assign(App, {
+if (typeof App === 'undefined') {
+    console.warn('App boot incomplete; skipping app-coins extension.');
+} else Object.assign(App, {
     _coinCacheStorageKey: 'panpu-coin-balance-cache',
 
     refreshCurrentView() {
         switch (this.currentView) {
-            case 'daily': DailyView.refresh(); break;
-            case 'monthly': MonthlyView.refresh(); break;
-            case 'stats': StatsView.load(); break;
-            case 'checkin': CheckinView._reloadCurrentPage(); break;
-            case 'garden': GardenView.refreshData(); break;
-            case 'shop': GardenView.refreshShopData(); break;
+            case 'daily': DailyView?.refresh?.(); break;
+            case 'monthly': MonthlyView?.refresh?.(); break;
+            case 'stats': StatsView?.load?.(); break;
+            case 'checkin': CheckinView?._reloadCurrentPage?.(); break;
+            case 'garden': GardenView?.refreshData?.(); break;
+            case 'shop': GardenView?.refreshShopData?.(); break;
         }
-        this._refreshHeaderCoins();
+        this.syncHeaderCoins();
     },
 
     _normalizeCoinBalance(balance) {
@@ -125,6 +127,14 @@ Object.assign(App, {
         if (!btn) return;
         this._headerCoinBalance = this._normalizeCoinBalance(balance);
         btn.innerHTML = Utils.headerCoinMarkup(this._headerCoinBalance);
+    },
+
+    syncHeaderCoins(balance = null) {
+        if (balance == null) {
+            this._refreshHeaderCoins();
+            return;
+        }
+        this._renderHeaderCoins(balance);
     },
 
     _animateHeaderCoinGain(delta) {
@@ -300,6 +310,10 @@ Object.assign(App, {
 
     showToast(message, type = 'info') {
         const container = document.getElementById('toast-container');
+        if (!container) {
+            console[type === 'error' ? 'error' : 'log'](`[${type}]`, message);
+            return;
+        }
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
         toast.textContent = message;

@@ -4374,7 +4374,7 @@
   width: 110px;
   height: 140px;
   bottom: 16%;
-  background-image: url('/img/trees/palm.png');
+  background-image: url('/img/trees/palm.png?v=4');
 }
 
 .shore-palm.small {
@@ -4405,7 +4405,7 @@
   width: 84px;
   height: 60px;
   bottom: 18%;
-  background-image: url('/img/trees/obstacle_rock.svg');
+  background-image: url('/img/trees/obstacle_rock.svg?v=4');
   opacity: 0.72;
 }
 

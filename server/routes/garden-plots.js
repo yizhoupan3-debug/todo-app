@@ -1,35 +1,9 @@
-module.exports = function registerGardenPlotRoutes(router, { db, PLANT_CATALOG, PLANT_TIERS, TREE_MATURE_MINUTES, SPEEDUP_COST, SPEEDUP_MINUTES }) {
-    const BASE_GRID_W = 8;
-    const BASE_GRID_H = 6;
+module.exports = function registerGardenPlotRoutes(router, {
+    db, PLANT_CATALOG, PLANT_TIERS, TREE_MATURE_MINUTES, SPEEDUP_COST, SPEEDUP_MINUTES,
+    BASE_GRID_W, BASE_GRID_H, isForestPlot, isStarterInitialClearedPlot,
+    pickObstacleForPlot, getPlotSeedState,
+}) {
 
-    function isForestPlot(x, y, gridW, gridH) {
-        const forestRows = Math.max(3, Math.floor(gridH * 0.5));
-        return y < forestRows || (y === forestRows && x > 0 && x < gridW - 1);
-    }
-
-    function isStarterInitialClearedPlot(x, y, gridW, gridH) {
-        const unlockedRow = Math.min(gridH - 2, Math.max(1, Math.floor(gridH * 0.58)));
-        const startX = Math.max(0, Math.floor((gridW - 3) / 2));
-        return y === unlockedRow && x >= startX && x < Math.min(gridW, startX + 3);
-    }
-
-    function pickObstacleForPlot(x, y, gridW, gridH) {
-        if (isForestPlot(x, y, gridW, gridH)) return 'wild_tree';
-        const frontierPool = x <= 1 || x >= gridW - 2 || y >= gridH - 1
-            ? ['weed', 'rock', 'weed', 'rock', 'weed']
-            : ['weed', 'rock', 'weed'];
-        return frontierPool[Math.floor(Math.random() * frontierPool.length)];
-    }
-
-    function getPlotSeedState(islandType, x, y, gridW, gridH) {
-        if (islandType === 'starter' && isStarterInitialClearedPlot(x, y, gridW, gridH)) {
-            return { status: 'cleared', obstacle: null };
-        }
-        return {
-            status: 'wasteland',
-            obstacle: pickObstacleForPlot(x, y, gridW, gridH),
-        };
-    }
 
     function ensureIslandSceneGrid(islandId, assignee = null) {
         const island = assignee

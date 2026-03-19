@@ -27,10 +27,10 @@ Object.assign(GardenView, {
                 <button class="hud-btn backpack-btn-shop" id="shop-backpack-btn" title="背包">\u{1F392}</button>
                 <div class="filter-pills">
                     <button class="filter-pill ${this.shopAssignee === '潘潘' ? 'active' : ''}" data-person="潘潘">
-                        <img src="/img/panpan.png" alt="" style="width:18px;height:18px;border-radius:50%"> 潘潘
+                        <img src="${Utils.personaAvatarUrl('潘潘')}" alt="" style="width:18px;height:18px;border-radius:50%"> 潘潘
                     </button>
                     <button class="filter-pill ${this.shopAssignee === '蒲蒲' ? 'active' : ''}" data-person="蒲蒲">
-                        <img src="/img/pupu.png" alt="" style="width:18px;height:18px;border-radius:50%"> 蒲蒲
+                        <img src="${Utils.personaAvatarUrl('蒲蒲')}" alt="" style="width:18px;height:18px;border-radius:50%"> 蒲蒲
                     </button>
                 </div>
             </div>
@@ -346,7 +346,7 @@ Object.assign(GardenView, {
             const stage = this.getGrowthStage(gm);
             const stageLabel = this.getGrowthLabel(gm);
             const pct = Math.min(100, Math.round(gm / 150 * 100));
-            const imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.png';
+            const imgSrc = catItem?.stages?.[stage] || gardenAsset('/img/trees/seed.png');
             const name = catItem?.name || plant.tree_type;
             const icon = catItem?.icon || '\u{1F331}';
             const rarity = this._getPlantRarity(plant.price);

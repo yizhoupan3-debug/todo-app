@@ -224,7 +224,7 @@ const JournalView = {
             </div>`;
         } else {
             const cardStyle = sty.cardStyle || 'default';
-            const authorImg = el.author === '潘潘' ? '/img/panpan.png' : '/img/pupu.png';
+            const authorImg = Utils.personaAvatarUrl(el.author);
             const textStyle = this._buildTextCSS(sty);
             return `
             <div class="journal-el text-el style-${cardStyle}${sel}" data-id="${el.id}" style="${style}">

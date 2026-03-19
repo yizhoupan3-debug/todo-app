@@ -5,8 +5,15 @@ const API = {
     backendOriginKey: 'panpu-backend-origin',
     backendModeKey: 'panpu-backend-mode',
 
+    isLocalHost() {
+        if (typeof window === 'undefined') return false;
+        const host = String(window.location.hostname || '').trim();
+        return host === 'localhost' || host === '127.0.0.1' || host === '::1';
+    },
+
     getDefaultBackendOrigin() {
         if (typeof window === 'undefined') return '';
+        if (this.isLocalHost()) return '';
         return this.normalizeOrigin(window.__PANPU_DEFAULT_BACKEND_ORIGIN__ || '');
     },
 
@@ -14,27 +21,42 @@ const API = {
         const value = String(origin || '').trim();
         if (!value) return '';
         const withProtocol = /^https?:\/\//i.test(value) ? value : `https://${value}`;
-        return withProtocol.replace(/\/+$/, '');
+        return withProtocol
+            .replace(/\/+$/, '')
+            .replace(/\/api$/i, '');
     },
 
-    getBackendOrigin() {
+    getStoredCustomBackendOrigin() {
         try {
-            const mode = localStorage.getItem(this.backendModeKey) || 'auto';
-            if (mode === 'local') return '';
-            const raw = localStorage.getItem(this.backendOriginKey);
-            const normalized = mode === 'custom'
-                ? this.normalizeOrigin(raw)
-                : this.getDefaultBackendOrigin();
-            if (!normalized) return '';
-            if (normalized === window.location.origin) return '';
-            return normalized;
+            return this.normalizeOrigin(localStorage.getItem(this.backendOriginKey));
         } catch (e) {
             return '';
         }
     },
 
+    getBackendMode() {
+        try {
+            const storedMode = localStorage.getItem(this.backendModeKey);
+            if (storedMode === 'local') return 'local';
+            if (storedMode === 'custom') {
+                return this.getStoredCustomBackendOrigin() ? 'custom' : 'local';
+            }
+            return this.getStoredCustomBackendOrigin() ? 'custom' : 'local';
+        } catch (e) {
+            return 'local';
+        }
+    },
+
+    getBackendOrigin() {
+        const mode = this.getBackendMode();
+        if (mode !== 'custom') return '';
+        const normalized = this.getStoredCustomBackendOrigin();
+        if (!normalized) return '';
+        if (typeof window !== 'undefined' && normalized === window.location.origin) return '';
+        return normalized;
+    },
+
     setBackendOrigin(origin, { forceLocal = false } = {}) {
-        const defaultOrigin = this.getDefaultBackendOrigin();
         const normalized = this.normalizeOrigin(origin);
         try {
             if (forceLocal) {
@@ -43,11 +65,7 @@ const API = {
                 return '';
             }
             if (!normalized || normalized === window.location.origin) {
-                if (defaultOrigin) {
-                    localStorage.setItem(this.backendModeKey, 'auto');
-                } else {
-                    localStorage.removeItem(this.backendModeKey);
-                }
+                localStorage.setItem(this.backendModeKey, 'local');
                 localStorage.removeItem(this.backendOriginKey);
                 return '';
             }

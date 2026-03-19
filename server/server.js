@@ -12,7 +12,9 @@ const { createAssetPipeline } = require('./assets');
 const app = express();
 const server = http.createServer(app);
 const publicDir = path.join(__dirname, '..', 'public');
-const assets = createAssetPipeline({ publicDir });
+const socketClientScript = path.join(__dirname, '..', 'node_modules', 'socket.io', 'client-dist', 'socket.io.min.js');
+const defaultBackendOrigin = process.env.DEFAULT_BACKEND_ORIGIN || '';
+const assets = createAssetPipeline({ publicDir, defaultBackendOrigin });
 const configuredOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
     : null;
@@ -69,6 +71,17 @@ app.get('/sw.js', (req, res) => {
     res.set('Expires', '0');
     res.type('application/javascript').send(assets.renderServiceWorker());
 });
+app.get('/manifest.json', (req, res) => {
+    res.set('Cache-Control', 'public, max-age=0, must-revalidate');
+    res.type('application/manifest+json').send(assets.renderManifest());
+});
+app.get('/vendor/socket.io.js', (req, res, next) => {
+    res.set('Cache-Control', 'public, max-age=0, must-revalidate');
+    res.type('application/javascript');
+    res.sendFile(socketClientScript, (error) => {
+        if (error) next(error);
+    });
+});
 app.get(['/', '/index.html'], (req, res) => {
     sendAppShell(res);
 });
@@ -109,6 +122,25 @@ app.use('/uploads/journal', express.static(path.join(__dirname, '..', 'data', 'j
     maxAge: '7d',
     etag: true,
 }));
+
+app.use((err, req, res, next) => {
+    console.error(`[server] ${req.method} ${req.originalUrl}:`, err?.stack || err);
+    if (res.headersSent) {
+        return next(err);
+    }
+
+    const isAssetRequest = /\/(?:css|js|img|vendor|socket\.io|manifest\.json|favicon\.ico|sw\.js)/.test(req.path);
+    if (isAssetRequest) {
+        if (req.path.endsWith('.js')) {
+            res.status(500).type('application/javascript').send(`console.error(${JSON.stringify(`Asset load failed: ${req.path}`)});`);
+            return;
+        }
+        res.status(500).type('text/plain').send('Asset load failed');
+        return;
+    }
+
+    res.status(500).json({ error: err?.message || 'Internal Server Error' });
+});
 
 // Socket.io for real-time sync — room-based filtering by assignee
 io.on('connection', (socket) => {
@@ -170,12 +202,13 @@ app.get('*', (req, res) => {
 
 // Auto-complete timer — check every 60 seconds
 const db = require('./db');
+const { formatDateStr, formatTimeStr } = require('./utils');
 const { TASK_REWARD } = require('./routes/garden-shared');
 setInterval(() => {
     try {
         const now = new Date();
-        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        const todayStr = formatDateStr(now);
+        const timeStr = formatTimeStr(now);
 
         // Find tasks to auto-complete: use end_time if set, else due_time
         const tasksToComplete = db.prepare(`

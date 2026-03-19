@@ -1,4 +1,6 @@
-Object.assign(App, {
+if (typeof App === 'undefined') {
+    console.warn('App boot incomplete; skipping app-theme extension.');
+} else Object.assign(App, {
     themes: ['indigo', 'sakura', 'ocean', 'forest', 'sunset', 'lavender', 'mocha', 'rosegold'],
 
     initTheme() {
@@ -87,13 +89,15 @@ Object.assign(App, {
         if (!input || !saveBtn || !clearBtn || !status || typeof API === 'undefined') return;
 
         const renderStatus = () => {
-            const origin = API.getBackendOrigin();
-            const mode = localStorage.getItem(API.backendModeKey) || 'auto';
-            input.value = origin;
-            if (origin) {
-                status.textContent = mode === 'custom'
-                    ? `当前共享后端：${origin}`
-                    : `当前默认共享后端：${origin}`;
+            const mode = typeof API.getBackendMode === 'function'
+                ? API.getBackendMode()
+                : (localStorage.getItem(API.backendModeKey) || 'local');
+            const customOrigin = typeof API.getStoredCustomBackendOrigin === 'function'
+                ? API.getStoredCustomBackendOrigin()
+                : API.getBackendOrigin();
+            input.value = mode === 'custom' ? customOrigin : '';
+            if (mode === 'custom' && customOrigin) {
+                status.textContent = `当前共享后端：${customOrigin}`;
                 return;
             }
             status.textContent = '当前使用本地后端';

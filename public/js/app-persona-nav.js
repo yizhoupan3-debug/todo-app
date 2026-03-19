@@ -1,4 +1,6 @@
-Object.assign(App, {
+if (typeof App === 'undefined') {
+    console.warn('App boot incomplete; skipping app-persona-nav extension.');
+} else Object.assign(App, {
     _initPersona() {
         const saved = window.__PANPU_BOOT_PERSONA__ ?? localStorage.getItem('panpu-persona');
         const savedLast = window.__PANPU_BOOT_LAST_PERSONA__ ?? localStorage.getItem('panpu-last-persona');
@@ -58,6 +60,7 @@ Object.assign(App, {
 
     _applyPersonaToViews(persona) {
         const scopedPersona = persona === 'all' ? this.lastPersona : persona;
+        this.scopedPersona = scopedPersona;
         this.currentAssignee = persona === 'all' ? 'all' : persona;
 
         if (typeof CheckinView !== 'undefined') {
@@ -88,9 +91,9 @@ Object.assign(App, {
         if (!img || !name || !btn) return;
 
         const map = {
-            '潘潘': { src: '/img/panpan.png', label: '潘潘', cls: 'persona-panpan' },
-            '蒲蒲': { src: '/img/pupu.png', label: '蒲蒲', cls: 'persona-pupu' },
-            'all': { src: '/img/all.png', label: '全部', cls: 'persona-all' },
+            '潘潘': { src: Utils.personaAvatarUrl('潘潘'), label: '潘潘', cls: 'persona-panpan' },
+            '蒲蒲': { src: Utils.personaAvatarUrl('蒲蒲'), label: '蒲蒲', cls: 'persona-pupu' },
+            'all': { src: Utils.personaAvatarUrl('all'), label: '全部', cls: 'persona-all' },
         };
         const p = map[this.activePersona] || map['潘潘'];
         img.src = p.src;
@@ -151,7 +154,7 @@ Object.assign(App, {
                             document.getElementById('header-coin-btn')?.click();
                             break;
                         case 'codex':
-                            if (typeof CodexManager !== 'undefined') CodexManager.open();
+                            this.switchView('codex');
                             break;
                         case 'settings':
                             // Open sidebar settings on mobile
@@ -240,8 +243,8 @@ Object.assign(App, {
             // Close more panel if open
             this.closeMorePanel();
 
-            const viewIds = ['view-daily', 'view-monthly', 'view-checkin', 'view-stats', 'view-garden', 'view-shop', 'view-journal'];
-            const viewMap = { daily: 'view-daily', monthly: 'view-monthly', checkin: 'view-checkin', stats: 'view-stats', garden: 'view-garden', shop: 'view-shop', journal: 'view-journal' };
+            const viewIds = ['view-daily', 'view-monthly', 'view-checkin', 'view-stats', 'view-garden', 'view-shop', 'view-journal', 'view-codex'];
+            const viewMap = { daily: 'view-daily', monthly: 'view-monthly', checkin: 'view-checkin', stats: 'view-stats', garden: 'view-garden', shop: 'view-shop', journal: 'view-journal', codex: 'view-codex' };
             for (const vid of viewIds) {
                 const el = document.getElementById(vid);
                 const isTarget = vid === viewMap[view];
@@ -273,7 +276,7 @@ Object.assign(App, {
                 daily: '今日任务', monthly: '月度总览',
                 checkin: '打卡', stats: '统计',
                 garden: '花园', shop: '商城',
-                journal: '共同日记'
+                journal: '共同日记', codex: 'Codex 额度'
             };
             document.getElementById('header-title').textContent = titles[view] || '峡谷讨伐日记';
 
@@ -286,7 +289,7 @@ Object.assign(App, {
                 coinBtn.style.display = shouldHide ? 'none' : '';
             }
 
-            this._refreshHeaderCoins();
+            this.syncHeaderCoins?.();
         };
 
         const transition = isInitialSwitch ? null : this._runViewTransition(renderView);
@@ -316,6 +319,9 @@ Object.assign(App, {
                     break;
                 case 'journal':
                     JournalView.open();
+                    break;
+                case 'codex':
+                    if (typeof CodexView !== 'undefined') CodexView.show();
                     break;
             }
         };

@@ -1,6 +1,12 @@
 /* ── Garden & Shop View ── */
 /* ── White-background removal — images are pre-processed, this is a no-op ── */
 function removeWhiteBg(_container) { /* no-op: PNGs already have transparent bg */ }
+function gardenAsset(assetPath) {
+    if (typeof Utils !== 'undefined' && typeof Utils.assetUrl === 'function') {
+        return Utils.assetUrl(assetPath);
+    }
+    return assetPath;
+}
 
 const GardenView = {
     plots: [],
@@ -186,23 +192,43 @@ const GardenView = {
     _activePlotMenu: null,
     _selectedPlotId: null,
 
-    init() { },
+    init() {
+        if (this._assetsVersioned) return;
+
+        this.catalog = this.catalog.map((item) => ({
+            ...item,
+            stages: Object.fromEntries(
+                Object.entries(item.stages || {}).map(([stage, src]) => [stage, gardenAsset(src)])
+            ),
+        }));
+        this.rockVariants = this.rockVariants.map(gardenAsset);
+        this.weedVariants = this.weedVariants.map(gardenAsset);
+        this.wildTreeVariants = this.wildTreeVariants.map(gardenAsset);
+        this._assetsVersioned = true;
+    },
 
     _getHeaderCoinContext() {
-        if (App.currentView === 'garden') {
+        const ui = typeof App !== 'undefined' && typeof App.getUIContext === 'function'
+            ? App.getUIContext()
+            : {
+                currentView: typeof App !== 'undefined' ? App.currentView : null,
+                currentAssignee: typeof App !== 'undefined' ? App.currentAssignee : null,
+            };
+
+        if (ui.currentView === 'garden') {
             return { assignee: this.assignee, balance: this.balance };
         }
-        if (App.currentView === 'shop') {
+        if (ui.currentView === 'shop') {
             return { assignee: this.shopAssignee, balance: this.shopBalance };
         }
-        if (App.currentAssignee && App.currentAssignee !== 'all') {
-            if (App.currentAssignee === this.assignee) {
+        if (ui.currentAssignee && ui.currentAssignee !== 'all') {
+            if (ui.currentAssignee === this.assignee) {
                 return { assignee: this.assignee, balance: this.balance };
             }
-            if (App.currentAssignee === this.shopAssignee) {
+            if (ui.currentAssignee === this.shopAssignee) {
                 return { assignee: this.shopAssignee, balance: this.shopBalance };
             }
-            return { assignee: App.currentAssignee, balance: null };
+            return { assignee: ui.currentAssignee, balance: null };
         }
         return { assignee: '潘潘', balance: null };
     },
@@ -641,11 +667,16 @@ const GardenView = {
 
     updateHeaderCoins() {
         const { balance } = this._getHeaderCoinContext();
-        if (balance == null) {
-            App._refreshHeaderCoins();
+        if (typeof App === 'undefined') return;
+        if (typeof App.syncHeaderCoins === 'function') {
+            App.syncHeaderCoins(balance);
             return;
         }
-        App._renderHeaderCoins(balance);
+        if (balance == null) {
+            App._refreshHeaderCoins?.();
+            return;
+        }
+        App._renderHeaderCoins?.(balance);
     },
 
     async earnFromPomodoro(assignee, focusMinutes, factor = null) {

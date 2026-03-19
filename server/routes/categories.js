@@ -3,6 +3,9 @@ const db = require('../db');
 
 const router = express.Router();
 
+/** Allowed fields for update — whitelist to prevent arbitrary column injection. */
+const ALLOWED_FIELDS = ['name', 'color', 'icon'];
+
 // GET /api/categories
 router.get('/', (req, res) => {
     try {
@@ -37,14 +40,17 @@ router.post('/', (req, res) => {
 // PUT /api/categories/:id
 router.put('/:id', (req, res) => {
     const { id } = req.params;
-    const { name, color, icon } = req.body;
 
     try {
         const updates = [];
         const values = [];
-        if (name !== undefined) { updates.push('name = ?'); values.push(name); }
-        if (color !== undefined) { updates.push('color = ?'); values.push(color); }
-        if (icon !== undefined) { updates.push('icon = ?'); values.push(icon); }
+
+        for (const [key, value] of Object.entries(req.body)) {
+            if (ALLOWED_FIELDS.includes(key) && value !== undefined) {
+                updates.push(`${key} = ?`);
+                values.push(value);
+            }
+        }
 
         if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
 

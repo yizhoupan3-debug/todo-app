@@ -10,12 +10,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>峡谷讨伐日记</title>
   <link rel="manifest" href="/manifest.json?v=__ASSET_VERSION__">
-  <link rel="icon" href="/favicon.ico" sizes="48x48">
-  <link rel="icon" type="image/png" sizes="48x48" href="/img/icon-48.png">
-  <link rel="icon" type="image/png" sizes="96x96" href="/img/icon-96.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/img/icon-192.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/img/icon-180.png">
-  <meta name="msapplication-TileImage" content="/img/icon-144.png">
+  <link rel="icon" href="/favicon.ico?v=__ASSET_VERSION__" sizes="48x48">
+  <link rel="icon" type="image/png" sizes="48x48" href="/img/icon-48.png?v=__ASSET_VERSION__">
+  <link rel="icon" type="image/png" sizes="96x96" href="/img/icon-96.png?v=__ASSET_VERSION__">
+  <link rel="icon" type="image/png" sizes="192x192" href="/img/icon-192.png?v=__ASSET_VERSION__">
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/icon-180.png?v=__ASSET_VERSION__">
+  <meta name="msapplication-TileImage" content="/img/icon-144.png?v=__ASSET_VERSION__">
   <meta name="msapplication-TileColor" content="#ffcfd0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,7 +68,21 @@
   </script>
   <script>
     window.__PANPU_ASSET_VERSION__ = '__ASSET_VERSION__';
-    window.__PANPU_DEFAULT_BACKEND_ORIGIN__ = 'http://43.99.80.200';
+    window.__PANPU_DEFAULT_BACKEND_ORIGIN__ = __DEFAULT_BACKEND_ORIGIN__;
+    window.__PANPU_ASSET_URL__ = function(assetPath) {
+      if (!assetPath) return assetPath;
+      var rawPath = String(assetPath);
+      if (/^(?:[a-z]+:)?\/\//i.test(rawPath) || rawPath.indexOf('data:') === 0 || rawPath.indexOf('blob:') === 0) {
+        return rawPath;
+      }
+      var pieces = rawPath.split('?');
+      var basePath = pieces[0];
+      var queryString = pieces[1] || '';
+      var params = new URLSearchParams(queryString);
+      params.set('v', window.__PANPU_ASSET_VERSION__ || '__ASSET_VERSION__');
+      var nextQuery = params.toString();
+      return nextQuery ? basePath + '?' + nextQuery : basePath;
+    };
   </script>
   <style>
     html[data-boot-ui="pending"] #persona-toggle,
@@ -87,6 +101,7 @@
   <link rel="stylesheet" href="/css/pomodoro-stats.css?v=__ASSET_VERSION__">
   <link rel="stylesheet" href="/css/journal.css?v=__ASSET_VERSION__">
   <link rel="stylesheet" href="/css/garden.css?v=__ASSET_VERSION__" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="/css/codex.css?v=__ASSET_VERSION__" media="print" onload="this.media='all'">
   <script src="https://unpkg.com/lucide@0.577.0/dist/umd/lucide.min.js" defer></script>
   <script>
     // SW registration only. Do not force a full-page reload on controller change;
@@ -105,7 +120,7 @@
   <!-- Sidebar (Desktop) -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <h1 class="logo"><img class="logo-img" src="/img/taofa.png" alt=""> 峡谷讨伐日记</h1>
+      <h1 class="logo"><img class="logo-img" src="/img/taofa.png?v=__ASSET_VERSION__" alt=""> 峡谷讨伐日记</h1>
     </div>
 
     <div class="love-counter" id="love-counter">
@@ -145,6 +160,10 @@
       <button class="nav-btn" data-view="shop" id="nav-shop">
         <span class="nav-icon"><i data-lucide="store"></i></span>
         <span>商城</span>
+      </button>
+      <button class="nav-btn" data-view="codex" id="nav-codex">
+        <span class="nav-icon"><i data-lucide="key-round"></i></span>
+        <span>Codex</span>
       </button>
       <button class="nav-btn" data-view="journal" id="nav-journal">
         <span class="nav-icon"><i data-lucide="book-open"></i></span>
@@ -248,7 +267,7 @@
         </div>
       </div>
       <button class="persona-toggle" id="persona-toggle" title="切换角色" data-booting="true">
-        <img class="persona-toggle-img" id="persona-toggle-img" src="/img/panpan.png" alt="">
+        <img class="persona-toggle-img" id="persona-toggle-img" src="/img/panpan.png?v=__ASSET_VERSION__" alt="">
         <span class="persona-toggle-name" id="persona-toggle-name">潘潘</span>
       </button>
       <script>
@@ -262,9 +281,9 @@
           if (!persona || ['潘潘', '蒲蒲', 'all'].indexOf(persona) === -1) persona = '潘潘';
 
           var map = {
-            '潘潘': { src: '/img/panpan.png', label: '潘潘', cls: 'persona-panpan' },
-            '蒲蒲': { src: '/img/pupu.png', label: '蒲蒲', cls: 'persona-pupu' },
-            'all': { src: '/img/all.png', label: '全部', cls: 'persona-all' }
+            '潘潘': { src: window.__PANPU_ASSET_URL__('/img/panpan.png'), label: '潘潘', cls: 'persona-panpan' },
+            '蒲蒲': { src: window.__PANPU_ASSET_URL__('/img/pupu.png'), label: '蒲蒲', cls: 'persona-pupu' },
+            'all': { src: window.__PANPU_ASSET_URL__('/img/all.png'), label: '全部', cls: 'persona-all' }
           };
           var current = map[persona] || map['潘潘'];
           img.src = current.src;
@@ -307,7 +326,7 @@
             if (!isFinite(n)) return '0';
             return Number.isInteger(n) ? String(n) : n.toFixed(1);
           };
-          coinBtn.innerHTML = '<img class="cat-coin-icon" src="/img/meow-coin.png?v=__ASSET_VERSION__" alt="喵喵币"> <span id="header-coins">' +
+          coinBtn.innerHTML = '<img class="cat-coin-icon" src="' + window.__PANPU_ASSET_URL__('/img/meow-coin.png') + '" alt="喵喵币"> <span id="header-coins">' +
             format(balance) + '</span> <span class="coin-label">喵喵币</span>';
           coinBtn.removeAttribute('data-booting');
         })();
@@ -334,13 +353,13 @@
       <div class="daily-toolbar">
         <div class="daily-person-filter">
           <button class="filter-pill active" data-assignee="all">
-            <img class="filter-avatar" src="/img/all.png" alt=""> 全部
+            <img class="filter-avatar" src="/img/all.png?v=__ASSET_VERSION__" alt=""> 全部
           </button>
           <button class="filter-pill" data-assignee="潘潘">
-            <img class="filter-avatar" src="/img/panpan.png" alt=""> 潘潘
+            <img class="filter-avatar" src="/img/panpan.png?v=__ASSET_VERSION__" alt=""> 潘潘
           </button>
           <button class="filter-pill" data-assignee="蒲蒲">
-            <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
+            <img class="filter-avatar" src="/img/pupu.png?v=__ASSET_VERSION__" alt=""> 蒲蒲
           </button>
         </div>
         <script>
@@ -374,13 +393,13 @@
       <div class="monthly-toolbar">
         <div class="monthly-person-filter">
           <button class="filter-pill active" data-assignee="all">
-            <img class="filter-avatar" src="/img/all.png" alt=""> 全部
+            <img class="filter-avatar" src="/img/all.png?v=__ASSET_VERSION__" alt=""> 全部
           </button>
           <button class="filter-pill" data-assignee="潘潘">
-            <img class="filter-avatar" src="/img/panpan.png" alt=""> 潘潘
+            <img class="filter-avatar" src="/img/panpan.png?v=__ASSET_VERSION__" alt=""> 潘潘
           </button>
           <button class="filter-pill" data-assignee="蒲蒲">
-            <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
+            <img class="filter-avatar" src="/img/pupu.png?v=__ASSET_VERSION__" alt=""> 蒲蒲
           </button>
         </div>
         <script>
@@ -400,10 +419,10 @@
       <div class="checkin-container">
         <div class="checkin-person-toggle">
           <button class="checkin-person-btn active" data-assignee="潘潘">
-            <img class="filter-avatar" src="/img/panpan.png" alt=""> 潘潘
+            <img class="filter-avatar" src="/img/panpan.png?v=__ASSET_VERSION__" alt=""> 潘潘
           </button>
           <button class="checkin-person-btn" data-assignee="蒲蒲">
-            <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
+            <img class="filter-avatar" src="/img/pupu.png?v=__ASSET_VERSION__" alt=""> 蒲蒲
           </button>
         </div>
         <script>
@@ -620,16 +639,19 @@
     <!-- Shop View -->
     <section class="view-container hidden" id="view-shop"></section>
 
+    <!-- Codex View -->
+    <section class="view-container hidden" id="view-codex"></section>
+
     <!-- Stats View -->
     <section class="view-container hidden" id="view-stats">
       <div class="stats-container">
         <div class="stats-toolbar">
           <div class="stats-person-filter">
             <button class="filter-pill active" data-assignee="潘潘">
-              <img class="filter-avatar" src="/img/panpan.png" alt=""> 潘潘
+              <img class="filter-avatar" src="/img/panpan.png?v=__ASSET_VERSION__" alt=""> 潘潘
             </button>
             <button class="filter-pill" data-assignee="蒲蒲">
-              <img class="filter-avatar" src="/img/pupu.png" alt=""> 蒲蒲
+              <img class="filter-avatar" src="/img/pupu.png?v=__ASSET_VERSION__" alt=""> 蒲蒲
             </button>
           </div>
           <script>
@@ -1044,7 +1066,7 @@
   <!-- Toast Notifications -->
   <div class="toast-container" id="toast-container"></div>
 
-  <script src="/socket.io/socket.io.js" defer></script>
+  <script src="/vendor/socket.io.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/utils.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/api.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/views/daily.js?v=__ASSET_VERSION__" defer></script>

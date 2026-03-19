@@ -3,22 +3,10 @@ module.exports = function registerGardenExpeditionRoutes(router, {
     BOAT_CATALOG,
     CHARACTER_MAP,
     randomIslandName,
+    BASE_GRID_W,
+    BASE_GRID_H,
+    initIslandPlots,
 }) {
-    const BASE_GRID_W = 8;
-    const BASE_GRID_H = 6;
-
-    function isForestPlot(x, y, gridW, gridH) {
-        const forestRows = Math.max(3, Math.floor(gridH * 0.5));
-        return y < forestRows || (y === forestRows && x > 0 && x < gridW - 1);
-    }
-
-    function pickObstacleForPlot(x, y, gridW, gridH) {
-        if (isForestPlot(x, y, gridW, gridH)) return 'wild_tree';
-        const frontierPool = x <= 1 || x >= gridW - 2 || y >= gridH - 1
-            ? ['weed', 'rock', 'weed', 'rock', 'weed']
-            : ['weed', 'rock', 'weed'];
-        return frontierPool[Math.floor(Math.random() * frontierPool.length)];
-    }
 
     router.get('/islands/:assignee', (req, res) => {
         try {
@@ -161,24 +149,7 @@ module.exports = function registerGardenExpeditionRoutes(router, {
                         db.prepare("UPDATE boats SET status = 'docked' WHERE id = ?")
                             .run(exp.boat_id);
                         const island = db.prepare('SELECT * FROM islands WHERE id = ?').get(exp.to_island_id);
-                        const plotExists = db.prepare('SELECT COUNT(*) as c FROM garden_plots WHERE island_id = ?').get(island.id);
-                        if (plotExists.c === 0) {
-                            const insertPlot = db.prepare(
-                                'INSERT INTO garden_plots (assignee, x, y, status, obstacle_type, island_id) VALUES (?, ?, ?, ?, ?, ?)'
-                            );
-                            for (let y = 0; y < island.grid_h; y++) {
-                                for (let x = 0; x < island.grid_w; x++) {
-                                    insertPlot.run(
-                                        exp.assignee,
-                                        x,
-                                        y,
-                                        'wasteland',
-                                        pickObstacleForPlot(x, y, island.grid_w, island.grid_h),
-                                        island.id
-                                    );
-                                }
-                            }
-                        }
+                        if (island) initIslandPlots(db, island);
                         exp.status = 'completed';
                     }
                 }

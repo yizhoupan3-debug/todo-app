@@ -97,6 +97,28 @@ const updateAccount = db.prepare(`
 `);
 const deleteAccountStmt = db.prepare('DELETE FROM codex_accounts WHERE id = ?');
 
+/**
+ * Simple origin guard — block direct browser navigation to sensitive endpoints.
+ * Only allows requests with a matching Origin/Referer header (same-origin AJAX)
+ * or non-browser clients (curl, scripts).
+ */
+function requireSameOrigin(req, res, next) {
+  const origin = req.headers.origin;
+  const referer = req.headers.referer;
+  // If neither header is present, this is likely a server/script call → allow
+  if (!origin && !referer) return next();
+  // If Origin matches the host, allow
+  const host = req.headers.host;
+  if (origin && new URL(origin).host === host) return next();
+  if (referer) {
+    try {
+      if (new URL(referer).host === host) return next();
+    } catch (_) { /* malformed referer */ }
+  }
+  // Block cross-origin requests to sensitive data
+  return res.status(403).json({ error: '禁止跨域访问敏感数据' });
+}
+
 // ── Routes ──
 // IMPORTANT: /local-token MUST come before /:id to avoid route collision
 
@@ -168,7 +190,8 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/codex/:id — full account detail (includes passwords)
-router.get('/:id', (req, res) => {
+// Protected: same-origin only to prevent direct URL access leaking credentials
+router.get('/:id', requireSameOrigin, (req, res) => {
   try {
     const account = getAccount.get(req.params.id);
     if (!account) return res.status(404).json({ error: '账号不存在' });

@@ -7,6 +7,15 @@ const WAKEUP_REWARD_DEADLINE_HOUR = 9;
 const GOOUT_REWARD_DEADLINE_HOUR = 9;
 const GOOUT_REWARD_DEADLINE_MIN = 30;
 
+/** Default goals per check-in type. */
+const DEFAULT_GOALS = { water: 2000, wakeup: 1, goout: 1, skincare: 1, steps: 10000 };
+
+/**
+ * Check if a check-in of the given type is eligible for coin reward.
+ * @param {string} checkinType - wakeup | goout | ...
+ * @param {Date} [now] - current time (defaults to now)
+ * @returns {boolean}
+ */
 function isRewardEligible(checkinType, now = new Date()) {
     if (checkinType === 'wakeup') {
         return now.getHours() < WAKEUP_REWARD_DEADLINE_HOUR;
@@ -17,6 +26,18 @@ function isRewardEligible(checkinType, now = new Date()) {
         return h < GOOUT_REWARD_DEADLINE_HOUR || (h === GOOUT_REWARD_DEADLINE_HOUR && m < GOOUT_REWARD_DEADLINE_MIN);
     }
     return true;
+}
+
+/**
+ * Get the goal for a given type + assignee.
+ * @param {string} type
+ * @param {string} assignee
+ * @returns {number}
+ */
+function getGoalFor(type, assignee) {
+    const goalRow = db.prepare('SELECT goal FROM checkin_goals WHERE type = ? AND assignee = ?')
+        .get(type, assignee);
+    return goalRow ? goalRow.goal : (DEFAULT_GOALS[type] || 1);
 }
 
 // GET /api/checkin — get records for a date + assignee
@@ -93,11 +114,7 @@ router.post('/', (req, res) => {
             let streakBonus = 0;
             let currentStreak = 0;
 
-            // Get goal for this type
-            const goalRow = db.prepare('SELECT goal FROM checkin_goals WHERE type = ? AND assignee = ?')
-                .get(checkinType, assignee);
-            const defaultGoals = { water: 2000, wakeup: 1, goout: 1, skincare: 1, steps: 10000 };
-            const goal = goalRow ? goalRow.goal : (defaultGoals[checkinType] || 1);
+            const goal = getGoalFor(checkinType, assignee);
 
             if (total >= goal && rewardEligible) {
                 const streak = db.prepare('SELECT * FROM checkin_streaks WHERE assignee = ? AND type = ?')
@@ -177,19 +194,77 @@ router.post('/', (req, res) => {
     }
 });
 
-// DELETE /api/checkin/:id — undo a check-in
+// DELETE /api/checkin/:id — undo a check-in (with coin rollback)
 router.delete('/:id', (req, res) => {
     try {
         const record = db.prepare('SELECT * FROM checkin_records WHERE id = ?').get(req.params.id);
         if (!record) return res.status(404).json({ error: 'not found' });
 
-        db.prepare('DELETE FROM checkin_records WHERE id = ?').run(req.params.id);
+        const txResult = db.transaction(() => {
+            // Delete the record first
+            db.prepare('DELETE FROM checkin_records WHERE id = ?').run(req.params.id);
 
-        const { total } = db.prepare(
-            'SELECT COALESCE(SUM(amount), 0) as total FROM checkin_records WHERE date = ? AND type = ? AND assignee = ?'
-        ).get(record.date, record.type, record.assignee);
+            // Recalculate total after deletion
+            const { total } = db.prepare(
+                'SELECT COALESCE(SUM(amount), 0) as total FROM checkin_records WHERE date = ? AND type = ? AND assignee = ?'
+            ).get(record.date, record.type, record.assignee);
 
-        res.json({ success: true, total });
+            const goal = getGoalFor(record.type, record.assignee);
+            let coinsRolledBack = 0;
+
+            // If total dropped below goal AND coins were awarded today, roll back
+            if (total < goal) {
+                const streak = db.prepare('SELECT * FROM checkin_streaks WHERE assignee = ? AND type = ?')
+                    .get(record.assignee, record.type);
+
+                if (streak && streak.last_date === record.date) {
+                    // Roll back daily reward
+                    coinsRolledBack += CHECKIN_DAILY_REWARD;
+                    db.prepare('UPDATE coin_accounts SET balance = MAX(0, balance - ?) WHERE assignee = ?')
+                        .run(CHECKIN_DAILY_REWARD, record.assignee);
+                    db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                        .run(record.assignee, -CHECKIN_DAILY_REWARD, 'checkin_undo', `${record.type} 撤销打卡`);
+
+                    // Roll back streak bonuses if they were awarded today
+                    if (streak.reward_3_claimed === record.date) {
+                        coinsRolledBack += CHECKIN_STREAK_3_BONUS;
+                        db.prepare('UPDATE coin_accounts SET balance = MAX(0, balance - ?) WHERE assignee = ?')
+                            .run(CHECKIN_STREAK_3_BONUS, record.assignee);
+                        db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                            .run(record.assignee, -CHECKIN_STREAK_3_BONUS, 'checkin_undo', `${record.type} 连续奖励撤销`);
+                        db.prepare('UPDATE checkin_streaks SET reward_3_claimed = NULL WHERE assignee = ? AND type = ?')
+                            .run(record.assignee, record.type);
+                    }
+                    if (streak.reward_7_claimed === record.date) {
+                        coinsRolledBack += CHECKIN_STREAK_7_BONUS;
+                        db.prepare('UPDATE coin_accounts SET balance = MAX(0, balance - ?) WHERE assignee = ?')
+                            .run(CHECKIN_STREAK_7_BONUS, record.assignee);
+                        db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                            .run(record.assignee, -CHECKIN_STREAK_7_BONUS, 'checkin_undo', `${record.type} 连续奖励撤销`);
+                        db.prepare('UPDATE checkin_streaks SET reward_7_claimed = NULL WHERE assignee = ? AND type = ?')
+                            .run(record.assignee, record.type);
+                    }
+
+                    // Reset streak: decrement or clear last_date so it won't be double-counted
+                    if (streak.current_streak > 1) {
+                        // Decrement streak and reset last_date to yesterday
+                        const prevDate = new Date(record.date);
+                        prevDate.setDate(prevDate.getDate() - 1);
+                        const prevDateStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}-${String(prevDate.getDate()).padStart(2, '0')}`;
+                        db.prepare('UPDATE checkin_streaks SET current_streak = current_streak - 1, last_date = ? WHERE assignee = ? AND type = ?')
+                            .run(prevDateStr, record.assignee, record.type);
+                    } else {
+                        // Reset streak entirely
+                        db.prepare('UPDATE checkin_streaks SET current_streak = 0, last_date = NULL WHERE assignee = ? AND type = ?')
+                            .run(record.assignee, record.type);
+                    }
+                }
+            }
+
+            return { total, coinsRolledBack };
+        })();
+
+        res.json({ success: true, ...txResult });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -200,11 +275,8 @@ router.get('/goal', (req, res) => {
     const { type, assignee } = req.query;
     if (!assignee) return res.status(400).json({ error: 'assignee is required' });
     try {
-        const row = db.prepare('SELECT goal FROM checkin_goals WHERE type = ? AND assignee = ?')
-            .get(type || 'water', assignee);
-        const defaultGoals = { water: 2000, wakeup: 1, goout: 1, skincare: 1, steps: 10000 };
         const t = type || 'water';
-        res.json({ goal: row ? row.goal : (defaultGoals[t] || 1) });
+        res.json({ goal: getGoalFor(t, assignee) });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -7,8 +7,35 @@ const Utils = {
         return window.__PANPU_ASSET_VERSION__ || 'dev';
     },
 
+    assetUrl(assetPath, { version = true } = {}) {
+        if (!assetPath) return assetPath;
+
+        const rawPath = String(assetPath);
+        if (/^(?:[a-z]+:)?\/\//i.test(rawPath) || rawPath.startsWith('data:') || rawPath.startsWith('blob:')) {
+            return rawPath;
+        }
+
+        const [basePath, queryString = ''] = rawPath.split('?');
+        const params = new URLSearchParams(queryString);
+        if (version) {
+            params.set('v', this.assetVersion());
+        }
+
+        const nextQuery = params.toString();
+        return nextQuery ? `${basePath}?${nextQuery}` : basePath;
+    },
+
+    personaAvatarUrl(persona) {
+        const map = {
+            '潘潘': '/img/panpan.png',
+            '蒲蒲': '/img/pupu.png',
+            'all': '/img/all.png',
+        };
+        return this.assetUrl(map[persona] || map['潘潘']);
+    },
+
     coinIconSrc() {
-        return `/img/meow-coin.png?v=${this.assetVersion()}`;
+        return this.assetUrl('/img/meow-coin.png');
     },
 
     headerCoinMarkup(balance = 0) {

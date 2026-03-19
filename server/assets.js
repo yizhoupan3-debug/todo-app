@@ -5,6 +5,7 @@ const crypto = require('crypto');
 const ASSET_VERSION_TOKEN = '__ASSET_VERSION__';
 const CACHE_VERSION_TOKEN = '__CACHE_VERSION__';
 const PRECACHE_ASSETS_TOKEN = '__PRECACHE_ASSETS__';
+const DEFAULT_BACKEND_ORIGIN_TOKEN = '__DEFAULT_BACKEND_ORIGIN__';
 
 function walkFiles(dir, rootDir = dir) {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -30,7 +31,14 @@ function computeAssetVersion(publicDir, files) {
     for (const relativePath of files) {
         const fullPath = path.join(publicDir, relativePath.slice(1));
         hash.update(relativePath);
-        hash.update(fs.readFileSync(fullPath));
+        try {
+            const stat = fs.statSync(fullPath);
+            hash.update(String(stat.size));
+            hash.update(String(Math.trunc(stat.mtimeMs)));
+        } catch (error) {
+            console.warn(`[assets] Failed to stat ${relativePath}: ${error.message}`);
+            hash.update('missing');
+        }
     }
 
     return hash.digest('hex').slice(0, 12);
@@ -46,18 +54,36 @@ function replaceAll(content, token, value) {
     return content.split(token).join(value);
 }
 
-function createAssetPipeline({ publicDir }) {
+function safeReadText(filePath, fallback) {
+    try {
+        return fs.readFileSync(filePath, 'utf8');
+    } catch (error) {
+        console.warn(`[assets] Failed to read ${filePath}: ${error.message}`);
+        return fallback;
+    }
+}
+
+function createAssetPipeline({ publicDir, defaultBackendOrigin = '' }) {
     const allFiles = walkFiles(publicDir);
     const version = computeAssetVersion(publicDir, allFiles);
     const precacheAssets = ['/', '/index.html', ...allFiles.filter(isPrecacheAsset)];
-    const indexTemplate = fs.readFileSync(path.join(publicDir, 'index.html'), 'utf8');
-    const swTemplate = fs.readFileSync(path.join(publicDir, 'sw.js'), 'utf8');
+    const indexTemplate = safeReadText(path.join(publicDir, 'index.html'), '<!DOCTYPE html><html><body>App shell unavailable</body></html>');
+    const manifestTemplate = safeReadText(path.join(publicDir, 'manifest.json'), '{"name":"App"}');
+    const swTemplate = safeReadText(path.join(publicDir, 'sw.js'), 'self.addEventListener("install", () => self.skipWaiting());');
+    const serializedDefaultBackendOrigin = JSON.stringify(defaultBackendOrigin || '');
 
     return {
         version,
         precacheAssets,
         renderIndex() {
-            return replaceAll(indexTemplate, ASSET_VERSION_TOKEN, version);
+            return replaceAll(
+                replaceAll(indexTemplate, ASSET_VERSION_TOKEN, version),
+                DEFAULT_BACKEND_ORIGIN_TOKEN,
+                serializedDefaultBackendOrigin
+            );
+        },
+        renderManifest() {
+            return replaceAll(manifestTemplate, ASSET_VERSION_TOKEN, version);
         },
         renderServiceWorker() {
             return replaceAll(

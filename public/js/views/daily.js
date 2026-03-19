@@ -351,7 +351,7 @@ const DailyView = {
 
     renderTaskCard(task) {
         const isDone = task.status === 'done';
-        const assigneeImg = task.assignee === '潘潘' ? '<img class="tag-avatar" src="/img/panpan.png" alt="">' : '<img class="tag-avatar" src="/img/pupu.png" alt="">';
+        const assigneeImg = `<img class="tag-avatar" src="${Utils.personaAvatarUrl(task.assignee)}" alt="">`;
 
         let metaTags = '';
         if (task.category_name) {

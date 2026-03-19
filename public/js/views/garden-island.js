@@ -1,5 +1,43 @@
 /* ── Garden Island View Extensions ── */
+function getGardenApp() {
+    return typeof window !== 'undefined' ? window.App : undefined;
+}
+
+function gardenCallApp(method, ...args) {
+    const app = getGardenApp();
+    const fn = app && typeof app[method] === 'function' ? app[method] : null;
+    if (!fn) return undefined;
+    return fn.apply(app, args);
+}
+
+function gardenToast(message, type = 'info') {
+    const app = getGardenApp();
+    if (app && typeof app.showToast === 'function') {
+        return app.showToast(message, type);
+    }
+    const logger = type === 'error' ? console.error : console.log;
+    logger(`[garden] ${message}`);
+    return undefined;
+}
+
+function gardenSyncCoins(payload) {
+    const app = getGardenApp();
+    if (app && typeof app.syncCoins === 'function') {
+        return app.syncCoins(payload);
+    }
+    return payload;
+}
+
 Object.assign(GardenView, {
+    _setPersona(persona, options = {}) {
+        const app = getGardenApp();
+        if (app && typeof app.setPersona === 'function') {
+            return app.setPersona(persona, options);
+        }
+        this.assignee = persona;
+        return undefined;
+    },
+
     /* ═══════════════════════════════
        GARDEN VIEW (rectangular island layout)
        ═══════════════════════════════ */
@@ -29,7 +67,7 @@ Object.assign(GardenView, {
         }
 
         this.render();
-        this.updateHeaderCoins();
+        this.updateHeaderCoins?.();
     },
 
     renderBackdropDecor() {
@@ -91,10 +129,10 @@ Object.assign(GardenView, {
                     <span style="color:#fff;font-size:12px;font-weight:700;opacity:0.72">\u{1F3DD}\uFE0F ${islandName}</span>
                     <div style="display:flex;gap:6px;margin-top:4px">
                         <button class="filter-pill ${this.assignee === '潘潘' ? 'active' : ''}" data-person="潘潘">
-                            <img src="/img/panpan.png" alt="" style="width:16px;height:16px;border-radius:50%"> 潘潘
+                            <img src="${Utils.personaAvatarUrl('潘潘')}" alt="" style="width:16px;height:16px;border-radius:50%"> 潘潘
                         </button>
                         <button class="filter-pill ${this.assignee === '蒲蒲' ? 'active' : ''}" data-person="蒲蒲">
-                            <img src="/img/pupu.png" alt="" style="width:16px;height:16px;border-radius:50%"> 蒲蒲
+                            <img src="${Utils.personaAvatarUrl('蒲蒲')}" alt="" style="width:16px;height:16px;border-radius:50%"> 蒲蒲
                         </button>
                     </div>
                 </div>
@@ -107,7 +145,7 @@ Object.assign(GardenView, {
 
             <div class="island-viewport" id="island-viewport">
                 <div class="island-world" id="island-world">
-                    <img class="scene-backdrop" src="/img/boom_beach_island_bg_v2.png" alt="" draggable="false">
+                    <img class="scene-backdrop" src="${gardenAsset('/img/boom_beach_island_bg_v2.png')}" alt="" draggable="false">
                     <div class="scene-sea-glow"></div>
                     <div class="scene-surf scene-surf-1"></div>
                     <div class="scene-surf scene-surf-2"></div>
@@ -172,7 +210,7 @@ Object.assign(GardenView, {
         if (plot.status === 'cleared') {
             const sel = this.selectedTree;
             return `<div class="iplot cleared ${zoneClass} ${sel ? 'plantable' : ''} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
-                <img src="/img/garden/tilled_land.png?v=4" alt="" class="iplot-tilled">
+                <img src="${gardenAsset('/img/garden/tilled_land.png?v=4')}" alt="" class="iplot-tilled">
                 ${isSelected && sel ? '<button class="iplot-action" data-action="plant" title="">🌱</button>' : ''}
             </div>`;
         }
@@ -180,7 +218,7 @@ Object.assign(GardenView, {
         const gm = plot.growth_minutes || 0;
         const stage = this.getGrowthStage(gm);
         const pct = Math.min(100, Math.round(gm / 150 * 100));
-        let imgSrc = catItem?.stages?.[stage] || '/img/trees/seed.png';
+        let imgSrc = catItem?.stages?.[stage] || gardenAsset('/img/trees/seed.png');
         return `<div class="iplot planted ${zoneClass} stage-${stage} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
             <img src="${imgSrc}" alt="" class="iplot-img">
             <div class="iplot-bar"><div class="iplot-bar-fill" style="width:${pct}%"></div></div>
@@ -438,7 +476,7 @@ Object.assign(GardenView, {
     bindGardenEvents() {
         document.querySelectorAll('#view-garden .filter-pill').forEach(btn => {
             btn.addEventListener('click', async () => {
-                App.setPersona(btn.dataset.person, { refresh: false });
+                this._setPersona(btn.dataset.person, { refresh: false });
                 this.assignee = btn.dataset.person;
                 this.currentIsland = null;
                 this._staticRendered = false;
@@ -615,7 +653,7 @@ Object.assign(GardenView, {
                 else if (action === 'remove') await this.removePlot(plotId);
                 else if (action === 'move') this.startMovePlot(plotId);
                 else if (action === 'speedup') await this.speedupPlot(plotId);
-                else if (action === 'items') App.showToast('🧪 道具功能即将上线！');
+                else if (action === 'items') gardenToast('🧪 道具功能即将上线！');
             });
         });
     },
@@ -633,13 +671,13 @@ Object.assign(GardenView, {
         if (!plot || !plot.tree_id) return;
         try {
             const data = await API.harvestTree({ assignee: this.assignee, tree_id: plot.tree_id });
-            App.syncCoins({ assignee: this.assignee, balance: data.balance, delta: data.reward, animate: data.reward > 0 });
+            gardenSyncCoins({ assignee: this.assignee, balance: data.balance, delta: data.reward, animate: data.reward > 0 });
             this.balance = data.balance;
             this._patchPlot(plotId, { last_harvested: this._todayString() });
             this._updateDynamicContent();
             this._flashPlot(plotId, 'plot-harvested');
-            App.showToast(`💰 收获 ${data.reward} 喵喵币！`, 'success');
-        } catch (e) { App.showToast(e.message || '收取失败'); }
+            gardenToast(`💰 收获 ${data.reward} 喵喵币！`, 'success');
+        } catch (e) { gardenToast(e.message || '收取失败'); }
     },
 
     async removePlot(plotId) {
@@ -653,11 +691,11 @@ Object.assign(GardenView, {
                 body: JSON.stringify({ assignee: this.assignee, plot_id: plotId })
             });
             const data = await res.json();
-            if (!res.ok) { App.showToast(data.error || '铲除失败'); return; }
-            App.showToast('🗑️ 已铲除', 'success');
+            if (!res.ok) { gardenToast(data.error || '铲除失败'); return; }
+            gardenToast('🗑️ 已铲除', 'success');
             this._staticRendered = false;
             await this.open();
-        } catch (e) { App.showToast('网络错误'); }
+        } catch (e) { gardenToast('网络错误'); }
     },
 
     startMovePlot(plotId) {
@@ -666,7 +704,7 @@ Object.assign(GardenView, {
         document.querySelectorAll('.iplot.cleared').forEach(el => {
             el.classList.add('move-target');
         });
-        App.showToast('🔄 点击一个空地块来移动植物', 'info');
+        gardenToast('🔄 点击一个空地块来移动植物', 'info');
     },
 
     async executeMoveToPlot(targetPlotId) {
@@ -681,12 +719,12 @@ Object.assign(GardenView, {
                 })
             });
             const data = await res.json();
-            if (!res.ok) { App.showToast(data.error || '移动失败'); return; }
-            App.showToast('🔄 移动成功！', 'success');
+            if (!res.ok) { gardenToast(data.error || '移动失败'); return; }
+            gardenToast('🔄 移动成功！', 'success');
             this._movingPlotId = null;
             this._staticRendered = false;
             await this.open();
-        } catch (e) { App.showToast('网络错误'); }
+        } catch (e) { gardenToast('网络错误'); }
     },
 
     async speedupPlot(plotId) {
@@ -697,12 +735,12 @@ Object.assign(GardenView, {
                 body: JSON.stringify({ assignee: this.assignee, plot_id: plotId })
             });
             const data = await res.json();
-            if (!res.ok) { App.showToast(data.error || '加速失败'); return; }
-            App.syncCoins({ assignee: this.assignee, balance: data.balance });
-            App.showToast(`⏩ 加速成功！花费 ${data.cost} 喵喵币`, 'success');
+            if (!res.ok) { gardenToast(data.error || '加速失败'); return; }
+            gardenSyncCoins({ assignee: this.assignee, balance: data.balance });
+            gardenToast(`⏩ 加速成功！花费 ${data.cost} 喵喵币`, 'success');
             this._staticRendered = false;
             await this.open();
-        } catch (e) { App.showToast('网络错误'); }
+        } catch (e) { gardenToast('网络错误'); }
     },
 
     showWorldMap() {
@@ -758,7 +796,7 @@ Object.assign(GardenView, {
 
         let expHtml = '';
         if (activeExp) {
-            const start = new Date(activeExp.started_at.replace(' ', 'T'));
+            const start = new Date(activeExp.started_at.replace(' ', 'T') + '+08:00');
             const elapsed = Math.floor((Date.now() - start.getTime()) / 60000);
             const pct = Math.min(100, Math.round(elapsed / activeExp.duration_min * 100));
             const rem = Math.max(0, activeExp.duration_min - elapsed);
@@ -787,37 +825,37 @@ Object.assign(GardenView, {
     async buyBoat(type) {
         try {
             const r = await API.fetch('/garden/boats/buy', { method: 'POST', body: JSON.stringify({ assignee: this.assignee, boat_type: type }) }).then(r => { if (!r.ok) throw r; return r.json(); });
-            App.syncCoins({ assignee: this.assignee, balance: r.balance });
-            App.showToast(`🚢 购买成功！${r.boat.name}`, 'success');
+            gardenSyncCoins({ assignee: this.assignee, balance: r.balance });
+            gardenToast(`🚢 购买成功！${r.boat.name}`, 'success');
             await this.open();
         } catch (e) {
             const err = e.json ? await e.json() : { error: '购买失败' };
-            App.showToast(err.error || '购买失败', 'error');
+            gardenToast(err.error || '购买失败', 'error');
         }
     },
 
     async startExpedition(boatId) {
         try {
             const r = await API.fetch('/garden/expeditions/start', { method: 'POST', body: JSON.stringify({ assignee: this.assignee, boat_id: boatId }) }).then(r => { if (!r.ok) throw r; return r.json(); });
-            App.showToast(`⛵ ${r.character} 出发探索 ${r.targetIsland.name}！`, 'success');
+            gardenToast(`⛵ ${r.character} 出发探索 ${r.targetIsland.name}！`, 'success');
             await this.open();
         } catch (e) {
             const err = e.json ? await e.json() : { error: '出发失败' };
-            App.showToast(err.error || '出发失败', 'error');
+            gardenToast(err.error || '出发失败', 'error');
         }
     },
 
     async clearPlot(plotId, obstacleType) {
         const obs = this.obstacleMap[obstacleType] || this.obstacleMap.rock;
         if (this.balance < obs.cost) {
-            App.showToast(`喵喵币不足！需要 ${obs.cost} 喵喵币`, 'error');
+            gardenToast(`喵喵币不足！需要 ${obs.cost} 喵喵币`, 'error');
             return;
         }
         if (!confirm(`开荒: 清除${obs.name}，花费 ${obs.cost} 喵喵币？`)) return;
 
         try {
             const result = await API.clearPlot({ assignee: this.assignee, plot_id: plotId });
-            App.syncCoins({ assignee: this.assignee, balance: result.balance });
+            gardenSyncCoins({ assignee: this.assignee, balance: result.balance });
             this.balance = result.balance;
             this._patchPlot(plotId, {
                 status: 'cleared',
@@ -833,9 +871,9 @@ Object.assign(GardenView, {
             this._updateDynamicContent();
             this._flashPlot(plotId, 'plot-cleared');
             const followup = this.selectedTree ? ' 现在点这块空地就能种下去。' : ' 现在它已经是可种植空地了。';
-            App.showToast(`⛏️ 开荒成功！-${result.cost} 喵喵币。${followup}`, 'success');
+            gardenToast(`⛏️ 开荒成功！-${result.cost} 喵喵币。${followup}`, 'success');
         } catch (e) {
-            App.showToast(e.message || '开荒失败', 'error');
+            gardenToast(e.message || '开荒失败', 'error');
         }
     },
 
@@ -843,7 +881,7 @@ Object.assign(GardenView, {
         const item = this.catalog.find(c => c.type === this.selectedTree);
         if (!item) return;
         if (this.balance < item.cost) {
-            App.showToast(`喵喵币不足！需要 ${item.cost} 喵喵币`, 'error');
+            gardenToast(`喵喵币不足！需要 ${item.cost} 喵喵币`, 'error');
             return;
         }
 
@@ -853,7 +891,7 @@ Object.assign(GardenView, {
                 tree_type: item.type,
                 plot_id: plotId,
             });
-            App.syncCoins({ assignee: this.assignee, balance: result.balance });
+            gardenSyncCoins({ assignee: this.assignee, balance: result.balance });
             this.balance = result.balance;
             this._patchPlot(plotId, {
                 status: 'planted',
@@ -869,9 +907,9 @@ Object.assign(GardenView, {
             this.selectedTree = null;
             this._updateDynamicContent();
             this._flashPlot(plotId, 'plot-planted');
-            App.showToast(`🌱 种下了${item.name}！`, 'success');
+            gardenToast(`🌱 种下了${item.name}！`, 'success');
         } catch (e) {
-            App.showToast(e.message || '种植失败', 'error');
+            gardenToast(e.message || '种植失败', 'error');
         }
     },
     _renderGroundDecor() {

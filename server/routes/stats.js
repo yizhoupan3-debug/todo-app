@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db');
+const { formatDateStr, todayStr } = require('../utils');
 
 const router = express.Router();
 
@@ -13,7 +14,7 @@ router.get('/', (req, res) => {
     for (let i = days - 1; i >= 0; i--) {
         const d = new Date();
         d.setDate(d.getDate() - i);
-        dates.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+        dates.push(formatDateStr(d));
     }
     const startDate = dates[0];
     const endDate = dates[dates.length - 1];
@@ -117,8 +118,7 @@ router.post('/pomodoro', (req, res) => {
         return res.status(400).json({ error: 'assignee and focus_minutes are required' });
     }
 
-    const now = new Date();
-    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const today = todayStr();
 
     try {
         const result = db.prepare(`
@@ -129,7 +129,8 @@ router.post('/pomodoro', (req, res) => {
         const session = db.prepare('SELECT * FROM pomodoro_sessions WHERE id = ?')
             .get(result.lastInsertRowid);
 
-        // Coin reward is handled by the dedicated garden coin flow to avoid double-awarding.
+        // Coin reward is handled client-side via POST /api/garden/coins/earn
+        // after the focus self-rating dialog, to avoid double-awarding.
         const coinsEarned = 0;
 
         res.status(201).json({ ...session, coinsEarned });

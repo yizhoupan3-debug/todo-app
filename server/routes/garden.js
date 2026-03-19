@@ -7,6 +7,8 @@ require('./garden-coins')(router, { db, ...shared });
 require('./garden-plots')(router, { db, ...shared });
 require('./garden-expeditions')(router, { db, ...shared });
 
+const { initIslandPlots, BASE_GRID_W, BASE_GRID_H } = shared;
+
 /* ── Consolidated endpoint: one round-trip for garden open() ── */
 router.get('/all/:assignee', (req, res) => {
     try {
@@ -25,14 +27,9 @@ router.get('/all/:assignee', (req, res) => {
             ? islands.find(i => String(i.id) === String(islandId))
             : islands.find(i => i.island_type === 'starter') || islands[0];
 
-        // 4) Plots for target island (reuses ensureIslandSceneGrid via the plots route logic)
+        // 4) Plots for target island
         let plots = [];
         if (targetIsland) {
-            // Inline ensureIslandSceneGrid logic
-            const BASE_GRID_W = 8, BASE_GRID_H = 6;
-            const gridW = Math.max(BASE_GRID_W, Number(targetIsland.grid_w) || BASE_GRID_W);
-            const gridH = Math.max(BASE_GRID_H, Number(targetIsland.grid_h) || BASE_GRID_H);
-
             plots = db.prepare(
                 `SELECT gp.*, t.tree_type, t.growth_minutes, t.status as tree_status, t.planted_at, t.last_harvested
                  FROM garden_plots gp
@@ -59,6 +56,9 @@ router.get('/all/:assignee', (req, res) => {
                     db.prepare("UPDATE expeditions SET status = 'completed', completed_at = datetime('now','localtime') WHERE id = ?").run(exp.id);
                     db.prepare('UPDATE islands SET discovered = 1 WHERE id = ?').run(exp.to_island_id);
                     db.prepare("UPDATE boats SET status = 'docked' WHERE id = ?").run(exp.boat_id);
+                    // Initialize plots for the newly discovered island
+                    const newIsland = db.prepare('SELECT * FROM islands WHERE id = ?').get(exp.to_island_id);
+                    if (newIsland) initIslandPlots(db, newIsland);
                     exp.status = 'completed';
                 }
             }
