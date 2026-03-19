@@ -309,10 +309,12 @@ if (typeof App === 'undefined') {
     },
 
     showToast(message, type = 'info') {
-        const container = document.getElementById('toast-container');
+        let container = document.getElementById('toast-container');
         if (!container) {
-            console[type === 'error' ? 'error' : 'log'](`[${type}]`, message);
-            return;
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            container.id = 'toast-container';
+            document.body.appendChild(container);
         }
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;

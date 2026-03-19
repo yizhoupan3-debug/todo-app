@@ -104,12 +104,12 @@ Object.assign(GardenView, {
             totalCount,
         ].join('|');
 
-        if (this._staticRendered) {
-            if (this._renderSignature === renderSignature) {
+        if (this._state.staticRendered) {
+            if (this._state.renderSignature === renderSignature) {
                 this._updateDynamicContent();
                 return;
             }
-            this._staticRendered = false;
+            this._state.staticRendered = false;
         }
 
         const clearedCount = this.plots.filter(p => p.status !== 'wasteland').length;
@@ -181,13 +181,13 @@ Object.assign(GardenView, {
         this._bindPlotInteractions(el);
         this.initDrag();
         removeWhiteBg(el);
-        this._staticRendered = true;
-        this._renderSignature = renderSignature;
+        this._state.staticRendered = true;
+        this._state.renderSignature = renderSignature;
     },
 
     renderIslandPlot(plot, layout) {
         const { left, top, zone, scale, zIndex, tilt, sway, spriteScale, depth } = layout || {};
-        const isSelected = this._selectedPlotId === plot.id;
+        const isSelected = this._state.selectedPlotId === plot.id;
         const style = [
             `left:${left ?? 50}%`,
             `top:${top ?? 60}%`,
@@ -234,14 +234,14 @@ Object.assign(GardenView, {
         const vp = document.getElementById('island-viewport');
         const world = document.getElementById('island-world');
         if (!vp || !world) return;
-        if (!this._dragState) {
-            this._dragState = { active: false, sx: 0, sy: 0, px: 0, py: 0, lastX: 0, lastY: 0, lastT: 0, vx: 0, vy: 0 };
+        if (!this._state.dragState) {
+            this._state.dragState = { active: false, sx: 0, sy: 0, px: 0, py: 0, lastX: 0, lastY: 0, lastT: 0, vx: 0, vy: 0 };
         }
-        const dragState = this._dragState;
+        const dragState = this._state.dragState;
         const stopInertia = () => {
-            if (this._inertiaFrame) {
-                cancelAnimationFrame(this._inertiaFrame);
-                this._inertiaFrame = null;
+            if (this._state.inertiaFrame) {
+                cancelAnimationFrame(this._state.inertiaFrame);
+                this._state.inertiaFrame = null;
             }
         };
         const startInertia = () => {
@@ -252,23 +252,23 @@ Object.assign(GardenView, {
                 const liveWorld = document.getElementById('island-world');
                 const liveViewport = document.getElementById('island-viewport');
                 if (!liveWorld || !liveViewport) {
-                    this._inertiaFrame = null;
+                    this._state.inertiaFrame = null;
                     return;
                 }
                 vx *= 0.92;
                 vy *= 0.92;
                 if (Math.abs(vx) < 0.18 && Math.abs(vy) < 0.18) {
-                    this._inertiaFrame = null;
+                    this._state.inertiaFrame = null;
                     return;
                 }
-                this._panX += vx;
-                this._panY += vy;
+                this._state.panX += vx;
+                this._state.panY += vy;
                 this._clampPan(liveViewport, liveWorld);
                 this._applyWorldTransform(liveWorld);
-                this._inertiaFrame = requestAnimationFrame(step);
+                this._state.inertiaFrame = requestAnimationFrame(step);
             };
             if (Math.abs(vx) > 0.18 || Math.abs(vy) > 0.18) {
-                this._inertiaFrame = requestAnimationFrame(step);
+                this._state.inertiaFrame = requestAnimationFrame(step);
             }
         };
         const trackVelocity = (pageX, pageY) => {
@@ -291,8 +291,8 @@ Object.assign(GardenView, {
             this._updateZoomDisplay();
         });
 
-        if (!this._viewportResizeBound) {
-            this._viewportResizeBound = true;
+        if (!this._state.viewportResizeBound) {
+            this._state.viewportResizeBound = true;
             window.addEventListener('resize', () => {
                 const liveViewport = document.getElementById('island-viewport');
                 const liveWorld = document.getElementById('island-world');
@@ -311,8 +311,8 @@ Object.assign(GardenView, {
             dragState.active = true;
             dragState.sx = e.pageX;
             dragState.sy = e.pageY;
-            dragState.px = this._panX;
-            dragState.py = this._panY;
+            dragState.px = this._state.panX;
+            dragState.py = this._state.panY;
             dragState.lastX = e.pageX;
             dragState.lastY = e.pageY;
             dragState.lastT = performance.now();
@@ -321,33 +321,33 @@ Object.assign(GardenView, {
             vp.style.cursor = 'grabbing';
         });
 
-        if (!this._dragInitialized) {
-            this._dragInitialized = true;
+        if (!this._state.dragInitialized) {
+            this._state.dragInitialized = true;
             document.addEventListener('mousemove', e => {
-                if (!this._dragState?.active) return;
+                if (!this._state.dragState?.active) return;
                 e.preventDefault();
                 // Buffer the position — only commit to DOM on next animation frame
-                this._dragState._pendingX = this._dragState.px + (e.pageX - this._dragState.sx);
-                this._dragState._pendingY = this._dragState.py + (e.pageY - this._dragState.sy);
+                this._state.dragState._pendingX = this._state.dragState.px + (e.pageX - this._state.dragState.sx);
+                this._state.dragState._pendingY = this._state.dragState.py + (e.pageY - this._state.dragState.sy);
                 trackVelocity(e.pageX, e.pageY);
-                if (!this._dragRafPending) {
-                    this._dragRafPending = true;
+                if (!this._state.dragRafPending) {
+                    this._state.dragRafPending = true;
                     requestAnimationFrame(() => {
-                        this._dragRafPending = false;
-                        if (!this._dragState?.active) return;
+                        this._state.dragRafPending = false;
+                        if (!this._state.dragState?.active) return;
                         const worldEl = document.getElementById('island-world');
                         const vpEl = document.getElementById('island-viewport');
                         if (!worldEl || !vpEl) return;
-                        this._panX = this._dragState._pendingX;
-                        this._panY = this._dragState._pendingY;
+                        this._state.panX = this._state.dragState._pendingX;
+                        this._state.panY = this._state.dragState._pendingY;
                         this._clampPan(vpEl, worldEl);
                         this._applyWorldTransform(worldEl);
                     });
                 }
             });
             document.addEventListener('mouseup', () => {
-                const shouldGlide = !!(this._dragState?.active && (Math.abs(this._dragState.vx) > 0.18 || Math.abs(this._dragState.vy) > 0.18));
-                if (this._dragState) this._dragState.active = false;
+                const shouldGlide = !!(this._state.dragState?.active && (Math.abs(this._state.dragState.vx) > 0.18 || Math.abs(this._state.dragState.vy) > 0.18));
+                if (this._state.dragState) this._state.dragState.active = false;
                 const vpEl = document.getElementById('island-viewport');
                 if (vpEl) vpEl.style.cursor = 'grab';
                 if (shouldGlide) startInertia();
@@ -364,7 +364,7 @@ Object.assign(GardenView, {
             this.closePlotMenu();
             stopInertia();
             const factor = e.deltaY > 0 ? 0.92 : 1.08;
-            this._zoomAtPoint(vp, world, this._zoom * factor, e.clientX, e.clientY);
+            this._state.zoomAtPoint(vp, world, this._state.zoom * factor, e.clientX, e.clientY);
             this._updateZoomDisplay();
         }, { passive: false });
 
@@ -389,8 +389,8 @@ Object.assign(GardenView, {
                 dragState.active = true;
                 dragState.sx = e.touches[0].pageX;
                 dragState.sy = e.touches[0].pageY;
-                dragState.px = this._panX;
-                dragState.py = this._panY;
+                dragState.px = this._state.panX;
+                dragState.py = this._state.panY;
                 dragState.lastX = e.touches[0].pageX;
                 dragState.lastY = e.touches[0].pageY;
                 dragState.lastT = performance.now();
@@ -408,8 +408,8 @@ Object.assign(GardenView, {
                 );
                 const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                 const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-                const nextZoom = lastPinchDist ? this._zoom * (dist / lastPinchDist) : this._zoom;
-                this._zoomAtPoint(vp, world, nextZoom, centerX, centerY);
+                const nextZoom = lastPinchDist ? this._state.zoom * (dist / lastPinchDist) : this._state.zoom;
+                this._state.zoomAtPoint(vp, world, nextZoom, centerX, centerY);
                 this._updateZoomDisplay();
                 lastPinchDist = dist;
             } else if (dragState.active && e.touches.length === 1) {
@@ -417,13 +417,13 @@ Object.assign(GardenView, {
                 dragState._pendingX = dragState.px + (e.touches[0].pageX - dragState.sx);
                 dragState._pendingY = dragState.py + (e.touches[0].pageY - dragState.sy);
                 trackVelocity(e.touches[0].pageX, e.touches[0].pageY);
-                if (!this._dragRafPending) {
-                    this._dragRafPending = true;
+                if (!this._state.dragRafPending) {
+                    this._state.dragRafPending = true;
                     requestAnimationFrame(() => {
-                        this._dragRafPending = false;
+                        this._state.dragRafPending = false;
                         if (!dragState.active) return;
-                        this._panX = dragState._pendingX;
-                        this._panY = dragState._pendingY;
+                        this._state.panX = dragState._pendingX;
+                        this._state.panY = dragState._pendingY;
                         this._clampPan(vp, world);
                         this._applyWorldTransform(world);
                     });
@@ -444,13 +444,13 @@ Object.assign(GardenView, {
         document.getElementById('zoom-in-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
             const rect = vp.getBoundingClientRect();
-            this._zoomAtPoint(vp, world, this._zoom + 0.15, rect.left + rect.width / 2, rect.top + rect.height / 2);
+            this._state.zoomAtPoint(vp, world, this._state.zoom + 0.15, rect.left + rect.width / 2, rect.top + rect.height / 2);
             this._updateZoomDisplay();
         });
         document.getElementById('zoom-out-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
             const rect = vp.getBoundingClientRect();
-            this._zoomAtPoint(vp, world, this._zoom - 0.15, rect.left + rect.width / 2, rect.top + rect.height / 2);
+            this._state.zoomAtPoint(vp, world, this._state.zoom - 0.15, rect.left + rect.width / 2, rect.top + rect.height / 2);
             this._updateZoomDisplay();
         });
         document.getElementById('zoom-reset-btn')?.addEventListener('click', () => {
@@ -462,7 +462,7 @@ Object.assign(GardenView, {
 
     _updateZoomDisplay() {
         const el = document.getElementById('zoom-level-text');
-        if (el) el.textContent = Math.round(this._zoom * 100) + '%';
+        if (el) el.textContent = Math.round(this._state.zoom * 100) + '%';
     },
 
     renderPlantingToolbar() {
@@ -483,7 +483,7 @@ Object.assign(GardenView, {
                 this._setPersona(btn.dataset.person, { refresh: false });
                 this.assignee = btn.dataset.person;
                 this.currentIsland = null;
-                this._staticRendered = false;
+                this._state.staticRendered = false;
                 await this.open();
             });
         });
@@ -516,8 +516,8 @@ Object.assign(GardenView, {
         document.getElementById('island-viewport')?.addEventListener('click', (e) => {
             if (!e.target.closest('.plot-menu') && !e.target.closest('.iplot')) {
                 this.closePlotMenu();
-                if (this._selectedPlotId != null) {
-                    this._selectedPlotId = null;
+                if (this._state.selectedPlotId != null) {
+                    this._state.selectedPlotId = null;
                     this._updateDynamicContent();
                 }
             }
@@ -528,7 +528,7 @@ Object.assign(GardenView, {
 
     showWastelandMenu(plotId, plotEl) {
         this.closePlotMenu();
-        this._selectedPlotId = plotId;
+        this._state.selectedPlotId = plotId;
         const plot = this.plots.find(p => p.id === plotId);
         if (!plot) return;
 
@@ -554,7 +554,7 @@ Object.assign(GardenView, {
         menu.style.position = 'fixed';
         document.body.appendChild(menu);
         this._positionPlotMenu(menu, plotEl);
-        this._activePlotMenu = { plotId, plotEl, menuEl: menu };
+        this._state.activePlotMenu = { plotId, plotEl, menuEl: menu };
 
         const outsideHandler = (e) => {
             if (e.target.closest('.plot-menu')) return;
@@ -562,10 +562,10 @@ Object.assign(GardenView, {
             this.closePlotMenu();
         };
         document.addEventListener('mousedown', outsideHandler, true);
-        this._plotMenuCleanup = () => {
+        this._state.plotMenuCleanup = () => {
             document.removeEventListener('mousedown', outsideHandler, true);
-            this._activePlotMenu = null;
-            this._plotMenuCleanup = null;
+            this._state.activePlotMenu = null;
+            this._state.plotMenuCleanup = null;
         };
 
         menu.querySelector('.pm-clear')?.addEventListener('click', async (e) => {
@@ -576,7 +576,7 @@ Object.assign(GardenView, {
 
     showPlotMenu(plotId, plotEl) {
         this.closePlotMenu();
-        this._selectedPlotId = plotId;
+        this._state.selectedPlotId = plotId;
         const plot = this.plots.find(p => p.id === plotId);
         if (!plot) return;
 
@@ -622,7 +622,7 @@ Object.assign(GardenView, {
 
         document.body.appendChild(menu);
         this._positionPlotMenu(menu, plotEl);
-        this._activePlotMenu = { plotId, plotEl, menuEl: menu };
+        this._state.activePlotMenu = { plotId, plotEl, menuEl: menu };
 
         const outsideHandler = (e) => {
             if (e.target.closest('.plot-menu')) return;
@@ -635,19 +635,19 @@ Object.assign(GardenView, {
                 this.closePlotMenu();
                 return;
             }
-            this._activePlotMenu = { plotId, plotEl: livePlotEl, menuEl: menu };
+            this._state.activePlotMenu = { plotId, plotEl: livePlotEl, menuEl: menu };
             this._positionPlotMenu(menu, livePlotEl);
         };
         const viewport = document.getElementById('island-viewport');
         document.addEventListener('mousedown', outsideHandler, true);
         window.addEventListener('resize', viewportChangeHandler);
         viewport?.addEventListener('scroll', viewportChangeHandler, { passive: true });
-        this._plotMenuCleanup = () => {
+        this._state.plotMenuCleanup = () => {
             document.removeEventListener('mousedown', outsideHandler, true);
             window.removeEventListener('resize', viewportChangeHandler);
             viewport?.removeEventListener('scroll', viewportChangeHandler);
-            this._activePlotMenu = null;
-            this._plotMenuCleanup = null;
+            this._state.activePlotMenu = null;
+            this._state.plotMenuCleanup = null;
         };
 
         menu.querySelectorAll('.pm-btn:not(.disabled)').forEach(btn => {
@@ -664,7 +664,7 @@ Object.assign(GardenView, {
     },
 
     closePlotMenu() {
-        this._plotMenuCleanup?.();
+        this._state.plotMenuCleanup?.();
         document.querySelectorAll('.plot-menu').forEach(m => m.remove());
         // Note: _movingPlotId is NOT cleared here — only on explicit cancel or move completion
         document.querySelectorAll('.iplot.move-target').forEach(el => el.classList.remove('move-target'));
@@ -698,14 +698,13 @@ Object.assign(GardenView, {
             const data = await res.json();
             if (!res.ok) { gardenToast(data.error || '铲除失败'); return; }
             gardenToast('🗑️ 已铲除', 'success');
-            this._staticRendered = false;
-            await this.open();
+            await this.refreshData();
         } catch (e) { gardenToast('网络错误'); }
     },
 
     startMovePlot(plotId) {
         this.closePlotMenu();
-        this._movingPlotId = plotId;
+        this._state.movingPlotId = plotId;
         document.querySelectorAll('.iplot.cleared').forEach(el => {
             el.classList.add('move-target');
         });
@@ -713,14 +712,14 @@ Object.assign(GardenView, {
     },
 
     cancelMovePlot() {
-        this._movingPlotId = null;
+        this._state.movingPlotId = null;
         document.querySelectorAll('.iplot.move-target').forEach(el => el.classList.remove('move-target'));
     },
 
     async executeMoveToPlot(targetPlotId) {
-        if (!this._movingPlotId) return;
-        const movingId = this._movingPlotId;
-        this._movingPlotId = null;
+        if (!this._state.movingPlotId) return;
+        const movingId = this._state.movingPlotId;
+        this._state.movingPlotId = null;
         document.querySelectorAll('.iplot.move-target').forEach(el => el.classList.remove('move-target'));
         try {
             const res = await API.fetch('/garden/plots/move', {
@@ -734,8 +733,7 @@ Object.assign(GardenView, {
             const data = await res.json();
             if (!res.ok) { gardenToast(data.error || '移动失败'); return; }
             gardenToast('🔄 移动成功！', 'success');
-            this._staticRendered = false;
-            await this.open();
+            await this.refreshData();
         } catch (e) { gardenToast('网络错误'); }
     },
 
@@ -750,8 +748,7 @@ Object.assign(GardenView, {
             if (!res.ok) { gardenToast(data.error || '加速失败'); return; }
             gardenSyncCoins({ assignee: this.assignee, balance: data.balance });
             gardenToast(`⏩ 加速成功！花费 ${data.cost} 喵喵币`, 'success');
-            this._staticRendered = false;
-            await this.open();
+            await this.refreshData();
         } catch (e) { gardenToast('网络错误'); }
     },
 
@@ -795,6 +792,68 @@ Object.assign(GardenView, {
         });
     },
 
+    /** @private Build active expedition progress HTML */
+    _renderExpeditionHtml(exp) {
+        if (!exp) return '';
+        const start = new Date(exp.started_at.replace(' ', 'T') + '+08:00');
+        const elapsed = Math.floor((Date.now() - start.getTime()) / 60000);
+        const pct = Math.min(100, Math.round(elapsed / exp.duration_min * 100));
+        const rem = Math.max(0, exp.duration_min - elapsed);
+        const remLabel = rem >= 60
+            ? `${Math.floor(rem / 60)}小时${rem % 60 ? rem % 60 + '分' : ''}`
+            : `${rem}分钟`;
+        const charIcon = this.assignee === '潘潘' ? '🐱' : '🐰';
+        return `
+            <div class="expedition-active">
+                <div class="expedition-header">
+                    <div class="expedition-char">${charIcon}</div>
+                    <div class="expedition-info">
+                        <div class="expedition-dest">${exp.character} 正在探索未知海域...</div>
+                        <div class="expedition-time">剩余约 ${remLabel}</div>
+                    </div>
+                </div>
+                <div class="expedition-bar">
+                    <div class="expedition-bar-fill" style="width:${pct}%"></div>
+                </div>
+            </div>`;
+    },
+
+    /** @private Build "my boats" section HTML */
+    _renderMyBoatsHtml(boats, catalog, hasActiveExp) {
+        if (!boats.length) {
+            return '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:8px">还没有船只，先买一艘吧！</div>';
+        }
+        return boats.map(b => {
+            const s = catalog[b.boat_type] || catalog.raft;
+            const isSailing = b.status === 'sailing';
+            const actionBtn = (!isSailing && !hasActiveExp)
+                ? `<button class="boat-card-action explore" data-sail="${b.id}">🧭 探索</button>`
+                : '';
+            return `
+                <div class="boat-card ${isSailing ? 'sailing' : ''}" data-boat-id="${b.id}">
+                    <div class="boat-card-icon">${s.icon}</div>
+                    <div class="boat-card-info">
+                        <div class="boat-card-name">${s.name}</div>
+                        <div class="boat-card-status">${isSailing ? '⛵ 航行中' : '停泊中'} · ${s.label}</div>
+                    </div>
+                    ${actionBtn}
+                </div>`;
+        }).join('');
+    },
+
+    /** @private Build boat shop section HTML */
+    _renderBoatShopHtml(catalog) {
+        return Object.entries(catalog).map(([t, s]) => `
+            <div class="boat-card">
+                <div class="boat-card-icon">${s.icon}</div>
+                <div class="boat-card-info">
+                    <div class="boat-card-name">${s.name}</div>
+                    <div class="boat-card-status">${s.cost} 喵喵币 · ${s.label}</div>
+                </div>
+                <button class="boat-card-action buy" data-buy="${t}">购买</button>
+            </div>`).join('');
+    },
+
     async showHarborPanel() {
         try {
             const bd = await API.fetch(`/garden/boats/${encodeURIComponent(this.assignee)}`).then(r => r.json());
@@ -805,36 +864,39 @@ Object.assign(GardenView, {
         } catch (e) { /* keep */ }
 
         document.querySelector('.harbor-panel')?.remove();
-        const CAT = { raft: { name: '小木筏', cost: 200, icon: '🛶', dur: 60, label: '1小时' }, sailboat: { name: '帆船', cost: 500, icon: '⛵', dur: 300, label: '5小时' }, galleon: { name: '大帆船', cost: 1000, icon: '🚢', dur: 720, label: '12小时' } };
+
+        const BOAT_CAT = {
+            raft:     { name: '小木筏', cost: 200, icon: '🛶', dur: 60,  label: '1小时' },
+            sailboat: { name: '帆船',   cost: 500, icon: '⛵', dur: 300, label: '5小时' },
+            galleon:  { name: '大帆船', cost: 1000, icon: '🚢', dur: 720, label: '12小时' },
+        };
         const charName = this.assignee === '潘潘' ? '小八 🐱' : '乌撒奇 🐰';
         const activeExp = this.expeditions.find(e => e.status === 'sailing');
 
-        let expHtml = '';
-        if (activeExp) {
-            const start = new Date(activeExp.started_at.replace(' ', 'T') + '+08:00');
-            const elapsed = Math.floor((Date.now() - start.getTime()) / 60000);
-            const pct = Math.min(100, Math.round(elapsed / activeExp.duration_min * 100));
-            const rem = Math.max(0, activeExp.duration_min - elapsed);
-            const remLabel = rem >= 60 ? `${Math.floor(rem / 60)}小时${rem % 60 ? rem % 60 + '分' : ''}` : `${rem}分钟`;
-            expHtml = `<div class="expedition-active"><div class="expedition-header"><div class="expedition-char">${this.assignee === '潘潘' ? '🐱' : '🐰'}</div><div class="expedition-info"><div class="expedition-dest">${activeExp.character} 正在探索未知海域...</div><div class="expedition-time">剩余约 ${remLabel}</div></div></div><div class="expedition-bar"><div class="expedition-bar-fill" style="width:${pct}%"></div></div></div>`;
-        }
-
-        const myBoats = this.boats.length ? this.boats.map(b => {
-            const s = CAT[b.boat_type] || CAT.raft;
-            return `<div class="boat-card ${b.status === 'sailing' ? 'sailing' : ''}" data-boat-id="${b.id}"><div class="boat-card-icon">${s.icon}</div><div class="boat-card-info"><div class="boat-card-name">${s.name}</div><div class="boat-card-status">${b.status === 'sailing' ? '⛵ 航行中' : '停泊中'} · ${s.label}</div></div>${b.status === 'docked' && !activeExp ? `<button class="boat-card-action explore" data-sail="${b.id}">🧭 探索</button>` : ''}</div>`;
-        }).join('') : '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:8px">还没有船只，先买一艘吧！</div>';
-
-        const shop = Object.entries(CAT).map(([t, s]) => `<div class="boat-card"><div class="boat-card-icon">${s.icon}</div><div class="boat-card-info"><div class="boat-card-name">${s.name}</div><div class="boat-card-status">${s.cost} 喵喵币 · ${s.label}</div></div><button class="boat-card-action buy" data-buy="${t}">购买</button></div>`).join('');
-
         const p = document.createElement('div');
         p.className = 'harbor-panel';
-        p.innerHTML = `<div class="harbor-content"><div class="harbor-title">⚓ 港口 — ${charName}</div>${expHtml}<div class="harbor-section"><div class="harbor-section-title">🚢 我的船只</div>${myBoats}</div><div class="harbor-section"><div class="harbor-section-title">🛒 船只商店</div>${shop}</div><button class="harbor-close" id="hp-close">关闭</button></div>`;
+        p.innerHTML = `
+            <div class="harbor-content">
+                <div class="harbor-title">⚓ 港口 — ${charName}</div>
+                ${this._renderExpeditionHtml(activeExp)}
+                <div class="harbor-section">
+                    <div class="harbor-section-title">🚢 我的船只</div>
+                    ${this._renderMyBoatsHtml(this.boats, BOAT_CAT, !!activeExp)}
+                </div>
+                <div class="harbor-section">
+                    <div class="harbor-section-title">🛒 船只商店</div>
+                    ${this._renderBoatShopHtml(BOAT_CAT)}
+                </div>
+                <button class="harbor-close" id="hp-close">关闭</button>
+            </div>`;
         document.body.appendChild(p);
 
         document.getElementById('hp-close')?.addEventListener('click', () => p.remove());
         p.addEventListener('click', e => { if (e.target === p) p.remove(); });
-        p.querySelectorAll('[data-buy]').forEach(b => b.addEventListener('click', async () => { await this.buyBoat(b.dataset.buy); p.remove(); }));
-        p.querySelectorAll('[data-sail]').forEach(b => b.addEventListener('click', async () => { await this.startExpedition(parseInt(b.dataset.sail, 10)); p.remove(); }));
+        p.querySelectorAll('[data-buy]').forEach(b =>
+            b.addEventListener('click', async () => { await this.buyBoat(b.dataset.buy); p.remove(); }));
+        p.querySelectorAll('[data-sail]').forEach(b =>
+            b.addEventListener('click', async () => { await this.startExpedition(parseInt(b.dataset.sail, 10)); p.remove(); }));
     },
 
     async buyBoat(type) {
@@ -884,7 +946,7 @@ Object.assign(GardenView, {
                 planted_at: null,
                 last_harvested: null,
             });
-            this._selectedPlotId = null;
+            this._state.selectedPlotId = null;
             this._updateDynamicContent();
             this._flashPlot(plotId, 'plot-cleared');
             const followup = this.selectedTree ? ' 现在点这块空地就能种下去。' : ' 现在它已经是可种植空地了。';
@@ -920,7 +982,7 @@ Object.assign(GardenView, {
                 last_harvested: result.tree.last_harvested || null,
                 obstacle_type: null,
             });
-            this._selectedPlotId = null;
+            this._state.selectedPlotId = null;
             this.selectedTree = null;
             this._updateDynamicContent();
             this._flashPlot(plotId, 'plot-planted');

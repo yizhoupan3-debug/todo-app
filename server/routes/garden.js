@@ -7,7 +7,12 @@ require('./garden-coins')(router, { db, ...shared });
 require('./garden-plots')(router, { db, ...shared });
 require('./garden-expeditions')(router, { db, ...shared });
 
-const { resolveCompletedExpeditions } = shared;
+const { resolveCompletedExpeditions, PLANT_CATALOG, PLANT_TIERS, BOAT_CATALOG, TREE_MATURE_MINUTES } = shared;
+
+/* ── GET: plant/boat catalog for frontend sync ── */
+router.get('/catalog', (_req, res) => {
+    res.json({ plants: PLANT_CATALOG, tiers: PLANT_TIERS, boats: BOAT_CATALOG, matureMinutes: TREE_MATURE_MINUTES });
+});
 
 /* ── POST: explicitly resolve completed expeditions ── */
 router.post('/resolve-expeditions', (req, res) => {
@@ -34,7 +39,7 @@ router.get('/all/:assignee', (req, res) => {
         const islandId = req.query.island; // optional: ?island=<id>
 
         // 1) Balance
-        const balRow = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?').get(assignee);
+        const balRow = db.prepare('SELECT ROUND(balance, 1) as balance FROM coin_accounts WHERE assignee = ?').get(assignee);
         const balance = balRow ? balRow.balance : 0;
 
         // 2) Islands

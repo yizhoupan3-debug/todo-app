@@ -1,7 +1,7 @@
 module.exports = function registerGardenCoinRoutes(router, { db }) {
     router.get('/coins/:assignee', (req, res) => {
         try {
-            const row = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
+            const row = db.prepare('SELECT ROUND(balance, 1) as balance FROM coin_accounts WHERE assignee = ?')
                 .get(req.params.assignee);
             res.json({ balance: row ? row.balance : 0 });
         } catch (err) {

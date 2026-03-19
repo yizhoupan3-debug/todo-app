@@ -3307,6 +3307,10 @@ textarea:focus {
   border-left: 4px solid var(--in-progress);
 }
 
+.toast.warning {
+  border-left: 4px solid #f59e0b;
+}
+
 @keyframes toastIn {
   from {
     opacity: 0;

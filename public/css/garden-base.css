@@ -1,0 +1,89 @@
+/* ===== Garden Base Styles (header, balance, buttons) ===== */
+/* ===== GARDEN ===== */
+
+/* Garden header */
+.garden-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+}
+
+.garden-coin-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.coin-icon {
+  font-size: 1.5rem;
+}
+
+.coin-balance {
+  color: var(--primary);
+  font-size: 1.4rem;
+}
+
+.coin-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.garden-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.garden-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.garden-btn:hover {
+  border-color: var(--primary);
+  color: var(--text);
+}
+
+.garden-btn.primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: var(--text-on-primary);
+  border: none;
+}
+
+.garden-btn.primary:hover {
+  box-shadow: 0 2px 12px var(--primary-glow);
+  transform: translateY(-1px);
+}
+
+/* Garden person filter */
+.garden-person-filter {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 12px;
+}
+
+
+/* ── Accessibility: reduce motion for users who prefer it ── */
+@media (prefers-reduced-motion: reduce) {
+  .iplot, .iplot-img, .iplot-tilled,
+  .ambient-particle, .fog-particle,
+  .dock-boat, .island-harbor,
+  .shop-card, .shop-card-img,
+  .boat-card, .expedition-bar-fill,
+  .island-node, .stage-item img,
+  .tree-growth-fill, .iplot-bar-fill {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

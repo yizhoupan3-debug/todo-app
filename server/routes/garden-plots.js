@@ -182,11 +182,36 @@ module.exports = function registerGardenPlotRoutes(router, {
         }
     });
 
+    /**
+     * Calculate random coin drop for a tree based on its catalog price.
+     * @param {string} treeType - plant type key
+     * @returns {number} coin amount (0 if no drop)
+     */
+    function calculateCoinDrop(treeType) {
+        const price = PLANT_CATALOG[treeType] || 0;
+        let dropChance, minDrop, maxDrop;
+        if (price >= 80)      { dropChance = 0.50; minDrop = 0.5; maxDrop = 2.0; }
+        else if (price >= 30) { dropChance = 0.35; minDrop = 0.3; maxDrop = 1.0; }
+        else if (price >= 10) { dropChance = 0.20; minDrop = 0.2; maxDrop = 0.5; }
+        else                  { dropChance = 0.10; minDrop = 0.1; maxDrop = 0.2; }
+
+        if (Math.random() < dropChance) {
+            return Math.round((minDrop + Math.random() * (maxDrop - minDrop)) * 10) / 10;
+        }
+        return 0;
+    }
+
     router.post('/trees/grow', (req, res) => {
         try {
             const { assignee, minutes } = req.body;
             if (!assignee || !minutes) {
                 return res.status(400).json({ error: 'assignee, minutes required' });
+            }
+
+            // Validate minutes: must be positive integer, capped at 120
+            const safeMinutes = Math.min(Math.max(1, Math.floor(Number(minutes) || 0)), 120);
+            if (safeMinutes <= 0) {
+                return res.status(400).json({ error: 'minutes must be positive (max 120)' });
             }
 
             const grow = db.transaction(() => {
@@ -212,25 +237,12 @@ module.exports = function registerGardenPlotRoutes(router, {
                 ensureAccount(assignee);
 
                 for (const tree of trees) {
-                    const newMinutes = Math.min(TREE_MATURE_MINUTES, (tree.growth_minutes || 0) + minutes);
+                    const newMinutes = Math.min(TREE_MATURE_MINUTES, (tree.growth_minutes || 0) + safeMinutes);
                     const newStatus = newMinutes >= TREE_MATURE_MINUTES ? 'grown' : 'growing';
                     updateStmt.run(newMinutes, newStatus, tree.id);
 
-                    // Coin drop chance per tree
-                    const price = PLANT_CATALOG[tree.tree_type] || 0;
-                    let dropChance, minDrop, maxDrop;
-                    if (price >= 80) {
-                        dropChance = 0.50; minDrop = 0.5; maxDrop = 2.0;
-                    } else if (price >= 30) {
-                        dropChance = 0.35; minDrop = 0.3; maxDrop = 1.0;
-                    } else if (price >= 10) {
-                        dropChance = 0.20; minDrop = 0.2; maxDrop = 0.5;
-                    } else {
-                        dropChance = 0.10; minDrop = 0.1; maxDrop = 0.2;
-                    }
-
-                    if (Math.random() < dropChance) {
-                        const drop = Math.round((minDrop + Math.random() * (maxDrop - minDrop)) * 10) / 10;
+                    const drop = calculateCoinDrop(tree.tree_type);
+                    if (drop > 0) {
                         totalCoinDrop += drop;
                         db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
                             .run(assignee, drop, 'plant_drop', `${tree.tree_type} 掉落`);

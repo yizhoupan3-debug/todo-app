@@ -9,6 +9,7 @@ function gardenAsset(assetPath) {
 }
 
 const GardenView = {
+    /* ── Mutable game data (fetched from API) ── */
     plots: [],
     trees: [],
     balance: 0,
@@ -21,6 +22,74 @@ const GardenView = {
     expeditions: [],
     currentIsland: null, // active island being viewed
 
+    /**
+     * Internal UI state — isolated namespace to prevent naming collisions
+     * when other files extend GardenView via Object.assign.
+     * Use GardenView._state.xxx instead of GardenView._xxx.
+     */
+    _state: {
+        // Render tracking
+        staticRendered: false,
+        renderSignature: null,
+        assetsVersioned: false,
+
+        // Zoom & pan
+        zoom: 1, fitZoom: 1, minZoom: 0.5, maxZoom: 2.5, defaultZoom: 1,
+        panX: 0, panY: 0,
+
+        // Drag (touch/mouse pan)
+        dragInitialized: false,
+        dragState: null,
+        dragRafPending: false,
+        inertiaFrame: null,
+        viewportResizeBound: false,
+
+        // Plot interaction
+        selectedPlotId: null,
+        activePlotMenu: null,
+        plotMenuCleanup: null,
+        movingPlotId: null,
+
+        // Backpack
+        backpackSort: { by: 'price', order: 'asc' },
+        backpackSearch: '',
+        backpackPlants: null,
+        backpackRenderQueued: false,
+        backpackOverlayEl: null,
+        backpackContentEl: null,
+        backpackSearchInputEl: null,
+    },
+
+    /**
+     * Reset all mutable UI state to defaults.
+     * Call when switching user or re-entering garden.
+     */
+    resetState() {
+        Object.assign(this._state, {
+            staticRendered: false,
+            renderSignature: null,
+            selectedPlotId: null,
+            activePlotMenu: null,
+            plotMenuCleanup: null,
+            movingPlotId: null,
+            backpackRenderQueued: false,
+            backpackOverlayEl: null,
+            backpackContentEl: null,
+            backpackSearchInputEl: null,
+            backpackPlants: null,
+            backpackSearch: '',
+            backpackSort: { by: 'price', order: 'asc' },
+            dragState: null,
+            inertiaFrame: null,
+        });
+        this.plots = [];
+        this.trees = [];
+        this.islands = [];
+        this.boats = [];
+        this.expeditions = [];
+        this.selectedTree = null;
+        this.currentIsland = null;
+    },
     // Tree catalog with 4 stage images
     catalog: [
         {
@@ -182,18 +251,9 @@ const GardenView = {
         { left: 75, top: 70, scale: 1.2 }, { left: 85, top: 70, scale: 1.2 }
     ],
 
-    _staticRendered: false,
-    _backpackSort: { by: 'price', order: 'asc' },
-    _plotMenuCleanup: null,
-    _backpackRenderQueued: false,
-    _backpackOverlayEl: null,
-    _backpackContentEl: null,
-    _backpackSearchInputEl: null,
-    _activePlotMenu: null,
-    _selectedPlotId: null,
 
     init() {
-        if (this._assetsVersioned) return;
+        if (this._state.assetsVersioned) return;
 
         this.catalog = this.catalog.map((item) => ({
             ...item,
@@ -204,7 +264,7 @@ const GardenView = {
         this.rockVariants = this.rockVariants.map(gardenAsset);
         this.weedVariants = this.weedVariants.map(gardenAsset);
         this.wildTreeVariants = this.wildTreeVariants.map(gardenAsset);
-        this._assetsVersioned = true;
+        this._state.assetsVersioned = true;
     },
 
     _getHeaderCoinContext() {
@@ -239,7 +299,7 @@ const GardenView = {
         if (!el) return;
 
         // If never rendered, do full open
-        if (!this._staticRendered) { await this.open(); return; }
+        if (!this._state.staticRendered) { await this.open(); return; }
 
         // Re-fetch data silently
         try {
@@ -384,9 +444,9 @@ const GardenView = {
         if (!vp || !world) return;
         const fitX = vp.clientWidth / world.offsetWidth;
         const fitY = vp.clientHeight / world.offsetHeight;
-        this._fitZoom = Math.max(Math.min(fitX, fitY), 0.38);
-        this._minZoom = this._fitZoom;
-        this._defaultZoom = Math.max(this._minZoom, Math.min(1.15, this._fitZoom * 1.45));
+        this._state.fitZoom = Math.max(Math.min(fitX, fitY), 0.38);
+        this._state.minZoom = this._state.fitZoom;
+        this._state.defaultZoom = Math.max(this._state.minZoom, Math.min(1.15, this._state.fitZoom * 1.45));
     },
 
     _zoomAtPoint(vp, world, nextZoom, clientX, clientY) {
@@ -395,12 +455,12 @@ const GardenView = {
         const rect = vp.getBoundingClientRect();
         const offsetX = clientX - rect.left;
         const offsetY = clientY - rect.top;
-        const worldX = (offsetX - this._panX) / this._zoom;
-        const worldY = (offsetY - this._panY) / this._zoom;
+        const worldX = (offsetX - this._state.panX) / this._state.zoom;
+        const worldY = (offsetY - this._state.panY) / this._state.zoom;
 
-        this._zoom = Math.max(this._minZoom, Math.min(this._maxZoom, nextZoom));
-        this._panX = offsetX - worldX * this._zoom;
-        this._panY = offsetY - worldY * this._zoom;
+        this._state.zoom = Math.max(this._state.minZoom, Math.min(this._state.maxZoom, nextZoom));
+        this._state.panX = offsetX - worldX * this._state.zoom;
+        this._state.panY = offsetY - worldY * this._state.zoom;
         this._clampPan(vp, world);
         this._applyWorldTransform(world);
     },
@@ -411,8 +471,8 @@ const GardenView = {
         const vpH = vp.clientHeight;
         
         // Real-time scaled dimensions
-        const viewW = world.offsetWidth * this._zoom;
-        const viewH = world.offsetHeight * this._zoom;
+        const viewW = world.offsetWidth * this._state.zoom;
+        const viewH = world.offsetHeight * this._state.zoom;
         
         // Strict boundaries: Do not allow panning outside the exact map template (no blue floorboard)
         const padX = 0;
@@ -425,15 +485,15 @@ const GardenView = {
         const maxY = padY;
 
         if (viewW <= vpW) {
-            this._panX = (vpW - viewW) / 2;
+            this._state.panX = (vpW - viewW) / 2;
         } else {
-            this._panX = Math.max(minX, Math.min(maxX, this._panX));
+            this._state.panX = Math.max(minX, Math.min(maxX, this._state.panX));
         }
 
         if (viewH <= vpH) {
-            this._panY = (vpH - viewH) / 2;
+            this._state.panY = (vpH - viewH) / 2;
         } else {
-            this._panY = Math.max(minY, Math.min(maxY, this._panY));
+            this._state.panY = Math.max(minY, Math.min(maxY, this._state.panY));
         }
     },
 
@@ -441,19 +501,19 @@ const GardenView = {
         if (!vp || !world) return;
         const vpW = vp.clientWidth;
         const vpH = vp.clientHeight;
-        const viewW = world.offsetWidth * this._fitZoom;
-        const viewH = world.offsetHeight * this._fitZoom;
+        const viewW = world.offsetWidth * this._state.fitZoom;
+        const viewH = world.offsetHeight * this._state.fitZoom;
 
-        this._panX = (vpW - viewW) / 2;
-        this._panY = (vpH - viewH) / 2;
-        this._zoom = this._fitZoom;
+        this._state.panX = (vpW - viewW) / 2;
+        this._state.panY = (vpH - viewH) / 2;
+        this._state.zoom = this._state.fitZoom;
         this._applyWorldTransform(world);
     },
 
     _applyWorldTransform(world) {
         if (!world) world = document.getElementById('island-world');
         if (!world) return;
-        world.style.transform = `translate3d(${this._panX}px, ${this._panY}px, 0) scale(${this._zoom})`;
+        world.style.transform = `translate3d(${this._state.panX}px, ${this._state.panY}px, 0) scale(${this._state.zoom})`;
         world.style.transformOrigin = '0 0';
     },
 
@@ -505,22 +565,22 @@ const GardenView = {
                 else if (action === 'menu' && plot.status === 'planted') this.showPlotMenu(plotId, plotEl);
                 return;
             }
-            if (this._movingPlotId && plot.status === 'cleared') {
+            if (this._state.movingPlotId && plot.status === 'cleared') {
                 await this.executeMoveToPlot(plotId);
                 return;
             }
-            if (this._movingPlotId && plot.status === 'planted') {
+            if (this._state.movingPlotId && plot.status === 'planted') {
                 this.cancelMovePlot();
                 return;
             }
             // Wasteland: immediately pop the clear menu
             if (plot.status === 'wasteland') {
-                if (this._selectedPlotId === plotId) {
-                    this._selectedPlotId = null;
+                if (this._state.selectedPlotId === plotId) {
+                    this._state.selectedPlotId = null;
                     this.closePlotMenu();
                     this._updateDynamicContent();
                 } else {
-                    this._selectedPlotId = plotId;
+                    this._state.selectedPlotId = plotId;
                     this._updateDynamicContent();
                     this.showWastelandMenu(plotId, plotEl);
                 }
@@ -528,23 +588,23 @@ const GardenView = {
             }
             // Planted: immediately pop the manage menu
             if (plot.status === 'planted') {
-                if (this._selectedPlotId === plotId) {
-                    this._selectedPlotId = null;
+                if (this._state.selectedPlotId === plotId) {
+                    this._state.selectedPlotId = null;
                     this.closePlotMenu();
                     this._updateDynamicContent();
                 } else {
-                    this._selectedPlotId = plotId;
+                    this._state.selectedPlotId = plotId;
                     this._updateDynamicContent();
                     this.showPlotMenu(plotId, plotEl);
                 }
                 return;
             }
-            if (this._selectedPlotId === plotId) {
-                this._selectedPlotId = null;
+            if (this._state.selectedPlotId === plotId) {
+                this._state.selectedPlotId = null;
                 this._updateDynamicContent();
                 return;
             }
-            this._selectedPlotId = plotId;
+            this._state.selectedPlotId = plotId;
             this._updateDynamicContent();
         });
     },
@@ -587,18 +647,18 @@ const GardenView = {
     },
 
     _queueBackpackRender() {
-        if (this._backpackRenderQueued) return;
-        this._backpackRenderQueued = true;
+        if (this._state.backpackRenderQueued) return;
+        this._state.backpackRenderQueued = true;
         requestAnimationFrame(() => {
-            this._backpackRenderQueued = false;
-            if (!this._backpackContentEl) return;
+            this._state.backpackRenderQueued = false;
+            if (!this._state.backpackContentEl) return;
             const filtered = this._getFilteredPlants();
-            this._backpackContentEl.innerHTML = this._renderBackpackPlants(
+            this._state.backpackContentEl.innerHTML = this._renderBackpackPlants(
                 filtered,
-                this._backpackSort.by,
-                this._backpackSort.order
+                this._state.backpackSort.by,
+                this._state.backpackSort.order
             );
-            removeWhiteBg(this._backpackContentEl);
+            removeWhiteBg(this._state.backpackContentEl);
         });
     },
 
@@ -618,7 +678,7 @@ const GardenView = {
                 currentIds.add(String(plot.id));
                 const layout = this.getPlotLayout(plot, i);
                 // Build a signature to detect changes
-                const sig = `${plot.status}|${plot.tree_type || ''}|${plot.growth_minutes || 0}|${plot.obstacle_type || ''}|${this._selectedPlotId === plot.id ? '1' : '0'}`;
+                const sig = `${plot.status}|${plot.tree_type || ''}|${plot.growth_minutes || 0}|${plot.obstacle_type || ''}|${this._state.selectedPlotId === plot.id ? '1' : '0'}`;
                 const existing = existingMap.get(String(plot.id));
                 if (existing && existing.dataset.sig === sig) return; // unchanged
                 // Replace or insert

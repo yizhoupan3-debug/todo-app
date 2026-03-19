@@ -1,0 +1,561 @@
+/* ===== Garden Backpack Overlay ===== */
+/* ═══ Backpack Overlay ═══ */
+.backpack-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  contain: layout paint style;
+}
+
+.backpack-overlay.active {
+  opacity: 1;
+}
+
+.backpack-modal {
+  width: min(520px, 94vw);
+  max-height: 85vh;
+  background: linear-gradient(160deg, rgba(30, 35, 50, 0.97), rgba(18, 22, 36, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: scale(0.92) translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.23,1,0.32,1);
+  contain: layout paint style;
+  will-change: transform;
+}
+
+.backpack-overlay.active .backpack-modal {
+  transform: scale(1) translateY(0);
+}
+
+.backpack-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.backpack-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.backpack-header h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.backpack-persona-switch {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.backpack-persona-btn {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.backpack-persona-btn:hover {
+  transform: translateY(-1px);
+  color: #fff;
+  border-color: rgba(139, 137, 255, 0.42);
+}
+
+.backpack-persona-btn.active {
+  background: linear-gradient(135deg, rgba(126, 133, 255, 0.96), rgba(103, 96, 255, 0.94));
+  color: #fff;
+  border-color: rgba(171, 176, 255, 0.8);
+  box-shadow: 0 8px 18px rgba(92, 88, 255, 0.26);
+}
+
+.backpack-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.backpack-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  transform: rotate(90deg);
+}
+
+/* ── Summary Stats ── */
+.backpack-summary {
+  display: flex;
+  justify-content: space-around;
+  padding: 14px 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.backpack-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.backpack-stat-num {
+  font-size: 1.1rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f0c040, #e8a020);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.backpack-stat-label {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 500;
+}
+
+/* ── Tabs ── */
+.backpack-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 10px 20px 0;
+}
+
+.backpack-tab {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 10px 10px 0 0;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.backpack-tab.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.backpack-tab-count {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ── Toolbar (search + sort) ── */
+.backpack-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(30, 35, 50, 0.98) 0%, rgba(24, 28, 42, 0.92) 100%);
+  backdrop-filter: blur(8px);
+}
+
+.backpack-search {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.backpack-search-icon {
+  position: absolute;
+  left: 10px;
+  font-size: 12px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.backpack-search-input {
+  width: 100%;
+  padding: 6px 12px 6px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 12px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.backpack-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.backpack-search-input:focus {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.05);
+}
+
+.backpack-sort-bar {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.backpack-sort-btn {
+  padding: 5px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.backpack-sort-btn:hover {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.backpack-sort-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.sort-arrow {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+/* ── Content Area ── */
+.backpack-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px 16px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+  contain: layout paint;
+}
+
+.backpack-content::-webkit-scrollbar { width: 4px; }
+.backpack-content::-webkit-scrollbar-track { background: transparent; }
+.backpack-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.backpack-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+/* ── Plant Card ── */
+.backpack-plant-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.25s ease;
+  animation: backpackCardIn 0.3s ease-out both;
+  transform: translateZ(0);
+  will-change: transform;
+  content-visibility: auto;
+  contain-intrinsic-size: 78px;
+}
+
+@keyframes backpackCardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.backpack-plant-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: translateX(4px);
+}
+
+/* Rarity border glow on hover */
+.backpack-plant-card.rarity-ssr:hover { border-color: rgba(255, 200, 50, 0.35); box-shadow: 0 0 12px rgba(255, 200, 50, 0.1); }
+.backpack-plant-card.rarity-sr:hover  { border-color: rgba(180, 120, 255, 0.3); box-shadow: 0 0 12px rgba(180, 120, 255, 0.08); }
+.backpack-plant-card.rarity-r:hover   { border-color: rgba(80, 160, 255, 0.3); box-shadow: 0 0 12px rgba(80, 160, 255, 0.08); }
+
+/* ── Plant Image ── */
+.backpack-plant-img-wrap {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.backpack-plant-card:hover .backpack-plant-img {
+  transform: scale(1.12);
+}
+
+.backpack-plant-img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  transition: transform 0.25s ease;
+}
+
+/* ── Rarity Badge ── */
+.backpack-rarity-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 4px;
+  line-height: 1.3;
+  letter-spacing: 0.5px;
+}
+
+.backpack-rarity-badge.rarity-ssr {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #3a1f00;
+  text-shadow: 0 0 4px rgba(255, 200, 0, 0.5);
+}
+
+.backpack-rarity-badge.rarity-sr {
+  background: linear-gradient(135deg, #b478ff, #8a40e8);
+  color: #fff;
+}
+
+.backpack-rarity-badge.rarity-r {
+  background: linear-gradient(135deg, #50a0ff, #3080e0);
+  color: #fff;
+}
+
+.backpack-rarity-badge.rarity-n {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Plant Info ── */
+.backpack-plant-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.backpack-plant-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.backpack-plant-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.backpack-plant-price {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f0c040;
+}
+
+.backpack-plant-stage {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.backpack-plant-stage.stage-mature {
+  background: rgba(76, 175, 80, 0.2);
+  color: #66bb6a;
+}
+
+.backpack-plant-stage.stage-growing {
+  background: rgba(255, 193, 7, 0.15);
+  color: #ffca28;
+}
+
+.backpack-plant-stage.stage-sprout {
+  background: rgba(139, 195, 74, 0.15);
+  color: #aed581;
+}
+
+.backpack-plant-stage.stage-seed {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── Progress Bar with stage colors ── */
+.backpack-plant-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.backpack-plant-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #66bb6a, #aed581);
+  transition: width 0.4s cubic-bezier(0.23,1,0.32,1);
+}
+
+.backpack-plant-bar-fill.stage-bar-seed    { background: linear-gradient(90deg, #78909c, #90a4ae); }
+.backpack-plant-bar-fill.stage-bar-sprout  { background: linear-gradient(90deg, #8bc34a, #aed581); }
+.backpack-plant-bar-fill.stage-bar-growing { background: linear-gradient(90deg, #ffc107, #ffca28); }
+.backpack-plant-bar-fill.stage-bar-mature  { background: linear-gradient(90deg, #4caf50, #81c784); }
+
+/* ── Bottom row (location + date) ── */
+.backpack-plant-bottom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.backpack-plant-location {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.backpack-plant-date {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Empty State ── */
+.backpack-empty {
+  text-align: center;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.backpack-empty-icon {
+  font-size: 40px;
+  opacity: 0.6;
+  animation: emptyBounce 2s ease-in-out infinite;
+}
+
+@keyframes emptyBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.backpack-empty-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.backpack-empty-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.backpack-goto-shop {
+  margin-top: 12px;
+  padding: 8px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 200, 50, 0.15), rgba(255, 150, 0, 0.1));
+  color: #f0c040;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.backpack-goto-shop:hover {
+  background: linear-gradient(135deg, rgba(255, 200, 50, 0.25), rgba(255, 150, 0, 0.2));
+  border-color: rgba(255, 200, 50, 0.3);
+  transform: translateY(-1px);
+}
+
+/* Backpack button in shop header */
+.backpack-btn-shop {
+  margin-left: auto;
+  margin-right: 8px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+
+  .garden-shop-grid,
+  .shop-full-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .garden-canvas {
+    min-height: 240px;
+    margin: 0 12px;
+  }
+
+  .backpack-toolbar {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .backpack-search {
+    min-width: 100%;
+  }
+
+  .backpack-sort-bar {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+

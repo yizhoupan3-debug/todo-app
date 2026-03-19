@@ -257,8 +257,24 @@ const App = {
     },
 
     showToast(message, type = 'info') {
-        const prefix = `[${type}]`;
-        console[type === 'error' ? 'error' : 'log'](prefix, message);
+        let container = document.getElementById('toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container';
+            container.id = 'toast-container';
+            document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        while (container.children.length > 3) {
+            container.firstChild.remove();
+        }
+        setTimeout(() => {
+            toast.style.animation = 'toastOut 0.3s ease forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 2500);
     },
 
     _ensureViewReady() {

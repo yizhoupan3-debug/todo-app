@@ -158,9 +158,9 @@ Object.assign(GardenView, {
     },
 
     _getFilteredPlants() {
-        let plants = this._backpackPlants || [];
-        if (this._backpackSearch) {
-            const q = this._backpackSearch.toLowerCase();
+        let plants = this._state.backpackPlants || [];
+        if (this._state.backpackSearch) {
+            const q = this._state.backpackSearch.toLowerCase();
             plants = plants.filter(p => {
                 const catItem = this.catalog.find(c => c.type === p.tree_type);
                 const name = (catItem?.name || p.tree_type).toLowerCase();
@@ -182,9 +182,9 @@ Object.assign(GardenView, {
             return;
         }
 
-        this._backpackPlants = plants;
-        this._backpackSort = { by: 'price', order: 'asc' };
-        this._backpackSearch = '';
+        this._state.backpackPlants = plants;
+        this._state.backpackSort = { by: 'price', order: 'asc' };
+        this._state.backpackSearch = '';
 
         const totalValue = plants.reduce((s, p) => s + p.price, 0);
         const matureCount = plants.filter(p => p.growth_minutes >= 150).length;
@@ -243,15 +243,15 @@ Object.assign(GardenView, {
         `;
         document.body.appendChild(overlay);
         requestAnimationFrame(() => overlay.classList.add('active'));
-        this._backpackOverlayEl = overlay;
-        this._backpackContentEl = overlay.querySelector('#backpack-content');
-        this._backpackSearchInputEl = overlay.querySelector('#backpack-search');
+        this._state.backpackOverlayEl = overlay;
+        this._state.backpackContentEl = overlay.querySelector('#backpack-content');
+        this._state.backpackSearchInputEl = overlay.querySelector('#backpack-search');
 
         const closeOverlay = () => {
             overlay.classList.remove('active');
-            this._backpackOverlayEl = null;
-            this._backpackContentEl = null;
-            this._backpackSearchInputEl = null;
+            this._state.backpackOverlayEl = null;
+            this._state.backpackContentEl = null;
+            this._state.backpackSearchInputEl = null;
             setTimeout(() => overlay.remove(), 200);
         };
         document.getElementById('backpack-close')?.addEventListener('click', closeOverlay);
@@ -268,33 +268,33 @@ Object.assign(GardenView, {
                 } else {
                     this.assignee = nextAssignee;
                     this.currentIsland = null;
-                    this._staticRendered = false;
+                    this._state.staticRendered = false;
                     await this.open();
                 }
                 await this.showBackpack(nextAssignee);
             });
         });
 
-        this._backpackSearchInputEl?.addEventListener('input', () => {
-            this._backpackSearch = this._backpackSearchInputEl.value.trim();
+        this._state.backpackSearchInputEl?.addEventListener('input', () => {
+            this._state.backpackSearch = this._state.backpackSearchInputEl.value.trim();
             this._queueBackpackRender();
         });
 
         overlay.querySelectorAll('.backpack-sort-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const sortBy = btn.dataset.sort;
-                if (this._backpackSort.by === sortBy) {
-                    this._backpackSort.order = this._backpackSort.order === 'asc' ? 'desc' : 'asc';
+                if (this._state.backpackSort.by === sortBy) {
+                    this._state.backpackSort.order = this._state.backpackSort.order === 'asc' ? 'desc' : 'asc';
                 } else {
-                    this._backpackSort.by = sortBy;
-                    this._backpackSort.order = 'asc';
+                    this._state.backpackSort.by = sortBy;
+                    this._state.backpackSort.order = 'asc';
                 }
                 overlay.querySelectorAll('.backpack-sort-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 overlay.querySelectorAll('.backpack-sort-btn').forEach(b => {
                     const arrow = b.querySelector('.sort-arrow');
                     if (b === btn) {
-                        arrow.textContent = this._backpackSort.order === 'asc' ? '▲' : '▼';
+                        arrow.textContent = this._state.backpackSort.order === 'asc' ? '▲' : '▼';
                     } else {
                         arrow.textContent = '▲';
                     }
@@ -303,7 +303,7 @@ Object.assign(GardenView, {
             });
         });
 
-        requestAnimationFrame(() => this._backpackSearchInputEl?.focus({ preventScroll: true }));
+        requestAnimationFrame(() => this._state.backpackSearchInputEl?.focus({ preventScroll: true }));
 
         overlay.addEventListener('click', e => {
             if (e.target.closest('.backpack-goto-shop')) {
@@ -315,11 +315,11 @@ Object.assign(GardenView, {
 
     _renderBackpackPlants(plants, sortBy, sortOrder) {
         if (!plants.length) {
-            const isSearch = this._backpackSearch;
+            const isSearch = this._state.backpackSearch;
             if (isSearch) {
                 return `<div class="backpack-empty">
                     <div class="backpack-empty-icon">\u{1F50D}</div>
-                    <div class="backpack-empty-text">没有找到 "${this._backpackSearch}" 相关的植物</div>
+                    <div class="backpack-empty-text">没有找到 "${this._state.backpackSearch}" 相关的植物</div>
                 </div>`;
             }
             return `<div class="backpack-empty">
