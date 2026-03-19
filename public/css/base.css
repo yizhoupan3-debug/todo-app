@@ -68,14 +68,14 @@
 [data-mode="dark"] {
   --bg: #0b0d18;
   --bg-secondary: #13152a;
-  --card-bg: rgba(25, 28, 53, 0.85);
-  --card-hover: #21243f;
-  --sidebar-bg: rgba(16, 18, 36, 0.85);
-  --header-bg: rgba(11, 13, 24, 0.88);
-  --modal-bg: rgba(25, 28, 53, 0.92);
+  --card-bg: rgba(28, 32, 60, 0.92);
+  --card-hover: #252840;
+  --sidebar-bg: rgba(16, 18, 36, 0.88);
+  --header-bg: rgba(11, 13, 24, 0.90);
+  --modal-bg: rgba(28, 32, 60, 0.95);
   --overlay-bg: rgba(0, 0, 0, 0.7);
-  --border: rgba(255, 255, 255, 0.06);
-  --border-strong: rgba(255, 255, 255, 0.12);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-strong: rgba(255, 255, 255, 0.16);
   --glass-blur: blur(24px) saturate(1.3);
   --text: #e8eafc;
   --text-secondary: #8b8fb0;
@@ -1401,6 +1401,11 @@ textarea:focus {
   background: var(--primary-glow);
   color: var(--primary);
   font-weight: 600;
+  box-shadow: inset 0 0 20px var(--primary-glow);
+}
+
+.nav-btn.active .nav-icon {
+  filter: drop-shadow(0 0 4px var(--primary-glow));
 }
 
 .nav-btn.active::before {
@@ -1409,10 +1414,11 @@ textarea:focus {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: 3px;
+  width: 4px;
   height: 60%;
-  border-radius: 0 3px 3px 0;
+  border-radius: 0 4px 4px 0;
   background: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
   animation: navIndicatorIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -2298,24 +2304,24 @@ textarea:focus {
 
 .task-card.done .task-card-title {
   text-decoration: line-through;
-  color: var(--text-tertiary);
-  opacity: 0.7;
+  text-decoration-color: var(--text-muted);
+  color: var(--text-secondary);
+  opacity: 0.85;
 }
 
 .task-card.done {
-  opacity: 0.75;
-  transform: scale(0.98);
+  opacity: 0.88;
   transition: opacity var(--transition-spring), transform var(--transition-spring);
 }
 
 .task-card.done::before {
-  opacity: 0.3;
-  filter: grayscale(1);
+  opacity: 0.35;
+  filter: grayscale(0.8);
 }
 
 .task-card.done:hover {
   opacity: 1;
-  transform: scale(1);
+  transform: translateY(-2px);
 }
 
 /* Task card slide-out for deletion */
@@ -2689,7 +2695,7 @@ textarea:focus {
 
 .empty-state {
   text-align: center;
-  padding: 48px 20px;
+  padding: 56px 20px;
   color: var(--text-tertiary);
   animation: emptyFadeIn 0.5s cubic-bezier(0.25, 1, 0.5, 1);
 }
@@ -2707,29 +2713,43 @@ textarea:focus {
 }
 
 .empty-state-icon {
-  font-size: 3rem;
-  margin-bottom: 12px;
-  opacity: 0.6;
-  animation: emptyBounce 2s ease-in-out infinite;
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.75;
+  animation: emptyFloat 3s ease-in-out infinite;
 }
 
-@keyframes emptyBounce {
+@keyframes emptyFloat {
 
   0%,
   100% {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 
   50% {
-    transform: translateY(-6px);
+    transform: translateY(-8px) scale(1.05);
   }
 }
 
 .empty-state-text {
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   line-height: 1.6;
-  max-width: 200px;
+  max-width: 220px;
   margin: 0 auto;
+  font-weight: 500;
+}
+
+.empty-state-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+  opacity: 0.7;
+  animation: hintPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes hintPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.85; }
 }
 
 /* ===== MODAL ===== */

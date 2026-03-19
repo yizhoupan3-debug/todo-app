@@ -297,6 +297,11 @@ if (typeof App === 'undefined') {
 
         // Defer heavy view data loading so the transition animation isn't blocked
         const loadViewData = () => {
+            // Clean up previous view resources
+            if (this._prevView === 'codex' && view !== 'codex') {
+                if (typeof CodexView !== 'undefined') CodexView.hide();
+            }
+
             switch (view) {
                 case 'daily':
                     DailyView.setDate(DailyView.currentDate);

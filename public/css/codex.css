@@ -1,5 +1,6 @@
 /* ═══════════════════════════════════════
    Codex View — Quota Cards & Account Mgmt
+   v2: status dots, per-card refresh, credits
    ═══════════════════════════════════════ */
 
 /* ── Container ── */
@@ -26,7 +27,14 @@
 
 .codex-view-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+}
+
+.codex-last-refresh {
+  font-size: 0.72rem;
+  color: var(--text-tertiary, #999);
+  white-space: nowrap;
 }
 
 .codex-icon-btn {
@@ -52,7 +60,8 @@
   box-shadow: 0 4px 12px rgba(99,102,241,0.3);
 }
 
-.codex-icon-btn.spinning svg {
+.codex-icon-btn.spinning svg,
+.codex-card-refresh.spinning svg {
   animation: codex-spin 0.8s linear infinite;
 }
 
@@ -105,6 +114,11 @@
 
 .codex-quota-card.expanded {
   cursor: default;
+  border-color: var(--accent, #6366f1);
+}
+
+.codex-quota-card.expanded::before {
+  opacity: 1;
 }
 
 .codex-quota-card.expanded:hover {
@@ -119,6 +133,57 @@
   margin-bottom: 14px;
 }
 
+.codex-card-head-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.codex-card-head-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Status dot */
+.codex-card-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.codex-dot-green {
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34,197,94,0.4);
+  animation: codex-pulse-green 2s infinite;
+}
+
+.codex-dot-yellow {
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245,158,11,0.4);
+}
+
+.codex-dot-red {
+  background: #ef4444;
+  box-shadow: 0 0 6px rgba(239,68,68,0.4);
+  animation: codex-pulse-red 1.5s infinite;
+}
+
+.codex-dot-gray {
+  background: #9ca3af;
+}
+
+@keyframes codex-pulse-green {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes codex-pulse-red {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 .codex-card-name {
   font-size: 1.05rem;
   font-weight: 700;
@@ -129,6 +194,31 @@
   font-size: 0.8rem;
   color: var(--text-tertiary, #999);
   margin-top: 2px;
+}
+
+/* Per-card refresh button */
+.codex-card-refresh {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary, #999);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  opacity: 0;
+}
+
+.codex-quota-card:hover .codex-card-refresh {
+  opacity: 1;
+}
+
+.codex-card-refresh:hover {
+  background: var(--bg-secondary, rgba(0,0,0,0.04));
+  color: var(--accent, #6366f1);
 }
 
 .codex-card-plan {
@@ -234,6 +324,23 @@
 .codex-pct-warning  { color: #f59e0b; }
 .codex-pct-danger   { color: #ef4444; }
 .codex-pct-critical { color: #dc2626; }
+
+/* Credits balance */
+.codex-credits-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--text-secondary, #666);
+  margin-top: 6px;
+  padding-left: 34px;
+}
+
+.codex-credits-row svg {
+  width: 14px;
+  height: 14px;
+  color: var(--accent, #6366f1);
+}
 
 .codex-reset-text {
   font-size: 0.75rem;
@@ -421,7 +528,7 @@
   100% { background-position: -200% 0; }
 }
 
-/* ── Form (modal overlay, re-used from old codex) ── */
+/* ── Form (modal overlay) ── */
 .codex-form-overlay {
   position: fixed;
   inset: 0;
@@ -433,10 +540,12 @@
   padding: 20px;
   opacity: 0;
   transition: opacity 0.25s;
+  pointer-events: none;
 }
 
 .codex-form-overlay.active {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .codex-form-panel {
@@ -447,12 +556,12 @@
   max-width: 440px;
   max-height: 90vh;
   overflow-y: auto;
-  transform: translateY(20px);
+  transform: translateY(20px) scale(0.96);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .codex-form-overlay.active .codex-form-panel {
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .codex-form-title {
@@ -482,7 +591,7 @@
   font-size: 0.9rem;
   background: var(--bg-primary, #fff);
   color: var(--text-primary, #1a1a2e);
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 }
 
@@ -568,8 +677,16 @@
     padding: 16px;
   }
 
+  .codex-card-refresh {
+    opacity: 1; /* always visible on mobile */
+  }
+
   .codex-form-panel {
     padding: 20px;
     border-radius: 16px;
+  }
+
+  .codex-last-refresh {
+    display: none;
   }
 }

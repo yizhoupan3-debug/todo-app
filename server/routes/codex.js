@@ -120,7 +120,7 @@ function requireSameOrigin(req, res, next) {
 }
 
 // ── Routes ──
-// IMPORTANT: /local-token MUST come before /:id to avoid route collision
+// IMPORTANT: /local-token and /:id/refresh MUST come before /:id to avoid route collision
 
 // GET /api/codex/local-token — read token from ~/.codex/auth.json
 router.get('/local-token', (req, res) => {
@@ -143,42 +143,77 @@ router.get('/local-token', (req, res) => {
   }
 });
 
+// POST /api/codex/:id/refresh — refresh a single account's quota
+router.post('/:id/refresh', async (req, res) => {
+  try {
+    const acc = getAccount.get(req.params.id);
+    if (!acc) return res.status(404).json({ error: '账号不存在' });
+
+    const hasToken = !!(acc.access_token && acc.access_token.trim());
+    let quota = null;
+
+    if (hasToken) {
+      // Force refresh — bypass cache
+      quotaCache.delete(Number(req.params.id));
+      quota = await fetchQuota(acc.access_token);
+      setCachedQuota(Number(req.params.id), quota);
+    }
+
+    res.json({
+      id: acc.id,
+      name: acc.name,
+      account: acc.account,
+      has_token: hasToken,
+      quota,
+    });
+  } catch (e) {
+    console.error('Codex single refresh error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // GET /api/codex — list all accounts with live quota
 router.get('/', async (req, res) => {
   try {
     const accounts = listAccounts.all();
     const forceRefresh = req.query.refresh === '1';
 
-    // Fetch quota for each account in parallel
-    const results = await Promise.allSettled(
-      accounts.map(async (acc) => {
-        const hasToken = !!(acc.access_token && acc.access_token.trim());
-        let quota = null;
+    // Fetch quota for each account in parallel (max 3 concurrent)
+    const CONCURRENCY = 3;
+    const results = [];
 
-        if (hasToken) {
-          if (!forceRefresh) {
-            quota = getCachedQuota(acc.id);
-          }
-          if (!quota) {
-            quota = await fetchQuota(acc.access_token);
-            setCachedQuota(acc.id, quota);
-          }
-        }
+    for (let i = 0; i < accounts.length; i += CONCURRENCY) {
+      const batch = accounts.slice(i, i + CONCURRENCY);
+      const batchResults = await Promise.allSettled(
+        batch.map(async (acc) => {
+          const hasToken = !!(acc.access_token && acc.access_token.trim());
+          let quota = null;
 
-        return {
-          id: acc.id,
-          name: acc.name,
-          account: acc.account,
-          email: acc.email,
-          has_token: hasToken,
-          quota,
-        };
-      })
-    );
+          if (hasToken) {
+            if (!forceRefresh) {
+              quota = getCachedQuota(acc.id);
+            }
+            if (!quota) {
+              quota = await fetchQuota(acc.access_token);
+              setCachedQuota(acc.id, quota);
+            }
+          }
+
+          return {
+            id: acc.id,
+            name: acc.name,
+            account: acc.account,
+            email: acc.email,
+            has_token: hasToken,
+            quota,
+          };
+        })
+      );
+      results.push(...batchResults);
+    }
 
     const list = results.map(r => {
       if (r.status === 'fulfilled') return r.value;
-      // Promise rejected — should not happen but handle gracefully
       return { id: 0, name: '?', account: '?', has_token: false, quota: { error: 'internal' } };
     });
 
@@ -257,3 +292,4 @@ router.delete('/:id', (req, res) => {
 });
 
 module.exports = router;
+

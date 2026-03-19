@@ -1,5 +1,7 @@
 /* ────────────────────────────────────
-   CodexView — Codex Quota Card View
+   CodexView — Codex Quota Card View v2
+   Optimized: auto-refresh, live countdown,
+   sorting, per-card refresh, credits display
    ──────────────────────────────────── */
 
 const CodexView = {
@@ -7,6 +9,11 @@ const CodexView = {
   _expandedId: null,
   _detailCache: {},
   _formOverlay: null,
+  _autoRefreshTimer: null,
+  _countdownTimer: null,
+  _visible: false,
+
+  AUTO_REFRESH_MS: 2 * 60 * 1000, // 2 minutes
 
   /** Initialize the view (called from App._initModules). */
   init() {
@@ -15,6 +22,7 @@ const CodexView = {
 
   /** Show the view (called from App.switchView). */
   show() {
+    this._visible = true;
     const container = document.getElementById('view-codex');
     if (!container) return;
 
@@ -26,11 +34,48 @@ const CodexView = {
     }
 
     this.loadList();
+    this._startAutoRefresh();
+    this._startCountdown();
   },
 
   /** Hide the view. */
   hide() {
-    // nothing to tear down
+    this._visible = false;
+    this._stopAutoRefresh();
+    this._stopCountdown();
+  },
+
+  // ── Auto refresh ──
+  _startAutoRefresh() {
+    this._stopAutoRefresh();
+    this._autoRefreshTimer = setInterval(() => {
+      if (this._visible) this.loadList(false);
+    }, this.AUTO_REFRESH_MS);
+  },
+
+  _stopAutoRefresh() {
+    if (this._autoRefreshTimer) {
+      clearInterval(this._autoRefreshTimer);
+      this._autoRefreshTimer = null;
+    }
+  },
+
+  // ── Live countdown ──
+  _startCountdown() {
+    this._stopCountdown();
+    this._countdownTimer = setInterval(() => {
+      document.querySelectorAll('.codex-countdown[data-reset]').forEach(el => {
+        const unix = Number(el.dataset.reset);
+        el.textContent = this._formatReset(unix);
+      });
+    }, 30000); // update every 30s
+  },
+
+  _stopCountdown() {
+    if (this._countdownTimer) {
+      clearInterval(this._countdownTimer);
+      this._countdownTimer = null;
+    }
   },
 
   // ── Shell ──
@@ -42,6 +87,7 @@ const CodexView = {
             <i data-lucide="key-round"></i> Codex 账号
           </div>
           <div class="codex-view-actions">
+            <span class="codex-last-refresh" id="codex-last-refresh"></span>
             <button class="codex-icon-btn" id="codex-refresh-btn" title="刷新额度">
               <i data-lucide="refresh-cw"></i>
             </button>
@@ -79,12 +125,61 @@ const CodexView = {
     try {
       const url = forceRefresh ? '/codex?refresh=1' : '/codex';
       this._accounts = await API.request(url);
+      this._sortAccounts();
       this._renderCards();
+      this._updateRefreshTime();
     } catch (e) {
       grid.innerHTML = `<div class="codex-empty-state"><p>加载失败，请重试</p></div>`;
     } finally {
       if (refreshBtn) refreshBtn.classList.remove('spinning');
     }
+  },
+
+  /** Refresh a single account's quota. */
+  async refreshSingle(id) {
+    const card = document.querySelector(`.codex-quota-card[data-id="${id}"]`);
+    const refreshIcon = card?.querySelector('.codex-card-refresh');
+    if (refreshIcon) refreshIcon.classList.add('spinning');
+
+    try {
+      const result = await API.request(`/codex/${id}/refresh`);
+      // Update in-memory
+      const idx = this._accounts.findIndex(a => a.id == id);
+      if (idx !== -1 && result.quota) {
+        this._accounts[idx].quota = result.quota;
+        this._accounts[idx].has_token = result.has_token ?? this._accounts[idx].has_token;
+      }
+      this._sortAccounts();
+      this._renderCards();
+    } catch (e) {
+      this._toast('刷新失败', 'error');
+    }
+  },
+
+  /** Sort accounts: quota-having first, then by most used. */
+  _sortAccounts() {
+    this._accounts.sort((a, b) => {
+      // Has token > no token
+      if (a.has_token !== b.has_token) return b.has_token ? 1 : -1;
+      // Has quota > no quota
+      const aQ = a.quota && !a.quota.error;
+      const bQ = b.quota && !b.quota.error;
+      if (aQ !== bQ) return bQ ? 1 : -1;
+      // Most used first (for easy identification of near-limit accounts)
+      if (aQ && bQ) {
+        const aUsed = a.quota.secondary_used ?? a.quota.primary_used ?? 0;
+        const bUsed = b.quota.secondary_used ?? b.quota.primary_used ?? 0;
+        return bUsed - aUsed;
+      }
+      return 0;
+    });
+  },
+
+  _updateRefreshTime() {
+    const el = document.getElementById('codex-last-refresh');
+    if (!el) return;
+    const now = new Date();
+    el.textContent = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} 更新`;
   },
 
   // ── Render card grid ──
@@ -113,10 +208,18 @@ const CodexView = {
     // Bind card clicks
     grid.querySelectorAll('.codex-quota-card').forEach(card => {
       card.addEventListener('click', (e) => {
-        // Ignore clicks on buttons inside detail panel
         if (e.target.closest('.codex-detail-actions') ||
-            e.target.closest('.codex-mini-btn')) return;
+            e.target.closest('.codex-mini-btn') ||
+            e.target.closest('.codex-card-refresh')) return;
         this._toggleDetail(card.dataset.id);
+      });
+    });
+
+    // Bind per-card refresh buttons
+    grid.querySelectorAll('.codex-card-refresh').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.refreshSingle(btn.dataset.id);
       });
     });
 
@@ -132,9 +235,11 @@ const CodexView = {
   _cardHTML(acc) {
     const q = acc.quota;
     let quotaHTML = '';
+    let statusIndicator = '';
 
     if (!acc.has_token) {
       quotaHTML = '<div class="codex-status-badge notoken">🔒 未认证</div>';
+      statusIndicator = '<span class="codex-card-dot codex-dot-gray"></span>';
     } else if (!q || q.error) {
       const errMap = {
         expired: '⚠️ Token 已过期',
@@ -143,20 +248,34 @@ const CodexView = {
         fetch_failed: '❌ 获取失败',
       };
       quotaHTML = `<div class="codex-status-badge error">${errMap[q?.error] || '❌ 获取失败'}</div>`;
+      statusIndicator = '<span class="codex-card-dot codex-dot-red"></span>';
     } else {
       quotaHTML = this._quotaBarsHTML(q);
+      const used7d = q.secondary_used ?? q.primary_used ?? 0;
+      const dotClass = used7d >= 80 ? 'codex-dot-red' : used7d >= 50 ? 'codex-dot-yellow' : 'codex-dot-green';
+      statusIndicator = `<span class="codex-card-dot ${dotClass}"></span>`;
     }
+
+    const refreshBtn = acc.has_token
+      ? `<button class="codex-card-refresh" data-id="${acc.id}" title="刷新此账号"><i data-lucide="refresh-cw"></i></button>`
+      : '';
 
     return `
       <div class="codex-quota-card" data-id="${acc.id}">
         <div class="codex-card-head">
-          <div>
-            <div class="codex-card-name">${this._esc(acc.name)}</div>
-            <div class="codex-card-account-label">${this._esc(acc.account)}</div>
+          <div class="codex-card-head-left">
+            ${statusIndicator}
+            <div>
+              <div class="codex-card-name">${this._esc(acc.name)}</div>
+              <div class="codex-card-account-label">${this._maskEmail(acc.account)}</div>
+            </div>
           </div>
-          ${(q && !q.error && acc.has_token)
-            ? `<span class="codex-card-plan">${(q.plan_type || 'UNKNOWN').toUpperCase()}</span>`
-            : ''}
+          <div class="codex-card-head-right">
+            ${refreshBtn}
+            ${(q && !q.error && acc.has_token)
+              ? `<span class="codex-card-plan">${(q.plan_type || 'UNKNOWN').toUpperCase()}</span>`
+              : ''}
+          </div>
         </div>
         ${quotaHTML}
         <div class="codex-detail-slot"></div>
@@ -184,7 +303,7 @@ const CodexView = {
       </div>
     `;
 
-    // 5h bar
+    // 5h bar  
     if (has5h) {
       const remaining5h = Math.max(0, 100 - q.primary_used).toFixed(0);
       const status5h = this._statusClass(q.primary_used);
@@ -199,10 +318,21 @@ const CodexView = {
       `;
     }
 
-    // Reset info
-    const resetText = this._formatReset(has7d ? q.secondary_reset : q.primary_reset);
+    // Credits balance
+    if (q.credits_balance != null && q.credits_balance > 0) {
+      html += `
+        <div class="codex-credits-row">
+          <i data-lucide="wallet"></i>
+          <span>余额: $${q.credits_balance.toFixed(2)}</span>
+        </div>
+      `;
+    }
+
+    // Reset countdown (live-updating)
+    const resetUnix = has7d ? q.secondary_reset : q.primary_reset;
+    const resetText = this._formatReset(resetUnix);
     if (resetText) {
-      html += `<div class="codex-reset-text">${resetText}</div>`;
+      html += `<div class="codex-reset-text codex-countdown" data-reset="${resetUnix || ''}">${resetText}</div>`;
     }
 
     html += `</div>`;
@@ -217,7 +347,6 @@ const CodexView = {
     const card = grid.querySelector(`.codex-quota-card[data-id="${id}"]`);
     if (!card) return;
 
-    // If already expanded, collapse
     if (card.classList.contains('expanded')) {
       card.classList.remove('expanded');
       card.querySelector('.codex-detail-slot').innerHTML = '';
@@ -225,7 +354,6 @@ const CodexView = {
       return;
     }
 
-    // Collapse any other expanded cards
     grid.querySelectorAll('.codex-quota-card.expanded').forEach(c => {
       c.classList.remove('expanded');
       c.querySelector('.codex-detail-slot').innerHTML = '';
@@ -424,10 +552,14 @@ const CodexView = {
     this._formOverlay = overlay;
     requestAnimationFrame(() => overlay.classList.add('active'));
 
-    // Close on backdrop
+    // Close on backdrop or Escape
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) this._closeForm();
     });
+    const escHandler = (e) => {
+      if (e.key === 'Escape') { this._closeForm(); document.removeEventListener('keydown', escHandler); }
+    };
+    document.addEventListener('keydown', escHandler);
 
     // Read local token
     overlay.querySelector('#cx-read-local').addEventListener('click', async () => {
@@ -479,7 +611,7 @@ const CodexView = {
         this._toast(existing ? '已更新' : '已添加');
         this._detailCache = {};
         this._closeForm();
-        this.loadList();
+        this.loadList(true); // force refresh to fetch new quota
       } catch (e) {
         this._toast('保存失败: ' + (e.message || ''), 'error');
         btn.disabled = false;
@@ -492,6 +624,14 @@ const CodexView = {
       .forEach(input => input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); doSave(); }
       }));
+
+    // Auto-focus first empty required field
+    requestAnimationFrame(() => {
+      const firstEmpty = overlay.querySelector('#cx-f-name:placeholder-shown') ||
+                         overlay.querySelector('#cx-f-account:placeholder-shown') ||
+                         overlay.querySelector('#cx-f-name');
+      firstEmpty?.focus();
+    });
   },
 
   _closeForm() {
@@ -535,6 +675,16 @@ const CodexView = {
     return div.innerHTML;
   },
 
+  /** Mask email for card display (show first 3 chars + domain). */
+  _maskEmail(str) {
+    if (!str) return '';
+    const safe = this._esc(str);
+    if (!str.includes('@')) return safe;
+    const [local, domain] = str.split('@');
+    const masked = local.substring(0, 3) + '***';
+    return this._esc(masked + '@' + domain);
+  },
+
   _toast(msg, type = 'info') {
     if (typeof App !== 'undefined' && App.showToast) App.showToast(msg, type);
   },
@@ -558,8 +708,9 @@ const CodexView = {
     const hours = Math.floor(diffMs / 3600000);
     const days = Math.floor(hours / 24);
     const remainHours = hours % 24;
+    const mins = Math.floor((diffMs % 3600000) / 60000);
     if (days > 0) return `${days}天${remainHours}小时后重置`;
-    if (hours > 0) return `${hours}小时后重置`;
+    if (hours > 0) return `${hours}小时${mins}分后重置`;
     return `${Math.ceil(diffMs / 60000)}分钟后重置`;
   },
 };
