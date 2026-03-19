@@ -250,10 +250,12 @@ const GardenView = {
         try {
             if (this.currentIsland) {
                 this.plots = await API.fetch(`/garden/plots/${encodeURIComponent(this.assignee)}/${this.currentIsland.id}`).then(r => r.json());
+                this._syncCurrentIslandGridFromPlots();
             } else {
-                this.plots = await API.getPlots(this.assignee);
+                // No island selected — do a full re-open to initialize properly
+                await this.open();
+                return;
             }
-            this._syncCurrentIslandGridFromPlots();
         } catch (e) { /* keep old */ }
 
         // Update only dynamic parts
@@ -483,58 +485,67 @@ const GardenView = {
     },
 
     _bindPlotInteractions(scope = document) {
-        scope.querySelectorAll('.iplot').forEach(plotEl => {
-            plotEl.onclick = async (e) => {
-                e.stopPropagation();
-                const plotId = parseInt(plotEl.dataset.plotId, 10);
-                const plot = this.plots.find(p => p.id === plotId);
-                if (!plot) return;
-                const actionBtn = e.target.closest('.iplot-action');
-                if (actionBtn) {
-                    const action = actionBtn.dataset.action;
-                    if (action === 'clear' && plot.status === 'wasteland') await this.clearPlot(plotId, plot.obstacle_type);
-                    else if (action === 'plant' && plot.status === 'cleared' && this.selectedTree) await this.plantOnPlot(plotId);
-                    else if (action === 'menu' && plot.status === 'planted') this.showPlotMenu(plotId, plotEl);
-                    return;
-                }
-                if (this._movingPlotId && plot.status === 'cleared') {
-                    await this.executeMoveToPlot(plotId);
-                    return;
-                }
-                // Wasteland: immediately pop the clear menu
-                if (plot.status === 'wasteland') {
-                    if (this._selectedPlotId === plotId) {
-                        this._selectedPlotId = null;
-                        this.closePlotMenu();
-                        this._updateDynamicContent();
-                    } else {
-                        this._selectedPlotId = plotId;
-                        this._updateDynamicContent();
-                        this.showWastelandMenu(plotId, plotEl);
-                    }
-                    return;
-                }
-                // Planted: immediately pop the manage menu
-                if (plot.status === 'planted') {
-                    if (this._selectedPlotId === plotId) {
-                        this._selectedPlotId = null;
-                        this.closePlotMenu();
-                        this._updateDynamicContent();
-                    } else {
-                        this._selectedPlotId = plotId;
-                        this._updateDynamicContent();
-                        this.showPlotMenu(plotId, plotEl);
-                    }
-                    return;
-                }
+        // Use event delegation: bind once on the container instead of on each .iplot
+        if (scope._gardenDelegated) return;
+        scope._gardenDelegated = true;
+
+        scope.addEventListener('click', async (e) => {
+            const plotEl = e.target.closest('.iplot');
+            if (!plotEl) return;
+
+            e.stopPropagation();
+            const plotId = parseInt(plotEl.dataset.plotId, 10);
+            const plot = this.plots.find(p => p.id === plotId);
+            if (!plot) return;
+            const actionBtn = e.target.closest('.iplot-action');
+            if (actionBtn) {
+                const action = actionBtn.dataset.action;
+                if (action === 'clear' && plot.status === 'wasteland') await this.clearPlot(plotId, plot.obstacle_type);
+                else if (action === 'plant' && plot.status === 'cleared' && this.selectedTree) await this.plantOnPlot(plotId);
+                else if (action === 'menu' && plot.status === 'planted') this.showPlotMenu(plotId, plotEl);
+                return;
+            }
+            if (this._movingPlotId && plot.status === 'cleared') {
+                await this.executeMoveToPlot(plotId);
+                return;
+            }
+            if (this._movingPlotId && plot.status === 'planted') {
+                this.cancelMovePlot();
+                return;
+            }
+            // Wasteland: immediately pop the clear menu
+            if (plot.status === 'wasteland') {
                 if (this._selectedPlotId === plotId) {
                     this._selectedPlotId = null;
+                    this.closePlotMenu();
                     this._updateDynamicContent();
-                    return;
+                } else {
+                    this._selectedPlotId = plotId;
+                    this._updateDynamicContent();
+                    this.showWastelandMenu(plotId, plotEl);
                 }
-                this._selectedPlotId = plotId;
+                return;
+            }
+            // Planted: immediately pop the manage menu
+            if (plot.status === 'planted') {
+                if (this._selectedPlotId === plotId) {
+                    this._selectedPlotId = null;
+                    this.closePlotMenu();
+                    this._updateDynamicContent();
+                } else {
+                    this._selectedPlotId = plotId;
+                    this._updateDynamicContent();
+                    this.showPlotMenu(plotId, plotEl);
+                }
+                return;
+            }
+            if (this._selectedPlotId === plotId) {
+                this._selectedPlotId = null;
                 this._updateDynamicContent();
-            };
+                return;
+            }
+            this._selectedPlotId = plotId;
+            this._updateDynamicContent();
         });
     },
 
@@ -619,7 +630,8 @@ const GardenView = {
                 if (existing) {
                     existing.replaceWith(newEl);
                 } else {
-                    land.insertAdjacentHTML('beforeend', html);
+                    newEl.dataset.sig = sig;
+                    land.appendChild(newEl);
                 }
             });
 
@@ -628,7 +640,10 @@ const GardenView = {
                 if (!currentIds.has(el.dataset.plotId)) el.remove();
             });
 
-            this._bindPlotInteractions(land);
+            // Re-bind only if needed (event delegation on land)
+            if (!land._gardenDelegated) {
+                this._bindPlotInteractions(land);
+            }
         }
 
         // Update HUD balance

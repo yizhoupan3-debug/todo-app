@@ -2006,17 +2006,7 @@
   animation: sproutBounce 1.5s ease-in-out infinite;
 }
 
-@keyframes readyPulse {
-
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.2);
-  }
-
-  50% {
-    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-  }
-}
+/* @keyframes readyPulse — duplicate removed, original at L1299 */
 
 /* ─── Planted ─── */
 .island-plot.planted {
@@ -2081,59 +2071,13 @@
   transition: width 1s ease;
 }
 
-/* Growth animations */
-@keyframes seedPulse {
+/* Growth animations — duplicates removed, originals kept at L1858-1898 */
 
-  0%,
-  100% {
-    opacity: 0.6;
-    transform: scale(0.95);
-  }
-
-  50% {
-    opacity: 0.85;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes sproutBounce {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-3px);
-  }
-}
-
-@keyframes treeSway {
-
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-
-  25% {
-    transform: rotate(1.5deg);
-  }
-
-  75% {
-    transform: rotate(-1.5deg);
-  }
-}
-
-/* ─── Planting Toolbar ─── */
+/* Planting toolbar overrides — base definition is above (L1917) */
 .planting-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 20px;
-  background: rgba(34, 197, 94, 0.1);
-  border-radius: var(--radius-md);
   margin: 8px 20px;
-  border: 1px solid rgba(34, 197, 94, 0.2);
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.2);
 }
 
 .planting-toolbar span {
@@ -3707,10 +3651,10 @@
 }
 
 @media (max-width: 768px) {
-  /* ── Shrink island for less GPU compositing ── */
+  /* ── Shrink island for mobile (smaller than desktop 800×800) ── */
   .island-world {
-    width: 1200px;
-    height: 900px;
+    width: 600px;
+    height: 450px;
   }
 
   .island-shape,
@@ -3969,7 +3913,7 @@
   cursor: pointer;
 }
 .iplot.planted:hover {
-  transform: scale(1.1);
+  transform: translate(-50%, -50%) scale(1.1);
   filter: brightness(1.15);
   z-index: 15;
 }

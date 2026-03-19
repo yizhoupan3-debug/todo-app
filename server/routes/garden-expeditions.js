@@ -8,6 +8,13 @@ module.exports = function registerGardenExpeditionRoutes(router, {
     initIslandPlots,
 }) {
 
+    /**
+     * Ensure a coin_accounts row exists for the given assignee.
+     */
+    function ensureAccount(assignee) {
+        db.prepare('INSERT OR IGNORE INTO coin_accounts (assignee, balance) VALUES (?, 0)').run(assignee);
+    }
+
     router.get('/islands/:assignee', (req, res) => {
         try {
             const islands = db.prepare(
@@ -40,6 +47,7 @@ module.exports = function registerGardenExpeditionRoutes(router, {
             if (!spec) return res.status(400).json({ error: '未知船只类型' });
 
             const buy = db.transaction(() => {
+                ensureAccount(assignee);
                 const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
                     .get(assignee);
                 if (balance < spec.cost) throw new Error('INSUFFICIENT');

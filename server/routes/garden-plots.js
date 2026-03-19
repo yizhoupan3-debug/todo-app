@@ -4,6 +4,14 @@ module.exports = function registerGardenPlotRoutes(router, {
     pickObstacleForPlot, getPlotSeedState,
 }) {
 
+    /**
+     * Ensure a coin_accounts row exists for the given assignee.
+     * Prevents undefined balance on first interaction.
+     */
+    function ensureAccount(assignee) {
+        db.prepare('INSERT OR IGNORE INTO coin_accounts (assignee, balance) VALUES (?, 0)').run(assignee);
+    }
+
 
     function ensureIslandSceneGrid(islandId, assignee = null) {
         const island = assignee
@@ -90,6 +98,7 @@ module.exports = function registerGardenPlotRoutes(router, {
                 if (plot.status !== 'wasteland') throw new Error('ALREADY_CLEARED');
 
                 const cost = costMap[plot.obstacle_type] || 10;
+                ensureAccount(assignee);
                 const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
                     .get(assignee);
                 if (balance < cost) throw new Error('INSUFFICIENT');
@@ -134,6 +143,7 @@ module.exports = function registerGardenPlotRoutes(router, {
                 if (!plot) throw new Error('NOT_FOUND');
                 if (plot.status !== 'cleared') throw new Error('NOT_CLEARED');
 
+                ensureAccount(assignee);
                 const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
                     .get(assignee);
                 if (balance < cost) throw new Error('INSUFFICIENT');
@@ -187,48 +197,62 @@ module.exports = function registerGardenPlotRoutes(router, {
             }
 
             const grow = db.transaction(() => {
-                let tree = db.prepare(
-                    "SELECT * FROM trees WHERE assignee = ? AND status = 'growing' ORDER BY planted_at DESC LIMIT 1"
-                ).get(assignee);
-                if (!tree) {
-                    tree = db.prepare(
+                // Distribute growth minutes to ALL non-mature trees
+                const trees = db.prepare(
+                    "SELECT * FROM trees WHERE assignee = ? AND (status = 'growing' OR (growth_minutes < ? AND status != 'grown'))"
+                ).all(assignee, TREE_MATURE_MINUTES);
+
+                if (!trees.length) {
+                    // Fallback: try any tree
+                    const fallback = db.prepare(
                         "SELECT * FROM trees WHERE assignee = ? ORDER BY planted_at DESC LIMIT 1"
                     ).get(assignee);
-                }
-                if (!tree) return { tree: null, coinDrop: 0 };
-
-                const newMinutes = (tree.growth_minutes || 0) + minutes;
-                const newStatus = newMinutes >= TREE_MATURE_MINUTES ? 'grown' : 'growing';
-
-                db.prepare('UPDATE trees SET growth_minutes = ?, status = ? WHERE id = ?')
-                    .run(newMinutes, newStatus, tree.id);
-
-                let coinDrop = 0;
-                const price = PLANT_CATALOG[tree.tree_type] || 0;
-                let dropChance;
-                let minDrop;
-                let maxDrop;
-
-                if (price >= 80) {
-                    dropChance = 0.50; minDrop = 0.5; maxDrop = 2.0;
-                } else if (price >= 30) {
-                    dropChance = 0.35; minDrop = 0.3; maxDrop = 1.0;
-                } else if (price >= 10) {
-                    dropChance = 0.20; minDrop = 0.2; maxDrop = 0.5;
-                } else {
-                    dropChance = 0.10; minDrop = 0.1; maxDrop = 0.2;
+                    if (!fallback) return { tree: null, coinDrop: 0 };
+                    // Already mature — just return it, no growth applied
+                    return { tree: fallback, coinDrop: 0 };
                 }
 
-                if (Math.random() < dropChance) {
-                    coinDrop = Math.round((minDrop + Math.random() * (maxDrop - minDrop)) * 10) / 10;
+                const updateStmt = db.prepare('UPDATE trees SET growth_minutes = ?, status = ? WHERE id = ?');
+                let totalCoinDrop = 0;
+                let lastUpdatedTree = null;
+
+                ensureAccount(assignee);
+
+                for (const tree of trees) {
+                    const newMinutes = Math.min(TREE_MATURE_MINUTES, (tree.growth_minutes || 0) + minutes);
+                    const newStatus = newMinutes >= TREE_MATURE_MINUTES ? 'grown' : 'growing';
+                    updateStmt.run(newMinutes, newStatus, tree.id);
+
+                    // Coin drop chance per tree
+                    const price = PLANT_CATALOG[tree.tree_type] || 0;
+                    let dropChance, minDrop, maxDrop;
+                    if (price >= 80) {
+                        dropChance = 0.50; minDrop = 0.5; maxDrop = 2.0;
+                    } else if (price >= 30) {
+                        dropChance = 0.35; minDrop = 0.3; maxDrop = 1.0;
+                    } else if (price >= 10) {
+                        dropChance = 0.20; minDrop = 0.2; maxDrop = 0.5;
+                    } else {
+                        dropChance = 0.10; minDrop = 0.1; maxDrop = 0.2;
+                    }
+
+                    if (Math.random() < dropChance) {
+                        const drop = Math.round((minDrop + Math.random() * (maxDrop - minDrop)) * 10) / 10;
+                        totalCoinDrop += drop;
+                        db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
+                            .run(assignee, drop, 'plant_drop', `${tree.tree_type} 掉落`);
+                    }
+                    lastUpdatedTree = tree;
+                }
+
+                if (totalCoinDrop > 0) {
                     db.prepare('UPDATE coin_accounts SET balance = balance + ? WHERE assignee = ?')
-                        .run(coinDrop, assignee);
-                    db.prepare('INSERT INTO coin_transactions (assignee, amount, reason, detail) VALUES (?, ?, ?, ?)')
-                        .run(assignee, coinDrop, 'plant_drop', `${tree.tree_type} 掉落`);
+                        .run(totalCoinDrop, assignee);
                 }
 
-                const updatedTree = db.prepare('SELECT * FROM trees WHERE id = ?').get(tree.id);
-                return { tree: updatedTree, coinDrop };
+                // Return the most recently planted tree for the toast message
+                const updatedTree = db.prepare('SELECT * FROM trees WHERE id = ?').get(lastUpdatedTree.id);
+                return { tree: updatedTree, coinDrop: totalCoinDrop };
             });
 
             const result = grow();
@@ -379,6 +403,7 @@ module.exports = function registerGardenPlotRoutes(router, {
                 if (!tree) throw new Error('NOT_FOUND');
                 if ((tree.growth_minutes || 0) >= TREE_MATURE_MINUTES) throw new Error('ALREADY_MATURE');
 
+                ensureAccount(assignee);
                 const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
                     .get(assignee);
                 if (balance < SPEEDUP_COST) throw new Error('INSUFFICIENT');

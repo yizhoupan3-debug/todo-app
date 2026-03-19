@@ -354,6 +354,10 @@ Object.assign(GardenView, {
             });
         }
 
+        // Guard: only bind viewport-scoped events once per DOM element
+        if (vp._gardenEvtBound) return;
+        vp._gardenEvtBound = true;
+
         // ── Wheel zoom ──
         vp.addEventListener('wheel', e => {
             e.preventDefault();
@@ -578,8 +582,9 @@ Object.assign(GardenView, {
 
         const catItem = this.catalog.find(c => c.type === plot.tree_type);
         const gm = plot.growth_minutes || 0;
+        const isGrown = plot.tree_status === 'grown' || gm >= 150;
         const harvestedToday = plot.last_harvested === this._todayString();
-        const canCollect = gm >= 150 && !harvestedToday;
+        const canCollect = isGrown && !harvestedToday;
 
         const menu = document.createElement('div');
         menu.className = 'plot-menu';
@@ -661,7 +666,7 @@ Object.assign(GardenView, {
     closePlotMenu() {
         this._plotMenuCleanup?.();
         document.querySelectorAll('.plot-menu').forEach(m => m.remove());
-        this._movingPlotId = null;
+        // Note: _movingPlotId is NOT cleared here — only on explicit cancel or move completion
         document.querySelectorAll('.iplot.move-target').forEach(el => el.classList.remove('move-target'));
     },
 
@@ -704,24 +709,31 @@ Object.assign(GardenView, {
         document.querySelectorAll('.iplot.cleared').forEach(el => {
             el.classList.add('move-target');
         });
-        gardenToast('🔄 点击一个空地块来移动植物', 'info');
+        gardenToast('🔄 点击一个空地块来移动植物 (点击已种植地块取消)', 'info');
+    },
+
+    cancelMovePlot() {
+        this._movingPlotId = null;
+        document.querySelectorAll('.iplot.move-target').forEach(el => el.classList.remove('move-target'));
     },
 
     async executeMoveToPlot(targetPlotId) {
         if (!this._movingPlotId) return;
+        const movingId = this._movingPlotId;
+        this._movingPlotId = null;
+        document.querySelectorAll('.iplot.move-target').forEach(el => el.classList.remove('move-target'));
         try {
             const res = await API.fetch('/garden/plots/move', {
                 method: 'POST',
                 body: JSON.stringify({
                     assignee: this.assignee,
-                    from_plot_id: this._movingPlotId,
+                    from_plot_id: movingId,
                     to_plot_id: targetPlotId
                 })
             });
             const data = await res.json();
             if (!res.ok) { gardenToast(data.error || '移动失败'); return; }
             gardenToast('🔄 移动成功！', 'success');
-            this._movingPlotId = null;
             this._staticRendered = false;
             await this.open();
         } catch (e) { gardenToast('网络错误'); }
@@ -753,8 +765,11 @@ Object.assign(GardenView, {
             <div class="world-map-container">
                 <button class="world-map-close" id="world-map-close">✕</button>
                 ${this.islands.map(island => {
-            const cx = 250 + island.position_x * 90;
-            const cy = 200 + island.position_y * 90;
+            const mapW = 500, mapH = 400, pad = 30;
+            const rawCx = 250 + island.position_x * 90;
+            const rawCy = 200 + island.position_y * 90;
+            const cx = Math.max(pad, Math.min(mapW - pad, rawCx));
+            const cy = Math.max(pad, Math.min(mapH - pad, rawCy));
             const cls = island.island_type === 'starter' ? 'starter' : island.discovered ? 'discovered' : 'foggy';
             const icon = island.island_type === 'starter' ? '🏠' : island.discovered ? '🏝️' : '❓';
             return `<div class="island-node ${cls}" data-island-id="${island.id}" style="left:${cx}px;top:${cy}px" title="${island.discovered ? island.name + ' (' + island.grid_w + '×' + island.grid_h + ')' : '未探索'}">
@@ -824,24 +839,26 @@ Object.assign(GardenView, {
 
     async buyBoat(type) {
         try {
-            const r = await API.fetch('/garden/boats/buy', { method: 'POST', body: JSON.stringify({ assignee: this.assignee, boat_type: type }) }).then(r => { if (!r.ok) throw r; return r.json(); });
-            gardenSyncCoins({ assignee: this.assignee, balance: r.balance });
-            gardenToast(`🚢 购买成功！${r.boat.name}`, 'success');
+            const res = await API.fetch('/garden/boats/buy', { method: 'POST', body: JSON.stringify({ assignee: this.assignee, boat_type: type }) });
+            const data = await res.json();
+            if (!res.ok) { gardenToast(data.error || '购买失败', 'error'); return; }
+            gardenSyncCoins({ assignee: this.assignee, balance: data.balance });
+            gardenToast(`🚢 购买成功！${data.boat.name}`, 'success');
             await this.open();
         } catch (e) {
-            const err = e.json ? await e.json() : { error: '购买失败' };
-            gardenToast(err.error || '购买失败', 'error');
+            gardenToast('购买失败', 'error');
         }
     },
 
     async startExpedition(boatId) {
         try {
-            const r = await API.fetch('/garden/expeditions/start', { method: 'POST', body: JSON.stringify({ assignee: this.assignee, boat_id: boatId }) }).then(r => { if (!r.ok) throw r; return r.json(); });
-            gardenToast(`⛵ ${r.character} 出发探索 ${r.targetIsland.name}！`, 'success');
+            const res = await API.fetch('/garden/expeditions/start', { method: 'POST', body: JSON.stringify({ assignee: this.assignee, boat_id: boatId }) });
+            const data = await res.json();
+            if (!res.ok) { gardenToast(data.error || '出发失败', 'error'); return; }
+            gardenToast(`⛵ ${data.character} 出发探索 ${data.targetIsland.name}！`, 'success');
             await this.open();
         } catch (e) {
-            const err = e.json ? await e.json() : { error: '出发失败' };
-            gardenToast(err.error || '出发失败', 'error');
+            gardenToast('出发失败', 'error');
         }
     },
 
