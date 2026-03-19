@@ -372,15 +372,13 @@ if (typeof App === 'undefined') {
             touchStartY = e.touches[0].clientY;
         }, { passive: true });
         mainContent.addEventListener('touchend', (e) => {
-            if (this.currentView !== 'daily' && this.currentView !== 'monthly') return;
+            // Only handle monthly view swipe here; daily view has its own
+            // swipe handler in DailyView._initDateSwipe() with animations.
+            if (this.currentView !== 'monthly') return;
             const diffX = e.changedTouches[0].clientX - touchStartX;
             const diffY = e.changedTouches[0].clientY - touchStartY;
             if (Math.abs(diffX) > 80 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
-                if (this.currentView === 'daily') {
-                    diffX > 0 ? DailyView.prevDay() : DailyView.nextDay();
-                } else {
-                    diffX > 0 ? MonthlyView.prevMonth() : MonthlyView.nextMonth();
-                }
+                diffX > 0 ? MonthlyView.prevMonth() : MonthlyView.nextMonth();
             }
         }, { passive: true });
     },

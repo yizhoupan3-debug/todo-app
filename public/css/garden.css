@@ -1171,12 +1171,9 @@
   z-index: 1;
 }
 
-/* Apply mix-blend-mode only on the grass area where it helps remove white fringes.
-   On ocean/blue areas it causes undesirable darkening. */
-.island-land .iplot.planted .iplot-img,
-.island-land .iplot.cleared .iplot-img {
-  mix-blend-mode: multiply;
-}
+/* Disabled mix-blend-mode: it caused checkerboard artifacts on transparent PNGs.
+   The original intent was to remove white fringes, but modern PNG assets already
+   have proper alpha channels. */
 
 /* Obstacle sprites: larger, with gentle bottom-fade into grass */
 .iplot.wasteland .iplot-img {
@@ -1192,8 +1189,6 @@
   height: 68px;
   transform-origin: 50% 100%;
   animation: wildTreeSway 6s ease-in-out infinite;
-  /* Stronger blend to kill off the stubborn white glow on dead tree bark */
-  mix-blend-mode: multiply;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5)) contrast(1.08) saturate(0.85);
 }
 
@@ -4303,15 +4298,11 @@
   display: none;
 }
 
+/* Shore decorations hidden: the background image already has palms and rocks drawn in.
+   Rendering CSS elements on top created duplicate/conflicting visuals. */
 .shore-palm,
 .shore-rock {
-  position: absolute;
-  display: block;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: contain;
-  opacity: 0.9;
-  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.24));
+  display: none !important;
 }
 
 .shore-palm {
@@ -4889,9 +4880,11 @@
   filter: blur(16px);
 }
 
+/* Harbor button: positioned to overlay the dock drawn in the background image
+   (bottom-center-right of the island at approx 70%/86%) */
 .scene-harbor {
-  left: 76%;
-  top: 62%;
+  left: 70%;
+  top: 86%;
   z-index: 22;
 }
 

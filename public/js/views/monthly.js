@@ -12,6 +12,7 @@ const MonthlyView = {
     visibleYear: null,
     visibleMonth: null,
     observer: null,
+    selectedDate: null,    // Default date for task creation from monthly view
     loadingMore: false,
     _loadId: 0,            // Race condition guard
     renderedMonths: [],    // ['2026-02', '2026-03', '2026-04']
@@ -71,6 +72,8 @@ const MonthlyView = {
         this.currentMonth = month;
         this.visibleYear = year;
         this.visibleMonth = month;
+        // Default selected date to the 1st of displayed month
+        this.selectedDate = `${year}-${String(month + 1).padStart(2, '0')}-01`;
         this.updateDateDisplay();
         this.fullReload();
     },
