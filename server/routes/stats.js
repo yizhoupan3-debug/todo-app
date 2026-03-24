@@ -51,12 +51,18 @@ router.get('/', (req, res) => {
         waterSql += ' GROUP BY date ORDER BY date';
         const waterRows = db.prepare(waterSql).all(...waterParams);
 
-        // 3. Water goal
+        // 3. Water goal — when no specific assignee, use the max goal among all users
         let waterGoal = 2000;
         if (assigneeFilter) {
             const goalRow = db.prepare('SELECT goal FROM checkin_goals WHERE type = ? AND assignee = ?')
                 .get('water', assigneeFilter);
             if (goalRow) waterGoal = goalRow.goal;
+        } else {
+            // For 'all' view: use max of both users' goals (or default if none set)
+            const allGoals = db.prepare('SELECT goal FROM checkin_goals WHERE type = ?').all('water');
+            if (allGoals.length > 0) {
+                waterGoal = Math.max(...allGoals.map(r => r.goal));
+            }
         }
 
         // 4. Wakeup checkin per day

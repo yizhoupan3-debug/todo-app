@@ -244,14 +244,14 @@ if (typeof App === 'undefined') {
         try {
             const history = await API.getCoinHistory(assignee, 30);
             const html = history.map(h => `
-                <div class="coin-history-row" data-tx-id="${h.id}" data-amount="${h.amount}" data-detail="${(h.detail || h.reason || '').replace(/"/g, '&quot;')}" style="display:flex;align-items:center;padding:10px 16px;border-bottom:1px solid rgba(0,0,0,0.05);gap:10px">
-                    <span style="font-size:18px;flex-shrink:0">${this._coinReasonIcon(h.reason)}</span>
-                    <span style="flex:1;min-width:0">
-                        <span style="font-size:14px;color:#333;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${h.detail || h.reason}</span>
-                        <span style="font-size:11px;color:#bbb">${this._coinTimeAgo(h.created_at)}</span>
+                <div class="coin-history-row" data-tx-id="${h.id}" data-amount="${h.amount}" data-detail="${(h.detail || h.reason || '').replace(/"/g, '&quot;')}">
+                    <span class="coin-history-icon">${this._coinReasonIcon(h.reason)}</span>
+                    <span class="coin-history-detail">
+                        <span class="coin-history-label">${h.detail || h.reason}</span>
+                        <span class="coin-history-time">${this._coinTimeAgo(h.created_at)}</span>
                     </span>
-                    <span style="color:${h.amount > 0 ? '#4CAF50' : '#E53935'};font-weight:600;font-size:15px;white-space:nowrap;min-width:42px;text-align:right">${h.amount > 0 ? '+' : ''}${h.amount}</span>
-                    ${h.amount > 0 ? '<button class="coin-undo-btn" style="background:none;border:1px solid #e0e0e0;border-radius:8px;padding:4px 8px;font-size:12px;color:#aaa;cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0" title="撤销此记录">↩</button>' : '<span style="width:34px;flex-shrink:0"></span>'}
+                    <span class="coin-history-amount ${h.amount > 0 ? 'positive' : 'negative'}">${h.amount > 0 ? '+' : ''}${h.amount}</span>
+                    ${h.amount > 0 ? '<button class="coin-undo-btn" title="撤销此记录">↩</button>' : '<span style="width:34px;flex-shrink:0"></span>'}
                 </div>
             `).join('') || '<div style="text-align:center;padding:32px;color:#999;font-size:14px">暂无记录</div>';
 
@@ -276,8 +276,6 @@ if (typeof App === 'undefined') {
 
             // Undo button handlers
             overlay.querySelectorAll('.coin-undo-btn').forEach(btn => {
-                btn.addEventListener('mouseenter', () => { btn.style.borderColor = '#f44336'; btn.style.color = '#f44336'; btn.style.background = '#fff5f5'; });
-                btn.addEventListener('mouseleave', () => { btn.style.borderColor = '#e0e0e0'; btn.style.color = '#aaa'; btn.style.background = 'none'; });
                 btn.addEventListener('click', async () => {
                     const row = btn.closest('.coin-history-row');
                     const txId = row?.dataset.txId;

@@ -388,7 +388,7 @@ const JournalView = {
         if (!canvasEl) return;
         
         try {
-            App.showToast('生成收据中...', 'info');
+            App.showToast('导出中...', 'info');
             // Adding a small delay to ensure UI selection state clears visually
             await new Promise(r => setTimeout(r, 100));
             

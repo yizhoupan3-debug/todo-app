@@ -75,6 +75,13 @@ module.exports = function registerGardenPlotRoutes(router, {
         }
     });
 
+
+    /**
+     * POST /plots/clear — Pay coins to clear wasteland obstacle on a plot.
+     * Body: { assignee: string, plot_id: number }
+     * Returns: { balance: number, cost: number }
+     * Errors: 400 INSUFFICIENT | 400 ALREADY_CLEARED | 404 NOT_FOUND
+     */
     router.post('/plots/clear', (req, res) => {
         try {
             const { assignee, plot_id } = req.body;
@@ -89,6 +96,12 @@ module.exports = function registerGardenPlotRoutes(router, {
                     .get(plot_id, assignee);
                 if (!plot) throw new Error('NOT_FOUND');
                 if (plot.status !== 'wasteland') throw new Error('ALREADY_CLEARED');
+
+                // Validate that the plot's island belongs to this user
+                if (plot.island_id !== null) {
+                    const isl = db.prepare('SELECT id FROM islands WHERE id = ? AND assignee = ?').get(plot.island_id, assignee);
+                    if (!isl) throw new Error('NOT_FOUND');
+                }
 
                 const cost = costMap[plot.obstacle_type] || 10;
                 ensureAccount(assignee);
@@ -118,6 +131,13 @@ module.exports = function registerGardenPlotRoutes(router, {
         }
     });
 
+
+    /**
+     * POST /plant — Plant a tree on a cleared plot.
+     * Body: { assignee: string, tree_type: string, plot_id: number }
+     * Returns: { tree: object, balance: number }
+     * Errors: 400 INSUFFICIENT | 400 NOT_CLEARED | 404 NOT_FOUND
+     */
     router.post('/plant', (req, res) => {
         try {
             const { assignee, tree_type, plot_id } = req.body;
@@ -135,6 +155,12 @@ module.exports = function registerGardenPlotRoutes(router, {
                     .get(plot_id, assignee);
                 if (!plot) throw new Error('NOT_FOUND');
                 if (plot.status !== 'cleared') throw new Error('NOT_CLEARED');
+
+                // Validate that the plot's island belongs to this user
+                if (plot.island_id !== null) {
+                    const isl = db.prepare('SELECT id FROM islands WHERE id = ? AND assignee = ?').get(plot.island_id, assignee);
+                    if (!isl) throw new Error('NOT_FOUND');
+                }
 
                 ensureAccount(assignee);
                 const { balance } = db.prepare('SELECT balance FROM coin_accounts WHERE assignee = ?')
@@ -275,7 +301,11 @@ module.exports = function registerGardenPlotRoutes(router, {
             }
 
             const now = new Date();
-            const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            // Use Asia/Shanghai timezone to match frontend date logic.
+            const today = new Intl.DateTimeFormat('zh-CN', {
+                timeZone: 'Asia/Shanghai',
+                year: 'numeric', month: '2-digit', day: '2-digit',
+            }).format(now).replace(/\//g, '-');
 
             const harvest = db.transaction(() => {
                 const tree = db.prepare('SELECT * FROM trees WHERE id = ? AND assignee = ?')

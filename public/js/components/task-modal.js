@@ -71,7 +71,8 @@ const TaskModal = {
         });
 
         // ── NLP: listen to title input ──
-        document.getElementById('task-title').addEventListener('input', (e) => {
+        const titleInput = document.getElementById('task-title');
+        titleInput.addEventListener('input', (e) => {
             const val = e.target.value;
             // Reset dismiss state if user clears the input
             if (!val.trim()) {
@@ -82,6 +83,14 @@ const TaskModal = {
             
             clearTimeout(this._debounceTimer);
             this._debounceTimer = setTimeout(() => this._runNLP(e.target.value), 200);
+        });
+
+        // U2: Ctrl+Enter / ⌘+Enter to save task
+        titleInput.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                this.save();
+            }
         });
     },
 

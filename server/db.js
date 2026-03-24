@@ -228,34 +228,8 @@ const islandCount = db.prepare('SELECT COUNT(*) as count FROM islands').get();
 const STARTER_GRID_W = 8;
 const STARTER_GRID_H = 6;
 
-function isForestPlot(x, y, gridW, gridH) {
-  const forestRows = Math.max(3, Math.floor(gridH * 0.5));
-  return y < forestRows || (y === forestRows && x > 0 && x < gridW - 1);
-}
-
-function isStarterInitialClearedPlot(x, y, gridW, gridH) {
-  const unlockedRow = Math.min(gridH - 2, Math.max(1, Math.floor(gridH * 0.58)));
-  const startX = Math.max(0, Math.floor((gridW - 3) / 2));
-  return y === unlockedRow && x >= startX && x < Math.min(gridW, startX + 3);
-}
-
-function pickObstacleForPlot(x, y, gridW, gridH) {
-  if (isForestPlot(x, y, gridW, gridH)) return 'wild_tree';
-  const frontierPool = x <= 1 || x >= gridW - 2 || y >= gridH - 1
-    ? ['weed', 'rock', 'weed', 'rock', 'weed']
-    : ['weed', 'rock', 'weed'];
-  return frontierPool[Math.floor(Math.random() * frontierPool.length)];
-}
-
-function getPlotSeedState(islandType, x, y, gridW, gridH) {
-  if (islandType === 'starter' && isStarterInitialClearedPlot(x, y, gridW, gridH)) {
-    return { status: 'cleared', obstacle: null };
-  }
-  return {
-    status: 'wasteland',
-    obstacle: pickObstacleForPlot(x, y, gridW, gridH),
-  };
-}
+// Import pure plot-seeding utilities (no DB dependency — avoids circular require).
+const { isForestPlot, isStarterInitialClearedPlot, pickObstacleForPlot, getPlotSeedState } = require('./garden-utils');
 
 if (islandCount.count === 0) {
   const ISLAND_NAMES = [
@@ -567,4 +541,24 @@ db.exec(`
   );
 `);
 
+// ── Codex-aggregator read-only connection ──
+let aggregatorDb = null;
+try {
+  const aggregatorDbPath = path.join(__dirname, '..', '..', '指示词宝库', 'codex-aggregator', 'app', 'data', 'aggregator.db');
+  if (fs.existsSync(aggregatorDbPath)) {
+    aggregatorDb = new Database(aggregatorDbPath, { readonly: true });
+    aggregatorDb.pragma('journal_mode = WAL');
+  }
+} catch (e) {
+  console.warn('[db] Could not open aggregator.db (read-only):', e.message);
+}
+
 module.exports = db;
+// Attach aggregatorDb as a non-enumerable property on the native Database instance
+Object.defineProperty(module.exports, 'aggregatorDb', {
+  value: aggregatorDb,
+  writable: false,
+  enumerable: true,
+  configurable: false,
+});
+

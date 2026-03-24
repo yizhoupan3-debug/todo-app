@@ -34,7 +34,7 @@ const DailyView = {
                 const result = await API.clearDoneTasks(dateStr, App.currentAssignee);
                 App.socket.emit('task:deleted', {});
                 this.loadTasks();
-                App.showToast(`🗑️ 已清除 ${result.deleted} 个任务`, 'success');
+                App.showToast(`已清除 ${result.deleted} 个任务`, 'success');
             } catch (err) {
                 App.showToast('清除失败: ' + err.message, 'error');
             }
@@ -212,9 +212,9 @@ const DailyView = {
                         App.socket.emit('task:updated', updated);
                         if (nextStatus === 'done' && updated.coinsEarned > 0) {
                             App.syncCoins({ assignee: task.assignee, delta: updated.coinsEarned, animate: true });
-                            App.showToast(`✅ 任务完成！ +${updated.coinsEarned} 喵喵币`, 'success');
+                            App.showToast(`任务完成！+${updated.coinsEarned} 喵喵币`, 'success');
                         } else if (nextStatus === 'done') {
-                            App.showToast('✅ 任务完成！', 'success');
+                            App.showToast('任务完成！', 'success');
                         }
                         this.loadTasks();
                     }).catch(() => {
@@ -239,7 +239,7 @@ const DailyView = {
                         // Wait for delete animation to complete
                         await new Promise(r => setTimeout(r, 400));
                         this.loadTasks();
-                        App.showToast('🗑️ 已删除', 'success');
+                        App.showToast('已删除', 'success');
                     } catch (err) {
                         if (card) card.classList.remove('deleting');
                         App.showToast('删除失败', 'error');
@@ -254,39 +254,24 @@ const DailyView = {
     renderColumn(containerId, tasks, status) {
         const container = document.getElementById(containerId);
         if (tasks.length === 0) {
-            const emptyTexts = {
-                todo: '🎉 没有待办任务',
-                done: '📭 还没有完成的任务',
+            const emptyConfigs = {
+                todo: { icon: '🐱', text: '暂无待办任务', hint: '点击右上角 + 添加任务' },
+                done: { icon: '⭐', text: '还没有完成的任务', hint: '完成任务后会出现在这里' },
             };
+            const cfg = emptyConfigs[status];
             container.innerHTML = `
         <div class="empty-state">
-          <div class="empty-state-text">${emptyTexts[status]}</div>
+          <div class="empty-state-icon">${cfg.icon}</div>
+          <div class="empty-state-text">${cfg.text}</div>
+          <div class="empty-state-hint">${cfg.hint}</div>
         </div>
       `;
             return;
         }
         container.innerHTML = tasks.map(task => this.renderTaskCard(task)).join('');
 
-        // Bind events
-        container.querySelectorAll('.task-card').forEach(card => {
-            card.addEventListener('click', (e) => {
-                if (e.target.closest('.task-checkbox')) return;
-                if (e.target.closest('.task-pomodoro-btn')) return;
-                const taskId = parseInt(card.dataset.taskId);
-                const task = this.tasks.find(t => t.id === taskId);
-                if (task) TaskModal.openEdit(task);
-            });
-        });
-
-        // Pomodoro buttons
-        container.querySelectorAll('.task-pomodoro-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const taskId = parseInt(btn.closest('.task-card').dataset.taskId);
-                const task = this.tasks.find(t => t.id === taskId);
-                if (task) Pomodoro.openForTask(task);
-            });
-        });
+        // Bind events via event delegation (avoids per-card rebinding on each render)
+        this._bindContainerEvents(container, status);
 
         container.querySelectorAll('.task-checkbox').forEach(cb => {
             cb.addEventListener('click', async (e) => {
@@ -327,6 +312,15 @@ const DailyView = {
                     App.socket.emit('task:updated', updated);
                     if (isCompleting && updated.coinsEarned > 0) {
                         App.syncCoins({ assignee: task.assignee, delta: updated.coinsEarned, animate: true });
+                        // Coin float particle from checkbox position
+                        const rect = cb.getBoundingClientRect();
+                        const particle = document.createElement('span');
+                        particle.className = 'coin-float-particle';
+                        particle.textContent = `🪙 +${updated.coinsEarned}`;
+                        particle.style.top = `${rect.top + rect.height / 2}px`;
+                        particle.style.left = `${rect.right + 8}px`;
+                        document.body.appendChild(particle);
+                        particle.addEventListener('animationend', () => particle.remove(), { once: true });
                     }
                     // Hold briefly so animation completes before re-render
                     await new Promise(r => setTimeout(r, isCompleting ? 500 : 250));
@@ -337,9 +331,9 @@ const DailyView = {
                         if (todosBefore === 1) {
                             Utils.haptic('success');
                             Utils.confetti();
-                            App.showToast(`🎊 全部完成！太棒了！${rewardMsg}`, 'success');
+                            App.showToast(`全部完成！太棒了！${rewardMsg}`, 'success');
                         } else {
-                            App.showToast(`✅ 任务完成！${rewardMsg}`, 'success');
+                            App.showToast(`任务完成！${rewardMsg}`, 'success');
                         }
                     }
                 } catch (err) {
@@ -363,13 +357,13 @@ const DailyView = {
         if (task.due_time) {
             let timeDisplay = task.due_time;
             if (task.end_time) timeDisplay += ` - ${task.end_time}`;
-            metaTags += `<span class="task-tag time">🕐 ${timeDisplay}</span>`;
+            metaTags += `<span class="task-tag time"><i data-lucide="clock-3" class="lucide-inline tag-icon"></i> ${timeDisplay}</span>`;
         }
         if (App.currentAssignee === 'all') {
             metaTags += `<span class="task-tag assignee">${assigneeImg} ${task.assignee}</span>`;
         }
         if (task.recurring_parent_id || task.is_recurring) {
-            metaTags += `<span class="task-tag recurring">🔄 重复</span>`;
+            metaTags += `<span class="task-tag recurring"><i data-lucide="repeat" class="lucide-inline tag-icon"></i> 重复</span>`;
         }
 
         return `
@@ -446,12 +440,41 @@ const DailyView = {
             </div>
             <div class="daily-progress-label">
                 <span>已完成 ${doneCount}/${total}</span>
-                <span class="progress-pct">${pct}%${isComplete ? ' 🎉' : ''}</span>
+                <span class="progress-pct">${pct}%${isComplete ? ' ✓' : ''}</span>
             </div>
         `;
     },
 
     refresh() {
         this.loadTasks();
+    },
+
+    /**
+     * Bind a single delegated click handler on a task list container.
+     * Avoids re-binding per card on every render call.
+     */
+    _bindContainerEvents(container) {
+        if (container._delegated) return;
+        container._delegated = true;
+        container.addEventListener('click', (e) => {
+            const card = e.target.closest('.task-card');
+            if (!card) return;
+            const taskId = parseInt(card.dataset.taskId);
+
+            // Pomodoro button
+            if (e.target.closest('.task-pomodoro-btn')) {
+                e.stopPropagation();
+                const task = this.tasks.find(t => t.id === taskId);
+                if (task) Pomodoro.openForTask(task);
+                return;
+            }
+
+            // Checkbox handled separately (has its own listener)
+            if (e.target.closest('.task-checkbox')) return;
+
+            // Card click → open edit
+            const task = this.tasks.find(t => t.id === taskId);
+            if (task) TaskModal.openEdit(task);
+        });
     }
 };

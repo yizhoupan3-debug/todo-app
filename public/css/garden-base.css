@@ -55,13 +55,13 @@
 }
 
 .garden-btn.primary {
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  background: linear-gradient(135deg, #2d8f4e, #3aaa5e);
   color: var(--text-on-primary);
   border: none;
 }
 
 .garden-btn.primary:hover {
-  box-shadow: 0 2px 12px var(--primary-glow);
+  box-shadow: 0 2px 12px rgba(45, 143, 78, 0.4);
   transform: translateY(-1px);
 }
 

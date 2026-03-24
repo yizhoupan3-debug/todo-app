@@ -405,18 +405,18 @@ const AmbientSound = (() => {
     };
 
     const soundMeta = [
-        { id: 'white', icon: '⚪', name: '白噪声', cat: 'noise' },
-        { id: 'pink', icon: '🩷', name: '粉噪声', cat: 'noise' },
-        { id: 'brown', icon: '🟤', name: '棕噪声', cat: 'noise' },
-        { id: 'rain', icon: '🌧️', name: '雨声', cat: 'weather' },
-        { id: 'thunder', icon: '⛈️', name: '雷雨', cat: 'weather' },
-        { id: 'ocean', icon: '🌊', name: '海浪', cat: 'nature' },
-        { id: 'stream', icon: '🏞️', name: '溪流', cat: 'nature' },
-        { id: 'birds', icon: '🐦', name: '鸟鸣', cat: 'nature' },
-        { id: 'fireplace', icon: '🔥', name: '壁炉', cat: 'indoor' },
-        { id: 'fan', icon: '🌀', name: '风扇', cat: 'indoor' },
-        { id: 'cafe', icon: '☕', name: '咖啡馆', cat: 'social' },
-        { id: 'keyboard', icon: '⌨️', name: '键盘', cat: 'social' },
+        { id: 'white', icon: 'W', name: '白噪声', cat: 'noise', lucide: 'radio' },
+        { id: 'pink', icon: 'P', name: '粉噪声', cat: 'noise', lucide: 'activity' },
+        { id: 'brown', icon: 'B', name: '棕噪声', cat: 'noise', lucide: 'wave' },
+        { id: 'rain', icon: '雨', name: '雨声', cat: 'weather', lucide: 'cloud-rain' },
+        { id: 'thunder', icon: '雷', name: '雷雨', cat: 'weather', lucide: 'cloud-lightning' },
+        { id: 'ocean', icon: '海', name: '海浪', cat: 'nature', lucide: 'waves' },
+        { id: 'stream', icon: '溪', name: '溪流', cat: 'nature', lucide: 'droplets' },
+        { id: 'birds', icon: '鸟', name: '鸟鸣', cat: 'nature', lucide: 'twitter' },
+        { id: 'fireplace', icon: '炉', name: '壁炉', cat: 'indoor', lucide: 'flame' },
+        { id: 'fan', icon: '扇', name: '风扇', cat: 'indoor', lucide: 'wind' },
+        { id: 'cafe', icon: '咖', name: '咖啡馆', cat: 'social', lucide: 'coffee' },
+        { id: 'keyboard', icon: '键', name: '键盘', cat: 'social', lucide: 'keyboard' },
     ];
 
     // ── Public API ──

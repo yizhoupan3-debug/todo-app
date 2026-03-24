@@ -94,7 +94,7 @@ const ICSImport = {
         list.innerHTML = this.parsedTasks.map(task => {
             let meta = '';
             if (task.due_date) meta += `📅 ${task.due_date}`;
-            if (task.due_time) meta += ` 🕐 ${task.due_time}`;
+            if (task.due_time) meta += ` · ${task.due_time}`;
             if (task.is_recurring) meta += ` 🔄 重复(${task.recurring_type})`;
 
             return `

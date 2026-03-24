@@ -84,8 +84,24 @@
 }
 
 .checkin-item-icon {
-  font-size: 2rem;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary-glow), color-mix(in srgb, var(--primary) 18%, transparent));
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+  box-shadow: 0 2px 8px var(--primary-glow);
+  color: var(--primary);
   flex-shrink: 0;
+}
+
+.checkin-item-icon svg {
+  width: 22px;
+  height: 22px;
+  stroke: currentColor;
+  stroke-width: 1.8;
 }
 
 .checkin-item-info {
@@ -677,6 +693,37 @@
   }
 }
 
+/* Pulse ripple ring — only before stamping */
+.wakeup-stamp-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  opacity: 0;
+  animation: wakeupRipple 2.4s ease-out infinite;
+}
+
+@keyframes wakeupRipple {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  80% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+
+.wakeup-stamp-btn.stamped::after {
+  animation: none;
+  display: none;
+}
+
 .wakeup-stamp-btn:hover:not(:disabled) {
   transform: scale(1.08) translateY(-2px);
   box-shadow: 0 12px 36px rgba(99, 102, 241, 0.45), 0 6px 16px rgba(99, 102, 241, 0.25);
@@ -697,7 +744,16 @@
 }
 
 .wakeup-stamp-icon {
-  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wakeup-stamp-icon svg {
+  width: 36px;
+  height: 36px;
+  stroke: currentColor;
+  stroke-width: 1.6;
 }
 
 /* ===== GOOUT (出门) STAMP BTN ===== */
@@ -823,7 +879,13 @@
   }
 
   .checkin-item-icon {
-    font-size: 1.6rem;
+    width: 38px;
+    height: 38px;
+  }
+
+  .checkin-item-icon svg {
+    width: 18px;
+    height: 18px;
   }
 
   .checkin-item-info h4 {

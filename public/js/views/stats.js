@@ -56,6 +56,8 @@ const StatsView = {
             document.querySelectorAll('.stats-person-filter .filter-pill').forEach(b =>
                 b.classList.toggle('active', b.dataset.assignee === this.currentAssignee));
         }
+        // U3: Show skeleton loading on overview cards while API loads
+        this._showOverviewSkeleton();
         try {
             this.data = await API.getStats({
                 range: this.currentRange,
@@ -65,6 +67,16 @@ const StatsView = {
         } catch (err) {
             App.showToast('加载统计数据失败', 'error');
         }
+    },
+
+    /** U3: Replace overview card values with skeleton pulses */
+    _showOverviewSkeleton() {
+        document.querySelectorAll('.stats-card.overview .stats-card-value').forEach(el => {
+            el.innerHTML = '<span class="skeleton skeleton-inline"></span>';
+        });
+        document.querySelectorAll('.stats-card.overview .stats-card-subtext').forEach(el => {
+            el.innerHTML = '<span class="skeleton skeleton-inline-sm"></span>';
+        });
     },
 
     render() {
@@ -121,10 +133,10 @@ const StatsView = {
             const h = Math.round((count / max) * 100);
             const label = date.slice(5); // MM-DD
             const isToday = date === this._getToday();
-            return `<div class="chart-bar-wrapper${isToday ? ' today' : ''}">
+            const tooltipText = `${date}: ${count} 个任务完成`;
+            return `<div class="chart-bar-wrapper${isToday ? ' today' : ''}" data-tooltip="${tooltipText}">
                 <div class="chart-bar-value">${count || ''}</div>
-                <div class="chart-bar" data-target-h="${h}" style="height:0%"
-                     title="${date}: ${count} 个任务完成"></div>
+                <div class="chart-bar" data-target-h="${h}" style="height:0%"></div>
                 <div class="chart-bar-label">${label}</div>
             </div>`;
         }).join('');
@@ -149,10 +161,11 @@ const StatsView = {
             const label = date.slice(5);
             const reached = amount >= goalLine;
             const isToday = date === this._getToday();
-            return `<div class="chart-bar-wrapper${isToday ? ' today' : ''}">
+            const amountLabel = amount >= 1000 ? (amount / 1000).toFixed(1) + 'L' : amount + 'ml';
+            const tooltipText = `${date}: ${amountLabel}`;
+            return `<div class="chart-bar-wrapper${isToday ? ' today' : ''}" data-tooltip="${tooltipText}">
                     <div class="chart-bar-value">${amount > 0 ? (amount >= 1000 ? (amount / 1000).toFixed(1) + 'L' : amount + 'ml') : ''}</div>
-                    <div class="chart-bar water${reached ? ' reached' : ''}" data-target-h="${h}" style="height:0%"
-                         title="${date}: ${amount}ml"></div>
+                    <div class="chart-bar water${reached ? ' reached' : ''}" data-target-h="${h}" style="height:0%"></div>
                     <div class="chart-bar-label">${label}</div>
                 </div>`;
         }).join('')}
@@ -211,13 +224,12 @@ const StatsView = {
             const m = d.pomodoro[i].minutes;
             const h = Math.round((m / max) * 100);
             const isToday = date === this._getToday();
-            return `<div class="pomo-mini-bar${isToday ? ' today' : ''}" style="height:${h}%" title="${date}: ${m}分钟"></div>`;
+            return `<div class="pomo-mini-bar${isToday ? ' today' : ''}" data-target-h="${h}" style="height:0%" title="${date}: ${m}分钟"></div>`;
         }).join('');
     },
 
     _getToday() {
-        const now = new Date();
-        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        return Utils.todayStr();
     },
 
     /** Animate chart bars from 0 to target height with stagger */
@@ -243,13 +255,11 @@ const StatsView = {
                 }, 80 + i * 25);
             });
 
-            // Pomodoro mini bars grow
-            const pomoBars = document.querySelectorAll('#view-stats .pomo-mini-bar');
+            // Pomodoro mini bars grow from 0 to target
+            const pomoBars = document.querySelectorAll('#view-stats .pomo-mini-bar[data-target-h]');
             pomoBars.forEach((bar, i) => {
-                const h = bar.style.height;
-                bar.style.height = '0%';
                 bar.style.transition = 'height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                setTimeout(() => { bar.style.height = h; }, 150 + i * 20);
+                setTimeout(() => { bar.style.height = bar.dataset.targetH + '%'; }, 150 + i * 20);
             });
         });
     },

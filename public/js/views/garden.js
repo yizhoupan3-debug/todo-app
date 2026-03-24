@@ -221,6 +221,22 @@ const GardenView = {
 
     SCENE_GRID_W: 8,
     SCENE_GRID_H: 6,
+
+    /* ── Isometric grid constants ──
+     * Trees are placed on a separate #island-trees overlay using
+     * standard 2:1 isometric projection.
+     *
+     * Cell dimensions on screen (before world zoom/pan):
+     *   cellW = horizontal span of one grid unit (along X axis)
+     *   cellH = vertical span of one grid unit (along X axis)
+     * Origin = centre of the top diamond corner of the iso grid inside island-world.
+     */
+    ISO_CELL_W: 110,   // px width of one iso grid unit
+    ISO_CELL_H: 55,    // px height of one iso grid unit (= cellW/2 for 2:1)
+    // Origin of the isometric grid in island-world coordinates (1600×1200)
+    ISO_ORIGIN_X: 800, // world px — center-horizontal
+    ISO_ORIGIN_Y: 290, // world px — top of the diamond
+
     FOREST_LAYOUTS: [
         // y=0 top=25
         { left: 10, top: 25, scale: 0.95 }, { left: 20, top: 25, scale: 0.95 }, { left: 30, top: 25, scale: 0.95 },
@@ -389,46 +405,65 @@ const GardenView = {
         const island = this.currentIsland || {};
         const gridW = Math.max(1, Number(island.grid_w) || this.SCENE_GRID_W);
         const gridH = Math.max(1, Number(island.grid_h) || this.SCENE_GRID_H);
-        const x = Math.max(0, Math.min(gridW - 1, Number(plot?.x) || 0));
-        const y = Math.max(0, Math.min(gridH - 1, Number(plot?.y) || 0));
-        const xRatio = gridW === 1 ? 0.5 : x / Math.max(1, gridW - 1);
-        const yRatio = gridH === 1 ? 0.5 : y / Math.max(1, gridH - 1);
-        const zone = this.getPlotZone(plot);
+        const col = Math.max(0, Math.min(gridW - 1, Number(plot?.x) || 0));
+        const row = Math.max(0, Math.min(gridH - 1, Number(plot?.y) || 0));
+
+        /* Standard 2:1 isometric projection:
+         *   screenX = originX + (col - row) * cellW/2
+         *   screenY = originY + (col + row) * cellH/2
+         * Trees are centred on the tile, so we add half-cell offsets.
+         * Positions are in island-world pixel coordinates (1600×1200).
+         */
+        const cw = this.ISO_CELL_W;
+        const ch = this.ISO_CELL_H;
+        const ox = this.ISO_ORIGIN_X;
+        const oy = this.ISO_ORIGIN_Y;
+
+        // Centre of the tile in iso space
+        const tileCenterX = ox + (col - row) * cw / 2 + (cw / 2 - ch / 2);
+        const tileCenterY = oy + (col + row) * ch / 2 + ch / 2;
+
+        /* Deterministic per-plot noise for visual variety */
         const n1 = this._plotNoise(plot, 1);
         const n2 = this._plotNoise(plot, 2);
-        const n3 = this._plotNoise(plot, 3);
-        const n4 = this._plotNoise(plot, 4);
-        const colStart = 4;
-        const colSpan = 90;
-        const rowStart = 8;
-        const rowSpan = 59;     // 8% + 59% = 67% max — stays on green grass, not sand
-        /* Deterministic jitter so plots don't sit on a rigid grid */
-        const jitterX = (n3 - 0.5) * 5;    /* ±2.5% horizontal */
-        const jitterY = (n4 - 0.5) * 4;    /* ±2% vertical */
-        const left = colStart + xRatio * colSpan + jitterX;
-        const top = rowStart + yRatio * rowSpan + jitterY;
-        const scaleJitter = (n1 - 0.5) * 0.14; /* ±7% size variation */
-        const scale = 0.94 + yRatio * 0.12 + scaleJitter;
-        let tilt = plot?.status === 'wasteland' ? (n1 - 0.5) * 20 : 0; /* ±10° variety */
-        /* Cleared plots also get rotation for tilled_land variety */
-        if (plot?.status === 'cleared') tilt = (n1 - 0.5) * 30; /* ±15° */
-        const obstacleScaleNoise = (n2 - 0.5) * 0.28; /* ±14% size variety */
-        let spriteScale = plot?.status === 'wasteland'
-            ? 1.05 + yRatio * 0.15 + obstacleScaleNoise
-            : 0.88 + yRatio * 0.14;
-        let sway = plot?.obstacle_type === 'wild_tree' ? 0.94 + n2 * 0.12 : 1;
-        const depth = top / 10;
+        const yRatio = gridH === 1 ? 0.5 : row / Math.max(1, gridH - 1);
+        const zone = this.getPlotZone(plot);
+
+        /* Small jitter so trees don't sit on perfectly rigid grid */
+        const jitterX = (n1 - 0.5) * 10;   // ±5px
+        const jitterY = (n2 - 0.5) * 6;    // ±3px
+
+        /* Scale: trees deeper in the scene (larger row index) appear slightly bigger */
+        const scaleJitter = (n1 - 0.5) * 0.10;
+        const scale = 0.92 + yRatio * 0.18 + scaleJitter;
+
+        const spriteScale = plot?.status === 'wasteland'
+            ? 1.0 + yRatio * 0.12
+            : 0.90 + yRatio * 0.14;
+
+        const tilt = plot?.status === 'wasteland' ? (n1 - 0.5) * 20 : 0;
+        const sway = plot?.obstacle_type === 'wild_tree' ? 0.94 + n2 * 0.12 : 1;
+
+        /* Use pixel positions (left/top in px relative to island-world) */
+        const leftPx = tileCenterX + jitterX;
+        const topPx  = tileCenterY + jitterY;
+        const depth  = row;
+        // z-index: deeper rows (larger row) drawn on top
+        const zIndex = 10 + row * gridW + col;
 
         return {
-            left,
-            top,
+            leftPx,
+            topPx,
             scale,
             tilt,
             sway,
             spriteScale,
             depth,
             zone,
-            zIndex: Math.round(10 + top),
+            zIndex,
+            /* Keep legacy percentage fields undefined so renderIslandPlot can detect iso mode */
+            left: undefined,
+            top: undefined,
         };
     },
 
@@ -627,8 +662,13 @@ const GardenView = {
     },
 
     _todayString() {
-        const now = new Date();
-        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        // Use China Standard Time (Asia/Shanghai) to match server-side date logic.
+        return new Intl.DateTimeFormat('zh-CN', {
+            timeZone: 'Asia/Shanghai',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+        }).format(new Date()).replace(/\//g, '-');
     },
 
     _positionPlotMenu(menuEl, plotEl) {
@@ -667,7 +707,8 @@ const GardenView = {
         this.closePlotMenu();
 
         // Differential plot update: only rebuild plots whose state changed
-        const land = document.getElementById('island-land');
+        // Trees now live in island-trees (separate from iso platform), not island-land
+        const land = document.getElementById('island-trees');
         if (land) {
             const existingPlots = land.querySelectorAll('.iplot[data-plot-id]');
             const existingMap = new Map();
@@ -700,7 +741,7 @@ const GardenView = {
                 if (!currentIds.has(el.dataset.plotId)) el.remove();
             });
 
-            // Re-bind only if needed (event delegation on land)
+            // Re-bind only if needed (event delegation on island-trees
             if (!land._gardenDelegated) {
                 this._bindPlotInteractions(land);
             }

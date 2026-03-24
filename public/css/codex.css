@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════
-   Codex View — Quota Cards & Account Mgmt
-   v2: status dots, per-card refresh, credits
+   Codex View — v3: Tabs, Proxy Cards, Skill Health
    ═══════════════════════════════════════ */
 
 /* ── Container ── */
@@ -14,7 +13,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .codex-view-title {
@@ -69,7 +68,312 @@
   to { transform: rotate(360deg); }
 }
 
-/* ── Card Grid ── */
+/* ── Tabs ── */
+.codex-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: var(--bg-secondary, rgba(0,0,0,0.03));
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.codex-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-tertiary, #999);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.codex-tab svg {
+  width: 16px;
+  height: 16px;
+}
+
+.codex-tab:hover {
+  color: var(--text-primary, #1a1a2e);
+  background: rgba(255,255,255,0.5);
+}
+
+.codex-tab.active {
+  background: var(--card-bg, rgba(255,255,255,0.9));
+  color: var(--accent, #6366f1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* ── API Summary / Skill Summary ── */
+.codex-api-summary,
+.codex-skill-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 18px 20px;
+  background: var(--card-bg, rgba(255,255,255,0.75));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 16px;
+  border: 1px solid var(--border, rgba(0,0,0,0.06));
+}
+
+/* ── Main API Card ── */
+.codex-main-api-card {
+  margin-bottom: 20px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg,
+    rgba(99,102,241,0.08) 0%,
+    rgba(129,140,248,0.06) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 16px;
+  border: 1.5px solid rgba(99,102,241,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.codex-main-api-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent, #6366f1), var(--accent-light, #818cf8));
+}
+
+.codex-main-api-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.codex-main-api-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent, #6366f1);
+  margin-bottom: 2px;
+}
+
+.codex-main-api-email {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a2e);
+}
+
+.codex-main-api-endpoint {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a2e);
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+}
+
+/* ── API Key row ── */
+.codex-main-api-key-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: var(--bg-secondary, rgba(0,0,0,0.03));
+  border-radius: 10px;
+}
+
+.codex-key-label {
+  font-size: 0.71rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary, #999);
+  white-space: nowrap;
+}
+
+.codex-key-value {
+  flex: 1;
+  font-size: 0.81rem;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  color: var(--text-primary, #1a1a2e);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+
+.codex-summary-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.codex-stat-num {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary, #1a1a2e);
+  line-height: 1;
+}
+
+.codex-stat-active { color: #22c55e; }
+.codex-stat-inactive { color: #f59e0b; }
+
+.codex-stat-label {
+  font-size: 0.72rem;
+  color: var(--text-tertiary, #999);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.codex-summary-icon {
+  font-size: 2rem;
+  margin-right: 12px;
+}
+
+.codex-summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.codex-summary-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.codex-summary-sub {
+  font-size: 0.8rem;
+  color: var(--text-tertiary, #999);
+}
+
+/* ── Section titles ── */
+.codex-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-tertiary, #999);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+
+/* ── Proxy Account Grid ── */
+.codex-proxy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.codex-proxy-card {
+  background: var(--card-bg, rgba(255,255,255,0.75));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 14px;
+  border: 1px solid var(--border, rgba(0,0,0,0.06));
+  padding: 16px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.codex-proxy-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent, #6366f1), var(--accent-light, #818cf8));
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.codex-proxy-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.07);
+  border-color: var(--accent, #6366f1);
+}
+
+.codex-proxy-card:hover::before {
+  opacity: 1;
+}
+
+.codex-proxy-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.codex-proxy-head-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.codex-proxy-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary, #1a1a2e);
+}
+
+.codex-proxy-email {
+  font-size: 0.75rem;
+  color: var(--text-tertiary, #999);
+  margin-top: 1px;
+}
+
+.codex-proxy-head-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.codex-proxy-quotas {
+  margin: 4px 0 8px;
+}
+
+.codex-proxy-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border, rgba(0,0,0,0.04));
+}
+
+.codex-proxy-expiry {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  color: var(--text-secondary, #666);
+}
+
+.codex-proxy-expiry svg {
+  width: 13px;
+  height: 13px;
+  color: var(--text-tertiary, #999);
+}
+
+.codex-expired {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.codex-no-data {
+  color: var(--text-tertiary, #999);
+}
+
+/* ── Card Grid (local accounts) ── */
 .codex-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -93,9 +397,7 @@
 .codex-quota-card::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  top: 0; left: 0; right: 0;
   height: 3px;
   background: linear-gradient(90deg, var(--accent, #6366f1), var(--accent-light, #818cf8));
   opacity: 0;
@@ -108,22 +410,10 @@
   border-color: var(--accent, #6366f1);
 }
 
-.codex-quota-card:hover::before {
-  opacity: 1;
-}
-
-.codex-quota-card.expanded {
-  cursor: default;
-  border-color: var(--accent, #6366f1);
-}
-
-.codex-quota-card.expanded::before {
-  opacity: 1;
-}
-
-.codex-quota-card.expanded:hover {
-  transform: none;
-}
+.codex-quota-card:hover::before { opacity: 1; }
+.codex-quota-card.expanded { cursor: default; border-color: var(--accent, #6366f1); }
+.codex-quota-card.expanded::before { opacity: 1; }
+.codex-quota-card.expanded:hover { transform: none; }
 
 /* Card header */
 .codex-card-head {
@@ -170,9 +460,7 @@
   animation: codex-pulse-red 1.5s infinite;
 }
 
-.codex-dot-gray {
-  background: #9ca3af;
-}
+.codex-dot-gray { background: #9ca3af; }
 
 @keyframes codex-pulse-green {
   0%, 100% { opacity: 1; }
@@ -196,7 +484,6 @@
   margin-top: 2px;
 }
 
-/* Per-card refresh button */
 .codex-card-refresh {
   width: 28px;
   height: 28px;
@@ -212,9 +499,7 @@
   opacity: 0;
 }
 
-.codex-quota-card:hover .codex-card-refresh {
-  opacity: 1;
-}
+.codex-quota-card:hover .codex-card-refresh { opacity: 1; }
 
 .codex-card-refresh:hover {
   background: var(--bg-secondary, rgba(0,0,0,0.04));
@@ -253,9 +538,7 @@
 }
 
 /* ── Quota progress bars ── */
-.codex-quota-section {
-  margin-top: 4px;
-}
+.codex-quota-section { margin-top: 4px; }
 
 .codex-quota-row {
   display: flex;
@@ -283,9 +566,7 @@
   position: relative;
 }
 
-.codex-quota-track.large {
-  height: 14px;
-}
+.codex-quota-track.large { height: 14px; }
 
 .codex-quota-fill {
   height: 100%;
@@ -325,7 +606,6 @@
 .codex-pct-danger   { color: #ef4444; }
 .codex-pct-critical { color: #dc2626; }
 
-/* Credits balance */
 .codex-credits-row {
   display: flex;
   align-items: center;
@@ -349,6 +629,139 @@
   padding-left: 34px;
 }
 
+/* ── Skill Health Grid ── */
+.codex-skill-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.codex-skill-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 180px;
+  padding: 8px 14px;
+  background: var(--card-bg, rgba(255,255,255,0.75));
+  border-radius: 10px;
+  border: 1.5px solid var(--border, rgba(0,0,0,0.08));
+  transition: border-color 0.2s;
+}
+
+.codex-skill-search-wrap:focus-within {
+  border-color: var(--accent, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+}
+
+.codex-skill-search-wrap svg {
+  width: 16px;
+  height: 16px;
+  color: var(--text-tertiary, #999);
+  flex-shrink: 0;
+}
+
+.codex-skill-search {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.85rem;
+  color: var(--text-primary, #1a1a2e);
+  width: 100%;
+}
+
+.codex-skill-filters {
+  display: flex;
+  gap: 4px;
+}
+
+.codex-filter-btn {
+  padding: 6px 14px;
+  border: 1.5px solid var(--border, rgba(0,0,0,0.08));
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-tertiary, #999);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.codex-filter-btn:hover {
+  border-color: var(--accent, #6366f1);
+  color: var(--accent, #6366f1);
+}
+
+.codex-filter-btn.active {
+  background: var(--accent, #6366f1);
+  border-color: var(--accent, #6366f1);
+  color: #fff;
+}
+
+.codex-skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.codex-skill-chip {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border, rgba(0,0,0,0.06));
+  background: var(--card-bg, rgba(255,255,255,0.75));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+
+.codex-skill-chip::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+}
+
+.codex-skill-chip.chip-healthy::before { background: #22c55e; }
+.codex-skill-chip.chip-stable::before  { background: #f59e0b; }
+.codex-skill-chip.chip-critical::before { background: #ef4444; }
+
+.codex-skill-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.codex-skill-chip-name {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a2e);
+  word-break: break-word;
+  margin-bottom: 4px;
+  padding-left: 6px;
+}
+
+.codex-skill-chip-score {
+  font-size: 0.9rem;
+  font-weight: 800;
+  padding-left: 6px;
+}
+
+.chip-healthy .codex-skill-chip-score { color: #22c55e; }
+.chip-stable .codex-skill-chip-score  { color: #f59e0b; }
+.chip-critical .codex-skill-chip-score { color: #ef4444; }
+
+.codex-skill-chip-usage {
+  font-size: 0.68rem;
+  color: var(--text-tertiary, #999);
+  padding-left: 6px;
+  margin-top: 2px;
+}
+
 /* ── Expanded detail panel ── */
 .codex-detail-panel {
   margin-top: 16px;
@@ -370,9 +783,7 @@
   border-bottom: 1px solid var(--border, rgba(0,0,0,0.04));
 }
 
-.codex-detail-field:last-child {
-  border-bottom: none;
-}
+.codex-detail-field:last-child { border-bottom: none; }
 
 .codex-detail-label {
   font-size: 0.8rem;
@@ -664,29 +1075,17 @@
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .codex-view {
-    padding: 12px;
-  }
-
-  .codex-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .codex-quota-card {
-    padding: 16px;
-  }
-
-  .codex-card-refresh {
-    opacity: 1; /* always visible on mobile */
-  }
-
-  .codex-form-panel {
-    padding: 20px;
-    border-radius: 16px;
-  }
-
-  .codex-last-refresh {
-    display: none;
-  }
+  .codex-view { padding: 12px; }
+  .codex-grid { grid-template-columns: 1fr; gap: 12px; }
+  .codex-proxy-grid { grid-template-columns: 1fr; gap: 10px; }
+  .codex-skill-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
+  .codex-quota-card { padding: 16px; }
+  .codex-card-refresh { opacity: 1; }
+  .codex-form-panel { padding: 20px; border-radius: 16px; }
+  .codex-last-refresh { display: none; }
+  .codex-skill-toolbar { flex-direction: column; gap: 8px; }
+  .codex-skill-filters { overflow-x: auto; white-space: nowrap; padding-bottom: 4px; }
+  .codex-api-summary,
+  .codex-skill-summary { flex-wrap: wrap; gap: 8px; }
+  .codex-summary-stat { min-width: 60px; }
 }

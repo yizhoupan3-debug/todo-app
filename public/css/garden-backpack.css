@@ -1,4 +1,4 @@
-/* ===== Garden Backpack Overlay ===== */
+/* ===== Garden Backpack Overlay (forest theme) ===== */
 /* ═══ Backpack Overlay ═══ */
 .backpack-overlay {
   position: fixed;
@@ -22,7 +22,7 @@
 .backpack-modal {
   width: min(520px, 94vw);
   max-height: 85vh;
-  background: linear-gradient(160deg, rgba(30, 35, 50, 0.97), rgba(18, 22, 36, 0.98));
+  background: linear-gradient(160deg, rgba(16, 40, 26, 0.97), rgba(10, 28, 18, 0.98));
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -84,10 +84,10 @@
 }
 
 .backpack-persona-btn.active {
-  background: linear-gradient(135deg, rgba(126, 133, 255, 0.96), rgba(103, 96, 255, 0.94));
+  background: linear-gradient(135deg, rgba(56, 142, 74, 0.96), rgba(42, 120, 60, 0.94));
   color: #fff;
-  border-color: rgba(171, 176, 255, 0.8);
-  box-shadow: 0 8px 18px rgba(92, 88, 255, 0.26);
+  border-color: rgba(100, 200, 120, 0.8);
+  box-shadow: 0 8px 18px rgba(42, 120, 60, 0.26);
 }
 
 .backpack-close {
@@ -184,7 +184,7 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  background: linear-gradient(180deg, rgba(30, 35, 50, 0.98) 0%, rgba(24, 28, 42, 0.92) 100%);
+  background: linear-gradient(180deg, rgba(16, 40, 26, 0.98) 0%, rgba(12, 32, 20, 0.92) 100%);
   backdrop-filter: blur(8px);
 }
 

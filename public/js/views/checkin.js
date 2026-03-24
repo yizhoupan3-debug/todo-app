@@ -94,14 +94,12 @@ const CheckinView = {
         });
 
         document.getElementById('steps-custom-add').addEventListener('click', () => {
-            const input = document.getElementById('steps-custom-input');
-            const amount = parseInt(input.value);
-            if (amount > 0 && amount <= 100000) {
-                this.addSteps(amount);
-                input.value = '';
-            } else {
-                App.showToast('请输入 1-100000 步', 'error');
-            }
+            this._submitCustomSteps();
+        });
+
+        // U1: Enter key submits custom steps
+        document.getElementById('steps-custom-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); this._submitCustomSteps(); }
         });
 
         // Steps goal edit
@@ -112,21 +110,17 @@ const CheckinView = {
         });
 
         document.getElementById('steps-goal-save-btn').addEventListener('click', async () => {
-            const newGoal = parseInt(document.getElementById('steps-goal-input').value);
-            if (newGoal >= 1000 && newGoal <= 50000) {
-                try {
-                    await API.setGoal({ type: 'steps', assignee: this.currentAssignee, goal: newGoal });
-                    this.stepsGoal = newGoal;
-                    document.getElementById('steps-goal-editor').classList.add('hidden');
-                    document.getElementById('steps-goal-display').classList.remove('hidden');
-                    this.renderSteps();
-                    App.showToast('目标已更新', 'success');
-                } catch (err) {
-                    App.showToast('保存失败', 'error');
-                }
-            } else {
-                App.showToast('目标范围：1000-50000步', 'error');
-            }
+            this._saveStepsGoal();
+        });
+
+        // U1: Enter key saves steps goal
+        document.getElementById('steps-goal-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); this._saveStepsGoal(); }
+        });
+
+        // U1: Enter key saves water goal
+        document.getElementById('goal-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); document.getElementById('goal-save-btn').click(); }
         });
     },
 
@@ -183,18 +177,14 @@ const CheckinView = {
     },
 
     async _loadLanding() {
-        // Load water stats for card
-        await this.loadGoal();
-        await this.loadWaterData();
-        // Load wakeup stats for card
-        await this.loadWakeupCard();
-        // Load goout stats for card
-        await this.loadGooutCard();
-        // Load skincare stats for card
-        await this.loadSkincareCard();
-        // Load steps stats for card
-        await this.loadStepsGoal();
-        await this.loadStepsCard();
+        // Load all card data in parallel for faster first paint
+        await Promise.all([
+            this.loadGoal().then(() => this.loadWaterData()),
+            this.loadWakeupCard(),
+            this.loadGooutCard(),
+            this.loadSkincareCard(),
+            this.loadStepsGoal().then(() => this.loadStepsCard()),
+        ]);
     },
 
     // ===== Water =====
@@ -598,7 +588,7 @@ const CheckinView = {
             this.renderSteps();
             this.loadStepsHistory();
         } catch (err) {
-            App.showToast('\u52a0\u8f7d\u6b65\u6570\u6570\u636e\u5931\u8d25', 'error');
+            App.showToast('加载步数数据失败', 'error');
         }
     },
 
@@ -615,20 +605,20 @@ const CheckinView = {
             days.map(date => API.getCheckin({ date, assignee: this.currentAssignee, type: 'steps' })
                 .then(data => ({ date, total: data.total || 0 })))
         );
-        const weekday = ['\u65e5', '\u4e00', '\u4e8c', '\u4e09', '\u56db', '\u4e94', '\u516d'];
+        const weekday = ['日', '一', '二', '三', '四', '五', '六'];
         let html = '';
         for (const result of results) {
             if (result.status !== 'fulfilled') continue;
             const { date, total } = result.value;
             const d = new Date(date);
-            const dayLabel = `${date.slice(5)} \u5468${weekday[d.getDay()]}`;
+            const dayLabel = `${date.slice(5)} 周${weekday[d.getDay()]}`;
             const reached = total >= this.stepsGoal;
             html += `<div class="wakeup-log-item">
                 <span class="wakeup-log-date">${dayLabel}</span>
-                <span class="wakeup-log-time ${total > 0 ? 'checked' : 'missed'}">${total > 0 ? '\ud83d\udeb6 ' + total + '\u6b65' : '\u672a\u8bb0\u5f55'}${reached ? ' \ud83c\udf89' : ''}</span>
+                <span class="wakeup-log-time ${total > 0 ? 'checked' : 'missed'}">${total > 0 ? '🚶 ' + total + '步' : '未记录'}${reached ? ' 🎉' : ''}</span>
             </div>`;
         }
-        logEl.innerHTML = html || '<div class="water-log-empty">\u6682\u65e0\u8bb0\u5f55</div>';
+        logEl.innerHTML = html || '<div class="water-log-empty">暂无记录</div>';
     },
 
     renderSteps() {
@@ -690,6 +680,37 @@ const CheckinView = {
             App.showToast(`🚶 +${amount}步${coinMsg}`, 'success');
         } catch (err) {
             App.showToast('记录失败', 'error');
+        }
+    },
+
+    /** U1: Shared logic for custom steps submission */
+    _submitCustomSteps() {
+        const input = document.getElementById('steps-custom-input');
+        const amount = parseInt(input.value);
+        if (amount > 0 && amount <= 100000) {
+            this.addSteps(amount);
+            input.value = '';
+        } else {
+            App.showToast('请输入 1-100000 步', 'error');
+        }
+    },
+
+    /** U1: Shared logic for steps goal save */
+    async _saveStepsGoal() {
+        const newGoal = parseInt(document.getElementById('steps-goal-input').value);
+        if (newGoal >= 1000 && newGoal <= 50000) {
+            try {
+                await API.setGoal({ type: 'steps', assignee: this.currentAssignee, goal: newGoal });
+                this.stepsGoal = newGoal;
+                document.getElementById('steps-goal-editor').classList.add('hidden');
+                document.getElementById('steps-goal-display').classList.remove('hidden');
+                this.renderSteps();
+                App.showToast('目标已更新', 'success');
+            } catch (err) {
+                App.showToast('保存失败', 'error');
+            }
+        } else {
+            App.showToast('目标范围：1000-50000步', 'error');
         }
     },
 };

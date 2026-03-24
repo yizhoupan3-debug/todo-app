@@ -113,6 +113,7 @@ router.post('/', (req, res) => {
             let coinsEarned = 0;
             let streakBonus = 0;
             let currentStreak = 0;
+            let streakWasReset = false;
 
             const goal = getGoalFor(checkinType, assignee);
 
@@ -169,10 +170,12 @@ router.post('/', (req, res) => {
                         db.prepare('UPDATE checkin_streaks SET current_streak = 0 WHERE assignee = ? AND type = ?')
                             .run(assignee, checkinType);
                         currentStreak = 0;
+                        streakWasReset = true;
                     }
                 }
 
-                if (streak && !currentStreak) currentStreak = streak.current_streak;
+                // Only fall back to previous streak value if not already set and streak was not reset
+                if (streak && !currentStreak && !streakWasReset) currentStreak = streak.current_streak;
             }
 
             return { record, total, coinsEarned: coinsEarned + streakBonus, currentStreak, streakBonus };
@@ -189,6 +192,35 @@ router.post('/', (req, res) => {
                         : null)
                 : null,
         });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/checkin/goal — get goal for type + assignee
+// IMPORTANT: Must be registered BEFORE DELETE /:id to prevent Express matching '/goal' as id='goal'
+router.get('/goal', (req, res) => {
+    const { type, assignee } = req.query;
+    if (!assignee) return res.status(400).json({ error: 'assignee is required' });
+    try {
+        const t = type || 'water';
+        res.json({ goal: getGoalFor(t, assignee) });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// PUT /api/checkin/goal — set goal for type + assignee
+// IMPORTANT: Must be registered BEFORE DELETE /:id
+router.put('/goal', (req, res) => {
+    const { type, assignee, goal } = req.body;
+    if (!assignee || !goal) return res.status(400).json({ error: 'assignee and goal are required' });
+    try {
+        db.prepare(`
+            INSERT INTO checkin_goals (type, assignee, goal) VALUES (?, ?, ?)
+            ON CONFLICT(type, assignee) DO UPDATE SET goal = excluded.goal
+        `).run(type || 'water', assignee, goal);
+        res.json({ success: true, goal });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -265,33 +297,6 @@ router.delete('/:id', (req, res) => {
         })();
 
         res.json({ success: true, ...txResult });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// GET /api/checkin/goal — get goal for type + assignee
-router.get('/goal', (req, res) => {
-    const { type, assignee } = req.query;
-    if (!assignee) return res.status(400).json({ error: 'assignee is required' });
-    try {
-        const t = type || 'water';
-        res.json({ goal: getGoalFor(t, assignee) });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// PUT /api/checkin/goal — set goal for type + assignee
-router.put('/goal', (req, res) => {
-    const { type, assignee, goal } = req.body;
-    if (!assignee || !goal) return res.status(400).json({ error: 'assignee and goal are required' });
-    try {
-        db.prepare(`
-            INSERT INTO checkin_goals (type, assignee, goal) VALUES (?, ?, ?)
-            ON CONFLICT(type, assignee) DO UPDATE SET goal = excluded.goal
-        `).run(type || 'water', assignee, goal);
-        res.json({ success: true, goal });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

@@ -97,6 +97,8 @@ const Pomodoro = {
         }
         this.phase = 'setup';
         this.isPaused = false;
+        // Clean up any orphaned focus rating overlay
+        document.querySelectorAll('.focus-rating-overlay').forEach(el => el.remove());
         Utils.closeModalAnimated(document.getElementById('pomodoro-overlay'));
         this.isOpen = false;
     },
@@ -119,6 +121,10 @@ const Pomodoro = {
         this.showScreen('timer');
         this.updateDisplay();
         this.startTimer();
+        // Request notification permission early so it's ready when timer ends
+        if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
     },
 
     startRest() {

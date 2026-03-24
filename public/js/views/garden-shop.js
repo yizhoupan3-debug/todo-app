@@ -256,6 +256,8 @@ Object.assign(GardenView, {
         };
         document.getElementById('backpack-close')?.addEventListener('click', closeOverlay);
         overlay.addEventListener('click', e => { if (e.target === overlay) closeOverlay(); });
+        const escBackpack = (e) => { if (e.key === 'Escape') { closeOverlay(); document.removeEventListener('keydown', escBackpack); } };
+        document.addEventListener('keydown', escBackpack);
 
         overlay.querySelectorAll('.backpack-persona-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -275,9 +277,13 @@ Object.assign(GardenView, {
             });
         });
 
+        let _searchDebounce = null;
         this._state.backpackSearchInputEl?.addEventListener('input', () => {
-            this._state.backpackSearch = this._state.backpackSearchInputEl.value.trim();
-            this._queueBackpackRender();
+            clearTimeout(_searchDebounce);
+            _searchDebounce = setTimeout(() => {
+                this._state.backpackSearch = this._state.backpackSearchInputEl.value.trim();
+                this._queueBackpackRender();
+            }, 150);
         });
 
         overlay.querySelectorAll('.backpack-sort-btn').forEach(btn => {

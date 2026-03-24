@@ -70,6 +70,13 @@ module.exports = function registerGardenExpeditionRoutes(router, {
         }
     });
 
+
+    /**
+     * POST /expeditions/start — Launch a boat expedition to an undiscovered island.
+     * Body: { assignee: string, boat_id: number }
+     * Returns: { expedition: object, targetIsland: object, character: string }
+     * Errors: 404 BOAT_NOT_FOUND | 400 BOAT_BUSY | 400 EXPEDITION_ACTIVE
+     */
     router.post('/expeditions/start', (req, res) => {
         try {
             const { assignee, boat_id } = req.body;
@@ -86,10 +93,17 @@ module.exports = function registerGardenExpeditionRoutes(router, {
                 if (!boat) throw new Error('BOAT_NOT_FOUND');
                 if (boat.status !== 'docked') throw new Error('BOAT_BUSY');
 
+                // Idempotency: prevent a second active expedition for the same user
+                const activeExp = db.prepare(
+                    "SELECT id FROM expeditions WHERE assignee = ? AND status = 'sailing' LIMIT 1"
+                ).get(assignee);
+                if (activeExp) throw new Error('EXPEDITION_ACTIVE');
+
                 const spec = BOAT_CATALOG[boat.boat_type] || BOAT_CATALOG.raft;
                 const fromIsland = db.prepare(
                     "SELECT * FROM islands WHERE assignee = ? AND island_type = 'starter' LIMIT 1"
                 ).get(assignee);
+                if (!fromIsland) throw new Error('NO_HOME_ISLAND');
 
                 let targetIsland = db.prepare(
                     'SELECT * FROM islands WHERE assignee = ? AND discovered = 0 ORDER BY RANDOM() LIMIT 1'
@@ -129,6 +143,8 @@ module.exports = function registerGardenExpeditionRoutes(router, {
         } catch (err) {
             if (err.message === 'BOAT_NOT_FOUND') return res.status(404).json({ error: '船只不存在' });
             if (err.message === 'BOAT_BUSY') return res.status(400).json({ error: '船只正在航行中' });
+            if (err.message === 'EXPEDITION_ACTIVE') return res.status(400).json({ error: '已有远征进行中，请等待回航' });
+            if (err.message === 'NO_HOME_ISLAND') return res.status(404).json({ error: '未找到起始岛屿，请联系管理员' });
             res.status(500).json({ error: err.message });
         }
     });

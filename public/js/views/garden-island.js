@@ -71,23 +71,7 @@ Object.assign(GardenView, {
     },
 
     renderBackdropDecor() {
-        return `
-            <div class="scene-nearshore" aria-hidden="true">
-                <span class="shore-palm shore-palm-left"></span>
-                <span class="shore-palm shore-palm-left small"></span>
-                <span class="shore-palm shore-palm-right"></span>
-                <span class="shore-palm shore-palm-right small"></span>
-                <span class="shore-rock shore-rock-left"></span>
-                <span class="shore-rock shore-rock-right"></span>
-                <span class="nearshore-foam foam-1"></span>
-                <span class="nearshore-foam foam-2"></span>
-                <span class="nearshore-foam foam-3"></span>
-            </div>
-            <button class="island-harbor scene-harbor" id="scene-harbor-btn" type="button" title="港口">
-                <span class="harbor-building"></span>
-                <span class="harbor-label">港口</span>
-            </button>
-        `;
+        return ''; // Forest style: no backdrop decorations
     },
 
     render() {
@@ -115,7 +99,6 @@ Object.assign(GardenView, {
         const clearedCount = this.plots.filter(p => p.status !== 'wasteland').length;
         const plantedCount = this.plots.filter(p => p.status === 'planted').length;
         const typesCollected = new Set(this.plots.filter(p => p.tree_type).map(p => p.tree_type)).size;
-        const activeExp = this.expeditions.find(e => e.status === 'sailing');
 
         el.innerHTML = `
             <div class="island-hud">
@@ -126,7 +109,7 @@ Object.assign(GardenView, {
                     </div>
                 </div>
                 <div class="island-hud-center">
-                    <span style="color:#fff;font-size:12px;font-weight:700;opacity:0.72">\u{1F3DD}\uFE0F ${islandName}</span>
+                    <span style="color:#fff;font-size:13px;font-weight:700;opacity:0.85">\u{1F332} ${islandName}</span>
                     <div style="display:flex;gap:6px;margin-top:4px">
                         <button class="filter-pill ${this.assignee === '潘潘' ? 'active' : ''}" data-person="潘潘">
                             <img src="${Utils.personaAvatarUrl('潘潘')}" alt="" style="width:16px;height:16px;border-radius:50%"> 潘潘
@@ -139,27 +122,17 @@ Object.assign(GardenView, {
                 <div class="island-hud-right">
                     <button class="hud-btn" id="garden-backpack-btn" title="背包" style="font-size:14px">\u{1F392}</button>
                     <button class="hud-btn" id="world-map-btn" title="世界地图" style="font-size:14px">\u{1F5FA}\uFE0F</button>
-                    <button class="hud-btn" id="garden-harbor-btn" title="港口">\u26F5</button>
+                    <button class="hud-btn" id="garden-harbor-btn" title="探索">\u26F5</button>
                 </div>
             </div>
 
             <div class="island-viewport" id="island-viewport">
                 <div class="island-world" id="island-world">
-                    <img class="scene-backdrop" src="${gardenAsset('/img/boom_beach_island_bg_v2.png')}" alt="" draggable="false">
-                    <div class="scene-sea-glow"></div>
-                    <div class="scene-surf scene-surf-1"></div>
-                    <div class="scene-surf scene-surf-2"></div>
-                    <div class="scene-surf scene-surf-3"></div>
-                    ${this.renderBackdropDecor()}
-
-                    <div class="island-land" id="island-land">
-                        <div class="scene-land-shadow"></div>
-
-                        ${this._renderGroundDecor()}
+                    <div class="island-land" id="island-land"></div>
+                    <div class="island-trees" id="island-trees">
                         ${this.plots.map((plot, i) => this.renderIslandPlot(plot, this.getPlotLayout(plot, i))).join('')}
                     </div>
                 </div>
-                ${activeExp ? '<div class="expedition-float">' + (this.assignee === '潘潘' ? '\u{1F431}' : '\u{1F430}') + ' 探索中... \u26F5</div>' : ''}
                 <div class="zoom-controls">
                     <button id="zoom-in-btn" class="zoom-btn">+</button>
                     <span id="zoom-level-text">100%</span>
@@ -171,7 +144,7 @@ Object.assign(GardenView, {
             ${this.selectedTree ? this.renderPlantingToolbar() : ''}
 
             <div class="island-stats-bar">
-                <span>\u{1F331} ${plantedCount} 种植</span>
+                <span>\u{1F332} ${plantedCount} 种植</span>
                 <span>\u{1F4E6} ${typesCollected} 种类</span>
                 <span>\u26CF\uFE0F ${clearedCount} 开垦</span>
             </div>
@@ -186,11 +159,12 @@ Object.assign(GardenView, {
     },
 
     renderIslandPlot(plot, layout) {
-        const { left, top, zone, scale, zIndex, tilt, sway, spriteScale, depth } = layout || {};
+        const { leftPx, topPx, zone, scale, zIndex, tilt, sway, spriteScale, depth } = layout || {};
         const isSelected = this._state.selectedPlotId === plot.id;
+        // Use pixel positioning (leftPx, topPx) — these are coordinates inside island-world
         const style = [
-            `left:${left ?? 50}%`,
-            `top:${top ?? 60}%`,
+            `left:${leftPx ?? 800}px`,
+            `top:${topPx ?? 400}px`,
             `--plot-scale:${scale ?? 1}`,
             `--plot-tilt:${tilt ?? 0}deg`,
             `--plot-sway:${sway ?? 1}`,
@@ -200,17 +174,15 @@ Object.assign(GardenView, {
         ].join(';');
         const zoneClass = zone ? `zone-${zone}` : '';
         if (plot.status === 'wasteland') {
-            const obs = this.getObstacleVisual(plot);
-            /* Wasteland: show obstacle image; when selected show clear button */
-            return `<div class="iplot wasteland ${zoneClass} obstacle-${plot.obstacle_type || 'rock'} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
-                <img src="${obs.img}" alt="${obs.name}" class="iplot-img">
+            /* Forest style: wasteland plots are invisible — click-target only when selected */
+            return `<div class="iplot wasteland ${zoneClass} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
                 ${isSelected ? `<button class="iplot-action" data-action="clear" title="开荒">⛏️</button>` : ''}
             </div>`;
         }
         if (plot.status === 'cleared') {
             const sel = this.selectedTree;
+            /* Cleared plots: show blue puddle only */
             return `<div class="iplot cleared ${zoneClass} ${sel ? 'plantable' : ''} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
-                <img src="${gardenAsset('/img/garden/tilled_land.png?v=4')}" alt="" class="iplot-tilled">
                 ${isSelected && sel ? '<button class="iplot-action" data-action="plant" title="">🌱</button>' : ''}
             </div>`;
         }
@@ -218,7 +190,7 @@ Object.assign(GardenView, {
         const gm = plot.growth_minutes || 0;
         const stage = this.getGrowthStage(gm);
         const pct = Math.min(100, Math.round(gm / 150 * 100));
-        let imgSrc = catItem?.stages?.[stage] || gardenAsset('/img/trees/seed.png');
+        const imgSrc = catItem?.stages?.[stage] || gardenAsset('/img/trees/seed.png');
         return `<div class="iplot planted ${zoneClass} stage-${stage} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
             <img src="${imgSrc}" alt="" class="iplot-img">
             <div class="iplot-bar"><div class="iplot-bar-fill" style="width:${pct}%"></div></div>
@@ -364,7 +336,7 @@ Object.assign(GardenView, {
             this.closePlotMenu();
             stopInertia();
             const factor = e.deltaY > 0 ? 0.92 : 1.08;
-            this._state.zoomAtPoint(vp, world, this._state.zoom * factor, e.clientX, e.clientY);
+            this._zoomAtPoint(vp, world, this._state.zoom * factor, e.clientX, e.clientY);
             this._updateZoomDisplay();
         }, { passive: false });
 
@@ -409,7 +381,7 @@ Object.assign(GardenView, {
                 const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
                 const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
                 const nextZoom = lastPinchDist ? this._state.zoom * (dist / lastPinchDist) : this._state.zoom;
-                this._state.zoomAtPoint(vp, world, nextZoom, centerX, centerY);
+                this._zoomAtPoint(vp, world, nextZoom, centerX, centerY);
                 this._updateZoomDisplay();
                 lastPinchDist = dist;
             } else if (dragState.active && e.touches.length === 1) {
@@ -444,13 +416,13 @@ Object.assign(GardenView, {
         document.getElementById('zoom-in-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
             const rect = vp.getBoundingClientRect();
-            this._state.zoomAtPoint(vp, world, this._state.zoom + 0.15, rect.left + rect.width / 2, rect.top + rect.height / 2);
+            this._zoomAtPoint(vp, world, this._state.zoom + 0.15, rect.left + rect.width / 2, rect.top + rect.height / 2);
             this._updateZoomDisplay();
         });
         document.getElementById('zoom-out-btn')?.addEventListener('click', () => {
             this.closePlotMenu();
             const rect = vp.getBoundingClientRect();
-            this._state.zoomAtPoint(vp, world, this._state.zoom - 0.15, rect.left + rect.width / 2, rect.top + rect.height / 2);
+            this._zoomAtPoint(vp, world, this._state.zoom - 0.15, rect.left + rect.width / 2, rect.top + rect.height / 2);
             this._updateZoomDisplay();
         });
         document.getElementById('zoom-reset-btn')?.addEventListener('click', () => {
@@ -689,7 +661,8 @@ Object.assign(GardenView, {
         this.closePlotMenu();
         const plot = this.plots.find(p => p.id === plotId);
         const catItem = this.catalog.find(c => c.type === plot?.tree_type);
-        if (!confirm(`确定要铲除 ${catItem?.name || '这株植物'} 吗？\n（不会返还喵喵币）`)) return;
+        const confirmed = await this._confirmInline(`🗑️ 确定铲除「${catItem?.name || '这株植物'}」？（不返还喵喵币）`);
+        if (!confirmed) return;
         try {
             const res = await API.fetch('/garden/plots/remove', {
                 method: 'POST',
@@ -700,6 +673,37 @@ Object.assign(GardenView, {
             gardenToast('🗑️ 已铲除', 'success');
             await this.refreshData();
         } catch (e) { gardenToast('网络错误'); }
+    },
+
+    /**
+     * Show an inline confirmation prompt (non-blocking, mobile-friendly).
+     * Returns a Promise<boolean> that resolves when the user taps confirm or cancel.
+     * @param {string} msg - confirmation message to display
+     * @returns {Promise<boolean>}
+     */
+    _confirmInline(msg) {
+        return new Promise(resolve => {
+            document.querySelector('.garden-inline-confirm')?.remove();
+            const el = document.createElement('div');
+            el.className = 'garden-inline-confirm';
+            el.innerHTML = `
+                <span class="gic-msg">${msg}</span>
+                <button class="gic-btn gic-ok">确认</button>
+                <button class="gic-btn gic-cancel">取消</button>
+            `;
+            document.body.appendChild(el);
+            // Animate in
+            requestAnimationFrame(() => el.classList.add('active'));
+            const cleanup = (result) => {
+                el.classList.remove('active');
+                setTimeout(() => el.remove(), 220);
+                resolve(result);
+            };
+            el.querySelector('.gic-ok').addEventListener('click', () => cleanup(true));
+            el.querySelector('.gic-cancel').addEventListener('click', () => cleanup(false));
+            // Auto-dismiss after 8s with no action
+            setTimeout(() => { if (document.body.contains(el)) cleanup(false); }, 8000);
+        });
     },
 
     startMovePlot(plotId) {
@@ -779,6 +783,8 @@ Object.assign(GardenView, {
         document.body.appendChild(overlay);
         document.getElementById('world-map-close')?.addEventListener('click', () => overlay.remove());
         overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+        const escWorldMap = (e) => { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', escWorldMap); } };
+        document.addEventListener('keydown', escWorldMap);
         overlay.querySelectorAll('.island-node.discovered, .island-node.starter').forEach(node => {
             node.addEventListener('click', async () => {
                 const id = parseInt(node.dataset.islandId, 10);
@@ -786,6 +792,7 @@ Object.assign(GardenView, {
                 if (island && island.discovered) {
                     this.currentIsland = island;
                     overlay.remove();
+                    document.removeEventListener('keydown', escWorldMap);
                     await this.open();
                 }
             });
@@ -891,12 +898,33 @@ Object.assign(GardenView, {
             </div>`;
         document.body.appendChild(p);
 
-        document.getElementById('hp-close')?.addEventListener('click', () => p.remove());
-        p.addEventListener('click', e => { if (e.target === p) p.remove(); });
+        // Auto-refresh expedition progress bar every 30s while panel is open.
+        let _expeditionTick = null;
+        if (activeExp) {
+            _expeditionTick = setInterval(() => {
+                const barFill = p.querySelector('.expedition-bar-fill');
+                if (!barFill || !document.body.contains(p)) { clearInterval(_expeditionTick); return; }
+                const start = new Date(activeExp.started_at.replace(' ', 'T') + '+08:00');
+                const elapsed = Math.floor((Date.now() - start.getTime()) / 60000);
+                const pct = Math.min(100, Math.round(elapsed / activeExp.duration_min * 100));
+                const rem = Math.max(0, activeExp.duration_min - elapsed);
+                const remLabel = rem >= 60
+                    ? `${Math.floor(rem / 60)}小时${rem % 60 ? rem % 60 + '分' : ''}`
+                    : `${rem}分钟`;
+                barFill.style.width = `${pct}%`;
+                const timeEl = p.querySelector('.expedition-time');
+                if (timeEl) timeEl.textContent = `剩余约 ${remLabel}`;
+            }, 30000);
+        }
+        const closeHarbor = () => { clearInterval(_expeditionTick); p.remove(); };
+        document.getElementById('hp-close')?.addEventListener('click', closeHarbor);
+        p.addEventListener('click', e => { if (e.target === p) closeHarbor(); });
+        const escHarbor = (e) => { if (e.key === 'Escape') { closeHarbor(); document.removeEventListener('keydown', escHarbor); } };
+        document.addEventListener('keydown', escHarbor);
         p.querySelectorAll('[data-buy]').forEach(b =>
-            b.addEventListener('click', async () => { await this.buyBoat(b.dataset.buy); p.remove(); }));
+            b.addEventListener('click', async () => { await this.buyBoat(b.dataset.buy); closeHarbor(); }));
         p.querySelectorAll('[data-sail]').forEach(b =>
-            b.addEventListener('click', async () => { await this.startExpedition(parseInt(b.dataset.sail, 10)); p.remove(); }));
+            b.addEventListener('click', async () => { await this.startExpedition(parseInt(b.dataset.sail, 10)); closeHarbor(); }));
     },
 
     async buyBoat(type) {
@@ -930,7 +958,8 @@ Object.assign(GardenView, {
             gardenToast(`喵喵币不足！需要 ${obs.cost} 喵喵币`, 'error');
             return;
         }
-        if (!confirm(`开荒: 清除${obs.name}，花费 ${obs.cost} 喵喵币？`)) return;
+        const confirmed = await this._confirmInline(`⛏️ 清除${obs.name}，花费 ${obs.cost} 喵喵币？`);
+        if (!confirmed) return;
 
         try {
             const result = await API.clearPlot({ assignee: this.assignee, plot_id: plotId });
@@ -993,6 +1022,10 @@ Object.assign(GardenView, {
     },
     _renderGroundDecor() {
         const islandId = Number(this.currentIsland?.id) || 1;
+        // Return cached result for same island to avoid redundant DOM string generation
+        if (!this._groundDecorCache) this._groundDecorCache = new Map();
+        if (this._groundDecorCache.has(islandId)) return this._groundDecorCache.get(islandId);
+
         const DECOR_ITEMS = ['🌾', '🌿', '🍃', '🌼', '🍀', '🌸', '🍄', '🌻', '🦋', '💮', '☘️', '🪻'];
         const COUNT = 20;
         let html = '';
@@ -1027,6 +1060,7 @@ Object.assign(GardenView, {
             const warm = j % 3 === 0 ? ' grass-patch-warm' : '';
             html += `<span class="grass-patch${warm}" style="left:${pl.toFixed(1)}%;top:${pt.toFixed(1)}%;width:${pw}px;height:${ph}px" aria-hidden="true"></span>`;
         }
+        this._groundDecorCache.set(islandId, html);
         return html;
     },
 

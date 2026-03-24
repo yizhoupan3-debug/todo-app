@@ -287,4 +287,32 @@ const API = {
     getCodexLocalToken() {
         return this.request('/codex/local-token');
     },
+
+    // ── Codex aggregator integration ──
+    getCodexProxyAccounts() {
+        return this.request('/codex/proxy-accounts');
+    },
+    getCodexSkillHealth() {
+        return this.request('/codex/skill-health');
+    },
+    getCodexAggregatorConfig() {
+        return this.request('/codex/aggregator-config');
+    },
+    postCodexAuthInstance(instanceNum, authMode = 'device', provider = 'codex') {
+        return this.request('/codex/auth-instance', {
+            method: 'POST',
+            body: { instanceNum, authMode, provider },
+        });
+    },
+
+    // ── Codex one-click setup ──
+    getCodexSetupStatus() {
+        return this.request('/codex/setup-status');
+    },
+    postCodexApplyApiConfig(data) {
+        return this.request('/codex/apply-api-config', { method: 'POST', body: data });
+    },
+    postCodexApplySkills(data = {}) {
+        return this.request('/codex/apply-skills', { method: 'POST', body: data });
+    },
 };

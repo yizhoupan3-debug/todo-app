@@ -2,6 +2,15 @@
  * Shared utility functions — avoids duplication across modules.
  */
 const Utils = {
+    /**
+     * Return today's date as YYYY-MM-DD string.
+     * @returns {string}
+     */
+    todayStr() {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    },
+
     assetVersion() {
         if (typeof window === 'undefined') return 'dev';
         return window.__PANPU_ASSET_VERSION__ || 'dev';

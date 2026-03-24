@@ -34,7 +34,7 @@ module.exports = function registerGardenCoinRoutes(router, { db }) {
             };
             const maxPerDay = DAILY_LIMITS[reason] || 10;
             const todayCount = db.prepare(
-                "SELECT COUNT(*) as c FROM coin_transactions WHERE assignee = ? AND reason = ? AND created_at >= date('now','localtime')"
+                "SELECT COUNT(*) as c FROM coin_transactions WHERE assignee = ? AND reason = ? AND DATE(created_at, 'localtime') = DATE('now', 'localtime')"
             ).get(assignee, reason);
             if (todayCount && todayCount.c >= maxPerDay) {
                 return res.status(429).json({ error: `今日 ${reason} 已达上限 (${maxPerDay})` });

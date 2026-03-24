@@ -1,4 +1,4 @@
-/* ===== Garden Panels (harbor, world map, shop, modals, misc) ===== */
+/* ===== Garden Panels (forest theme) ===== */
 /* ═══ Harbor Building ═══ */
 .island-harbor {
   position: absolute;
@@ -16,7 +16,7 @@
 .harbor-building {
   width: 70px;
   height: 55px;
-  background: linear-gradient(180deg, #6B4E12, #8B6914);
+  background: linear-gradient(180deg, #3a5e2a, #4a6e34);
   border-radius: 4px 4px 0 0;
   position: relative;
   border: 1px solid rgba(0, 0, 0, 0.2);
@@ -38,7 +38,7 @@
   left: -4px;
   right: -4px;
   height: 12px;
-  background: linear-gradient(180deg, #A0782C, #8B6914);
+  background: linear-gradient(180deg, #4a6e34, #3a5e2a);
   border-radius: 3px;
   border: 1px solid rgba(0, 0, 0, 0.15);
 }
@@ -84,7 +84,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 20, 40, 0.85);
+  background: rgba(8, 30, 18, 0.85);
   backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
@@ -103,8 +103,8 @@
   width: 500px;
   height: 400px;
   background:
-    radial-gradient(ellipse at center, rgba(0, 80, 120, 0.3) 0%, transparent 70%),
-    linear-gradient(180deg, #0a2a4a, #0d3d66, #0a2a4a);
+    radial-gradient(ellipse at center, rgba(30, 80, 50, 0.3) 0%, transparent 70%),
+    linear-gradient(180deg, #0a2a1a, #0d3d26, #0a2a1a);
   border-radius: 16px;
   border: 2px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
@@ -167,7 +167,7 @@
 }
 
 .island-node.discovered .island-node-icon {
-  background: linear-gradient(135deg, #2d8f4e, #43b86a);
+  background: linear-gradient(135deg, #2d8f4e, #3aaa5e);
   border: 2px solid rgba(255, 255, 255, 0.3);
   box-shadow: 0 2px 10px rgba(45, 143, 78, 0.4);
 }
@@ -217,7 +217,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 20, 40, 0.85);
+  background: rgba(8, 30, 18, 0.85);
   backdrop-filter: blur(8px);
   z-index: 1000;
   display: flex;
@@ -231,7 +231,7 @@
 }
 
 .harbor-content {
-  background: linear-gradient(180deg, #1a3a5c, #0d2a4a);
+  background: linear-gradient(180deg, #1a3a28, #0d2a1a);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   width: 420px;
@@ -321,7 +321,7 @@
 }
 
 .boat-card-action.explore {
-  background: linear-gradient(135deg, #43b86a, #2d8f4e);
+  background: linear-gradient(135deg, #3aaa5e, #2d8f4e);
   color: #fff;
 }
 
@@ -383,7 +383,7 @@
 
 .expedition-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #43b86a, #64B5F6);
+  background: linear-gradient(90deg, #3aaa5e, #6abb4e);
   border-radius: 3px;
   transition: width 1s linear;
 }
@@ -464,7 +464,7 @@
   justify-content: center;
   gap: 20px;
   padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(10, 42, 28, 0.56);
   backdrop-filter: blur(12px);
   font-size: 12px;
   font-weight: 600;

@@ -161,11 +161,15 @@ if (typeof App === 'undefined') {
                             const sidebar = document.getElementById('sidebar');
                             if (sidebar) {
                                 sidebar.classList.add('open');
-                                const backdrop = document.createElement('div');
-                                backdrop.className = 'sidebar-backdrop';
-                                backdrop.id = 'sidebar-backdrop';
-                                backdrop.addEventListener('click', () => this.closeSidebar());
-                                document.body.appendChild(backdrop);
+                                // Reuse existing backdrop or create new one
+                                let backdrop = document.getElementById('sidebar-backdrop');
+                                if (!backdrop) {
+                                    backdrop = document.createElement('div');
+                                    backdrop.className = 'sidebar-backdrop';
+                                    backdrop.id = 'sidebar-backdrop';
+                                    backdrop.addEventListener('click', () => this.closeSidebar());
+                                    document.body.appendChild(backdrop);
+                                }
                             }
                             break;
                     }

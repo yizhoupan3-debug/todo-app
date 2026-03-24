@@ -223,8 +223,8 @@
         <div class="settings-section">
           <div class="settings-section-title"><i data-lucide="monitor" class="lucide-inline"></i> 桌面小组件</div>
           <div class="settings-platform-row">
-            <button class="platform-btn active" data-platform="mac" id="platform-mac">🍎 Mac</button>
-            <button class="platform-btn" data-platform="win" id="platform-win">🪟 Win</button>
+            <button class="platform-btn active" data-platform="mac" id="platform-mac"><i data-lucide="apple" class="lucide-inline"></i> Mac</button>
+            <button class="platform-btn" data-platform="win" id="platform-win"><i data-lucide="monitor" class="lucide-inline"></i> Win</button>
           </div>
           <div class="widget-install-list">
             <div class="widget-install-item" data-widget="todo">
@@ -384,7 +384,7 @@
             <span class="column-dot done"></span>
             <h3>已完成</h3>
             <span class="column-count" id="count-done">0</span>
-            <button class="clear-done-btn" id="btn-clear-done" title="清除已完成">🗑️</button>
+            <button class="clear-done-btn" id="btn-clear-done" title="清除已完成"><i data-lucide="trash-2" class="lucide-inline"></i></button>
           </div>
           <div class="task-list" id="list-done"></div>
         </div>
@@ -436,7 +436,7 @@
         <div class="checkin-landing" id="checkin-landing">
           <div class="checkin-items-grid">
             <div class="checkin-item-card" data-type="water" id="card-water">
-              <div class="checkin-item-icon">💧</div>
+              <div class="checkin-item-icon"><i data-lucide="droplets"></i></div>
               <div class="checkin-item-info">
                 <h4>喝水</h4>
                 <div class="checkin-item-progress">
@@ -449,7 +449,7 @@
               <div class="checkin-item-arrow">›</div>
             </div>
             <div class="checkin-item-card" data-type="wakeup" id="card-wakeup">
-              <div class="checkin-item-icon">⏰</div>
+              <div class="checkin-item-icon"><i data-lucide="alarm-clock"></i></div>
               <div class="checkin-item-info">
                 <h4>起床打卡</h4>
                 <span class="checkin-item-stats" id="card-wakeup-stats">今日未打卡</span>
@@ -457,7 +457,7 @@
               <div class="checkin-item-arrow">›</div>
             </div>
             <div class="checkin-item-card" data-type="goout" id="card-goout">
-              <div class="checkin-item-icon">🚪</div>
+              <div class="checkin-item-icon"><i data-lucide="door-open"></i></div>
               <div class="checkin-item-info">
                 <h4>出门打卡</h4>
                 <span class="checkin-item-stats" id="card-goout-stats">今日未打卡</span>
@@ -465,7 +465,7 @@
               <div class="checkin-item-arrow">›</div>
             </div>
             <div class="checkin-item-card" data-type="skincare" id="card-skincare">
-              <div class="checkin-item-icon">🧴</div>
+              <div class="checkin-item-icon"><i data-lucide="sparkles"></i></div>
               <div class="checkin-item-info">
                 <h4>护肤</h4>
                 <span class="checkin-item-stats" id="card-skincare-stats">今日未打卡</span>
@@ -473,7 +473,7 @@
               <div class="checkin-item-arrow">›</div>
             </div>
             <div class="checkin-item-card" data-type="steps" id="card-steps">
-              <div class="checkin-item-icon">🚶</div>
+              <div class="checkin-item-icon"><i data-lucide="footprints"></i></div>
               <div class="checkin-item-info">
                 <h4>每天一万步</h4>
                 <div class="checkin-item-progress">
@@ -508,7 +508,7 @@
                 <div class="water-amount"><span id="water-amount-text">0</span>ml</div>
                 <div class="water-goal" id="water-goal-display">
                   / <span id="water-goal-text">2000</span>ml
-                  <button class="goal-edit-btn" id="goal-edit-btn" title="修改目标">✏️</button>
+                  <button class="goal-edit-btn" id="goal-edit-btn" title="修改目标"><i data-lucide="pencil" class="lucide-inline"></i></button>
                 </div>
                 <div class="water-goal-editor hidden" id="water-goal-editor">
                   <input type="number" id="goal-input" min="500" max="10000" step="100" value="2000">
@@ -530,7 +530,7 @@
                 <button class="water-custom-add-btn" id="water-custom-add">+</button>
               </div>
               <div class="water-log" id="water-log">
-                <div class="water-log-empty">今天还没有喝水记录 💧</div>
+                <div class="water-log-empty">今天还没有喝水记录</div>
               </div>
             </div>
           </div>
@@ -544,7 +544,7 @@
               <div class="wakeup-status" id="wakeup-status">今日未打卡</div>
               <div class="wakeup-time" id="wakeup-time"></div>
               <button class="wakeup-stamp-btn" id="wakeup-stamp-btn">
-                <span class="wakeup-stamp-icon">⏰</span>
+                <span class="wakeup-stamp-icon"><i data-lucide="alarm-clock" class="lucide-inline"></i></span>
                 <span>起床打卡</span>
               </button>
             </div>
@@ -563,7 +563,7 @@
               <div class="wakeup-status" id="goout-status">今日未打卡</div>
               <div class="wakeup-time" id="goout-time"></div>
               <button class="goout-stamp-btn" id="goout-stamp-btn">
-                <span class="wakeup-stamp-icon">🚪</span>
+                <span class="wakeup-stamp-icon"><i data-lucide="door-open" class="lucide-inline"></i></span>
                 <span>出门打卡</span>
               </button>
             </div>
@@ -581,7 +581,7 @@
             <div class="skincare-today">
               <div class="skincare-status" id="skincare-status">今日未打卡</div>
               <button class="skincare-stamp-btn" id="skincare-stamp-btn">
-                <span class="skincare-stamp-icon">🧴</span>
+                <span class="skincare-stamp-icon"><i data-lucide="sparkles" class="lucide-inline"></i></span>
                 <span>护肤打卡</span>
               </button>
             </div>
@@ -600,7 +600,7 @@
               <div class="steps-amount"><span id="steps-amount-text">0</span> 步</div>
               <div class="steps-goal" id="steps-goal-display">
                 / <span id="steps-goal-text">10000</span> 步
-                <button class="goal-edit-btn" id="steps-goal-edit-btn" title="修改目标">✏️</button>
+                <button class="goal-edit-btn" id="steps-goal-edit-btn" title="修改目标"><i data-lucide="pencil" class="lucide-inline"></i></button>
               </div>
               <div class="steps-goal-editor hidden" id="steps-goal-editor">
                 <input type="number" id="steps-goal-input" min="1000" max="50000" step="1000" value="10000">
@@ -621,7 +621,7 @@
                 <button class="water-custom-add-btn" id="steps-custom-add">+</button>
               </div>
               <div class="water-log" id="steps-log">
-                <div class="water-log-empty">今天还没有步数记录 🚶</div>
+                <div class="water-log-empty">今天还没有步数记录</div>
               </div>
             </div>
             <div class="wakeup-history">
@@ -858,7 +858,7 @@
         <div class="form-group hidden" id="auto-complete-group">
           <label class="checkbox-label">
             <input type="checkbox" id="task-auto-complete" checked>
-            ⏰ 到时间自动完成
+            到时间自动完成
           </label>
         </div>
 
@@ -904,12 +904,12 @@
   <div class="modal-overlay hidden" id="ics-modal-overlay">
     <div class="modal" id="ics-modal">
       <div class="modal-header">
-        <h3>📥 导入 ICS 文件</h3>
+        <h3><i data-lucide="download" class="lucide-inline"></i> 导入 ICS 文件</h3>
         <button class="modal-close" id="ics-modal-close">×</button>
       </div>
       <div class="ics-content">
         <div class="ics-upload" id="ics-upload-area">
-          <div class="ics-upload-icon">📄</div>
+          <div class="ics-upload-icon"><i data-lucide="file-text"></i></div>
           <p>点击或拖拽 .ics 文件到此处</p>
           <input type="file" id="ics-file-input" accept=".ics,.ical" hidden>
         </div>
@@ -938,7 +938,7 @@
   <div class="modal-overlay hidden" id="pomodoro-overlay">
     <div class="modal" id="pomodoro-modal">
       <div class="modal-header">
-        <h3 id="pomodoro-title">🍅 番茄钟</h3>
+        <h3 id="pomodoro-title"><i data-lucide="timer" class="lucide-inline"></i> 番茄钟</h3>
         <button class="modal-close" id="pomodoro-close">×</button>
       </div>
       <div class="pomodoro-content" id="pomodoro-content">
@@ -963,7 +963,7 @@
             </div>
           </div>
           <div class="form-group">
-            <label>🎵 环境音</label>
+            <label><i data-lucide="music" class="lucide-inline"></i> 环境音</label>
             <div id="pomodoro-sounds"></div>
           </div>
           <button class="btn btn-primary pomodoro-start-btn" id="pomodoro-start">开始专注</button>
@@ -981,14 +981,14 @@
           <div class="pomodoro-round" id="pomodoro-round">第 1 轮</div>
           <div class="pomodoro-controls">
             <button class="btn btn-secondary" id="pomodoro-pause">暂停</button>
-            <button class="btn btn-secondary" id="pomodoro-ambient-toggle" title="环境音">🎵</button>
+            <button class="btn btn-secondary" id="pomodoro-ambient-toggle" title="环境音"><i data-lucide="music" class="lucide-inline"></i></button>
             <button class="btn btn-danger" id="pomodoro-stop">结束</button>
           </div>
           <div class="pomodoro-timer-sounds hidden" id="pomodoro-timer-sounds"></div>
         </div>
         <!-- Round Complete Screen -->
         <div class="pomodoro-complete hidden" id="pomodoro-complete">
-          <div class="pomodoro-complete-icon">🎉</div>
+          <div class="pomodoro-complete-icon"><i data-lucide="party-popper" class="lucide-inline"></i></div>
           <div class="pomodoro-complete-text" id="pomodoro-complete-text">休息结束！</div>
           <div class="pomodoro-complete-summary" id="pomodoro-complete-summary">已完成 1 轮</div>
           <button class="btn btn-primary" id="pomodoro-next">进入下一轮</button>
@@ -1003,7 +1003,7 @@
     <div class="modal widget-modal" id="widget-modal">
       <div class="widget-modal-hero">
         <button class="modal-close widget-modal-x" id="widget-modal-close">×</button>
-        <div class="widget-modal-hero-icon" id="widget-hero-icon">📋</div>
+        <div class="widget-modal-hero-icon" id="widget-hero-icon"><i data-lucide="clipboard-list"></i></div>
         <div class="widget-modal-hero-title" id="widget-modal-title">安装「今日待办」小组件</div>
         <div class="widget-modal-hero-sub" id="widget-hero-sub">紧凑任务列表 · 独立窗口运行</div>
       </div>
@@ -1011,10 +1011,10 @@
         <!-- Method tabs -->
         <div class="widget-method-tabs">
           <button class="widget-method-tab active" data-method="cmd" id="widget-tab-cmd">
-            <span class="widget-tab-icon" id="widget-tab-cmd-icon">⌨️</span> 终端命令
+            <span class="widget-tab-icon" id="widget-tab-cmd-icon"><i data-lucide="terminal" class="lucide-inline"></i></span> 终端命令
           </button>
           <button class="widget-method-tab" data-method="browser" id="widget-tab-browser">
-            <span class="widget-tab-icon">🌐</span> 直接打开
+            <span class="widget-tab-icon"><i data-lucide="globe" class="lucide-inline"></i></span> 直接打开
           </button>
         </div>
 
@@ -1043,7 +1043,7 @@
             </div>
           </div>
           <button class="widget-action-btn primary" id="widget-copy-btn">
-            <span class="widget-action-icon">📋</span> 复制命令
+            <span class="widget-action-icon"><i data-lucide="copy" class="lucide-inline"></i></span> 复制命令
           </button>
         </div>
 
@@ -1053,11 +1053,11 @@
             直接在浏览器中打开小组件页面，可以拖拽调整窗口大小，也可以加入书签方便下次使用。
           </div>
           <div class="widget-url-box">
-            <span class="widget-url-label">🔗 小组件地址</span>
+            <span class="widget-url-label"><i data-lucide="link" class="lucide-inline"></i> 小组件地址</span>
             <code class="widget-url-code" id="widget-url-code"></code>
           </div>
           <button class="widget-action-btn primary" id="widget-open-btn">
-            <span class="widget-action-icon">🚀</span> 立即打开
+            <span class="widget-action-icon"><i data-lucide="external-link" class="lucide-inline"></i></span> 立即打开
           </button>
         </div>
 

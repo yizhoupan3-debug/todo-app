@@ -24,11 +24,16 @@ router.post('/ics', upload.single('file'), (req, res) => {
     }
 });
 
+const VALID_ASSIGNEES = ['潘潘', '蒲蒲'];
+
 // POST /api/import/ics/confirm — actually insert parsed tasks
 router.post('/ics/confirm', (req, res) => {
     const { tasks, assignee } = req.body;
     if (!tasks || !Array.isArray(tasks) || !assignee) {
         return res.status(400).json({ error: 'tasks array and assignee are required' });
+    }
+    if (!VALID_ASSIGNEES.includes(assignee)) {
+        return res.status(400).json({ error: `assignee must be one of: ${VALID_ASSIGNEES.join(', ')}` });
     }
 
     const insertTask = db.prepare(`
