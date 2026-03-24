@@ -1,11 +1,27 @@
 const Database = require('better-sqlite3');
+const fs = require('fs');
 const path = require('path');
 const { resolveAggregatorPath } = require('./codex-aggregator');
 
-const dbPath = path.join(__dirname, '..', 'data', 'todo.db');
+/**
+ * Resolve the writable application data directory.
+ * @returns {string} Absolute path to the active data directory.
+ */
+function getAppDataDir() {
+  return process.env.TODO_APP_DATA_DIR || path.join(__dirname, '..', 'data');
+}
+
+/**
+ * Resolve the SQLite database file path for the current runtime.
+ * @returns {string} Absolute path to todo.db.
+ */
+function getAppDbPath() {
+  return path.join(getAppDataDir(), 'todo.db');
+}
+
+const dbPath = getAppDbPath();
 
 // Ensure data directory exists
-const fs = require('fs');
 const dataDir = path.dirname(dbPath);
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
@@ -567,6 +583,20 @@ Object.defineProperty(module.exports, 'aggregatorDb', {
 
 Object.defineProperty(module.exports, 'aggregatorBasePath', {
   value: aggregatorBasePath,
+  writable: false,
+  enumerable: true,
+  configurable: false,
+});
+
+Object.defineProperty(module.exports, 'dbPath', {
+  value: dbPath,
+  writable: false,
+  enumerable: true,
+  configurable: false,
+});
+
+Object.defineProperty(module.exports, 'dataDir', {
+  value: dataDir,
   writable: false,
   enumerable: true,
   configurable: false,

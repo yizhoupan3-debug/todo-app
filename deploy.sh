@@ -46,6 +46,7 @@ fi
 # 3. 克隆代码
 echo "[3/5] 拉取代码..."
 APP_DIR="/opt/todo-app"
+APP_DATA_DIR="/var/lib/todo-app"
 if [ -d "$APP_DIR" ]; then
     echo "  更新已有代码..."
     cd $APP_DIR && git pull
@@ -57,6 +58,10 @@ cd $APP_DIR
 # 4. 安装依赖
 echo "[4/5] 安装依赖..."
 npm install --production
+mkdir -p "$APP_DATA_DIR"
+if [ -f "$APP_DIR/data/todo.db" ] && [ ! -f "$APP_DATA_DIR/todo.db" ]; then
+    cp "$APP_DIR/data/todo.db" "$APP_DATA_DIR/todo.db"
+fi
 
 # 5. 配置 systemd 服务（开机自启 + 后台运行）
 echo "[5/5] 配置系统服务..."
@@ -74,6 +79,7 @@ Restart=always
 RestartSec=5
 Environment=NODE_ENV=production
 Environment=PORT=80
+Environment=TODO_APP_DATA_DIR=/var/lib/todo-app
 
 [Install]
 WantedBy=multi-user.target
