@@ -100,6 +100,9 @@ Object.assign(GardenView, {
         const plantedCount = this.plots.filter(p => p.status === 'planted').length;
         const typesCollected = new Set(this.plots.filter(p => p.tree_type).map(p => p.tree_type)).size;
 
+        const iw = this.currentIsland ? (Number(this.currentIsland.grid_w) || 4) : 4;
+        const ih = this.currentIsland ? (Number(this.currentIsland.grid_h) || 4) : 4;
+
         el.innerHTML = `
             <div class="island-hud">
                 <div class="island-hud-left">
@@ -128,7 +131,9 @@ Object.assign(GardenView, {
 
             <div class="island-viewport" id="island-viewport">
                 <div class="island-world" id="island-world">
-                    <div class="island-land" id="island-land"></div>
+                    <div class="island-land" id="island-land">
+                        ${this.renderIslandBaseSvg(iw, ih)}
+                    </div>
                     <div class="island-trees" id="island-trees">
                         ${this.plots.map((plot, i) => this.renderIslandPlot(plot, this.getPlotLayout(plot, i))).join('')}
                     </div>
@@ -158,6 +163,56 @@ Object.assign(GardenView, {
         this._state.renderSignature = renderSignature;
     },
 
+    renderIslandBaseSvg(gridW, gridH) {
+        const cw = 110;
+        const ch = 55;
+        // The top pixel of the grid at iso origin (center=800, top=290, plus offset for half tile height since origin is center)
+        const topX = 800;
+        const topY = 290;
+        
+        // Vertices of the diamond
+        const ptTop = `${topX},${topY}`;
+        const ptRight = `${topX + gridW * cw/2},${topY + gridW * ch/2}`;
+        const ptBottom = `${topX + (gridW - gridH) * cw/2},${topY + (gridW + gridH) * ch/2}`;
+        const ptLeft = `${topX - gridH * cw/2},${topY + gridH * ch/2}`;
+        
+        // Depth thicknesses
+        const grassH = 22;
+        const dirtH = 50;
+        
+        const ptRightG = `${topX + gridW * cw/2},${topY + gridW * ch/2 + grassH}`;
+        const ptBottomG = `${topX + (gridW - gridH) * cw/2},${topY + (gridW + gridH) * ch/2 + grassH}`;
+        const ptLeftG = `${topX - gridH * cw/2},${topY + gridH * ch/2 + grassH}`;
+
+        const ptRightD = `${topX + gridW * cw/2},${topY + gridW * ch/2 + grassH + dirtH}`;
+        const ptBottomD = `${topX + (gridW - gridH) * cw/2},${topY + (gridW + gridH) * ch/2 + grassH + dirtH}`;
+        const ptLeftD = `${topX - gridH * cw/2},${topY + gridH * ch/2 + grassH + dirtH}`;
+
+        // Colors matching Forest exactly
+        const colSand = "#fff6e0";
+        const colGrassL = "#82cd59";
+        const colGrassR = "#6eb847";
+        const colDirtL = "#2d7059";
+        const colDirtR = "#23604b";
+
+        return `
+        <svg width="1600" height="1100" style="position:absolute;top:0;left:0;pointer-events:none;z-index:1; overflow:visible;">
+            <g stroke-linejoin="round" stroke-linecap="round">
+                <!-- Dirt Layer (Lower edge) -->
+                <polygon points="${ptLeftG} ${ptBottomG} ${ptBottomD} ${ptLeftD}" fill="${colDirtL}" stroke="${colDirtL}" stroke-width="18"/>
+                <polygon points="${ptBottomG} ${ptRightG} ${ptRightD} ${ptBottomD}" fill="${colDirtR}" stroke="${colDirtR}" stroke-width="18"/>
+                
+                <!-- Grass Layer (Upper edge) -->
+                <polygon points="${ptLeft} ${ptBottom} ${ptBottomG} ${ptLeftG}" fill="${colGrassL}" stroke="${colGrassL}" stroke-width="18"/>
+                <polygon points="${ptBottom} ${ptRight} ${ptRightG} ${ptBottomG}" fill="${colGrassR}" stroke="${colGrassR}" stroke-width="18"/>
+                
+                <!-- Top Face (Sand terrain) -->
+                <polygon points="${ptTop} ${ptRight} ${ptBottom} ${ptLeft}" fill="${colSand}" stroke="${colSand}" stroke-width="16"/>
+            </g>
+        </svg>
+        `;
+    },
+
     renderIslandPlot(plot, layout) {
         const { leftPx, topPx, zone, scale, zIndex, tilt, sway, spriteScale, depth } = layout || {};
         const isSelected = this._state.selectedPlotId === plot.id;
@@ -173,16 +228,25 @@ Object.assign(GardenView, {
             `z-index:${zIndex ?? 8}`,
         ].join(';');
         const zoneClass = zone ? `zone-${zone}` : '';
+        
+        const baseTileSvg = `
+            <div class="iso-tile-base">
+                <svg width="112" height="58" viewBox="0 0 110 58" style="display:block; shape-rendering: crispEdges; overflow:visible;">
+                  <polygon points="55,0 110,27.5 55,55 0,27.5" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.6)" stroke-width="1.5"/>
+                </svg>
+            </div>
+        `;
+
         if (plot.status === 'wasteland') {
-            /* Forest style: wasteland plots are invisible — click-target only when selected */
             return `<div class="iplot wasteland ${zoneClass} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
+                ${baseTileSvg}
                 ${isSelected ? `<button class="iplot-action" data-action="clear" title="开荒">⛏️</button>` : ''}
             </div>`;
         }
         if (plot.status === 'cleared') {
             const sel = this.selectedTree;
-            /* Cleared plots: show blue puddle only */
             return `<div class="iplot cleared ${zoneClass} ${sel ? 'plantable' : ''} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
+                ${baseTileSvg}
                 ${isSelected && sel ? '<button class="iplot-action" data-action="plant" title="">🌱</button>' : ''}
             </div>`;
         }
@@ -192,6 +256,7 @@ Object.assign(GardenView, {
         const pct = Math.min(100, Math.round(gm / 150 * 100));
         const imgSrc = catItem?.stages?.[stage] || gardenAsset('/img/trees/seed.png');
         return `<div class="iplot planted ${zoneClass} stage-${stage} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
+            ${baseTileSvg}
             <img src="${imgSrc}" alt="" class="iplot-img">
             <div class="iplot-bar"><div class="iplot-bar-fill" style="width:${pct}%"></div></div>
             ${isSelected ? '<button class="iplot-action" data-action="menu" title="">⋯</button>' : ''}

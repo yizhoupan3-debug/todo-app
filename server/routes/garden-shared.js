@@ -57,8 +57,8 @@ function randomIslandName(assignee) {
 }
 
 // ── Grid constants ──
-const BASE_GRID_W = 8;
-const BASE_GRID_H = 6;
+const BASE_GRID_W = 4;
+const BASE_GRID_H = 4;
 
 // ── Game balance constants ──
 const TREE_MATURE_MINUTES = 150;

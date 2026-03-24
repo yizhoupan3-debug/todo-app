@@ -22,7 +22,15 @@ cd /Users/joe/Documents/todo_list_app && git add -A && git commit -m "<简明描
 ### 2. 给用户阿里云更新指令
 修改完成后，提供以下命令让用户在服务器上执行：
 ```bash
-sudo bash -c 'cd /opt/todo-app && git pull && systemctl restart todo-app'
+# 先备份数据库
+sudo cp /opt/todo-app/*.db /tmp/ 2>/dev/null || true
+
+# 然后重新 clone
+sudo bash -c 'rm -rf /opt/todo-app && git clone https://github.com/yizhoupan3-debug/todo-app.git /opt/todo-app && cd /opt/todo-app && npm install && systemctl restart todo-app'
+
+# 恢复数据库
+sudo cp /tmp/*.db /opt/todo-app/ 2>/dev/null || true
+sudo systemctl restart todo-app
 ```
 
 > **注意**: 每次代码修改完成后必须立刻执行 Git 提交推送，不要等用户提醒。

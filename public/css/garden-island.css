@@ -213,7 +213,6 @@
  */
 .island-land {
   position: absolute;
-  /* Cover the full iso diamond footprint + generous overlap for shadows */
   left: 380px;
   top: 200px;
   width: 880px;
@@ -221,48 +220,16 @@
   z-index: 5;
   pointer-events: none;
   overflow: visible;
-  border-radius: 8px;
-  /* 2:1 isometric transform: rotateX tilts the tile, rotateZ rotates 45° to face camera */
-  transform:
-    perspective(1600px)
-    rotateX(60deg)
-    rotateZ(45deg);
-  transform-style: preserve-3d;
-  /* Sand/cream surface like Forest app */
-  background:
-    radial-gradient(ellipse 60% 50% at 38% 40%, rgba(255,255,255,0.13) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 65% 62%, rgba(255,255,255,0.07) 0%, transparent 70%),
-    linear-gradient(150deg, #f5ece0 0%, #e8dcc8 15%, #e5d9c0 30%, #ddd1b6 55%, #d5c9ae 75%, #cdc1a6 100%);
-  box-shadow:
-    /* Green grass side — layered stacking */
-    0 18px 0 0 #6aaa54,
-    0 21px 0 0 #5d9e48,
-    0 24px 0 0 #519240,
-    0 27px 0 0 #458636,
-    0 30px 0 0 #3a7a2c,
-    0 33px 0 0 #316e24,
-    0 36px 0 0 #29621e,
-    0 39px 0 0 #235618,
-    /* Ambient drop shadow */
-    0 55px 60px rgba(0,0,0,0.20),
-    0 28px 30px rgba(0,0,0,0.10);
+  /* Removed 3D transform and background, as tiles are now injecting directly into .island-trees */
+  background: transparent;
+  box-shadow: none;
 }
 
 /* Top edge highlight */
-.island-land::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 8px;
-  border: 1.5px solid rgba(255,255,255,0.22);
-  pointer-events: none;
-  z-index: 50;
-}
+.island-land::before { display: none; }
 
 /* Small scattered grass flowers / dots on the green side (decorative) */
-.island-land::after {
-  display: none;
-}
+.island-land::after { display: none; }
 
 /* ═══ Island Trees — Separate overlay in normal (un-rotated) coordinate space ═══
  * Trees are positioned using computed isometric coordinates (leftPx, topPx)
@@ -293,6 +260,7 @@
   overflow: visible;
   cursor: pointer;
   transition: transform 0.25s cubic-bezier(.34, 1.56, .64, 1), filter 0.2s;
+  /* Center exactly on the isometric origin point */
   transform: translate(-50%, -100%) scale(var(--plot-scale, 1));
   z-index: 20;
   background: transparent;
@@ -300,25 +268,35 @@
   pointer-events: auto;
 }
 
-/* Vivid blue water puddle under each planted tree (matches Forest screenshot) */
+/* Flat Isometric Base Tile Hitbox (Hover visualizer) */
+.iso-tile-base {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translate(-50%, -27.5px);
+  width: 112px;
+  height: 58px;
+  pointer-events: none;
+  z-index: -2;
+  opacity: 0;
+  transition: opacity 0.2s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+
+/* Vivid flat blue water puddle under each planted tree (matches Forest screenshot) */
 .iplot.planted::before {
   content: '';
   position: absolute;
   left: 50%;
   bottom: 0;
-  width: 90px;
-  height: 36px;
+  width: 80px;
+  height: 40px;
   border-radius: 50%;
-  background: radial-gradient(
-    ellipse at 50% 60%,
-    rgba(80, 165, 225, 0.65) 0%,
-    rgba(70, 148, 210, 0.40) 40%,
-    rgba(60, 130, 195, 0.15) 70%,
-    transparent 90%
-  );
+  background: #6ebdf2;  /* Flat blue color matching the reference */
   transform: translateX(-50%);
   pointer-events: none;
   z-index: -1;
+  /* Add slightly darker blue inner shadow/border if needed, but flat is closest to Forest */
 }
 
 .iplot::after { display: none; }
@@ -332,58 +310,60 @@
   pointer-events: auto;
 }
 
-/* ── Wasteland — invisible; click-target only when selected ── */
+/* ── Wasteland — forms the continuous grid ── */
 .iplot.wasteland {
-  opacity: 0;
-  pointer-events: none;
-  cursor: default;
-  /* Tiny size so it doesn't disrupt layout */
-  width: 60px;
-  height: 60px;
-  transform: translate(-50%, -90%);
-}
-
-/* Show wasteland only when selected (user tapped to open-clear menu) */
-.iplot.wasteland.selected {
-  opacity: 0.55;
+  opacity: 1; /* Fully visible base */
   pointer-events: auto;
-}
-
-/* ── Cleared — hidden unless tree-planting mode active ── */
-.iplot.cleared {
-  opacity: 0;
-  pointer-events: none;
   cursor: default;
-  width: 80px;
-  height: 70px;
-  transform: translate(-50%, -80%);
+  /* Retain standard bounds for the click target */
+  width: 110px;
+  height: 85px;
+  transform: translate(-50%, -100%);
 }
 
-.iplot.cleared.plantable {
-  opacity: 0.5;
+.iplot.wasteland:hover .iso-tile-base,
+.iplot.wasteland.selected .iso-tile-base {
+  opacity: 1;
+}
+
+/* ── Cleared — bare plot ready for planting ── */
+.iplot.cleared {
+  opacity: 1; /* Fully visible base */
   pointer-events: auto;
   cursor: pointer;
+  width: 110px;
+  height: 85px;
+  transform: translate(-50%, -100%);
+}
+
+.iplot.cleared:hover .iso-tile-base {
+  opacity: 1;
+}
+
+.iplot.cleared.plantable .iso-tile-base {
+  opacity: 0.5;
   animation: readyPulse 2s ease-in-out infinite;
 }
 
-.iplot.cleared.selected {
+.iplot.cleared.selected .iso-tile-base {
   opacity: 0.7;
-  pointer-events: auto;
 }
 
 /* ── Selected ── */
-.iplot.selected {
-  filter: brightness(1.2) drop-shadow(0 0 8px rgba(255, 255, 200, 0.4));
+.iplot.selected .iso-tile-base {
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
+  opacity: 1;
 }
 
 /* ═══ Plot Images ═══ */
 .iplot-img {
   position: relative;
   z-index: 2;
-  width: 88px;
-  height: 100px;
+  width: 100px;
+  height: 115px;
   object-fit: contain;
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.28));
+  /* Sharp isometric drop shadow pointing back-left, zero blur */
+  filter: drop-shadow(-14px 10px 0px rgba(32, 85, 65, 0.25));
   transition: all 0.3s cubic-bezier(.34, 1.56, .64, 1);
   /* Scale via CSS var; no tilt rotation — tree should remain upright */
   transform: scale(var(--plot-sprite-scale, 1));
@@ -410,11 +390,10 @@
 }
 
 .iplot.stage-mature .iplot-img {
-  width: 96px;
-  height: 110px;
-  filter:
-    drop-shadow(0 8px 12px rgba(0, 0, 0, 0.30))
-    drop-shadow(0 0 14px rgba(255, 210, 80, 0.18));
+  width: 112px;
+  height: 125px;
+  /* Retain the crisp diagonal drop shadow for mature trees too */
+  filter: drop-shadow(-16px 12px 0px rgba(32, 85, 65, 0.3));
 }
 
 /* ── Hover / Selected ── */
@@ -422,11 +401,11 @@
 .iplot.planted:hover {
   transform: translate(-50%, -100%) scale(calc(var(--plot-scale, 1) * 1.09));
   z-index: 60;
-  filter: brightness(1.08);
 }
 
 .iplot.selected {
-  filter: brightness(1.18) drop-shadow(0 0 10px rgba(255, 220, 120, 0.55));
+  /* Crisp selection highlight instead of blurry glow */
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
 }
 
 /* ═══ Animations ═══ */
@@ -462,8 +441,8 @@
 }
 
 @keyframes matureGlow {
-  0% { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25)) drop-shadow(0 0 8px rgba(255,210,80,0.15)); }
-  100% { filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25)) drop-shadow(0 0 16px rgba(255,210,80,0.3)); }
+  0% { filter: drop-shadow(-16px 12px 0px rgba(32, 85, 65, 0.3)) drop-shadow(0 0 4px rgba(255,210,80,0.15)); }
+  100% { filter: drop-shadow(-16px 12px 0px rgba(32, 85, 65, 0.3)) drop-shadow(0 0 12px rgba(255,210,80,0.3)); }
 }
 
 /* ═══ Progress Bars ═══
@@ -605,7 +584,7 @@
 .pm-btn.pm-clear { background: linear-gradient(135deg, #6B8E23, #556B2F); color: #fff; }
 .pm-btn.pm-clear:hover { filter: brightness(1.15); }
 
-.wasteland-menu-img { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; margin-bottom: 4px; }
+.wasteland-menu-img { width: 48px; height: 48px; object-fit: contain; border-radius: 8px; margin-bottom: 4px; display: none; }
 
 /* ═══ Plot Flash Animations ═══ */
 .iplot.move-target { animation: moveTargetPulse 0.8s ease-in-out infinite; box-shadow: 0 0 0 3px rgba(100, 255, 100, 0.6) !important; }

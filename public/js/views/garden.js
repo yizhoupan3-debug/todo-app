@@ -219,8 +219,8 @@ const GardenView = {
     weedVariants: ['/img/garden/weed_pile_1.png?v=3', '/img/garden/weed_pile_2.png?v=3'],
     wildTreeVariants: ['/img/garden/wild_tree_1.png?v=3', '/img/garden/wild_tree_2.png?v=3', '/img/garden/wild_tree_3.png?v=3'],
 
-    SCENE_GRID_W: 8,
-    SCENE_GRID_H: 6,
+    SCENE_GRID_W: 4,
+    SCENE_GRID_H: 4,
 
     /* ── Isometric grid constants ──
      * Trees are placed on a separate #island-trees overlay using
