@@ -662,13 +662,20 @@ const GardenView = {
     },
 
     _todayString() {
-        // Use China Standard Time (Asia/Shanghai) to match server-side date logic.
-        return new Intl.DateTimeFormat('zh-CN', {
+        // Cache per-day to avoid re-creating Intl.DateTimeFormat on every render call.
+        const now = new Date();
+        const dayKey = now.getFullYear() * 10000 + (now.getMonth() + 1) * 100 + now.getDate();
+        if (this._todayCache && this._todayCache.key === dayKey) {
+            return this._todayCache.date;
+        }
+        const date = new Intl.DateTimeFormat('zh-CN', {
             timeZone: 'Asia/Shanghai',
             year: 'numeric',
             month: '2-digit',
             day: '2-digit',
-        }).format(new Date()).replace(/\//g, '-');
+        }).format(now).replace(/\//g, '-');
+        this._todayCache = { key: dayKey, date };
+        return date;
     },
 
     _positionPlotMenu(menuEl, plotEl) {

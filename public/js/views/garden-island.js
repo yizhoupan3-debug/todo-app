@@ -433,8 +433,14 @@ Object.assign(GardenView, {
     },
 
     _updateZoomDisplay() {
-        const el = document.getElementById('zoom-level-text');
-        if (el) el.textContent = Math.round(this._state.zoom * 100) + '%';
+        // Throttle via rAF — wheel events fire at 60+ fps but DOM writes only need 1 per frame
+        if (this._state._zoomDisplayRafPending) return;
+        this._state._zoomDisplayRafPending = true;
+        requestAnimationFrame(() => {
+            this._state._zoomDisplayRafPending = false;
+            const el = document.getElementById('zoom-level-text');
+            if (el) el.textContent = Math.round(this._state.zoom * 100) + '%';
+        });
     },
 
     renderPlantingToolbar() {

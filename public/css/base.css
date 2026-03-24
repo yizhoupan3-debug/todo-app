@@ -355,10 +355,10 @@
 
 /* ===== SETTINGS PANEL ===== */
 .settings-panel {
-  position: absolute;
-  bottom: 56px;
-  left: 8px;
-  width: 280px;
+  position: fixed;
+  bottom: 16px;
+  left: 256px;
+  width: 300px;
   background: var(--card-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
@@ -366,10 +366,10 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
   padding: 14px;
-  transform-origin: bottom center;
+  transform-origin: bottom left;
   animation: settingsSlideUp 0.28s cubic-bezier(0.25, 1, 0.5, 1);
-  z-index: 100;
-  max-height: 70vh;
+  z-index: 500;
+  max-height: calc(100vh - 32px);
   overflow-y: auto;
   scrollbar-width: thin;
 }
@@ -1909,13 +1909,13 @@ textarea:focus {
 }
 
 .coin-rules-goto-history {
-  background: rgba(0, 0, 0, 0.05);
-  color: #666;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
 }
 
 .coin-rules-goto-history:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #333;
+  background: var(--card-hover);
+  color: var(--text);
   transform: translateY(-2px);
 }
 
@@ -4888,7 +4888,7 @@ button:not(:disabled):active,
 
 .coin-history-label {
   font-size: 14px;
-  color: #333;
+  color: var(--text);
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4897,7 +4897,7 @@ button:not(:disabled):active,
 
 .coin-history-time {
   font-size: 11px;
-  color: #bbb;
+  color: var(--text-tertiary);
 }
 
 .coin-history-amount {
@@ -4913,11 +4913,11 @@ button:not(:disabled):active,
 
 .coin-undo-btn {
   background: none;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--border-strong);
   border-radius: 8px;
   padding: 4px 8px;
   font-size: 12px;
-  color: #aaa;
+  color: var(--text-tertiary);
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
@@ -4927,7 +4927,7 @@ button:not(:disabled):active,
 .coin-undo-btn:hover {
   border-color: #f44336;
   color: #f44336;
-  background: #fff5f5;
+  background: rgba(244, 67, 54, 0.08);
 }
 
 /* ===== THEME COLOR TRANSITION ===== */
@@ -5569,3 +5569,48 @@ body:not(.notransition) .stats-card {
   }
 }
 
+/* ===== VIEW TRANSITIONS — Prevent white flash ===== */
+/* Override default browser crossfade to use theme background, not white */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.2s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  animation-name: vt-fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: vt-fade-in;
+}
+
+@keyframes vt-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes vt-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ===== SETTINGS PANEL — Mobile/Tablet Responsive ===== */
+/* Mobile: sidebar is a 260px overlay, show panel above the button area */
+@media (max-width: 768px) {
+  .settings-panel {
+    left: 8px;
+    right: 8px;
+    width: auto;
+    bottom: 70px;
+    max-height: 75vh;
+  }
+}
+
+/* Tablet: sidebar is 200px wide */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .settings-panel {
+    left: 210px;
+  }
+}

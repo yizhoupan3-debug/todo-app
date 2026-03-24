@@ -14,6 +14,18 @@ module.exports = function registerGardenPlotRoutes(router, {
 
         const gridW = Math.max(BASE_GRID_W, Number(island.grid_w) || BASE_GRID_W);
         const gridH = Math.max(BASE_GRID_H, Number(island.grid_h) || BASE_GRID_H);
+        const expectedCount = gridW * gridH;
+
+        // Fast-path: if grid size is unchanged and all plots exist, skip the write transaction entirely.
+        // This eliminates the per-request DB write loop on every GET /plots call.
+        const sizeUnchanged = gridW === island.grid_w && gridH === island.grid_h;
+        if (sizeUnchanged) {
+            const { count } = db.prepare('SELECT COUNT(*) as count FROM garden_plots WHERE island_id = ?').get(island.id);
+            if (count >= expectedCount) {
+                return { ...island, grid_w: gridW, grid_h: gridH };
+            }
+        }
+
         const updateIsland = db.prepare('UPDATE islands SET grid_w = ?, grid_h = ? WHERE id = ?');
         const existingPlots = db.prepare('SELECT id, x, y, status FROM garden_plots WHERE island_id = ?').all(island.id);
         const insertPlot = db.prepare(
@@ -57,6 +69,7 @@ module.exports = function registerGardenPlotRoutes(router, {
         ensure();
         return { ...island, grid_w: gridW, grid_h: gridH };
     }
+
 
     router.get('/plots/:assignee', (req, res) => {
         try {

@@ -177,14 +177,94 @@ const CheckinView = {
     },
 
     async _loadLanding() {
-        // Load all card data in parallel for faster first paint
-        await Promise.all([
-            this.loadGoal().then(() => this.loadWaterData()),
-            this.loadWakeupCard(),
-            this.loadGooutCard(),
-            this.loadSkincareCard(),
-            this.loadStepsGoal().then(() => this.loadStepsCard()),
-        ]);
+        // Single-request landing summary — replaces ~10 parallel API calls
+        try {
+            const qs = new URLSearchParams({ assignee: this.currentAssignee }).toString();
+            const data = await API.request('/checkin/landing-summary?' + qs);
+            const s = data.summary;
+
+            // Apply to cached state
+            this.dailyGoal = s.water.goal;
+            this.stepsGoal = s.steps.goal;
+            this.todayTotal = s.water.total;
+            this.stepsTotal = s.steps.total;
+
+            // Water card
+            const waterPct = Math.min((s.water.total / s.water.goal) * 100, 100);
+            {
+                const bar = document.getElementById('card-water-bar');
+                const stat = document.getElementById('card-water-stats');
+                if (bar) {
+                    bar.style.width = waterPct + '%';
+                    bar.style.background = waterPct >= 100
+                        ? 'linear-gradient(90deg, #22c55e, #16a34a)'
+                        : 'linear-gradient(90deg, #60a5fa, #3b82f6)';
+                }
+                if (stat) stat.textContent = `${s.water.total} / ${s.water.goal}ml`;
+            }
+
+            // Wakeup card
+            {
+                const statsEl = document.getElementById('card-wakeup-stats');
+                const card = document.getElementById('card-wakeup');
+                if (s.wakeup.reached && s.wakeup.firstTime) {
+                    if (statsEl) { statsEl.textContent = `✅ ${s.wakeup.firstTime} 已打卡`; statsEl.style.color = '#22c55e'; }
+                    card?.classList.add('checked-done');
+                } else {
+                    if (statsEl) { statsEl.textContent = '今日未打卡'; statsEl.style.color = ''; }
+                    card?.classList.remove('checked-done');
+                }
+            }
+
+            // Goout card
+            {
+                const statsEl = document.getElementById('card-goout-stats');
+                const card = document.getElementById('card-goout');
+                if (s.goout.reached && s.goout.firstTime) {
+                    if (statsEl) { statsEl.textContent = `✅ ${s.goout.firstTime} 已打卡`; statsEl.style.color = '#22c55e'; }
+                    card?.classList.add('checked-done');
+                } else {
+                    if (statsEl) { statsEl.textContent = '今日未打卡'; statsEl.style.color = ''; }
+                    card?.classList.remove('checked-done');
+                }
+            }
+
+            // Skincare card
+            {
+                const statsEl = document.getElementById('card-skincare-stats');
+                const card = document.getElementById('card-skincare');
+                if (s.skincare.reached && s.skincare.firstTime) {
+                    if (statsEl) { statsEl.textContent = `✅ ${s.skincare.firstTime} 已打卡`; statsEl.style.color = '#22c55e'; }
+                    card?.classList.add('checked-done');
+                } else {
+                    if (statsEl) { statsEl.textContent = '今日未打卡'; statsEl.style.color = ''; }
+                    card?.classList.remove('checked-done');
+                }
+            }
+
+            // Steps card
+            {
+                const stepsPct = Math.min((s.steps.total / s.steps.goal) * 100, 100);
+                const bar = document.getElementById('card-steps-bar');
+                const stat = document.getElementById('card-steps-stats');
+                if (bar) {
+                    bar.style.width = stepsPct + '%';
+                    bar.style.background = stepsPct >= 100
+                        ? 'linear-gradient(90deg, #22c55e, #16a34a)'
+                        : 'linear-gradient(90deg, #f59e0b, #d97706)';
+                }
+                if (stat) stat.textContent = `${s.steps.total} / ${s.steps.goal}步`;
+            }
+        } catch (err) {
+            // Fallback to individual requests if batch endpoint unavailable
+            await Promise.all([
+                this.loadGoal().then(() => this.loadWaterData()),
+                this.loadWakeupCard(),
+                this.loadGooutCard(),
+                this.loadSkincareCard(),
+                this.loadStepsGoal().then(() => this.loadStepsCard()),
+            ]);
+        }
     },
 
     // ===== Water =====
@@ -347,42 +427,61 @@ const CheckinView = {
 
     async loadHistory(type, logElId) {
         const logEl = document.getElementById(logElId);
-        const days = [];
-        for (let i = 0; i < 7; i++) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            days.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
-        }
-
-        const results = await Promise.allSettled(
-            days.map(date => API.getCheckin({
-                date, assignee: this.currentAssignee, type
-            }).then(data => ({ date, data })))
-        );
+        if (!logEl) return;
 
         const weekday = ['日', '一', '二', '三', '四', '五', '六'];
         const iconMap = { wakeup: '⏰', goout: '🚪', skincare: '🧴' };
         const icon = iconMap[type] || '✅';
-        let html = '';
-        for (const result of results) {
-            if (result.status !== 'fulfilled') continue;
-            const { date, data } = result.value;
-            const d = new Date(date);
-            const dayLabel = `${date.slice(5)} 周${weekday[d.getDay()]}`;
-            if (data.records.length > 0) {
-                const time = data.records[0].created_at?.split(' ')[1]?.slice(0, 5) || '';
-                html += `<div class="wakeup-log-item">
-                    <span class="wakeup-log-date">${dayLabel}</span>
-                    <span class="wakeup-log-time checked">${icon} ${time}</span>
-                </div>`;
-            } else {
-                html += `<div class="wakeup-log-item">
-                    <span class="wakeup-log-date">${dayLabel}</span>
-                    <span class="wakeup-log-time missed">未打卡</span>
-                </div>`;
+
+        try {
+            // Single batch request replaces 7 parallel API calls
+            const qs = new URLSearchParams({ assignee: this.currentAssignee, type, days: 7 }).toString();
+            const data = await API.request('/checkin/history-batch?' + qs);
+            let html = '';
+            for (const { date, records } of data.days) {
+                const d = new Date(date + 'T00:00:00');
+                const dayLabel = `${date.slice(5)} 周${weekday[d.getDay()]}`;
+                if (records.length > 0) {
+                    const time = records[0].created_at?.split(' ')[1]?.slice(0, 5) || '';
+                    html += `<div class="wakeup-log-item">
+                        <span class="wakeup-log-date">${dayLabel}</span>
+                        <span class="wakeup-log-time checked">${icon} ${time}</span>
+                    </div>`;
+                } else {
+                    html += `<div class="wakeup-log-item">
+                        <span class="wakeup-log-date">${dayLabel}</span>
+                        <span class="wakeup-log-time missed">未打卡</span>
+                    </div>`;
+                }
             }
+            logEl.innerHTML = html || '<div class="water-log-empty">暂无记录</div>';
+        } catch (err) {
+            // Fallback to legacy parallel requests
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                days.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+            }
+            const results = await Promise.allSettled(
+                days.map(date => API.getCheckin({ date, assignee: this.currentAssignee, type })
+                    .then(d => ({ date, data: d })))
+            );
+            let html = '';
+            for (const result of results) {
+                if (result.status !== 'fulfilled') continue;
+                const { date, data } = result.value;
+                const d = new Date(date + 'T00:00:00');
+                const dayLabel = `${date.slice(5)} 周${weekday[d.getDay()]}`;
+                if (data.records.length > 0) {
+                    const time = data.records[0].created_at?.split(' ')[1]?.slice(0, 5) || '';
+                    html += `<div class="wakeup-log-item"><span class="wakeup-log-date">${dayLabel}</span><span class="wakeup-log-time checked">${icon} ${time}</span></div>`;
+                } else {
+                    html += `<div class="wakeup-log-item"><span class="wakeup-log-date">${dayLabel}</span><span class="wakeup-log-time missed">未打卡</span></div>`;
+                }
+            }
+            logEl.innerHTML = html || '<div class="water-log-empty">暂无记录</div>';
         }
-        logEl.innerHTML = html || '<div class="water-log-empty">暂无记录</div>';
     },
 
     async stampWakeup() {

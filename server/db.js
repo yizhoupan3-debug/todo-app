@@ -60,6 +60,7 @@ db.exec(`
   );
   CREATE INDEX IF NOT EXISTS idx_checkin_date ON checkin_records(date);
   CREATE INDEX IF NOT EXISTS idx_checkin_assignee ON checkin_records(assignee);
+  CREATE INDEX IF NOT EXISTS idx_checkin_date_type_assignee ON checkin_records(date, type, assignee);
 
   CREATE TABLE IF NOT EXISTS checkin_goals (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

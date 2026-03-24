@@ -358,16 +358,54 @@ router.post('/auth-instance', async (req, res) => {
 // GET /api/codex/skill-health — skill health manifest
 
 router.get('/skill-health', (req, res) => {
-  const manifestPath = path.join(os.homedir(), 'Documents', '指示词宝库', 'skills', 'SKILL_HEALTH_MANIFEST.json');
   try {
-    if (!fs.existsSync(manifestPath)) {
-      return res.json({ summary: { total_skills: 0, critical_skills: 0, avg_health: 0 }, skills: {} });
-    }
-    const raw = fs.readFileSync(manifestPath, 'utf-8');
-    const data = JSON.parse(raw);
+    const sourceMeta = resolveSkillsSourcePath(null, { createIfMissing: false });
+    const data = readSkillHealthManifest(sourceMeta.sourcePath);
     res.json(data);
   } catch (e) {
     console.error('skill-health error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/codex/installed-skills — real installed skill library with health overlay
+router.get('/installed-skills', (req, res) => {
+  try {
+    const sourceMeta = resolveSkillsSourcePath(null, { createIfMissing: false });
+    const sourcePath = sourceMeta.sourcePath;
+    const exists = !!(sourcePath && fs.existsSync(sourcePath) && fs.statSync(sourcePath).isDirectory());
+    const manifest = readSkillHealthManifest(sourcePath);
+    const manifestSkills = manifest.skills || {};
+    const installedSkills = listInstalledSkills(sourcePath);
+    const installedNames = new Set(installedSkills.map((skill) => skill.name));
+    const missingFromManifest = [];
+    const skills = installedSkills.map((skill) => {
+      const health = manifestSkills[skill.name] || null;
+      if (!health) missingFromManifest.push(skill.name);
+      return { ...skill, health };
+    });
+    const manifestOnly = Object.keys(manifestSkills)
+      .filter((name) => !installedNames.has(name))
+      .sort((a, b) => a.localeCompare(b));
+
+    res.json({
+      sourcePath,
+      exists,
+      count: skills.length,
+      userCount: skills.filter((skill) => skill.category === 'user').length,
+      systemCount: skills.filter((skill) => skill.category === 'system').length,
+      matchedHealthCount: skills.length - missingFromManifest.length,
+      missingHealthCount: missingFromManifest.length,
+      manifestOnlyCount: manifestOnly.length,
+      manifestOnly,
+      platforms: {
+        codex: inspectSkillsLink(path.join(getCodexHomeDir(), 'skills')),
+        antigravity: inspectSkillsLink(path.join(getAntigravityHomeDir(), 'skills')),
+      },
+      skills,
+    });
+  } catch (e) {
+    console.error('installed-skills error:', e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -390,13 +428,59 @@ function getCodexHomeDir() {
 }
 
 /**
- * Scan common candidate paths for an existing skills directory.
+ * Resolve the platform-aware Antigravity home directory.
+ * Mac: ~/.antigravity | Win: %USERPROFILE%\.antigravity
+ * @returns {string} Absolute path to the Antigravity home folder.
+ */
+function getAntigravityHomeDir() {
+  const home = process.env.ANTIGRAVITY_HOME
+    || (process.platform === 'win32'
+      ? path.join(process.env.USERPROFILE || os.homedir(), '.antigravity')
+      : path.join(os.homedir(), '.antigravity'));
+  return home;
+}
+
+/**
+ * Return the preferred shared skills directory for the local machine.
+ * @returns {string} Absolute path to the preferred shared skills source.
+ */
+function getPreferredSkillsSourcePath() {
+  return path.join(os.homedir(), 'Documents', '指示词宝库', 'skills');
+}
+
+/**
+ * Resolve real directory targets from existing tool skill links.
+ * @returns {string[]} Existing real directory targets discovered from local tools.
+ */
+function getInstalledSkillsTargets() {
+  const targets = [
+    path.join(getCodexHomeDir(), 'skills'),
+    path.join(getAntigravityHomeDir(), 'skills'),
+  ];
+  const discovered = [];
+
+  for (const linkPath of targets) {
+    try {
+      if (!fs.existsSync(linkPath)) continue;
+      if (!fs.lstatSync(linkPath).isSymbolicLink()) continue;
+      const realPath = fs.realpathSync(linkPath);
+      if (fs.statSync(realPath).isDirectory()) discovered.push(realPath);
+    } catch (_) { /* ignore broken or unreadable targets */ }
+  }
+
+  return [...new Set(discovered)];
+}
+
+/**
+ * Scan common candidate paths for an existing shared skills directory.
  * Returns the first real directory found, or null.
  * @returns {string|null} Absolute path to skills source, or null.
  */
 function findSkillsSourcePath() {
   const home = os.homedir();
   const candidates = [
+    ...getInstalledSkillsTargets(),
+    getPreferredSkillsSourcePath(),
     path.join(home, 'Documents', '指示词宝库', 'skills'),
     path.join(home, 'Documents', 'skills'),
     path.join(home, '指示词宝库', 'skills'),
@@ -405,12 +489,225 @@ function findSkillsSourcePath() {
     path.join(home, 'OneDrive', '指示词宝库', 'skills'),
     path.join(home, 'OneDrive - Personal', '指示词宝库', 'skills'),
   ];
-  for (const p of candidates) {
+  for (const p of [...new Set(candidates)]) {
     try {
       if (fs.existsSync(p) && fs.statSync(p).isDirectory()) return p;
     } catch (_) { /* skip */ }
   }
   return null;
+}
+
+/**
+ * Count discoverable skills inside a shared skills root.
+ * Counts direct skill folders plus entries under `.system`, excluding `dist`.
+ * @param {string} skillsRoot Absolute path to the shared skills root.
+ * @returns {number} Total discoverable skill directories.
+ */
+function countSkillDirectories(skillsRoot) {
+  if (!skillsRoot || !fs.existsSync(skillsRoot)) return 0;
+
+  let total = 0;
+  const entries = fs.readdirSync(skillsRoot, { withFileTypes: true });
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    if (entry.name === 'dist') continue;
+
+    const entryPath = path.join(skillsRoot, entry.name);
+    if (entry.name === '.system') {
+      const systemEntries = fs.readdirSync(entryPath, { withFileTypes: true });
+      total += systemEntries.filter((child) =>
+        child.isDirectory() && fs.existsSync(path.join(entryPath, child.name, 'SKILL.md'))
+      ).length;
+      continue;
+    }
+
+    if (fs.existsSync(path.join(entryPath, 'SKILL.md'))) total += 1;
+  }
+
+  return total;
+}
+
+/**
+ * Read the skill health manifest from the shared skills root.
+ * @param {string|null} skillsRoot Absolute path to the shared skills root.
+ * @returns {{ summary: object, skills: Record<string, object>, ts?: string|null }}
+ * Parsed health manifest payload or an empty default.
+ */
+function readSkillHealthManifest(skillsRoot) {
+  const manifestPath = skillsRoot
+    ? path.join(skillsRoot, 'SKILL_HEALTH_MANIFEST.json')
+    : null;
+
+  try {
+    if (!manifestPath || !fs.existsSync(manifestPath)) {
+      return { summary: { total_skills: 0, critical_skills: 0, avg_health: 0 }, skills: {}, ts: null };
+    }
+
+    const raw = fs.readFileSync(manifestPath, 'utf-8');
+    const parsed = JSON.parse(raw);
+    return {
+      summary: parsed?.summary || { total_skills: 0, critical_skills: 0, avg_health: 0 },
+      skills: parsed?.skills || {},
+      ts: parsed?.ts || null,
+    };
+  } catch (_) {
+    return { summary: { total_skills: 0, critical_skills: 0, avg_health: 0 }, skills: {}, ts: null };
+  }
+}
+
+/**
+ * List real installed skills from disk.
+ * @param {string|null} skillsRoot Absolute path to the shared skills root.
+ * @returns {Array<{name: string, category: string, relativePath: string, absolutePath: string}>}
+ * Installed skill entries discovered from the current shared library.
+ */
+function listInstalledSkills(skillsRoot) {
+  if (!skillsRoot || !fs.existsSync(skillsRoot)) return [];
+
+  const results = [];
+  const entries = fs.readdirSync(skillsRoot, { withFileTypes: true });
+
+  for (const entry of entries) {
+    if (!entry.isDirectory() || entry.name === 'dist') continue;
+
+    const entryPath = path.join(skillsRoot, entry.name);
+    if (entry.name === '.system') {
+      const systemEntries = fs.readdirSync(entryPath, { withFileTypes: true });
+      for (const child of systemEntries) {
+        if (!child.isDirectory()) continue;
+        const childPath = path.join(entryPath, child.name);
+        if (!fs.existsSync(path.join(childPath, 'SKILL.md'))) continue;
+        results.push({
+          name: child.name,
+          category: 'system',
+          relativePath: path.join('.system', child.name),
+          absolutePath: childPath,
+        });
+      }
+      continue;
+    }
+
+    if (!fs.existsSync(path.join(entryPath, 'SKILL.md'))) continue;
+    results.push({
+      name: entry.name,
+      category: 'user',
+      relativePath: entry.name,
+      absolutePath: entryPath,
+    });
+  }
+
+  return results.sort((a, b) => {
+    if (a.category !== b.category) return a.category === 'user' ? -1 : 1;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+/**
+ * Inspect a tool-local skills path and describe its current linkage state.
+ * @param {string} linkPath Absolute path to the tool-local skills directory or link.
+ * @returns {{linkPath: string, status: string, linkTarget: string|null, realPath: string|null, skillsCount: number}}
+ * Current link state with a normalized skill count.
+ */
+function inspectSkillsLink(linkPath) {
+  const info = {
+    linkPath,
+    status: 'missing',
+    linkTarget: null,
+    realPath: null,
+    skillsCount: 0,
+  };
+
+  try {
+    if (!fs.existsSync(linkPath)) return info;
+
+    const lstat = fs.lstatSync(linkPath);
+    if (lstat.isSymbolicLink()) {
+      info.status = 'symlink';
+      info.linkTarget = fs.readlinkSync(linkPath);
+    } else if (lstat.isDirectory()) {
+      info.status = 'directory';
+    }
+
+    info.realPath = fs.realpathSync(linkPath);
+    info.skillsCount = countSkillDirectories(info.realPath);
+  } catch (_) { /* ignore inspection failures */ }
+
+  return info;
+}
+
+/**
+ * Ensure a shared skills source directory exists.
+ * @param {string|null} sourcePath Desired source path or null for auto-discovery.
+ * @param {{ createIfMissing?: boolean }} options Directory creation behavior.
+ * @returns {{sourcePath: string|null, created: boolean}} Resolved shared source state.
+ */
+function resolveSkillsSourcePath(sourcePath, { createIfMissing = false } = {}) {
+  const requestedPath = sourcePath || findSkillsSourcePath() || getPreferredSkillsSourcePath();
+  if (!requestedPath) return { sourcePath: null, created: false };
+
+  try {
+    if (fs.existsSync(requestedPath)) {
+      if (fs.statSync(requestedPath).isDirectory()) {
+        return { sourcePath: requestedPath, created: false };
+      }
+      return { sourcePath: null, created: false };
+    }
+
+    if (!createIfMissing) {
+      return { sourcePath: requestedPath, created: false };
+    }
+
+    fs.mkdirSync(requestedPath, { recursive: true });
+    return { sourcePath: requestedPath, created: true };
+  } catch (_) {
+    return { sourcePath: null, created: false };
+  }
+}
+
+/**
+ * Link one tool-local skills path to the shared skills source.
+ * Existing non-link directories are preserved as timestamped backups.
+ * @param {string} linkPath Tool-local skills path.
+ * @param {string} sourcePath Shared skills root path.
+ * @returns {{linkPath: string, method: string, backupPath: string|null}} Link operation result.
+ */
+function linkSkillsDirectory(linkPath, sourcePath) {
+  const parentDir = path.dirname(linkPath);
+  if (!fs.existsSync(parentDir)) fs.mkdirSync(parentDir, { recursive: true });
+
+  let backupPath = null;
+
+  if (fs.existsSync(linkPath)) {
+    const lstat = fs.lstatSync(linkPath);
+    const sameTarget = (() => {
+      try {
+        return fs.realpathSync(linkPath) === fs.realpathSync(sourcePath);
+      } catch (_) {
+        return false;
+      }
+    })();
+
+    if (sameTarget) {
+      return { linkPath, method: lstat.isSymbolicLink() ? 'symlink' : 'directory', backupPath };
+    }
+
+    if (lstat.isSymbolicLink()) {
+      fs.unlinkSync(linkPath);
+    } else {
+      backupPath = `${linkPath}.bak-${Date.now()}`;
+      fs.renameSync(linkPath, backupPath);
+    }
+  }
+
+  if (process.platform === 'win32') {
+    const { execSync } = require('child_process');
+    execSync(`cmd /c mklink /J "${linkPath}" "${sourcePath}"`);
+    return { linkPath, method: 'junction', backupPath };
+  }
+
+  fs.symlinkSync(sourcePath, linkPath, 'dir');
+  return { linkPath, method: 'symlink', backupPath };
 }
 
 /**
@@ -460,8 +757,8 @@ function upsertOmnirouteBlock(toml, { baseUrl, envKey, wireApi }) {
 router.get('/setup-status', (req, res) => {
   try {
     const codexHome = getCodexHomeDir();
+    const antigravityHome = getAntigravityHomeDir();
     const configPath = path.join(codexHome, 'config.toml');
-    const skillsLinkPath = path.join(codexHome, 'skills');
 
     // ── Read current config.toml ──
     let currentBaseUrl = null;
@@ -495,30 +792,16 @@ router.get('/setup-status', (req, res) => {
       targetEndpoint = 'http://10.33.67.74:20128/v1';
     } catch (_) { /* non-critical */ }
 
-    // ── Skills link detection ──
-    let skillsStatus = 'missing'; // 'symlink' | 'directory' | 'missing'
-    let skillsLinkTarget = null;
-    let skillsCount = 0;
-    try {
-      if (fs.existsSync(skillsLinkPath)) {
-        const lstat = fs.lstatSync(skillsLinkPath);
-        if (lstat.isSymbolicLink()) {
-          skillsStatus = 'symlink';
-          skillsLinkTarget = fs.readlinkSync(skillsLinkPath);
-        } else if (lstat.isDirectory()) {
-          skillsStatus = 'directory';
-        }
-        // Count skill folders (each skill is a dir containing SKILL.md)
-        const entries = fs.readdirSync(skillsLinkPath, { withFileTypes: true });
-        skillsCount = entries.filter(e => e.isDirectory()).length;
-      }
-    } catch (_) { /* non-critical */ }
-
-    const skillsSourcePath = findSkillsSourcePath();
+    const resolvedSource = resolveSkillsSourcePath(null, { createIfMissing: false });
+    const codexSkills = inspectSkillsLink(path.join(codexHome, 'skills'));
+    const antigravitySkills = inspectSkillsLink(path.join(antigravityHome, 'skills'));
+    const sharedSkillsSourcePath = resolvedSource.sourcePath;
+    const sharedSkillsExists = !!(sharedSkillsSourcePath && fs.existsSync(sharedSkillsSourcePath));
 
     res.json({
       platform: process.platform,
       codexHome,
+      antigravityHome,
       configPath,
       configExists,
       currentBaseUrl,
@@ -526,11 +809,13 @@ router.get('/setup-status', (req, res) => {
       currentWireApi,
       targetEndpoint,
       targetApiKey,
-      skillsLinkPath,
-      skillsStatus,
-      skillsLinkTarget,
-      skillsCount,
-      skillsSourcePath,
+      sharedSkillsSourcePath,
+      sharedSkillsExists,
+      sharedSkillsCount: sharedSkillsExists ? countSkillDirectories(sharedSkillsSourcePath) : 0,
+      platforms: {
+        codex: codexSkills,
+        antigravity: antigravitySkills,
+      },
     });
   } catch (e) {
     console.error('setup-status error:', e);
@@ -573,52 +858,59 @@ router.post('/apply-api-config', (req, res) => {
   }
 });
 
-// POST /api/codex/apply-skills — create skills symlink/junction
+/**
+ * Create shared skill links for Codex and Antigravity.
+ * Auto-creates the shared source directory when needed.
+ * @route POST /api/codex/apply-skills
+ * @param {string} [req.body.sourcePath] Optional shared skills source path.
+ * @param {boolean} [req.body.createIfMissing=true] Whether to create the source directory.
+ * @param {string[]} [req.body.platforms] Tool targets, defaults to ['codex', 'antigravity'].
+ * @returns {{success: boolean, sourcePath: string, sourceCreated: boolean, skillsCount: number, results: object}}
+ * Link results for each selected platform.
+ */
 router.post('/apply-skills', async (req, res) => {
   try {
-    const codexHome = getCodexHomeDir();
-    const skillsLinkPath = path.join(codexHome, 'skills');
+    const requestedPlatforms = Array.isArray(req.body?.platforms) && req.body.platforms.length
+      ? req.body.platforms
+      : ['codex', 'antigravity'];
+    const createIfMissing = req.body?.createIfMissing !== false;
+    const sourceMeta = resolveSkillsSourcePath(req.body?.sourcePath || null, { createIfMissing });
+    const sourcePath = sourceMeta.sourcePath;
 
-    // Auto-discover source
-    let sourcePath = req.body?.sourcePath || findSkillsSourcePath();
     if (!sourcePath) {
-      return res.status(400).json({ error: '未找到 skills 源目录，请确认指示词宝库已下载到 ~/Documents/指示词宝库/skills' });
+      return res.status(400).json({ error: '无法确定共享 skills 目录，请手动提供 sourcePath' });
     }
 
-    // Ensure codex home exists
-    if (!fs.existsSync(codexHome)) fs.mkdirSync(codexHome, { recursive: true });
-
-    // Remove existing link/dir if present
-    if (fs.existsSync(skillsLinkPath)) {
-      const lstat = fs.lstatSync(skillsLinkPath);
-      if (lstat.isSymbolicLink()) {
-        fs.unlinkSync(skillsLinkPath);
-      } else {
-        // Rename existing directory as backup rather than delete
-        fs.renameSync(skillsLinkPath, skillsLinkPath + `.bak-${Date.now()}`);
-      }
+    if (!fs.existsSync(sourcePath) || !fs.statSync(sourcePath).isDirectory()) {
+      return res.status(400).json({ error: 'skills 源目录不可用，且自动创建失败' });
     }
 
-    let method;
-    if (process.platform === 'win32') {
-      // Windows: directory junction (works without admin rights)
-      const { execSync } = require('child_process');
-      execSync(`cmd /c mklink /J "${skillsLinkPath}" "${sourcePath}"`);
-      method = 'junction';
-    } else {
-      // Mac/Linux: symbolic link
-      fs.symlinkSync(sourcePath, skillsLinkPath, 'dir');
-      method = 'symlink';
+    const linkTargets = {
+      codex: path.join(getCodexHomeDir(), 'skills'),
+      antigravity: path.join(getAntigravityHomeDir(), 'skills'),
+    };
+    const unsupported = requestedPlatforms.filter((platform) => !linkTargets[platform]);
+    if (unsupported.length) {
+      return res.status(400).json({ error: `不支持的平台: ${unsupported.join(', ')}` });
     }
 
-    // Count skills
-    let skillsCount = 0;
-    try {
-      const entries = fs.readdirSync(skillsLinkPath, { withFileTypes: true });
-      skillsCount = entries.filter(e => e.isDirectory()).length;
-    } catch (_) { /* ignore */ }
+    const results = {};
+    for (const platform of requestedPlatforms) {
+      const linkResult = linkSkillsDirectory(linkTargets[platform], sourcePath);
+      results[platform] = {
+        ...linkResult,
+        ...inspectSkillsLink(linkTargets[platform]),
+      };
+    }
 
-    res.json({ success: true, linkPath: skillsLinkPath, sourcePath, method, skillsCount });
+    const skillsCount = countSkillDirectories(sourcePath);
+    res.json({
+      success: true,
+      sourcePath,
+      sourceCreated: sourceMeta.created,
+      skillsCount,
+      results,
+    });
   } catch (e) {
     console.error('apply-skills error:', e);
     res.status(500).json({ error: e.message });

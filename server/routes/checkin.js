@@ -226,6 +226,116 @@ router.put('/goal', (req, res) => {
     }
 });
 
+/**
+ * GET /api/checkin/history-batch
+ * Returns the past N days of records for a single check-in type.
+ * Replaces 7 parallel API calls from the frontend with 1 query.
+ * Query: ?assignee=&type=&days=7
+ */
+router.get('/history-batch', (req, res) => {
+    const { assignee, type, days } = req.query;
+    if (!assignee || !type) return res.status(400).json({ error: 'assignee and type are required' });
+
+    const numDays = Math.min(30, Math.max(1, parseInt(days || '7', 10)));
+    try {
+        // Build a list of date strings for the past numDays days (server local time)
+        const dates = [];
+        for (let i = 0; i < numDays; i++) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            dates.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`);
+        }
+
+        // Single query using composite index (date, type, assignee)
+        const placeholders = dates.map(() => '?').join(', ');
+        const records = db.prepare(
+            `SELECT date, created_at, amount FROM checkin_records
+             WHERE assignee = ? AND type = ? AND date IN (${placeholders})
+             ORDER BY date DESC, created_at DESC`
+        ).all(assignee, type, ...dates);
+
+        // Group by date
+        const byDate = {};
+        for (const r of records) {
+            if (!byDate[r.date]) byDate[r.date] = [];
+            byDate[r.date].push(r);
+        }
+
+        // Return ordered list from newest to oldest
+        const result = dates.map(date => ({
+            date,
+            records: byDate[date] || [],
+        }));
+
+        res.json({ days: result });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+/**
+ * GET /api/checkin/landing-summary
+ * Returns today's status for all 5 check-in cards in a single round-trip.
+ * Query: ?assignee=
+ */
+router.get('/landing-summary', (req, res) => {
+    const { assignee } = req.query;
+    if (!assignee) return res.status(400).json({ error: 'assignee is required' });
+
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    try {
+        // All 5 types in a single query (uses composite index)
+        const TYPES = ['water', 'wakeup', 'goout', 'skincare', 'steps'];
+        const records = db.prepare(
+            `SELECT type, amount, created_at FROM checkin_records
+             WHERE assignee = ? AND date = ?
+             ORDER BY created_at ASC`
+        ).all(assignee, today);
+
+        // Fetch all goals in one query
+        const goalRows = db.prepare(
+            'SELECT type, goal FROM checkin_goals WHERE assignee = ?'
+        ).all(assignee);
+        const DEFAULT_GOALS = { water: 2000, wakeup: 1, goout: 1, skincare: 1, steps: 10000 };
+        const goals = {};
+        for (const t of TYPES) {
+            const row = goalRows.find(g => g.type === t);
+            goals[t] = row ? row.goal : DEFAULT_GOALS[t];
+        }
+
+        // Aggregate totals and first timestamp per type
+        const summary = {};
+        for (const t of TYPES) {
+            summary[t] = { total: 0, firstRecord: null };
+        }
+        for (const r of records) {
+            if (!summary[r.type]) continue;
+            summary[r.type].total += r.amount;
+            if (!summary[r.type].firstRecord) {
+                summary[r.type].firstRecord = r.created_at;
+            }
+        }
+
+        // Build per-type response
+        const result = {};
+        for (const t of TYPES) {
+            const { total, firstRecord } = summary[t];
+            const goal = goals[t];
+            const reached = total >= goal;
+            const firstTime = firstRecord ? firstRecord.split(' ')[1]?.slice(0, 5) : null;
+            result[t] = { total, goal, reached, firstTime };
+        }
+
+        res.json({ today, summary: result });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
+
 // DELETE /api/checkin/:id — undo a check-in (with coin rollback)
 router.delete('/:id', (req, res) => {
     try {

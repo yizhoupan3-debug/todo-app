@@ -7,6 +7,10 @@ const CodexView = {
   _accounts: [],
   _proxyData: null,
   _skillData: null,
+  _installedSkillsData: null,
+  _setupData: null,
+  _localTokenData: null,
+  _aggConfig: null,
   _expandedId: null,
   _detailCache: {},
   _formOverlay: null,
@@ -15,6 +19,7 @@ const CodexView = {
   _visible: false,
   _activeTab: 'accounts', // 'accounts' | 'skills'
   _skillSearch: '',
+  _skillFilter: 'all',
 
   AUTO_REFRESH_MS: 2 * 60 * 1000, // 2 minutes
 
@@ -55,7 +60,8 @@ const CodexView = {
     this._autoRefreshTimer = setInterval(() => {
       if (this._visible) {
         if (this._activeTab === 'accounts') this._loadProxyAccounts();
-        else this._loadSkillHealth();
+        else if (this._activeTab === 'skills') this._loadSkillHealth();
+        else this._loadSetup();
       }
     }, this.AUTO_REFRESH_MS);
   },
@@ -125,7 +131,8 @@ const CodexView = {
     container.querySelector('#codex-refresh-btn')
       ?.addEventListener('click', () => {
         if (this._activeTab === 'accounts') this._loadProxyAccounts(true);
-        else this._loadSkillHealth();
+        else if (this._activeTab === 'skills') this._loadSkillHealth(true);
+        else this._loadSetup();
       });
     // hide add button — local accounts not used
     container.querySelector('#codex-add-btn')?.remove();
@@ -276,29 +283,7 @@ const CodexView = {
         lucide?.createIcons({ nodes: [btn] });
       });
     });
-
-    // Bind auth buttons
-    content.querySelectorAll('.codex-auth-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const instanceNum = Number(btn.dataset.instance);
-        btn.disabled = true;
-        btn.textContent = '登录中...';
-        try {
-          const result = await API.postCodexAuthInstance(instanceNum, 'device', 'codex');
-          if (result.verificationUri) {
-            window.open(result.verificationUri, '_blank');
-            btn.textContent = `已开启登录页, 码: ${result.userCode}`;
-          } else if (result.error) {
-            btn.textContent = `失败: ${result.error.slice(0,40)}`;
-          } else {
-            btn.textContent = result.message || '请稍候片刻后刷新';
-          }
-        } catch (e) {
-          btn.textContent = `无法连接 Dashboard (port 3000)`;
-        }
-        btn.disabled = false;
-      });
-    });
+    this._bindAuthButtons(content);
   },
 
   _proxyCardHTML(acc) {
@@ -371,6 +356,55 @@ const CodexView = {
     `;
   },
 
+  /**
+   * Bind all account authorization buttons inside a container.
+   * @param {HTMLElement} container Root element containing auth buttons.
+   * @returns {void}
+   */
+  _bindAuthButtons(container) {
+    container.querySelectorAll('.codex-auth-btn').forEach(btn => {
+      btn.addEventListener('click', () => this._startInstanceAuth(btn));
+    });
+  },
+
+  /**
+   * Start device authorization for one aggregator instance.
+   * @param {HTMLButtonElement} button Trigger button for the target instance.
+   * @returns {Promise<void>}
+   */
+  async _startInstanceAuth(button) {
+    const instanceNum = Number(button?.dataset?.instance);
+    if (!instanceNum) return;
+
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = '登录中...';
+
+    try {
+      const result = await API.postCodexAuthInstance(instanceNum, 'device', 'codex');
+      if (result.verificationUri) {
+        window.open(result.verificationUri, '_blank');
+        button.textContent = result.userCode ? `已开启登录页 · ${result.userCode}` : '已开启登录页';
+        this._toast(`已为实例 ${instanceNum} 打开授权页面`, 'success');
+      } else if (result.error) {
+        button.textContent = `失败: ${String(result.error).slice(0, 24)}`;
+        this._toast(`实例 ${instanceNum} 授权失败: ${result.error}`, 'error');
+      } else {
+        button.textContent = result.message || '请稍候片刻后刷新';
+      }
+    } catch (e) {
+      button.textContent = 'Dashboard 未启动';
+      this._toast(`无法连接授权 Dashboard: ${e.message || e}`, 'error');
+    } finally {
+      setTimeout(() => {
+        button.disabled = false;
+        if (button.isConnected && button.textContent === '登录中...') {
+          button.textContent = originalText;
+        }
+      }, 600);
+    }
+  },
+
 
   // ── Skill Health Tab ──
   async _loadSkillHealth(force = false) {
@@ -381,108 +415,152 @@ const CodexView = {
     if (refreshBtn) refreshBtn.classList.add('spinning');
 
     try {
-      this._skillData = await API.getCodexSkillHealth();
+      const [installedData, healthData] = await Promise.allSettled([
+        API.getCodexInstalledSkills(),
+        API.getCodexSkillHealth(),
+      ]);
+      this._installedSkillsData = installedData.status === 'fulfilled' ? installedData.value : null;
+      this._skillData = healthData.status === 'fulfilled' ? healthData.value : null;
       this._renderSkillsTab(content);
       this._updateRefreshTime();
     } catch (e) {
-      content.innerHTML = `<div class="codex-empty-state"><p>加载 Skill 健康数据失败</p></div>`;
+      content.innerHTML = `<div class="codex-empty-state"><p>加载 Skills 数据失败</p></div>`;
     } finally {
       if (refreshBtn) refreshBtn.classList.remove('spinning');
     }
   },
 
   _renderSkillsTab(content) {
-    const data = this._skillData;
-    if (!data || !data.skills) {
-      content.innerHTML = `<div class="codex-empty-state"><p>无 Skill 健康数据</p></div>`;
+    const library = this._installedSkillsData;
+    const healthSummary = this._skillData?.summary || {};
+    const skills = Array.isArray(library?.skills) ? library.skills.map((skill) => {
+      const health = skill.health || this._skillData?.skills?.[skill.name] || null;
+      return {
+        ...skill,
+        health_status: health?.health_status || 'Missing',
+        dynamic_score: health?.dynamic_score ?? null,
+        usage_30d: health?.usage_30d ?? 0,
+      };
+    }) : [];
+
+    if (!skills.length) {
+      content.innerHTML = `<div class="codex-empty-state"><p>未发现真实 Skills 目录</p></div>`;
       return;
     }
 
-    const summary = data.summary || {};
-    const skillEntries = Object.entries(data.skills);
-
-    // Count statuses
-    let healthyCount = 0, stableCount = 0, criticalCount = 0;
-    for (const [, s] of skillEntries) {
-      if (s.health_status === 'Healthy') healthyCount++;
-      else if (s.health_status === 'Stable') stableCount++;
-      else criticalCount++;
-    }
+    const healthyCount = skills.filter((skill) => skill.health_status === 'Healthy').length;
+    const stableCount = skills.filter((skill) => skill.health_status === 'Stable').length;
+    const criticalCount = skills.filter((skill) => skill.health_status === 'Critical').length;
+    const missingHealthCount = skills.filter((skill) => skill.health_status === 'Missing').length;
+    const manifestOnlyCount = library?.manifestOnlyCount || 0;
+    const sourcePath = library?.sourcePath || '(未知)';
+    const avgHealth = Number(healthSummary.avg_health || 0);
 
     let html = `
+      <div class="codex-skill-source">
+        <div class="codex-skill-source-title">
+          <i data-lucide="folder-tree"></i>
+          真实 Skill 库
+        </div>
+        <div class="codex-skill-source-path">${this._esc(sourcePath)}</div>
+        <div class="codex-skill-source-meta">
+          <span>Codex：${this._setupPlatformLabel(library?.platforms?.codex || {})}</span>
+          <span>Antigravity：${this._setupPlatformLabel(library?.platforms?.antigravity || {})}</span>
+          <span>Manifest-only：${manifestOnlyCount}</span>
+        </div>
+      </div>
       <div class="codex-skill-summary">
         <div class="codex-summary-stat">
-          <span class="codex-stat-num">${summary.total_skills || skillEntries.length}</span>
-          <span class="codex-stat-label">总 Skill</span>
+          <span class="codex-stat-num">${skills.length}</span>
+          <span class="codex-stat-label">真实 Skills</span>
         </div>
         <div class="codex-summary-stat">
-          <span class="codex-stat-num codex-stat-active">${(summary.avg_health || 0).toFixed(1)}</span>
-          <span class="codex-stat-label">平均分</span>
+          <span class="codex-stat-num">${library?.userCount || 0}</span>
+          <span class="codex-stat-label">用户 Skill</span>
         </div>
         <div class="codex-summary-stat">
-          <span class="codex-stat-num" style="color:#22c55e">${healthyCount}</span>
-          <span class="codex-stat-label">Healthy</span>
+          <span class="codex-stat-num">${library?.systemCount || 0}</span>
+          <span class="codex-stat-label">.system</span>
         </div>
         <div class="codex-summary-stat">
-          <span class="codex-stat-num" style="color:#f59e0b">${stableCount}</span>
-          <span class="codex-stat-label">Stable</span>
+          <span class="codex-stat-num codex-stat-active">${avgHealth.toFixed(1)}</span>
+          <span class="codex-stat-label">平均健康</span>
         </div>
         <div class="codex-summary-stat">
-          <span class="codex-stat-num" style="color:#ef4444">${criticalCount}</span>
-          <span class="codex-stat-label">Critical</span>
+          <span class="codex-stat-num" style="color:#ef4444">${missingHealthCount}</span>
+          <span class="codex-stat-label">缺健康数据</span>
         </div>
       </div>
       <div class="codex-skill-toolbar">
         <div class="codex-skill-search-wrap">
           <i data-lucide="search"></i>
           <input type="text" class="codex-skill-search" id="codex-skill-search"
-            placeholder="搜索 skill..." value="${this._esc(this._skillSearch)}">
+            placeholder="搜索真实 skill..." value="${this._esc(this._skillSearch)}">
         </div>
         <div class="codex-skill-filters">
-          <button class="codex-filter-btn active" data-filter="all">全部</button>
-          <button class="codex-filter-btn" data-filter="Healthy">Healthy</button>
-          <button class="codex-filter-btn" data-filter="Stable">Stable</button>
-          <button class="codex-filter-btn" data-filter="Critical">Critical</button>
+          <button class="codex-filter-btn ${this._skillFilter === 'all' ? 'active' : ''}" data-filter="all">全部</button>
+          <button class="codex-filter-btn ${this._skillFilter === 'user' ? 'active' : ''}" data-filter="user">用户</button>
+          <button class="codex-filter-btn ${this._skillFilter === 'system' ? 'active' : ''}" data-filter="system">.system</button>
+          <button class="codex-filter-btn ${this._skillFilter === 'Missing' ? 'active' : ''}" data-filter="Missing">缺健康</button>
+          <button class="codex-filter-btn ${this._skillFilter === 'Critical' ? 'active' : ''}" data-filter="Critical">Critical</button>
+          <button class="codex-filter-btn ${this._skillFilter === 'Stable' ? 'active' : ''}" data-filter="Stable">Stable</button>
+          <button class="codex-filter-btn ${this._skillFilter === 'Healthy' ? 'active' : ''}" data-filter="Healthy">Healthy</button>
         </div>
       </div>
       <div class="codex-skill-grid" id="codex-skill-grid">
     `;
 
-    // Sort: critical first, then by score ascending
-    const sorted = [...skillEntries].sort((a, b) => {
-      const order = { 'Critical': 0, 'Stable': 1, 'Healthy': 2 };
-      const aO = order[a[1].health_status] ?? 1;
-      const bO = order[b[1].health_status] ?? 1;
+    const sorted = [...skills].sort((a, b) => {
+      const order = { Missing: 0, Critical: 1, Stable: 2, Healthy: 3 };
+      const aO = order[a.health_status] ?? 4;
+      const bO = order[b.health_status] ?? 4;
       if (aO !== bO) return aO - bO;
-      return (a[1].dynamic_score || 0) - (b[1].dynamic_score || 0);
+      if ((a.dynamic_score ?? 999) !== (b.dynamic_score ?? 999)) {
+        return (a.dynamic_score ?? 999) - (b.dynamic_score ?? 999);
+      }
+      return a.name.localeCompare(b.name);
     });
 
-    for (const [name, skill] of sorted) {
-      html += this._skillChipHTML(name, skill);
+    for (const skill of sorted) {
+      html += this._skillChipHTML(skill);
     }
 
     html += `</div>`;
     content.innerHTML = html;
     this._initIcons(content);
     this._bindSkillEvents(content);
+    this._filterSkills(this._skillFilter);
   },
 
-  _skillChipHTML(name, skill) {
-    const score = skill.dynamic_score || 0;
+  _skillChipHTML(skill) {
+    const score = typeof skill.dynamic_score === 'number' ? skill.dynamic_score.toFixed(1) : '--';
     const statusClass = skill.health_status === 'Healthy' ? 'chip-healthy'
-      : skill.health_status === 'Stable' ? 'chip-stable' : 'chip-critical';
+      : skill.health_status === 'Stable' ? 'chip-stable'
+      : skill.health_status === 'Critical' ? 'chip-critical'
+      : 'chip-missing';
+    const categoryLabel = skill.category === 'system' ? '.system' : 'user';
 
     return `
-      <div class="codex-skill-chip ${statusClass}" data-skill-name="${this._esc(name)}" data-skill-status="${skill.health_status}">
-        <div class="codex-skill-chip-name">${this._esc(name)}</div>
-        <div class="codex-skill-chip-score">${score.toFixed(1)}</div>
-        ${skill.usage_30d > 0 ? `<div class="codex-skill-chip-usage">${skill.usage_30d}次</div>` : ''}
+      <div class="codex-skill-chip ${statusClass}"
+        data-skill-name="${this._esc(skill.name)}"
+        data-skill-status="${skill.health_status}"
+        data-skill-category="${skill.category}"
+        data-skill-health="${skill.health_status === 'Missing' ? '0' : '1'}">
+        <div class="codex-skill-chip-top">
+          <div class="codex-skill-chip-name">${this._esc(skill.name)}</div>
+          <div class="codex-skill-chip-score">${score}</div>
+        </div>
+        <div class="codex-skill-chip-meta">
+          <span class="codex-skill-chip-tag">${categoryLabel}</span>
+          <span class="codex-skill-chip-tag">${skill.health_status}</span>
+        </div>
+        <div class="codex-skill-chip-path">${this._esc(skill.relativePath)}</div>
+        ${skill.usage_30d > 0 ? `<div class="codex-skill-chip-usage">${skill.usage_30d} 次 / 30d</div>` : ''}
       </div>
     `;
   },
 
   _bindSkillEvents(container) {
-    // Search
     const searchInput = container.querySelector('#codex-skill-search');
     let debounce = null;
     searchInput?.addEventListener('input', (e) => {
@@ -493,27 +571,33 @@ const CodexView = {
       }, 200);
     });
 
-    // Filter buttons
     container.querySelectorAll('.codex-filter-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         container.querySelectorAll('.codex-filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+        this._skillFilter = btn.dataset.filter;
         this._filterSkills(btn.dataset.filter);
       });
     });
   },
 
-  _filterSkills(statusFilter) {
+  _filterSkills(statusFilter = this._skillFilter || 'all') {
     const grid = document.getElementById('codex-skill-grid');
     if (!grid) return;
     const search = this._skillSearch.toLowerCase();
-    const activeFilter = statusFilter || document.querySelector('.codex-filter-btn.active')?.dataset?.filter || 'all';
+    const activeFilter = statusFilter || 'all';
 
     grid.querySelectorAll('.codex-skill-chip').forEach(chip => {
       const name = chip.dataset.skillName.toLowerCase();
       const status = chip.dataset.skillStatus;
+      const category = chip.dataset.skillCategory;
+      const hasHealth = chip.dataset.skillHealth === '1';
       const matchSearch = !search || name.includes(search);
-      const matchFilter = activeFilter === 'all' || status === activeFilter;
+      const matchFilter = activeFilter === 'all'
+        || (activeFilter === 'user' && category === 'user')
+        || (activeFilter === 'system' && category === 'system')
+        || (activeFilter === 'Missing' && !hasHealth)
+        || status === activeFilter;
       chip.style.display = (matchSearch && matchFilter) ? '' : 'none';
     });
   },
@@ -1088,6 +1172,18 @@ const CodexView = {
     return this._esc(masked + '@' + domain);
   },
 
+  /**
+   * Create a short masked preview for an access token.
+   * @param {string} token Raw token value.
+   * @returns {string} Masked preview suitable for UI display.
+   */
+  _maskTokenPreview(token) {
+    const safeToken = String(token || '').trim();
+    if (!safeToken) return '--';
+    if (safeToken.length <= 18) return safeToken;
+    return `${safeToken.slice(0, 8)}···${safeToken.slice(-6)}`;
+  },
+
 
   // ── One-Click Setup Tab ──
 
@@ -1103,34 +1199,51 @@ const CodexView = {
       </div>`;
 
     try {
-      const data = await API.getCodexSetupStatus();
-      this._renderSetupTab(content, data);
+      const [setupData, proxyData, localTokenData, installedSkillsData] = await Promise.allSettled([
+        API.getCodexSetupStatus(),
+        API.getCodexProxyAccounts(),
+        API.getCodexLocalToken(),
+        API.getCodexInstalledSkills(),
+      ]);
+
+      this._setupData = setupData.status === 'fulfilled' ? setupData.value : null;
+      this._proxyData = proxyData.status === 'fulfilled' ? proxyData.value : this._proxyData;
+      this._localTokenData = localTokenData.status === 'fulfilled' ? localTokenData.value : null;
+      this._installedSkillsData = installedSkillsData.status === 'fulfilled' ? installedSkillsData.value : this._installedSkillsData;
+
+      if (!this._setupData) {
+        throw new Error('无法读取 setup-status');
+      }
+
+      this._renderSetupTab(content, this._setupData);
+      this._updateRefreshTime();
     } catch (e) {
       content.innerHTML = `<div class="codex-empty-state"><p>加载配置状态失败: ${this._esc(e.message)}</p></div>`;
     }
   },
 
   /**
-   * Render the setup tab with API config card and skills install card.
+   * Render the setup tab with API, auth, and skills setup cards.
    * @param {HTMLElement} content Container element.
    * @param {object} data Response from GET /api/codex/setup-status.
    */
   _renderSetupTab(content, data) {
     const {
-      platform, configPath, configExists,
+      platform, configPath,
       currentBaseUrl, targetEndpoint, targetApiKey,
-      skillsLinkPath, skillsStatus, skillsLinkTarget, skillsCount,
-      skillsSourcePath,
+      sharedSkillsSourcePath, sharedSkillsExists, sharedSkillsCount,
+      platforms,
     } = data;
 
+    const proxyData = this._proxyData || {};
+    const localTokenData = this._localTokenData || {};
+    const installedSkillsData = this._installedSkillsData || {};
     const isWin = platform === 'win32';
 
-    // ── API Config Card ──
     const apiNeedsUpdate = !currentBaseUrl || currentBaseUrl !== targetEndpoint;
     const apiStatusClass = !currentBaseUrl ? 'setup-badge-missing'
       : apiNeedsUpdate ? 'setup-badge-warn' : 'setup-badge-ok';
     const apiStatusText = !currentBaseUrl ? '未配置' : apiNeedsUpdate ? '需更新' : '已配置 ✓';
-
     const maskedKey = targetApiKey && targetApiKey.length > 20
       ? targetApiKey.slice(0, 10) + '···' + targetApiKey.slice(-6)
       : (targetApiKey || '--');
@@ -1169,20 +1282,82 @@ const CodexView = {
         <div class="codex-setup-note">写入后请重启 Codex app 以生效；原文件将自动备份。</div>
       </div>`;
 
-    // ── Skills Install Card ──
-    const skillsOk = skillsStatus === 'symlink' || skillsStatus === 'directory';
-    const skillsStatusClass = skillsStatus === 'symlink' ? 'setup-badge-ok'
-      : skillsStatus === 'directory' ? 'setup-badge-warn' : 'setup-badge-missing';
-    const skillsStatusText = skillsStatus === 'symlink' ? `已链接 (${skillsCount} skills) ✓`
-      : skillsStatus === 'directory' ? `本地目录 (${skillsCount} skills)`
-      : '未安装';
+    const authFilePath = `${data.codexHome || ''}/auth.json`;
+    const localTokenExists = !!localTokenData.token;
+    const accountStats = proxyData.stats || {};
+    const authStatusClass = localTokenExists
+      ? 'setup-badge-ok'
+      : (accountStats.configuredCount > 0 ? 'setup-badge-warn' : 'setup-badge-missing');
+    const authStatusText = localTokenExists
+      ? '本机已授权 ✓'
+      : `${accountStats.configuredCount || 0}/${accountStats.totalAccounts || 0} 子账号已接入`;
+    const authRows = (proxyData.accounts || []).map((account) => {
+      const badgeClass = account.hasToken ? 'setup-badge-ok' : 'setup-badge-missing';
+      const badgeText = account.hasToken ? '已授权' : '未授权';
+      const subtitle = account.email
+        ? this._maskEmail(account.email)
+        : `Instance-${account.instanceNum || account.id}`;
+      const buttonText = account.hasToken ? '重新授权' : '立即授权';
+      return `
+        <div class="codex-setup-auth-item">
+          <div class="codex-setup-auth-main">
+            <div class="codex-setup-auth-name">${this._esc(account.nickname || `Account-${account.instanceNum || account.id}`)}</div>
+            <div class="codex-setup-auth-sub">${subtitle}</div>
+          </div>
+          <div class="codex-setup-auth-side">
+            <span class="codex-setup-platform-badge ${badgeClass}">${badgeText}</span>
+            <button class="codex-inline-auth-btn codex-auth-btn" data-instance="${account.instanceNum}">
+              ${buttonText}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
 
+    const authCardHtml = `
+      <div class="codex-setup-card" id="setup-auth-card">
+        <div class="codex-setup-card-head">
+          <div class="codex-setup-card-title">
+            <i data-lucide="badge-check"></i> 账号授权
+          </div>
+          <span class="codex-setup-badge ${authStatusClass}">${authStatusText}</span>
+        </div>
+        <div class="codex-setup-info-grid">
+          <div class="codex-setup-info-row">
+            <span class="codex-setup-info-label">本机 Codex</span>
+            <div class="codex-setup-platform-cell">
+              <span class="codex-setup-platform-badge ${localTokenExists ? 'setup-badge-ok' : 'setup-badge-missing'}">
+                ${localTokenExists ? '已检测 access_token' : '未检测到 token'}
+              </span>
+              <code class="codex-setup-info-val codex-setup-path">${this._esc(authFilePath)}</code>
+              <code class="codex-setup-info-val ${localTokenExists ? '' : 'codex-setup-empty'}">${this._esc(localTokenExists ? this._maskTokenPreview(localTokenData.token) : (localTokenData.error || 'auth.json 不可用'))}</code>
+            </div>
+          </div>
+        </div>
+        <div class="codex-setup-auth-list">
+          ${authRows || '<div class="codex-setup-empty-inline">未发现可授权的子账号</div>'}
+        </div>
+        <div class="codex-setup-note">点击“立即授权”会打开本机 aggregator Dashboard 的设备登录页；完成授权后回到此页刷新即可。</div>
+      </div>`;
+
+    const codexLink = platforms?.codex || {};
+    const antigravityLink = platforms?.antigravity || {};
     const linkMethodLabel = isWin ? 'mklink /J (目录联接)' : 'symlink (软链接)';
-    const linkTargetRow = skillsLinkTarget
-      ? `<div class="codex-setup-info-row">
-           <span class="codex-setup-info-label">链接目标</span>
-           <code class="codex-setup-info-val codex-setup-path">${this._esc(skillsLinkTarget)}</code>
-         </div>` : '';
+    const fullyLinked = [codexLink, antigravityLink].every((item) => item?.status === 'symlink');
+    const partiallyLinked = [codexLink, antigravityLink].some((item) => item?.status && item.status !== 'missing');
+    const skillsStatusClass = fullyLinked ? 'setup-badge-ok'
+      : partiallyLinked || sharedSkillsExists ? 'setup-badge-warn'
+      : 'setup-badge-missing';
+    const skillsStatusText = fullyLinked
+      ? `双端已接入 (${sharedSkillsCount} skills) ✓`
+      : partiallyLinked
+        ? '部分已接入'
+        : sharedSkillsExists
+          ? '待接入'
+          : '将自动创建';
+    const skillPreview = Array.isArray(installedSkillsData.skills)
+      ? installedSkillsData.skills.slice(0, 10).map((skill) => skill.name).join(' · ')
+      : '';
 
     const skillsCardHtml = `
       <div class="codex-setup-card" id="setup-skills-card">
@@ -1194,13 +1369,30 @@ const CodexView = {
         </div>
         <div class="codex-setup-info-grid">
           <div class="codex-setup-info-row">
-            <span class="codex-setup-info-label">链接路径</span>
-            <code class="codex-setup-info-val codex-setup-path">${this._esc(skillsLinkPath)}</code>
+            <span class="codex-setup-info-label">共享源目录</span>
+            <code class="codex-setup-info-val ${sharedSkillsExists ? 'codex-setup-target' : 'codex-setup-empty'}">${this._esc(sharedSkillsSourcePath || '(无法确定)')}</code>
           </div>
-          ${linkTargetRow}
           <div class="codex-setup-info-row">
-            <span class="codex-setup-info-label">源目录</span>
-            <code class="codex-setup-info-val ${!skillsSourcePath ? 'codex-setup-empty' : 'codex-setup-target'}">${this._esc(skillsSourcePath || '(未找到)')}</code>
+            <span class="codex-setup-info-label">共享状态</span>
+            <code class="codex-setup-info-val">${sharedSkillsExists ? `已存在 · ${sharedSkillsCount} skills` : '不存在，安装时自动创建'}</code>
+          </div>
+          <div class="codex-setup-info-row">
+            <span class="codex-setup-info-label">真实 Skill</span>
+            <code class="codex-setup-info-val">${installedSkillsData.count || 0} 个 · user ${installedSkillsData.userCount || 0} · .system ${installedSkillsData.systemCount || 0}</code>
+          </div>
+          <div class="codex-setup-info-row">
+            <span class="codex-setup-info-label">Codex</span>
+            <div class="codex-setup-platform-cell">
+              <span class="codex-setup-platform-badge ${this._setupPlatformBadgeClass(codexLink.status)}">${this._setupPlatformLabel(codexLink)}</span>
+              <code class="codex-setup-info-val codex-setup-path">${this._esc(codexLink.linkPath || '--')}</code>
+            </div>
+          </div>
+          <div class="codex-setup-info-row">
+            <span class="codex-setup-info-label">Antigravity</span>
+            <div class="codex-setup-platform-cell">
+              <span class="codex-setup-platform-badge ${this._setupPlatformBadgeClass(antigravityLink.status)}">${this._setupPlatformLabel(antigravityLink)}</span>
+              <code class="codex-setup-info-val codex-setup-path">${this._esc(antigravityLink.linkPath || '--')}</code>
+            </div>
           </div>
           <div class="codex-setup-info-row">
             <span class="codex-setup-info-label">方式</span>
@@ -1208,17 +1400,18 @@ const CodexView = {
           </div>
         </div>
         <button class="codex-setup-apply-btn codex-setup-apply-skills" id="setup-apply-skills"
-          ${!skillsSourcePath ? 'disabled title="未找到 skills 源目录"' : ''}>
+          ${!sharedSkillsSourcePath ? 'disabled title="无法确定 skills 目录"' : ''}>
           <i data-lucide="link"></i>
-          ${skillsOk ? '重新链接 Skills（更新）' : '一键安装 Skills'}
+          ${fullyLinked ? '重新同步 Codex + Antigravity' : '一键导入到 Codex + Antigravity'}
         </button>
-        <div class="codex-setup-note">迁移电脑后点击即可将最新 Skill 库链接到新 Codex 实例。</div>
+        ${skillPreview ? `<div class="codex-setup-note">当前真实 Skill 样本：${this._esc(skillPreview)}${installedSkillsData.count > 10 ? ' …' : ''}</div>` : ''}
+        <div class="codex-setup-note">若本机还没有共享 Skill 目录，系统会自动创建，并把 Codex 与 Antigravity 一次性接到同一份库。</div>
       </div>`;
 
-    content.innerHTML = `<div class="codex-setup-container">${apiCardHtml}${skillsCardHtml}</div>`;
+    content.innerHTML = `<div class="codex-setup-container">${apiCardHtml}${authCardHtml}${skillsCardHtml}</div>`;
     this._initIcons(content);
+    this._bindAuthButtons(content);
 
-    // ── Bind API apply button ──
     content.querySelector('#setup-apply-api')?.addEventListener('click', async (e) => {
       const btn = e.currentTarget;
       btn.disabled = true;
@@ -1239,15 +1432,19 @@ const CodexView = {
       }
     });
 
-    // ── Bind Skills apply button ──
     content.querySelector('#setup-apply-skills')?.addEventListener('click', async (e) => {
       const btn = e.currentTarget;
       btn.disabled = true;
       btn.innerHTML = '<i data-lucide="loader-2"></i> 安装中...';
       this._initIcons(btn);
       try {
-        const result = await API.postCodexApplySkills({ sourcePath: skillsSourcePath });
-        this._toast(`✅ Skills 已链接！共 ${result.skillsCount} 个 skill`, 'success');
+        const result = await API.postCodexApplySkills({
+          sourcePath: sharedSkillsSourcePath,
+          createIfMissing: true,
+          platforms: ['codex', 'antigravity'],
+        });
+        const createdText = result.sourceCreated ? '，已自动创建目录' : '';
+        this._toast(`✅ Skills 已同步到 Codex + Antigravity（${result.skillsCount} 个）${createdText}`, 'success');
         await this._loadSetup();
       } catch (err) {
         this._toast(`❌ 安装失败: ${err.message}`, 'error');
@@ -1260,6 +1457,28 @@ const CodexView = {
 
   _toast(msg, type = 'info') {
     if (typeof App !== 'undefined' && App.showToast) App.showToast(msg, type);
+  },
+
+  /**
+   * Return the UI badge class for a setup platform state.
+   * @param {string} status Link status returned by the backend.
+   * @returns {string} CSS class name for the status badge.
+   */
+  _setupPlatformBadgeClass(status) {
+    if (status === 'symlink') return 'setup-badge-ok';
+    if (status === 'directory') return 'setup-badge-warn';
+    return 'setup-badge-missing';
+  },
+
+  /**
+   * Format a compact platform setup label.
+   * @param {{ status?: string, skillsCount?: number }} platformState Backend platform state.
+   * @returns {string} Human-readable platform summary.
+   */
+  _setupPlatformLabel(platformState = {}) {
+    if (platformState.status === 'symlink') return `已链接 · ${platformState.skillsCount || 0}`;
+    if (platformState.status === 'directory') return `目录 · ${platformState.skillsCount || 0}`;
+    return '未接入';
   },
 
   _initIcons(el) {

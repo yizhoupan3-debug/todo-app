@@ -295,6 +295,9 @@ const API = {
     getCodexSkillHealth() {
         return this.request('/codex/skill-health');
     },
+    getCodexInstalledSkills() {
+        return this.request('/codex/installed-skills');
+    },
     getCodexAggregatorConfig() {
         return this.request('/codex/aggregator-config');
     },
