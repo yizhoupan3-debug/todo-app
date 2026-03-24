@@ -12,15 +12,45 @@ const http = require('http');
 const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
+const Database = require('better-sqlite3');
 
 const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'panpu-codex-setup-'));
 const port = 39000 + Math.floor(Math.random() * 1000);
 const baseUrl = `http://127.0.0.1:${port}`;
 const sharedSkillsPath = path.join(tempHome, 'Documents', '指示词宝库', 'skills');
 const antigravitySkillsPath = path.join(tempHome, '.antigravity', 'skills');
+const aggregatorRoot = path.join(tempHome, 'Documents', '指示词宝库', 'codex-aggregator');
+const aggregatorDbPath = path.join(aggregatorRoot, 'app', 'data', 'aggregator.db');
+const aggregatorConfigPath = path.join(aggregatorRoot, 'cpa-instances', 'instance-1', 'config.yaml');
 
 fs.mkdirSync(antigravitySkillsPath, { recursive: true });
 fs.writeFileSync(path.join(antigravitySkillsPath, 'legacy.txt'), 'legacy');
+fs.mkdirSync(path.dirname(aggregatorDbPath), { recursive: true });
+fs.mkdirSync(path.dirname(aggregatorConfigPath), { recursive: true });
+fs.mkdirSync(path.join(aggregatorRoot, 'cpa-instances', 'instance-1', 'auths'), { recursive: true });
+
+const aggregatorDb = new Database(aggregatorDbPath);
+aggregatorDb.exec(`
+  CREATE TABLE IF NOT EXISTS accounts (
+    id INTEGER PRIMARY KEY,
+    nickname TEXT,
+    email TEXT,
+    instance_num INTEGER,
+    status TEXT,
+    token_expires_at TEXT,
+    rate_mult REAL
+  );
+`);
+aggregatorDb.prepare(`
+  INSERT INTO accounts (id, nickname, email, instance_num, status, token_expires_at, rate_mult)
+  VALUES (?, ?, ?, ?, ?, ?, ?)
+`).run(1, 'Account-A', 'alpha@example.com', 1, 'active', '2030-01-01T00:00:00Z', 1);
+aggregatorDb.close();
+
+fs.writeFileSync(aggregatorConfigPath, [
+  'api-keys:',
+  '  - test-key-123',
+].join('\n'));
 
 const server = spawn(process.execPath, ['server/server.js'], {
   cwd: path.join(__dirname, '..'),
@@ -116,6 +146,8 @@ async function run() {
 
   const after = await request('GET', '/api/codex/setup-status');
   const installed = await request('GET', '/api/codex/installed-skills');
+  const proxyAccounts = await request('GET', '/api/codex/proxy-accounts');
+  const aggregatorConfig = await request('GET', '/api/codex/aggregator-config');
   const sharedRealPath = fs.realpathSync(sharedSkillsPath);
   assert(after.status === 200, `Expected 200 from setup-status after apply, got ${after.status}`);
   assert(after.body.sharedSkillsExists === true, 'Expected shared skills directory to exist after apply');
@@ -130,11 +162,18 @@ async function run() {
   assert(installed.body.systemCount === 1, `Expected system skills count=1, got ${installed.body.systemCount}`);
   assert(installed.body.skills.some((skill) => skill.name === 'alpha' && skill.category === 'user'), 'Expected alpha user skill in installed-skills response');
   assert(installed.body.skills.some((skill) => skill.name === 'internal' && skill.category === 'system'), 'Expected internal system skill in installed-skills response');
+  assert(proxyAccounts.status === 200, `Expected 200 from proxy-accounts, got ${proxyAccounts.status}`);
+  assert(proxyAccounts.body.accounts.length === 1, `Expected one proxy account, got ${proxyAccounts.body.accounts.length}`);
+  assert(proxyAccounts.body.accounts[0].nickname === 'Account-A', 'Expected proxy account nickname from aggregator db');
+  assert(proxyAccounts.body.accounts[0].instanceNum === 1, 'Expected proxy account instance number from aggregator db');
+  assert(aggregatorConfig.status === 200, `Expected 200 from aggregator-config, got ${aggregatorConfig.status}`);
+  assert(aggregatorConfig.body.apiKey === 'test-key-123', `Expected aggregator api key from config.yaml, got ${aggregatorConfig.body.apiKey}`);
 
   console.log('  ✅ auto-create shared skills source');
   console.log('  ✅ relink Codex + Antigravity to one shared library');
   console.log('  ✅ count regular + .system skills and ignore dist');
   console.log('  ✅ expose real installed skill library');
+  console.log('  ✅ resolve Codex aggregator data from HOME/Documents');
   console.log('\n🎉 Codex setup integration tests passed\n');
 }
 

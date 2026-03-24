@@ -1,5 +1,6 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const { resolveAggregatorPath } = require('./codex-aggregator');
 
 const dbPath = path.join(__dirname, '..', 'data', 'todo.db');
 
@@ -544,11 +545,12 @@ db.exec(`
 
 // ── Codex-aggregator read-only connection ──
 let aggregatorDb = null;
+let aggregatorBasePath = null;
 try {
-  const aggregatorDbPath = path.join(__dirname, '..', '..', '指示词宝库', 'codex-aggregator', 'app', 'data', 'aggregator.db');
-  if (fs.existsSync(aggregatorDbPath)) {
-    aggregatorDb = new Database(aggregatorDbPath, { readonly: true });
-    aggregatorDb.pragma('journal_mode = WAL');
+  const aggregatorDbMeta = resolveAggregatorPath('app', 'data', 'aggregator.db');
+  aggregatorBasePath = aggregatorDbMeta.root;
+  if (aggregatorDbMeta.exists) {
+    aggregatorDb = new Database(aggregatorDbMeta.path, { readonly: true });
   }
 } catch (e) {
   console.warn('[db] Could not open aggregator.db (read-only):', e.message);
@@ -563,3 +565,9 @@ Object.defineProperty(module.exports, 'aggregatorDb', {
   configurable: false,
 });
 
+Object.defineProperty(module.exports, 'aggregatorBasePath', {
+  value: aggregatorBasePath,
+  writable: false,
+  enumerable: true,
+  configurable: false,
+});

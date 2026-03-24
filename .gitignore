@@ -2,3 +2,12 @@ node_modules/
 data/
 *.db
 .DS_Store
+
+# Local Codex / supervisor artifacts
+.supervisor_state.json
+.app_supervisor_state.json
+SESSION_SUMMARY.md
+NEXT_ACTIONS.json
+EVIDENCE_INDEX.json
+TRACE_METADATA.json
+skills/

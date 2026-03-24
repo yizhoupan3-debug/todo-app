@@ -4,6 +4,7 @@ const db = require('../db');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { resolveAggregatorPath } = require('../codex-aggregator');
 
 // ── Quota cache (in-memory, 2-min TTL for success, 30s for errors) ──
 const quotaCache = new Map();
@@ -149,6 +150,31 @@ router.get('/local-token', (req, res) => {
 const { aggregatorDb } = require('../db');
 
 /**
+ * Build a stable fallback nickname for a fixed CPA instance.
+ * @param {number} instanceNum Instance number (1-based).
+ * @returns {string} Human-readable account nickname.
+ */
+function getDefaultAggregatorNickname(instanceNum) {
+  return `Account-${String.fromCharCode(64 + Number(instanceNum || 0)) || '?'}`;
+}
+
+/**
+ * Build fallback rows when aggregator.db is missing but the UI still needs instance cards.
+ * @returns {Array<object>} Synthesized account rows for six fixed CPA instances.
+ */
+function buildFallbackAggregatorRows() {
+  return Array.from({ length: 6 }, (_, index) => ({
+    id: index + 1,
+    nickname: getDefaultAggregatorNickname(index + 1),
+    email: null,
+    instance_num: index + 1,
+    status: 'unconfigured',
+    token_expires_at: null,
+    rate_mult: null,
+  }));
+}
+
+/**
  * Decode JWT payload without verification — extracts email, plan type, subscription dates.
  * @param {string} token Raw JWT string.
  * @returns {object|null} Decoded payload or null.
@@ -169,10 +195,11 @@ function decodeJwtPayload(token) {
  * @returns {{ email, planType, subscriptionActiveUntil, tokenExpiresAt }} Auth metadata.
  */
 function readInstanceAuth(instanceNum) {
-  const authDir = path.join(os.homedir(), 'Documents', '指示词宝库', 'codex-aggregator', 'cpa-instances', `instance-${instanceNum}`, 'auths');
+  const authDirMeta = resolveAggregatorPath('cpa-instances', `instance-${instanceNum}`, 'auths');
+  const authDir = authDirMeta.path;
   const result = { email: null, planType: null, subscriptionActiveUntil: null, tokenExpiresAt: null, _accessToken: null };
   try {
-    if (!fs.existsSync(authDir)) return result;
+    if (!authDirMeta.exists) return result;
     const files = fs.readdirSync(authDir)
       .filter(f => f.endsWith('.json'))
       .map(f => ({ file: f, mtime: fs.statSync(path.join(authDir, f)).mtimeMs }))
@@ -239,14 +266,9 @@ router.get('/proxy-accounts', async (req, res) => {
       }
     } catch (_) { /* non-critical */ }
 
-    if (!aggregatorDb) {
-      return res.json({
-        mainApi: { hasToken: !!(mainApiQuota && !mainApiQuota.error), quota: mainApiQuota, email: mainApiEmail, planType: mainApiPlan },
-        accounts: [],
-      });
-    }
-
-    const rows = aggregatorDb.prepare('SELECT id, nickname, email, instance_num, status, token_expires_at, rate_mult FROM accounts ORDER BY instance_num').all();
+    const rows = aggregatorDb
+      ? aggregatorDb.prepare('SELECT id, nickname, email, instance_num, status, token_expires_at, rate_mult FROM accounts ORDER BY instance_num').all()
+      : buildFallbackAggregatorRows();
 
     // Fetch real quota for each account in parallel (max 3 concurrent)
     const CONCURRENCY = 3;
@@ -307,11 +329,11 @@ router.get('/proxy-accounts', async (req, res) => {
 // GET /api/codex/aggregator-config — omniroute endpoint + api-key from instance-1 config
 router.get('/aggregator-config', (req, res) => {
   try {
-    const configPath = path.join(os.homedir(), 'Documents', '指示词宝库', 'codex-aggregator', 'cpa-instances', 'instance-1', 'config.yaml');
-    if (!fs.existsSync(configPath)) {
+    const configMeta = resolveAggregatorPath('cpa-instances', 'instance-1', 'config.yaml');
+    if (!configMeta.exists) {
       return res.json({ endpoint: null, apiKey: null, port: 20128 });
     }
-    const raw = fs.readFileSync(configPath, 'utf-8');
+    const raw = fs.readFileSync(configMeta.path, 'utf-8');
     // Parse api-keys list from yaml (simple line-based parsing)
     const keyMatch = raw.match(/api-keys:\s*\n(?:\s*-\s*"?([^"\n]+)"?\s*\n?)+/);
     const keys = [];
@@ -779,9 +801,9 @@ router.get('/setup-status', (req, res) => {
     let targetEndpoint = null;
     let targetApiKey = null;
     try {
-      const aggConfigPath = path.join(os.homedir(), 'Documents', '指示词宝库', 'codex-aggregator', 'cpa-instances', 'instance-1', 'config.yaml');
-      if (fs.existsSync(aggConfigPath)) {
-        const raw = fs.readFileSync(aggConfigPath, 'utf-8');
+      const aggConfigMeta = resolveAggregatorPath('cpa-instances', 'instance-1', 'config.yaml');
+      if (aggConfigMeta.exists) {
+        const raw = fs.readFileSync(aggConfigMeta.path, 'utf-8');
         const keyLines = raw.match(/^\s+-\s+"?([^"\n]+)"?\s*$/gm) || [];
         for (const line of keyLines) {
           const m = line.match(/^\s+-\s+"?([^"\n]+?)"?\s*$/);
