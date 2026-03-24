@@ -60,8 +60,14 @@ echo "[4/5] 安装依赖..."
 npm install --production
 mkdir -p "$APP_DATA_DIR"
 if [ -f "$APP_DIR/data/todo.db" ] && [ ! -f "$APP_DATA_DIR/todo.db" ]; then
-    cp "$APP_DIR/data/todo.db" "$APP_DATA_DIR/todo.db"
+    cp "$APP_DIR"/data/todo.db* "$APP_DATA_DIR"/ 2>/dev/null || true
 fi
+if [ -d "$APP_DIR/data/journal" ]; then
+    mkdir -p "$APP_DATA_DIR/journal"
+    cp -a "$APP_DIR/data/journal/." "$APP_DATA_DIR/journal/" 2>/dev/null || true
+fi
+rm -rf "$APP_DIR/data"
+ln -sfn "$APP_DATA_DIR" "$APP_DIR/data"
 
 # 5. 配置 systemd 服务（开机自启 + 后台运行）
 echo "[5/5] 配置系统服务..."

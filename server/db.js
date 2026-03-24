@@ -1,31 +1,11 @@
 const Database = require('better-sqlite3');
-const fs = require('fs');
-const path = require('path');
 const { resolveAggregatorPath } = require('./codex-aggregator');
-
-/**
- * Resolve the writable application data directory.
- * @returns {string} Absolute path to the active data directory.
- */
-function getAppDataDir() {
-  return process.env.TODO_APP_DATA_DIR || path.join(__dirname, '..', 'data');
-}
-
-/**
- * Resolve the SQLite database file path for the current runtime.
- * @returns {string} Absolute path to todo.db.
- */
-function getAppDbPath() {
-  return path.join(getAppDataDir(), 'todo.db');
-}
+const { ensureDir, getAppDataDir, getAppDbPath } = require('./app-data');
 
 const dbPath = getAppDbPath();
 
 // Ensure data directory exists
-const dataDir = path.dirname(dbPath);
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
-}
+const dataDir = ensureDir(getAppDataDir());
 
 const db = new Database(dbPath);
 

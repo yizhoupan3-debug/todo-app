@@ -8,6 +8,7 @@ const path = require('path');
 
 const compression = require('compression');
 const { createAssetPipeline } = require('./assets');
+const { getJournalUploadDir } = require('./app-data');
 
 const app = express();
 const server = http.createServer(app);
@@ -118,7 +119,7 @@ app.use('/api/journal', journalRouter);
 app.use('/api/codex', codexRouter);
 
 // Serve uploaded journal photos
-app.use('/uploads/journal', express.static(path.join(__dirname, '..', 'data', 'journal'), {
+app.use('/uploads/journal', express.static(getJournalUploadDir(), {
     maxAge: '7d',
     etag: true,
 }));
@@ -258,6 +259,7 @@ server.listen(PORT, '0.0.0.0', () => {
     }
     const pick = candidates.find(c => preferred.includes(c.name)) || candidates[0];
     if (pick) localIP = pick.address;
+    console.log(`[startup] dataDir=${db.dataDir} dbPath=${db.dbPath}`);
     console.log('');
     console.log('⚔️ 峡谷讨伐日记 已启动!');
     console.log(`   本机访问: http://localhost:${PORT}`);

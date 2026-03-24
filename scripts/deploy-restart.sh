@@ -15,8 +15,14 @@ set -euo pipefail
 
 mkdir -p "${REMOTE_DATA_DIR}"
 if [ -f "${REMOTE_DIR}/data/todo.db" ] && [ ! -f "${REMOTE_DATA_DIR}/todo.db" ]; then
-  cp "${REMOTE_DIR}/data/todo.db" "${REMOTE_DATA_DIR}/todo.db"
+  cp "${REMOTE_DIR}"/data/todo.db* "${REMOTE_DATA_DIR}/" 2>/dev/null || true
 fi
+if [ -d "${REMOTE_DIR}/data/journal" ]; then
+  mkdir -p "${REMOTE_DATA_DIR}/journal"
+  cp -a "${REMOTE_DIR}/data/journal/." "${REMOTE_DATA_DIR}/journal/" 2>/dev/null || true
+fi
+rm -rf "${REMOTE_DIR}/data"
+ln -sfn "${REMOTE_DATA_DIR}" "${REMOTE_DIR}/data"
 
 cat > "/etc/systemd/system/${SERVICE_NAME}.service" <<SERVICE_EOF
 [Unit]

@@ -4,12 +4,10 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const db = require('../db');
+const { ensureDir, getJournalUploadDir } = require('../app-data');
 
 // Ensure upload directory exists
-const uploadDir = path.join(__dirname, '..', '..', 'data', 'journal');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+const uploadDir = ensureDir(getJournalUploadDir());
 
 // Multer storage config
 const storage = multer.diskStorage({
@@ -171,5 +169,7 @@ router.delete('/element/:id', (req, res) => {
   db.prepare('DELETE FROM journal_elements WHERE id = ?').run(id);
   res.json({ ok: true });
 });
+
+router.uploadDir = uploadDir;
 
 module.exports = router;
