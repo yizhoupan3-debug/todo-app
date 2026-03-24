@@ -90,6 +90,16 @@ const API = {
         return this.getBaseURL() + path;
     },
 
+    /**
+     * Resolve one API path to an absolute browser-usable URL.
+     * @param {string} path API path suffix beginning with '/'.
+     * @returns {string} Absolute URL string.
+     */
+    getAbsoluteURL(path) {
+        if (typeof window === 'undefined') return this.resolveURL(path);
+        return new URL(this.resolveURL(path), window.location.origin).toString();
+    },
+
     async fetch(path, options = {}) {
         const url = this.resolveURL(path);
         const config = {

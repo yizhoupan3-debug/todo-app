@@ -15,6 +15,7 @@ const { spawn } = require('child_process');
 const Database = require('better-sqlite3');
 
 const tempHome = fs.mkdtempSync(path.join(os.tmpdir(), 'panpu-codex-setup-'));
+const tempInstallHome = fs.mkdtempSync(path.join(os.tmpdir(), 'panpu-codex-install-'));
 const port = 39000 + Math.floor(Math.random() * 1000);
 const baseUrl = `http://127.0.0.1:${port}`;
 const sharedSkillsPath = path.join(tempHome, 'Documents', '指示词宝库', 'skills');
@@ -22,12 +23,39 @@ const antigravitySkillsPath = path.join(tempHome, '.antigravity', 'skills');
 const aggregatorRoot = path.join(tempHome, 'Documents', '指示词宝库', 'codex-aggregator');
 const aggregatorDbPath = path.join(aggregatorRoot, 'app', 'data', 'aggregator.db');
 const aggregatorConfigPath = path.join(aggregatorRoot, 'cpa-instances', 'instance-1', 'config.yaml');
+const fakeCliProxyApiPath = path.join(tempHome, 'bin', 'cliproxyapi');
 
 fs.mkdirSync(antigravitySkillsPath, { recursive: true });
+fs.mkdirSync(path.dirname(fakeCliProxyApiPath), { recursive: true });
 fs.writeFileSync(path.join(antigravitySkillsPath, 'legacy.txt'), 'legacy');
 fs.mkdirSync(path.dirname(aggregatorDbPath), { recursive: true });
 fs.mkdirSync(path.dirname(aggregatorConfigPath), { recursive: true });
 fs.mkdirSync(path.join(aggregatorRoot, 'cpa-instances', 'instance-1', 'auths'), { recursive: true });
+
+fs.writeFileSync(fakeCliProxyApiPath, `#!/bin/bash
+set -euo pipefail
+
+LOG_PATH="\${CPA_DEVICE_LOG:-\${CPA_OAUTH_LOG:-}}"
+INSTANCE_DIR="$(cd "$(dirname "$LOG_PATH")/.." && pwd)"
+mkdir -p "$INSTANCE_DIR/auths"
+
+if printf '%s\\n' "$@" | grep -q -- '-codex-device-login'; then
+  echo "Codex device URL: https://chat.openai.com/device"
+  echo "Codex device code: TEST-CODE-1234"
+  cat > "$INSTANCE_DIR/auths/codex-device@example.com-plus.json" <<'JSON'
+{"access_token":"test-access-token","refresh_token":"test-refresh-token","id_token":"test-id-token","email":"device@example.com","expired":"2030-01-01T00:00:00+08:00","type":"codex"}
+JSON
+  exit 0
+fi
+
+if printf '%s\\n' "$@" | grep -q -- '-codex-login'; then
+  echo "Visit the following URL to continue authentication: https://auth.example.com/oauth"
+  exit 0
+fi
+
+echo "Unsupported fake CLIProxyAPI invocation: $*" >&2
+exit 1
+`, { mode: 0o755 });
 
 const aggregatorDb = new Database(aggregatorDbPath);
 aggregatorDb.exec(`
@@ -60,6 +88,8 @@ const server = spawn(process.execPath, ['server/server.js'], {
     PORT: String(port),
     CODEX_HOME: path.join(tempHome, '.codex'),
     ANTIGRAVITY_HOME: path.join(tempHome, '.antigravity'),
+    CODEX_AGGREGATOR_HOME: aggregatorRoot,
+    CLIPROXYAPI_BIN: fakeCliProxyApiPath,
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });
@@ -146,8 +176,16 @@ async function run() {
 
   const after = await request('GET', '/api/codex/setup-status');
   const installed = await request('GET', '/api/codex/installed-skills');
+  const installManifest = await request('GET', '/api/codex/install-manifest');
+  const unixInstallScript = await request('GET', '/api/codex/install-script');
   const proxyAccounts = await request('GET', '/api/codex/proxy-accounts');
   const aggregatorConfig = await request('GET', '/api/codex/aggregator-config');
+  const authTriggered = await request('POST', '/api/codex/auth-instance', {
+    instanceNum: 1,
+    authMode: 'device',
+    provider: 'codex',
+  });
+  const proxyAccountsAfterAuth = await request('GET', '/api/codex/proxy-accounts');
   const sharedRealPath = fs.realpathSync(sharedSkillsPath);
   assert(after.status === 200, `Expected 200 from setup-status after apply, got ${after.status}`);
   assert(after.body.sharedSkillsExists === true, 'Expected shared skills directory to exist after apply');
@@ -162,18 +200,83 @@ async function run() {
   assert(installed.body.systemCount === 1, `Expected system skills count=1, got ${installed.body.systemCount}`);
   assert(installed.body.skills.some((skill) => skill.name === 'alpha' && skill.category === 'user'), 'Expected alpha user skill in installed-skills response');
   assert(installed.body.skills.some((skill) => skill.name === 'internal' && skill.category === 'system'), 'Expected internal system skill in installed-skills response');
+  assert(installManifest.status === 200, `Expected 200 from install-manifest, got ${installManifest.status}`);
+  assert(installManifest.body.skillsCount === 2, `Expected install-manifest skillsCount=2, got ${installManifest.body.skillsCount}`);
+  assert(Array.isArray(installManifest.body.files) && installManifest.body.files.some((file) => file.path === 'alpha/SKILL.md'), 'Expected alpha/SKILL.md in install manifest');
+  assert(installManifest.body.files.some((file) => file.path === '.system/internal/SKILL.md'), 'Expected .system/internal/SKILL.md in install manifest');
+  assert(unixInstallScript.status === 200, `Expected 200 from install-script, got ${unixInstallScript.status}`);
+  assert(typeof unixInstallScript.body === 'string' && unixInstallScript.body.includes('/api/codex/install-manifest'), 'Expected unix install script to point to install-manifest');
   assert(proxyAccounts.status === 200, `Expected 200 from proxy-accounts, got ${proxyAccounts.status}`);
   assert(proxyAccounts.body.accounts.length === 1, `Expected one proxy account, got ${proxyAccounts.body.accounts.length}`);
   assert(proxyAccounts.body.accounts[0].nickname === 'Account-A', 'Expected proxy account nickname from aggregator db');
   assert(proxyAccounts.body.accounts[0].instanceNum === 1, 'Expected proxy account instance number from aggregator db');
   assert(aggregatorConfig.status === 200, `Expected 200 from aggregator-config, got ${aggregatorConfig.status}`);
   assert(aggregatorConfig.body.apiKey === 'test-key-123', `Expected aggregator api key from config.yaml, got ${aggregatorConfig.body.apiKey}`);
+  assert(authTriggered.status === 200, `Expected 200 from auth-instance, got ${authTriggered.status}: ${JSON.stringify(authTriggered.body)}`);
+  assert(authTriggered.body.verificationUri === 'https://chat.openai.com/device', `Expected device verification URL, got ${authTriggered.body.verificationUri}`);
+  assert(authTriggered.body.userCode === 'TEST-CODE-1234', `Expected device user code, got ${authTriggered.body.userCode}`);
+  assert(proxyAccountsAfterAuth.status === 200, `Expected 200 from proxy-accounts after auth, got ${proxyAccountsAfterAuth.status}`);
+  assert(proxyAccountsAfterAuth.body.accounts[0].hasToken === true, 'Expected proxy account to become authorized after direct auth');
+  assert(proxyAccountsAfterAuth.body.accounts[0].email === 'device@example.com', `Expected proxy account email from auth file, got ${proxyAccountsAfterAuth.body.accounts[0].email}`);
+
+  const codexInstallTarget = path.join(tempInstallHome, '.codex', 'skills');
+  const antigravityInstallTarget = path.join(tempInstallHome, '.antigravity', 'skills');
+  fs.mkdirSync(codexInstallTarget, { recursive: true });
+  fs.mkdirSync(antigravityInstallTarget, { recursive: true });
+  fs.writeFileSync(path.join(codexInstallTarget, 'legacy.txt'), 'legacy');
+  fs.writeFileSync(path.join(antigravityInstallTarget, 'legacy.txt'), 'legacy');
+
+  const installScriptPath = path.join(tempInstallHome, 'install-skills.sh');
+  fs.writeFileSync(installScriptPath, unixInstallScript.body, { mode: 0o755 });
+  await new Promise((resolve, reject) => {
+    const installer = spawn('bash', [installScriptPath], {
+      cwd: path.join(__dirname, '..'),
+      env: {
+        ...process.env,
+        HOME: tempInstallHome,
+        CODEX_HOME: path.join(tempInstallHome, '.codex'),
+        ANTIGRAVITY_HOME: path.join(tempInstallHome, '.antigravity'),
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let stderr = '';
+    installer.stdout.on('data', (chunk) => process.stdout.write(chunk));
+    installer.stderr.on('data', (chunk) => {
+      stderr += chunk.toString();
+      process.stderr.write(chunk);
+    });
+    installer.on('error', reject);
+    installer.on('exit', (code) => {
+      if (code === 0) {
+        resolve();
+        return;
+      }
+      reject(new Error(`Install script failed with code ${code}: ${stderr}`));
+    });
+  });
+
+  assert(fs.existsSync(path.join(codexInstallTarget, 'alpha', 'SKILL.md')), 'Expected alpha skill to be copied into local ~/.codex/skills');
+  assert(fs.existsSync(path.join(codexInstallTarget, '.system', 'internal', 'SKILL.md')), 'Expected system skill to be copied into local ~/.codex/skills');
+  assert(fs.existsSync(path.join(antigravityInstallTarget, 'alpha', 'SKILL.md')), 'Expected alpha skill to be copied into local ~/.antigravity/skills');
+  assert(fs.existsSync(path.join(antigravityInstallTarget, '.system', 'internal', 'SKILL.md')), 'Expected system skill to be copied into local ~/.antigravity/skills');
+  const codexBackupName = fs.readdirSync(path.join(tempInstallHome, '.codex')).find((name) => name.startsWith('skills.bak-install-'));
+  const antigravityBackupName = fs.readdirSync(path.join(tempInstallHome, '.antigravity')).find((name) => name.startsWith('skills.bak-install-'));
+  assert(!!codexBackupName, 'Expected ~/.codex/skills backup to be created before real import');
+  assert(!!antigravityBackupName, 'Expected ~/.antigravity/skills backup to be created before real import');
+  assert(fs.existsSync(path.join(tempInstallHome, '.codex', codexBackupName)), 'Expected ~/.codex backup directory to exist');
+  assert(fs.existsSync(path.join(tempInstallHome, '.antigravity', antigravityBackupName)), 'Expected ~/.antigravity backup directory to exist');
+  assert(fs.lstatSync(codexInstallTarget).isSymbolicLink() === false, 'Expected ~/.codex/skills to become a real directory after local import');
+  assert(fs.lstatSync(antigravityInstallTarget).isSymbolicLink() === false, 'Expected ~/.antigravity/skills to become a real directory after local import');
 
   console.log('  ✅ auto-create shared skills source');
   console.log('  ✅ relink Codex + Antigravity to one shared library');
   console.log('  ✅ count regular + .system skills and ignore dist');
+  console.log('  ✅ generate portable local install manifest + script');
+  console.log('  ✅ install real files into local ~/.codex/skills and ~/.antigravity/skills');
   console.log('  ✅ expose real installed skill library');
   console.log('  ✅ resolve Codex aggregator data from HOME/Documents');
+  console.log('  ✅ start device auth directly without relying on a separate dashboard');
   console.log('\n🎉 Codex setup integration tests passed\n');
 }
 

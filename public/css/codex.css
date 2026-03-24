@@ -1458,6 +1458,68 @@
   box-shadow: 0 8px 24px rgba(6,182,212,0.4);
 }
 
+.codex-setup-command-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.codex-setup-ghost-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(99,102,241,0.2);
+  background: rgba(99,102,241,0.06);
+  color: var(--accent, #6366f1);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.codex-setup-ghost-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+.codex-setup-ghost-btn:hover {
+  transform: translateY(-1px);
+  background: rgba(99,102,241,0.1);
+  border-color: rgba(99,102,241,0.3);
+}
+
+.codex-setup-command-box {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border, rgba(0,0,0,0.06));
+  background: rgba(99,102,241,0.04);
+}
+
+.codex-setup-command-title {
+  margin-bottom: 6px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: var(--text-tertiary, #999);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.codex-setup-command-code {
+  display: block;
+  font-size: 0.76rem;
+  font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+  color: var(--text, #1a1a2e);
+  white-space: pre-wrap;
+  word-break: break-all;
+  line-height: 1.55;
+}
+
 /* ── Footnote ── */
 .codex-setup-note {
   margin-top: 10px;
@@ -1488,6 +1550,7 @@
   .codex-setup-info-label { min-width: 70px; }
   .codex-setup-info-val { font-size: 0.72rem; }
   .codex-setup-platform-cell { gap: 6px; }
+  .codex-setup-command-grid { grid-template-columns: 1fr; }
   .codex-setup-auth-item {
     flex-direction: column;
     align-items: flex-start;

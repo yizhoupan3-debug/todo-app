@@ -2,14 +2,20 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const fs = require('fs');
+const fsp = require('fs/promises');
 const path = require('path');
 const os = require('os');
+const { execFile, spawn } = require('child_process');
+const { promisify } = require('util');
 const { resolveAggregatorPath } = require('../codex-aggregator');
 
 // ── Quota cache (in-memory, 2-min TTL for success, 30s for errors) ──
 const quotaCache = new Map();
 const CACHE_TTL_OK = 2 * 60 * 1000;
 const CACHE_TTL_ERR = 30 * 1000;
+const DEVICE_SIGNAL_TIMEOUT_MS = Number(process.env.CODEX_AUTH_SIGNAL_TIMEOUT_MS || 8000);
+const OAUTH_CALLBACK_PORT = Number(process.env.CODEX_OAUTH_CALLBACK_PORT || 1455);
+const SKILL_EXPORT_IGNORED_NAMES = new Set(['dist', 'node_modules', '.git', '.DS_Store']);
 
 function getCachedQuota(accountId) {
   const entry = quotaCache.get(accountId);
@@ -156,6 +162,186 @@ const { aggregatorDb } = require('../db');
  */
 function getDefaultAggregatorNickname(instanceNum) {
   return `Account-${String.fromCharCode(64 + Number(instanceNum || 0)) || '?'}`;
+}
+
+/**
+ * Resolve filesystem paths required by one CPA auth flow.
+ * @param {number} instanceNum Instance number (1-based).
+ * @returns {{ instanceDir: string, configPath: string, authDir: string, deviceLogPath: string, oauthLogPath: string, root: string, exists: boolean }} Resolved auth paths.
+ */
+function resolveInstanceAuthPaths(instanceNum) {
+  const instanceMeta = resolveAggregatorPath('cpa-instances', `instance-${instanceNum}`);
+  const instanceDir = instanceMeta.path;
+
+  return {
+    instanceDir,
+    configPath: path.join(instanceDir, 'config.yaml'),
+    authDir: path.join(instanceDir, 'auths'),
+    deviceLogPath: path.join(instanceDir, 'logs', 'oauth-device.log'),
+    oauthLogPath: path.join(instanceDir, 'logs', 'oauth-browser.log'),
+    root: instanceMeta.root,
+    exists: instanceMeta.exists,
+  };
+}
+
+/**
+ * Return the CLIProxyAPI executable used to start auth flows.
+ * @returns {string} Executable path or shell command name.
+ */
+function getCliProxyApiBin() {
+  return String(process.env.CLIPROXYAPI_BIN || 'cliproxyapi').trim() || 'cliproxyapi';
+}
+
+/**
+ * Parse device-login signal lines from a CLIProxyAPI log.
+ * @param {string} text Raw device-login log text.
+ * @returns {{ verificationUri: string|null, userCode: string|null, error: string|null }} Parsed device-login state.
+ */
+function parseDeviceSignal(text) {
+  const verificationUri = text.match(/Codex device URL:\s*(\S+)/)?.[1] ?? null;
+  const userCode = text.match(/Codex device code:\s*([A-Z0-9-]+)/)?.[1] ?? null;
+  const errorLine = text.match(/Codex device authentication failed:\s*(.+)/)?.[1]
+    ?? text.match(/\bfailed:\s*(.+)/i)?.[1]
+    ?? null;
+
+  return { verificationUri, userCode, error: errorLine };
+}
+
+/**
+ * Parse browser OAuth signal lines from a CLIProxyAPI log.
+ * @param {string} text Raw OAuth log text.
+ * @returns {{ authorizationUrl: string|null, error: string|null }} Parsed OAuth launch state.
+ */
+function parseOauthSignal(text) {
+  const authorizationUrl = text.match(/Visit the following URL to continue authentication:\s*(https:\/\/\S+)/)?.[1]
+    ?? null;
+  const errorLine = text.match(/authentication failed:\s*(.+)/i)?.[1]
+    ?? text.match(/\bfailed:\s*(.+)/i)?.[1]
+    ?? null;
+
+  return { authorizationUrl, error: errorLine };
+}
+
+/**
+ * Normalize raw provider errors into concise user-facing text.
+ * @param {string} rawError Upstream auth error text.
+ * @returns {string} Actionable user-facing error message.
+ */
+function normalizeAuthError(rawError) {
+  const safeError = String(rawError || '').trim();
+
+  if (/status 429/i.test(safeError) && /just a moment|cloudflare/i.test(safeError)) {
+    return 'OpenAI 登录请求被风控或限流，请稍后重试。';
+  }
+
+  if (/required port is already in use/i.test(safeError)) {
+    return '本机 OAuth 回调端口被旧登录进程占用，系统已清理残留监听，请再试一次。';
+  }
+
+  return safeError || '授权失败';
+}
+
+/**
+ * Wait until a device-login log exposes a user code or terminal error.
+ * @param {string} logPath Absolute device-login log path.
+ * @param {number} timeoutMs Maximum wait time in milliseconds.
+ * @returns {Promise<{ verificationUri: string|null, userCode: string|null, error: string|null }>} Parsed device-login state.
+ */
+async function waitForDeviceSignal(logPath, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    try {
+      const text = await fsp.readFile(logPath, 'utf-8');
+      const signal = parseDeviceSignal(text);
+      if (signal.error || (signal.verificationUri && signal.userCode)) {
+        return signal;
+      }
+    } catch {
+      // Ignore read races while the log is still being created.
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+
+  return { verificationUri: null, userCode: null, error: null };
+}
+
+/**
+ * Wait until an OAuth log exposes a launch URL or terminal error.
+ * @param {string} logPath Absolute OAuth log path.
+ * @param {number} timeoutMs Maximum wait time in milliseconds.
+ * @returns {Promise<{ authorizationUrl: string|null, error: string|null }>} Parsed OAuth launch state.
+ */
+async function waitForOauthSignal(logPath, timeoutMs) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    try {
+      const text = await fsp.readFile(logPath, 'utf-8');
+      const signal = parseOauthSignal(text);
+      if (signal.error || signal.authorizationUrl) {
+        return signal;
+      }
+    } catch {
+      // Ignore read races while the log is still being created.
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+
+  return { authorizationUrl: null, error: null };
+}
+
+/**
+ * Start a detached CLIProxyAPI auth command inside one CPA instance.
+ * @param {object} options Detached command options.
+ * @param {string} options.cwd Working directory for the child process.
+ * @param {string} options.command Shell command to execute.
+ * @param {object} options.env Extra environment variables for the child process.
+ * @returns {Promise<void>} Resolves once the child process has been spawned.
+ */
+async function spawnDetachedAuthCommand({ cwd, command, env }) {
+  const child = spawn('bash', ['-lc', command], {
+    cwd,
+    detached: true,
+    stdio: 'ignore',
+    env: {
+      ...process.env,
+      ...env,
+    },
+  });
+
+  child.unref();
+}
+
+/**
+ * Kill stale CLIProxyAPI OAuth callback listeners before starting a new OAuth flow.
+ * @returns {Promise<void>} Resolves once stale listeners have been terminated.
+ */
+async function cleanupStaleOauthListeners() {
+  const execFileP = promisify(execFile);
+  const { stdout } = await execFileP('bash', [
+    '-lc',
+    `lsof -t -iTCP:${OAUTH_CALLBACK_PORT} -sTCP:LISTEN -c cliproxya || true`,
+  ]);
+
+  const pids = stdout
+    .split(/\s+/)
+    .map((item) => Number(item.trim()))
+    .filter((pid) => Number.isFinite(pid) && pid > 0);
+
+  for (const pid of pids) {
+    try {
+      process.kill(pid, 'SIGTERM');
+    } catch {
+      // Ignore stale PID termination failures.
+    }
+  }
+
+  if (pids.length > 0) {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
 }
 
 /**
@@ -356,24 +542,105 @@ router.get('/aggregator-config', (req, res) => {
   }
 });
 
-// POST /api/codex/auth-instance — proxy to aggregator NextJS auth API
+// POST /api/codex/auth-instance — start CPA auth directly without a separate Dashboard
 // Body: { instanceNum, authMode: 'device'|'oauth', provider?: 'codex'|'antigravity' }
-router.post('/auth-instance', async (req, res) => {
-  const AGGREGATOR_APP_URL = 'http://localhost:3000';
+router.post('/auth-instance', requireSameOrigin, async (req, res) => {
+  const instanceNum = Number(req.body?.instanceNum);
+  const provider = req.body?.provider || 'codex';
+  const authMode = req.body?.authMode || 'device';
+
+  if (!instanceNum || instanceNum < 1 || instanceNum > 6) {
+    return res.status(400).json({ error: 'instanceNum 必须在 1-6 之间' });
+  }
+
+  if (authMode === 'device' && provider !== 'codex') {
+    return res.status(400).json({ error: '当前仅 Codex 提供 device code 登录模式' });
+  }
+
+  const paths = resolveInstanceAuthPaths(instanceNum);
+  if (!paths.exists) {
+    return res.status(404).json({ error: `未找到实例目录: instance-${instanceNum}` });
+  }
+
+  if (!fs.existsSync(paths.configPath)) {
+    return res.status(404).json({ error: `未找到实例配置: ${paths.configPath}` });
+  }
+
   try {
-    const response = await fetch(`${AGGREGATOR_APP_URL}/api/auth/oauth`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req.body),
-      signal: AbortSignal.timeout(12000),
-    });
-    const data = await response.json();
-    res.status(response.status).json(data);
-  } catch (e) {
-    if (e.name === 'TimeoutError' || e.name === 'AbortError') {
-      return res.status(504).json({ error: 'aggregator 响应超时，请确认反代 Dashboard 正在运行（port 3000）' });
+    if (authMode === 'device') {
+      await fsp.mkdir(path.dirname(paths.deviceLogPath), { recursive: true });
+      await fsp.mkdir(paths.authDir, { recursive: true });
+      await fsp.writeFile(paths.deviceLogPath, '', 'utf-8');
+
+      await spawnDetachedAuthCommand({
+        cwd: paths.instanceDir,
+        command: '"$CLIPROXYAPI_BIN" -config "$CPA_CONFIG" -codex-device-login >> "$CPA_DEVICE_LOG" 2>&1',
+        env: {
+          CLIPROXYAPI_BIN: getCliProxyApiBin(),
+          CPA_CONFIG: paths.configPath,
+          CPA_DEVICE_LOG: paths.deviceLogPath,
+        },
+      });
+
+      const signal = await waitForDeviceSignal(paths.deviceLogPath, DEVICE_SIGNAL_TIMEOUT_MS);
+      if (signal.error) {
+        return res.status(500).json({ error: normalizeAuthError(signal.error) });
+      }
+
+      if (signal.verificationUri && signal.userCode) {
+        return res.json({
+          ok: true,
+          authMode: 'device',
+          verificationUri: signal.verificationUri,
+          userCode: signal.userCode,
+          message: `CPA-${instanceNum} 已生成 device code，请在任意设备完成授权。`,
+        });
+      }
+
+      return res.json({
+        ok: true,
+        authMode: 'device',
+        message: `CPA-${instanceNum} device code 正在生成，请稍后自动刷新。`,
+      });
     }
-    res.status(502).json({ error: `无法连接到反代 Dashboard: ${e.message}` });
+
+    const loginFlag = provider === 'antigravity' ? '-antigravity-login' : '-codex-login';
+    await fsp.mkdir(path.dirname(paths.oauthLogPath), { recursive: true });
+    await fsp.mkdir(paths.authDir, { recursive: true });
+    await fsp.writeFile(paths.oauthLogPath, '', 'utf-8');
+    await cleanupStaleOauthListeners();
+
+    await spawnDetachedAuthCommand({
+      cwd: paths.instanceDir,
+      command: 'env -i HOME="$CPA_HOME" PATH="$CPA_PATH" LANG="en_US.UTF-8" "$CLIPROXYAPI_BIN" -config "$CPA_CONFIG" "$CPA_LOGIN_FLAG" -no-browser >> "$CPA_OAUTH_LOG" 2>&1',
+      env: {
+        CLIPROXYAPI_BIN: getCliProxyApiBin(),
+        CPA_HOME: process.env.HOME || '',
+        CPA_PATH: process.env.PATH || '',
+        CPA_CONFIG: paths.configPath,
+        CPA_LOGIN_FLAG: loginFlag,
+        CPA_OAUTH_LOG: paths.oauthLogPath,
+      },
+    });
+
+    const signal = await waitForOauthSignal(paths.oauthLogPath, DEVICE_SIGNAL_TIMEOUT_MS);
+    if (signal.error) {
+      return res.status(500).json({ error: normalizeAuthError(signal.error) });
+    }
+
+    return res.json({
+      ok: true,
+      authMode: 'oauth',
+      authorizationUrl: signal.authorizationUrl,
+      message: signal.authorizationUrl
+        ? `CPA-${instanceNum} 已生成可点击的 OAuth 授权链接。`
+        : `CPA-${instanceNum} OAuth 链接正在生成，请稍后自动刷新。`,
+    });
+  } catch (e) {
+    const message = e?.code === 'ENOENT' && String(e?.path || '').includes(getCliProxyApiBin())
+      ? `未找到 CLIProxyAPI 可执行文件: ${getCliProxyApiBin()}`
+      : (e?.message || '授权启动失败');
+    return res.status(500).json({ error: message });
   }
 });
 
@@ -659,6 +926,240 @@ function inspectSkillsLink(linkPath) {
 }
 
 /**
+ * Return whether one entry should be ignored during skill export.
+ * @param {string} entryName File or directory name.
+ * @returns {boolean} True when the entry must be skipped.
+ */
+function shouldIgnoreSkillExportEntry(entryName) {
+  return SKILL_EXPORT_IGNORED_NAMES.has(entryName)
+    || entryName.endsWith('.bak')
+    || entryName.endsWith('.tmp');
+}
+
+/**
+ * Recursively collect files that belong to the current skill library.
+ * @param {string} skillsRoot Absolute path to the shared skills root.
+ * @param {string} currentDir Relative directory being traversed.
+ * @returns {Array<{relativePath: string, absolutePath: string, mode: number}>} Exportable files.
+ */
+function collectSkillExportFiles(skillsRoot, currentDir = '') {
+  const absoluteDir = currentDir ? path.join(skillsRoot, currentDir) : skillsRoot;
+  const entries = fs.readdirSync(absoluteDir, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    if (shouldIgnoreSkillExportEntry(entry.name)) continue;
+
+    const relativePath = currentDir
+      ? path.posix.join(currentDir.split(path.sep).join(path.posix.sep), entry.name)
+      : entry.name;
+    const absolutePath = path.join(absoluteDir, entry.name);
+
+    if (entry.isDirectory()) {
+      files.push(...collectSkillExportFiles(skillsRoot, relativePath));
+      continue;
+    }
+
+    if (!entry.isFile()) continue;
+    files.push({
+      relativePath,
+      absolutePath,
+      mode: fs.statSync(absolutePath).mode & 0o777,
+    });
+  }
+
+  return files.sort((a, b) => a.relativePath.localeCompare(b.relativePath));
+}
+
+/**
+ * Build a portable install manifest for the current skill library.
+ * @param {string} skillsRoot Absolute path to the shared skills root.
+ * @returns {{sourcePath: string, skillsCount: number, generatedAt: string, files: Array<object>}} Install manifest payload.
+ */
+function buildSkillInstallManifest(skillsRoot) {
+  const exportFiles = collectSkillExportFiles(skillsRoot);
+  return {
+    sourcePath: skillsRoot,
+    skillsCount: countSkillDirectories(skillsRoot),
+    generatedAt: new Date().toISOString(),
+    files: exportFiles.map((file) => ({
+      path: file.relativePath,
+      mode: file.mode,
+      contentBase64: fs.readFileSync(file.absolutePath).toString('base64'),
+    })),
+  };
+}
+
+/**
+ * Resolve the public request origin for download/install URLs.
+ * @param {import('express').Request} req Express request.
+ * @returns {string} Absolute origin string.
+ */
+function getRequestOrigin(req) {
+  const forwardedProto = String(req.headers['x-forwarded-proto'] || '').split(',')[0].trim();
+  const forwardedHost = String(req.headers['x-forwarded-host'] || '').split(',')[0].trim();
+  const protocol = forwardedProto || req.protocol || 'http';
+  const host = forwardedHost || req.get('host') || 'localhost';
+  return `${protocol}://${host}`;
+}
+
+/**
+ * Return the absolute manifest URL used by local install scripts.
+ * @param {import('express').Request} req Express request.
+ * @returns {string} Absolute manifest endpoint URL.
+ */
+function getSkillInstallManifestUrl(req) {
+  return `${getRequestOrigin(req)}${req.baseUrl}/install-manifest`;
+}
+
+/**
+ * Build the Unix install script for local Codex and Antigravity imports.
+ * @param {string} manifestUrl Absolute manifest URL.
+ * @returns {string} Executable shell script.
+ */
+function buildUnixInstallScript(manifestUrl) {
+  return `#!/usr/bin/env bash
+set -euo pipefail
+
+MANIFEST_URL=${JSON.stringify(manifestUrl)}
+TMP_JSON="$(mktemp)"
+
+cleanup() {
+  rm -f "$TMP_JSON"
+}
+
+trap cleanup EXIT
+
+if ! command -v curl >/dev/null 2>&1; then
+  echo "curl is required." >&2
+  exit 1
+fi
+
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "python3 is required." >&2
+  exit 1
+fi
+
+curl -fsSL "$MANIFEST_URL" -o "$TMP_JSON"
+
+python3 - "$TMP_JSON" <<'PY'
+import base64
+import datetime
+import json
+import os
+import pathlib
+import sys
+
+manifest_path = pathlib.Path(sys.argv[1])
+manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+timestamp = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
+home = pathlib.Path.home()
+targets = [
+    pathlib.Path(os.environ.get('CODEX_HOME', home / '.codex')) / 'skills',
+    pathlib.Path(os.environ.get('ANTIGRAVITY_HOME', home / '.antigravity')) / 'skills',
+]
+results = []
+
+for target in targets:
+    target.parent.mkdir(parents=True, exist_ok=True)
+    backup_path = None
+
+    if target.is_symlink():
+        target.unlink()
+    elif target.exists():
+        backup_path = target.parent / f"{target.name}.bak-install-{timestamp}"
+        target.rename(backup_path)
+
+    target.mkdir(parents=True, exist_ok=True)
+
+    for file in manifest.get('files', []):
+        rel_path = pathlib.PurePosixPath(file['path'])
+        if rel_path.is_absolute() or '..' in rel_path.parts:
+            raise SystemExit(f"Unsafe path in manifest: {file['path']}")
+
+        destination = target.joinpath(*rel_path.parts)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(base64.b64decode(file['contentBase64']))
+        try:
+            os.chmod(destination, int(file.get('mode', 0o644)))
+        except OSError:
+            pass
+
+    results.append({
+        'target': str(target),
+        'backup': str(backup_path) if backup_path else None,
+    })
+
+print(json.dumps({
+    'installed': results,
+    'skillsCount': manifest.get('skillsCount', 0),
+    'sourcePath': manifest.get('sourcePath'),
+}, ensure_ascii=False, indent=2))
+PY
+`;
+}
+
+/**
+ * Build the PowerShell install script for local Codex and Antigravity imports.
+ * @param {string} manifestUrl Absolute manifest URL.
+ * @returns {string} Executable PowerShell script.
+ */
+function buildWindowsInstallScript(manifestUrl) {
+  return `$ErrorActionPreference = 'Stop'
+
+$manifestUrl = ${JSON.stringify(manifestUrl)}
+$manifest = Invoke-RestMethod -Uri $manifestUrl -Method Get
+$timestamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+$homeDir = [Environment]::GetFolderPath('UserProfile')
+$codexHome = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $homeDir '.codex' }
+$antigravityHome = if ($env:ANTIGRAVITY_HOME) { $env:ANTIGRAVITY_HOME } else { Join-Path $homeDir '.antigravity' }
+$targets = @(
+  (Join-Path $codexHome 'skills'),
+  (Join-Path $antigravityHome 'skills')
+)
+$results = @()
+
+foreach ($target in $targets) {
+  $parent = Split-Path -Parent $target
+  if (-not (Test-Path -LiteralPath $parent)) {
+    New-Item -ItemType Directory -Path $parent -Force | Out-Null
+  }
+
+  $backupPath = $null
+  if (Test-Path -LiteralPath $target) {
+    $backupPath = "$target.bak-install-$timestamp"
+    Move-Item -LiteralPath $target -Destination $backupPath -Force
+  }
+
+  New-Item -ItemType Directory -Path $target -Force | Out-Null
+
+  foreach ($file in $manifest.files) {
+    $normalized = ($file.path -replace '/', [IO.Path]::DirectorySeparatorChar)
+    $destination = Join-Path $target $normalized
+    $directory = Split-Path -Parent $destination
+    if (-not (Test-Path -LiteralPath $directory)) {
+      New-Item -ItemType Directory -Path $directory -Force | Out-Null
+    }
+
+    $bytes = [Convert]::FromBase64String($file.contentBase64)
+    [IO.File]::WriteAllBytes($destination, $bytes)
+  }
+
+  $results += [pscustomobject]@{
+    target = $target
+    backup = $backupPath
+  }
+}
+
+[pscustomobject]@{
+  installed = $results
+  skillsCount = $manifest.skillsCount
+  sourcePath = $manifest.sourcePath
+} | ConvertTo-Json -Depth 4
+`;
+}
+
+/**
  * Ensure a shared skills source directory exists.
  * @param {string|null} sourcePath Desired source path or null for auto-discovery.
  * @param {{ createIfMissing?: boolean }} options Directory creation behavior.
@@ -935,6 +1436,48 @@ router.post('/apply-skills', async (req, res) => {
     });
   } catch (e) {
     console.error('apply-skills error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/codex/install-manifest — export a portable skill manifest for local machine installs
+router.get('/install-manifest', (req, res) => {
+  try {
+    const sourceMeta = resolveSkillsSourcePath(null, { createIfMissing: false });
+    const sourcePath = sourceMeta.sourcePath;
+
+    if (!sourcePath || !fs.existsSync(sourcePath) || !fs.statSync(sourcePath).isDirectory()) {
+      return res.status(404).json({ error: 'skills 源目录不存在，无法生成本机安装清单' });
+    }
+
+    const manifest = buildSkillInstallManifest(sourcePath);
+    res.json(manifest);
+  } catch (e) {
+    console.error('install-manifest error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/codex/install-script — generate a local install script for Codex and Antigravity
+router.get('/install-script', (req, res) => {
+  try {
+    const platform = String(req.query.platform || 'unix').toLowerCase();
+    const sourceMeta = resolveSkillsSourcePath(null, { createIfMissing: false });
+    const sourcePath = sourceMeta.sourcePath;
+
+    if (!sourcePath || !fs.existsSync(sourcePath) || !fs.statSync(sourcePath).isDirectory()) {
+      return res.status(404).json({ error: 'skills 源目录不存在，无法生成安装脚本' });
+    }
+
+    const manifestUrl = getSkillInstallManifestUrl(req);
+    if (platform === 'windows' || platform === 'powershell') {
+      res.type('text/plain; charset=utf-8').send(buildWindowsInstallScript(manifestUrl));
+      return;
+    }
+
+    res.type('text/plain; charset=utf-8').send(buildUnixInstallScript(manifestUrl));
+  } catch (e) {
+    console.error('install-script error:', e);
     res.status(500).json({ error: e.message });
   }
 });

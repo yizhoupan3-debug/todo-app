@@ -15,6 +15,7 @@ const CodexView = {
   _detailCache: {},
   _formOverlay: null,
   _autoRefreshTimer: null,
+  _authPollTimers: new Map(),
   _countdownTimer: null,
   _visible: false,
   _activeTab: 'accounts', // 'accounts' | 'skills'
@@ -51,6 +52,7 @@ const CodexView = {
   hide() {
     this._visible = false;
     this._stopAutoRefresh();
+    this._stopAllAuthPolling();
     this._stopCountdown();
   },
 
@@ -71,6 +73,73 @@ const CodexView = {
       clearInterval(this._autoRefreshTimer);
       this._autoRefreshTimer = null;
     }
+  },
+
+  /**
+   * Stop polling auth status for one CPA instance.
+   * @param {number} instanceNum Target instance number.
+   * @returns {void}
+   */
+  _stopAuthPolling(instanceNum) {
+    const timer = this._authPollTimers.get(instanceNum);
+    if (timer) {
+      clearInterval(timer);
+      this._authPollTimers.delete(instanceNum);
+    }
+  },
+
+  /**
+   * Stop all in-flight auth status polling timers.
+   * @returns {void}
+   */
+  _stopAllAuthPolling() {
+    this._authPollTimers.forEach((timer) => clearInterval(timer));
+    this._authPollTimers.clear();
+  },
+
+  /**
+   * Poll proxy-account status until one instance becomes authorized.
+   * @param {number} instanceNum Target instance number.
+   * @returns {void}
+   */
+  _startAuthPolling(instanceNum) {
+    if (!instanceNum) return;
+
+    this._stopAuthPolling(instanceNum);
+    let remainingPolls = 24;
+
+    const poll = async () => {
+      if (!this._visible) {
+        this._stopAuthPolling(instanceNum);
+        return;
+      }
+
+      remainingPolls -= 1;
+
+      try {
+        const proxyData = await API.getCodexProxyAccounts();
+        this._proxyData = proxyData;
+        const account = (proxyData.accounts || []).find((item) => Number(item.instanceNum) === Number(instanceNum));
+
+        if (account?.hasToken) {
+          this._stopAuthPolling(instanceNum);
+          if (this._activeTab === 'setup') {
+            await this._loadSetup();
+          }
+          this._toast(`实例 ${instanceNum} 已授权成功`, 'success');
+          return;
+        }
+      } catch (_) {
+        // Keep polling until timeout.
+      }
+
+      if (remainingPolls <= 0) {
+        this._stopAuthPolling(instanceNum);
+      }
+    };
+
+    const timer = setInterval(poll, 5000);
+    this._authPollTimers.set(instanceNum, timer);
   },
 
   // ── Live countdown ──
@@ -385,16 +454,18 @@ const CodexView = {
       if (result.verificationUri) {
         window.open(result.verificationUri, '_blank');
         button.textContent = result.userCode ? `已开启登录页 · ${result.userCode}` : '已开启登录页';
-        this._toast(`已为实例 ${instanceNum} 打开授权页面`, 'success');
+        this._startAuthPolling(instanceNum);
+        this._toast(`实例 ${instanceNum} 已生成一次性登录码，完成授权后会自动刷新`, 'success');
       } else if (result.error) {
         button.textContent = `失败: ${String(result.error).slice(0, 24)}`;
         this._toast(`实例 ${instanceNum} 授权失败: ${result.error}`, 'error');
       } else {
         button.textContent = result.message || '请稍候片刻后刷新';
+        this._startAuthPolling(instanceNum);
       }
     } catch (e) {
-      button.textContent = 'Dashboard 未启动';
-      this._toast(`无法连接授权 Dashboard: ${e.message || e}`, 'error');
+      button.textContent = '授权失败';
+      this._toast(`实例 ${instanceNum} 授权失败: ${e.message || e}`, 'error');
     } finally {
       setTimeout(() => {
         button.disabled = false;
@@ -1229,7 +1300,7 @@ const CodexView = {
    */
   _renderSetupTab(content, data) {
     const {
-      platform, configPath,
+      platform, configPath, codexHome, antigravityHome,
       currentBaseUrl, targetEndpoint, targetApiKey,
       sharedSkillsSourcePath, sharedSkillsExists, sharedSkillsCount,
       platforms,
@@ -1337,12 +1408,14 @@ const CodexView = {
         <div class="codex-setup-auth-list">
           ${authRows || '<div class="codex-setup-empty-inline">未发现可授权的子账号</div>'}
         </div>
-        <div class="codex-setup-note">点击“立即授权”会打开本机 aggregator Dashboard 的设备登录页；完成授权后回到此页刷新即可。</div>
+        <div class="codex-setup-note">点击“立即授权”会直接生成一次性 device code；无需单独启动 Dashboard，完成授权后此页会自动刷新。</div>
       </div>`;
 
     const codexLink = platforms?.codex || {};
     const antigravityLink = platforms?.antigravity || {};
     const linkMethodLabel = isWin ? 'mklink /J (目录联接)' : 'symlink (软链接)';
+    const unixInstallCommand = this._buildLocalInstallCommand('unix');
+    const windowsInstallCommand = this._buildLocalInstallCommand('windows');
     const fullyLinked = [codexLink, antigravityLink].every((item) => item?.status === 'symlink');
     const partiallyLinked = [codexLink, antigravityLink].some((item) => item?.status && item.status !== 'missing');
     const skillsStatusClass = fullyLinked ? 'setup-badge-ok'
@@ -1384,14 +1457,14 @@ const CodexView = {
             <span class="codex-setup-info-label">Codex</span>
             <div class="codex-setup-platform-cell">
               <span class="codex-setup-platform-badge ${this._setupPlatformBadgeClass(codexLink.status)}">${this._setupPlatformLabel(codexLink)}</span>
-              <code class="codex-setup-info-val codex-setup-path">${this._esc(codexLink.linkPath || '--')}</code>
+              <code class="codex-setup-info-val codex-setup-path">${this._esc(codexLink.linkPath || codexHome || '--')}</code>
             </div>
           </div>
           <div class="codex-setup-info-row">
             <span class="codex-setup-info-label">Antigravity</span>
             <div class="codex-setup-platform-cell">
               <span class="codex-setup-platform-badge ${this._setupPlatformBadgeClass(antigravityLink.status)}">${this._setupPlatformLabel(antigravityLink)}</span>
-              <code class="codex-setup-info-val codex-setup-path">${this._esc(antigravityLink.linkPath || '--')}</code>
+              <code class="codex-setup-info-val codex-setup-path">${this._esc(antigravityLink.linkPath || antigravityHome || '--')}</code>
             </div>
           </div>
           <div class="codex-setup-info-row">
@@ -1402,10 +1475,26 @@ const CodexView = {
         <button class="codex-setup-apply-btn codex-setup-apply-skills" id="setup-apply-skills"
           ${!sharedSkillsSourcePath ? 'disabled title="无法确定 skills 目录"' : ''}>
           <i data-lucide="link"></i>
-          ${fullyLinked ? '重新同步 Codex + Antigravity' : '一键导入到 Codex + Antigravity'}
+          ${fullyLinked ? '同步当前后端机器的 Codex + Antigravity' : '接入当前后端机器的 Codex + Antigravity'}
         </button>
+        <div class="codex-setup-command-grid">
+          <button class="codex-setup-ghost-btn" id="setup-copy-local-unix">
+            <i data-lucide="terminal-square"></i> 复制 Mac/Linux 本机安装命令
+          </button>
+          <button class="codex-setup-ghost-btn" id="setup-copy-local-win">
+            <i data-lucide="monitor-smartphone"></i> 复制 Windows 本机安装命令
+          </button>
+        </div>
+        <div class="codex-setup-command-box">
+          <div class="codex-setup-command-title">Mac / Linux</div>
+          <code class="codex-setup-command-code">${this._esc(unixInstallCommand)}</code>
+        </div>
+        <div class="codex-setup-command-box">
+          <div class="codex-setup-command-title">Windows PowerShell</div>
+          <code class="codex-setup-command-code">${this._esc(windowsInstallCommand)}</code>
+        </div>
         ${skillPreview ? `<div class="codex-setup-note">当前真实 Skill 样本：${this._esc(skillPreview)}${installedSkillsData.count > 10 ? ' …' : ''}</div>` : ''}
-        <div class="codex-setup-note">若本机还没有共享 Skill 目录，系统会自动创建，并把 Codex 与 Antigravity 一次性接到同一份库。</div>
+        <div class="codex-setup-note">上面的蓝色按钮只会操作当前后端所在机器；若要真实导入到最终用户电脑，请复制对应系统命令到用户本机终端执行。</div>
       </div>`;
 
     content.innerHTML = `<div class="codex-setup-container">${apiCardHtml}${authCardHtml}${skillsCardHtml}</div>`;
@@ -1453,10 +1542,57 @@ const CodexView = {
         this._initIcons(btn);
       }
     });
+
+    content.querySelector('#setup-copy-local-unix')?.addEventListener('click', async () => {
+      const copied = await this._copyText(unixInstallCommand);
+      this._toast(copied ? '✅ 已复制 Mac/Linux 本机安装命令' : '❌ 复制失败，请手动复制', copied ? 'success' : 'error');
+    });
+
+    content.querySelector('#setup-copy-local-win')?.addEventListener('click', async () => {
+      const copied = await this._copyText(windowsInstallCommand);
+      this._toast(copied ? '✅ 已复制 Windows 本机安装命令' : '❌ 复制失败，请手动复制', copied ? 'success' : 'error');
+    });
   },
 
   _toast(msg, type = 'info') {
     if (typeof App !== 'undefined' && App.showToast) App.showToast(msg, type);
+  },
+
+  /**
+   * Copy a plain-text command to the clipboard.
+   * @param {string} value Text to copy.
+   * @returns {Promise<boolean>} Whether the copy operation succeeded.
+   */
+  async _copyText(value) {
+    try {
+      await navigator.clipboard.writeText(String(value || ''));
+      return true;
+    } catch (_) {
+      try {
+        const textarea = document.createElement('textarea');
+        textarea.value = String(value || '');
+        document.body.appendChild(textarea);
+        textarea.select();
+        const copied = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        return copied;
+      } catch (_) {
+        return false;
+      }
+    }
+  },
+
+  /**
+   * Build the local install command for one target platform.
+   * @param {'unix'|'windows'} platform Target platform family.
+   * @returns {string} Copy-ready local install command.
+   */
+  _buildLocalInstallCommand(platform = 'unix') {
+    const scriptUrl = API.getAbsoluteURL(`/codex/install-script${platform === 'windows' ? '?platform=windows' : ''}`);
+    if (platform === 'windows') {
+      return `powershell -ExecutionPolicy Bypass -Command "irm '${scriptUrl}' | iex"`;
+    }
+    return `curl -fsSL "${scriptUrl}" | bash`;
   },
 
   /**
