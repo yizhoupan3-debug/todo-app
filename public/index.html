@@ -97,14 +97,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
   <!-- CSS loaded in parallel (no @import waterfall) -->
   <link rel="stylesheet" href="/css/base.css?v=__ASSET_VERSION__">
-  <link rel="stylesheet" href="/css/checkin.css?v=__ASSET_VERSION__">
-  <link rel="stylesheet" href="/css/pomodoro-stats.css?v=__ASSET_VERSION__">
-  <link rel="stylesheet" href="/css/journal.css?v=__ASSET_VERSION__">
+  <link rel="stylesheet" href="/css/checkin.css?v=__ASSET_VERSION__" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="/css/pomodoro-stats.css?v=__ASSET_VERSION__" media="print" onload="this.media='all'">
+  <link rel="stylesheet" href="/css/journal.css?v=__ASSET_VERSION__" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/css/garden-base.css?v=__ASSET_VERSION__" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/css/garden-island.css?v=__ASSET_VERSION__" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/css/garden-panels.css?v=__ASSET_VERSION__" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="/css/garden-backpack.css?v=__ASSET_VERSION__" media="print" onload="this.media='all'">
-  <link rel="stylesheet" href="/css/codex.css?v=__ASSET_VERSION__" media="print" onload="this.media='all'">
   <script src="https://unpkg.com/lucide@0.577.0/dist/umd/lucide.min.js" defer></script>
   <script>
     // SW registration only. Do not force a full-page reload on controller change;
@@ -163,10 +162,6 @@
       <button class="nav-btn" data-view="shop" id="nav-shop">
         <span class="nav-icon"><i data-lucide="store"></i></span>
         <span>商城</span>
-      </button>
-      <button class="nav-btn" data-view="codex" id="nav-codex">
-        <span class="nav-icon"><i data-lucide="key-round"></i></span>
-        <span>Codex</span>
       </button>
       <button class="nav-btn" data-view="journal" id="nav-journal">
         <span class="nav-icon"><i data-lucide="book-open"></i></span>
@@ -642,9 +637,6 @@
     <!-- Shop View -->
     <section class="view-container hidden" id="view-shop"></section>
 
-    <!-- Codex View -->
-    <section class="view-container hidden" id="view-codex"></section>
-
     <!-- Stats View -->
     <section class="view-container hidden" id="view-stats">
       <div class="stats-container">
@@ -791,10 +783,6 @@
         <button class="more-panel-item" data-action="coins">
           <span class="more-panel-icon"><i data-lucide="coins"></i></span>
           <span>喵喵币</span>
-        </button>
-        <button class="more-panel-item" data-action="codex">
-          <span class="more-panel-icon"><i data-lucide="key-round"></i></span>
-          <span>Codex</span>
         </button>
         <button class="more-panel-item" data-action="settings">
           <span class="more-panel-icon"><i data-lucide="settings"></i></span>
@@ -1085,7 +1073,6 @@
   <script src="/js/components/swipe-gesture.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/components/ics-import.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/components/pomodoro.js?v=__ASSET_VERSION__" defer></script>
-  <script src="/js/components/codex.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/ambient.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/app.js?v=__ASSET_VERSION__" defer></script>
   <script src="/js/app-theme.js?v=__ASSET_VERSION__" defer></script>

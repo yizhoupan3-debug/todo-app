@@ -153,9 +153,6 @@ if (typeof App === 'undefined') {
                         case 'coins':
                             document.getElementById('header-coin-btn')?.click();
                             break;
-                        case 'codex':
-                            this.switchView('codex');
-                            break;
                         case 'settings':
                             // Open sidebar settings on mobile
                             const sidebar = document.getElementById('sidebar');
@@ -247,8 +244,8 @@ if (typeof App === 'undefined') {
             // Close more panel if open
             this.closeMorePanel();
 
-            const viewIds = ['view-daily', 'view-monthly', 'view-checkin', 'view-stats', 'view-garden', 'view-shop', 'view-journal', 'view-codex'];
-            const viewMap = { daily: 'view-daily', monthly: 'view-monthly', checkin: 'view-checkin', stats: 'view-stats', garden: 'view-garden', shop: 'view-shop', journal: 'view-journal', codex: 'view-codex' };
+            const viewIds = ['view-daily', 'view-monthly', 'view-checkin', 'view-stats', 'view-garden', 'view-shop', 'view-journal'];
+            const viewMap = { daily: 'view-daily', monthly: 'view-monthly', checkin: 'view-checkin', stats: 'view-stats', garden: 'view-garden', shop: 'view-shop', journal: 'view-journal' };
             for (const vid of viewIds) {
                 const el = document.getElementById(vid);
                 const isTarget = vid === viewMap[view];
@@ -280,7 +277,7 @@ if (typeof App === 'undefined') {
                 daily: '今日任务', monthly: '月度总览',
                 checkin: '打卡', stats: '统计',
                 garden: '花园', shop: '商城',
-                journal: '共同日记', codex: 'Codex 额度'
+                journal: '共同日记'
             };
             document.getElementById('header-title').textContent = titles[view] || '峡谷讨伐日记';
 
@@ -302,10 +299,6 @@ if (typeof App === 'undefined') {
         // Defer heavy view data loading so the transition animation isn't blocked
         const loadViewData = () => {
             // Clean up previous view resources
-            if (this._prevView === 'codex' && view !== 'codex') {
-                if (typeof CodexView !== 'undefined') CodexView.hide();
-            }
-
             switch (view) {
                 case 'daily':
                     DailyView.setDate(DailyView.currentDate);
@@ -329,17 +322,18 @@ if (typeof App === 'undefined') {
                 case 'journal':
                     JournalView.open();
                     break;
-                case 'codex':
-                    if (typeof CodexView !== 'undefined') CodexView.show();
-                    break;
             }
         };
 
-        // If transition API is active, wait for it; otherwise use rAF
+        // If transition API is active, wait for it; otherwise use timeout to unblock CSS slide transitions
         if (transition && transition.finished) {
             transition.finished.then(loadViewData).catch(loadViewData);
         } else {
-            requestAnimationFrame(loadViewData);
+            if (isInitialSwitch) {
+                requestAnimationFrame(loadViewData);
+            } else {
+                setTimeout(loadViewData, 250); // match transition duration
+            }
         }
     },
 

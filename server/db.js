@@ -1,5 +1,4 @@
 const Database = require('better-sqlite3');
-const { resolveAggregatorPath } = require('./codex-aggregator');
 const { ensureDir, getAppDataDir, getAppDbPath } = require('./app-data');
 
 const dbPath = getAppDbPath();
@@ -524,49 +523,15 @@ db.exec(`
   }
 }
 
-// ── Codex account management ──
-db.exec(`
-  CREATE TABLE IF NOT EXISTS codex_accounts (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    account TEXT NOT NULL,
-    password TEXT NOT NULL,
-    email TEXT DEFAULT '',
-    email_password TEXT DEFAULT '',
-    access_token TEXT DEFAULT '',
-    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
-  );
-`);
-
-// ── Codex-aggregator read-only connection ──
-let aggregatorDb = null;
-let aggregatorBasePath = null;
-try {
-  const aggregatorDbMeta = resolveAggregatorPath('app', 'data', 'aggregator.db');
-  aggregatorBasePath = aggregatorDbMeta.root;
-  if (aggregatorDbMeta.exists) {
-    aggregatorDb = new Database(aggregatorDbMeta.path, { readonly: true });
+// Cleanup: permanently remove legacy Codex table after feature removal
+{
+  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='codex_accounts'").all();
+  if (tables.length > 0) {
+    db.exec('DROP TABLE codex_accounts');
   }
-} catch (e) {
-  console.warn('[db] Could not open aggregator.db (read-only):', e.message);
 }
 
 module.exports = db;
-// Attach aggregatorDb as a non-enumerable property on the native Database instance
-Object.defineProperty(module.exports, 'aggregatorDb', {
-  value: aggregatorDb,
-  writable: false,
-  enumerable: true,
-  configurable: false,
-});
-
-Object.defineProperty(module.exports, 'aggregatorBasePath', {
-  value: aggregatorBasePath,
-  writable: false,
-  enumerable: true,
-  configurable: false,
-});
 
 Object.defineProperty(module.exports, 'dbPath', {
   value: dbPath,

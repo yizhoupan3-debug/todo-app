@@ -100,6 +100,47 @@ const API = {
         return new URL(this.resolveURL(path), window.location.origin).toString();
     },
 
+    async fetchWithRetry(url, config, retries = 5, backoff = 1000, timeoutMs = 15000) {
+        let lastError;
+        for (let i = 0; i <= retries; i++) {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const res = await fetch(url, { ...config, signal: controller.signal });
+                clearTimeout(id);
+                
+                // Do not retry on 4xx client errors (except 408 Request Timeout and 429 Too Many Requests)
+                if (res.status >= 400 && res.status < 500 && res.status !== 408 && res.status !== 429) {
+                    return res;
+                }
+                
+                // 5xx or 408/429 -> Throw to trigger retry
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+                return res;
+            } catch (err) {
+                clearTimeout(id);
+                lastError = err;
+                
+                // Retry if it's a network error (TypeError from fetch), Timeout (AbortError), or Server Error we threw above
+                const isRetryable = err.name === 'AbortError' || 
+                                    err.name === 'TypeError' || 
+                                    err.message.startsWith('HTTP 5') || 
+                                    err.message.startsWith('HTTP 408') || 
+                                    err.message.startsWith('HTTP 429');
+                                    
+                if (isRetryable && i < retries) {
+                    const delay = backoff * Math.pow(2, i);
+                    await new Promise(r => setTimeout(r, delay));
+                    continue;
+                }
+                throw err;
+            }
+        }
+        throw lastError;
+    },
+
     async fetch(path, options = {}) {
         const url = this.resolveURL(path);
         const config = {
@@ -112,16 +153,38 @@ const API = {
         if (config.body instanceof FormData) {
             delete config.headers['Content-Type'];
         }
-        return fetch(url, config);
+        
+        // Extract retry/timeout options if provided, else use defaults
+        const retries = config.retries !== undefined ? config.retries : 5;
+        const backoff = config.backoff !== undefined ? config.backoff : 1000;
+        const timeoutMs = config.timeoutMs !== undefined ? config.timeoutMs : 15000;
+        
+        // Remove custom options so they aren't passed to fetch native
+        delete config.retries;
+        delete config.backoff;
+        delete config.timeoutMs;
+
+        return this.fetchWithRetry(url, config, retries, backoff, timeoutMs);
     },
 
     async request(path, options = {}) {
-        const res = await this.fetch(path, options);
-        if (!res.ok) {
-            const err = await res.json().catch(() => ({ error: res.statusText }));
-            throw new Error(err.error || 'Request failed');
+        try {
+            const res = await this.fetch(path, options);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ error: res.statusText }));
+                throw new Error(err.error || 'Request failed');
+            }
+            return await res.json();
+        } catch (err) {
+            // Unify error message for UI
+            if (err.name === 'AbortError') {
+                throw new Error('网络请求超时，请检查网络连接');
+            }
+            if (err.name === 'TypeError') {
+                throw new Error('网络连接断开，请连接网络后再试');
+            }
+            throw err;
         }
-        return res.json();
     },
 
     // Tasks
@@ -276,56 +339,5 @@ const API = {
 
     deleteElement(id) {
         return this.request(`/journal/element/${id}`, { method: 'DELETE' });
-    },
-
-    // ── Codex accounts ──
-    getCodexAccounts() {
-        return this.request('/codex');
-    },
-    getCodexAccount(id) {
-        return this.request(`/codex/${id}`);
-    },
-    createCodexAccount(data) {
-        return this.request('/codex', { method: 'POST', body: data });
-    },
-    updateCodexAccount(id, data) {
-        return this.request(`/codex/${id}`, { method: 'PUT', body: data });
-    },
-    deleteCodexAccount(id) {
-        return this.request(`/codex/${id}`, { method: 'DELETE' });
-    },
-    getCodexLocalToken() {
-        return this.request('/codex/local-token');
-    },
-
-    // ── Codex aggregator integration ──
-    getCodexProxyAccounts() {
-        return this.request('/codex/proxy-accounts');
-    },
-    getCodexSkillHealth() {
-        return this.request('/codex/skill-health');
-    },
-    getCodexInstalledSkills() {
-        return this.request('/codex/installed-skills');
-    },
-    getCodexAggregatorConfig() {
-        return this.request('/codex/aggregator-config');
-    },
-    postCodexAuthInstance(instanceNum, authMode = 'device', provider = 'codex') {
-        return this.request('/codex/auth-instance', {
-            method: 'POST',
-            body: { instanceNum, authMode, provider },
-        });
-    },
-
-    // ── Codex one-click setup ──
-    getCodexSetupStatus() {
-        return this.request('/codex/setup-status');
-    },
-    postCodexApplyApiConfig(data) {
-        return this.request('/codex/apply-api-config', { method: 'POST', body: data });
-    },
-    postCodexApplySkills(data = {}) {
-        return this.request('/codex/apply-skills', { method: 'POST', body: data });
     },
 };

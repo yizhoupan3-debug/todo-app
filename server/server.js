@@ -35,6 +35,18 @@ function appendVary(existing, value) {
 }
 
 app.use((req, res, next) => {
+    // Timeout Configuration: 15 seconds
+    req.setTimeout(15000, () => {
+        if (!res.headersSent) {
+            res.status(408).json({ error: 'Request Timeout (Client connection too slow)' });
+        }
+    });
+    res.setTimeout(15000, () => {
+        if (!res.headersSent) {
+            res.status(504).json({ error: 'Gateway Timeout (Server processing took too long)' });
+        }
+    });
+
     const origin = req.headers.origin;
     const allowAll = !configuredOrigins || configuredOrigins.length === 0;
     const allowOrigin = allowAll
@@ -107,7 +119,6 @@ const checkinRouter = require('./routes/checkin');
 const statsRouter = require('./routes/stats');
 const gardenRouter = require('./routes/garden');
 const journalRouter = require('./routes/journal');
-const codexRouter = require('./routes/codex');
 
 app.use('/api/tasks', tasksRouter);
 app.use('/api/categories', categoriesRouter);
@@ -116,7 +127,6 @@ app.use('/api/checkin', checkinRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/garden', gardenRouter);
 app.use('/api/journal', journalRouter);
-app.use('/api/codex', codexRouter);
 
 // Serve uploaded journal photos
 app.use('/uploads/journal', express.static(getJournalUploadDir(), {
@@ -198,6 +208,10 @@ io.on('connection', (socket) => {
 
 // SPA fallback
 app.get('*', (req, res) => {
+    if (req.path.startsWith('/api/')) {
+        res.status(404).json({ error: 'API route not found' });
+        return;
+    }
     sendAppShell(res);
 });
 

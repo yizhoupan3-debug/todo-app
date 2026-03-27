@@ -30,7 +30,21 @@ const App = {
         this.initSocket();
 
         if (typeof lucide !== 'undefined') {
-            lucide.createIcons({ attrs: {} });
+            // Render critical shell icons immediately
+            const shellNodes = [
+                document.getElementById('sidebar'),
+                document.getElementById('main-header'),
+                document.getElementById('bottom-nav'),
+                document.getElementById('view-' + this.currentView)
+            ].filter(Boolean);
+            if (shellNodes.length > 0) {
+                lucide.createIcons({ attrs: {}, nodes: shellNodes });
+            }
+            
+            // Defer the rest to unblock main thread
+            const deferInit = () => lucide.createIcons({ attrs: {} });
+            if ('requestIdleCallback' in window) requestIdleCallback(deferInit);
+            else setTimeout(deferInit, 300);
         }
 
         this.switchView('daily');
@@ -52,7 +66,6 @@ const App = {
             TaskModal,
             ICSImport,
             Pomodoro,
-            CodexView,
         ];
 
         for (const target of initTargets) {
