@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db');
+const { parseInteger } = require('../validation');
 
 const router = express.Router();
 
@@ -18,7 +19,8 @@ router.get('/', (req, res) => {
 
 // POST /api/categories
 router.post('/', (req, res) => {
-    const { name, color, icon } = req.body;
+    const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';
+    const { color, icon } = req.body;
     if (!name) return res.status(400).json({ error: 'name is required' });
 
     try {
@@ -40,6 +42,10 @@ router.post('/', (req, res) => {
 // PUT /api/categories/:id
 router.put('/:id', (req, res) => {
     const { id } = req.params;
+    const categoryId = parseInteger(id);
+    if (categoryId === null || categoryId <= 0) {
+        return res.status(400).json({ error: 'Category id must be a positive integer' });
+    }
 
     try {
         const updates = [];
@@ -47,6 +53,13 @@ router.put('/:id', (req, res) => {
 
         for (const [key, value] of Object.entries(req.body)) {
             if (ALLOWED_FIELDS.includes(key) && value !== undefined) {
+                if (key === 'name') {
+                    const name = typeof value === 'string' ? value.trim() : '';
+                    if (!name) return res.status(400).json({ error: 'name is required' });
+                    updates.push(`${key} = ?`);
+                    values.push(name);
+                    continue;
+                }
                 updates.push(`${key} = ?`);
                 values.push(value);
             }
@@ -54,13 +67,16 @@ router.put('/:id', (req, res) => {
 
         if (updates.length === 0) return res.status(400).json({ error: 'No fields to update' });
 
-        values.push(id);
+        values.push(categoryId);
         db.prepare(`UPDATE categories SET ${updates.join(', ')} WHERE id = ?`).run(...values);
 
-        const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(id);
+        const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(categoryId);
         if (!category) return res.status(404).json({ error: 'Category not found' });
         res.json(category);
     } catch (err) {
+        if (err.message.includes('UNIQUE')) {
+            return res.status(409).json({ error: 'Category already exists' });
+        }
         res.status(500).json({ error: err.message });
     }
 });

@@ -1,12 +1,19 @@
 const express = require('express');
 const db = require('../db');
 const { formatDateStr, todayStr } = require('../utils');
+const { isValidAssignee, isPositiveInteger, parseInteger } = require('../validation');
 
 const router = express.Router();
 
 // GET /api/stats — aggregate statistics
 router.get('/', (req, res) => {
     const { range, assignee } = req.query;
+    if (range && !['week', 'month'].includes(range)) {
+        return res.status(400).json({ error: 'range must be one of: week, month' });
+    }
+    if (assignee && assignee !== 'all' && !isValidAssignee(assignee)) {
+        return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲, all' });
+    }
     const days = range === 'month' ? 30 : 7;
 
     // Build date range
@@ -120,9 +127,24 @@ router.get('/', (req, res) => {
 // POST /api/stats/pomodoro — record a pomodoro session
 router.post('/pomodoro', (req, res) => {
     const { assignee, focus_minutes, rounds, task_title } = req.body;
-    if (!assignee || !focus_minutes) {
+    if (!assignee || focus_minutes === undefined || focus_minutes === null || focus_minutes === '') {
         return res.status(400).json({ error: 'assignee and focus_minutes are required' });
     }
+    if (!isValidAssignee(assignee)) {
+        return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲' });
+    }
+    if (!isPositiveInteger(focus_minutes)) {
+        return res.status(400).json({ error: 'focus_minutes must be a positive integer' });
+    }
+    if (rounds !== undefined && rounds !== null && rounds !== '' && !isPositiveInteger(rounds)) {
+        return res.status(400).json({ error: 'rounds must be a positive integer' });
+    }
+    if (task_title !== undefined && task_title !== null && typeof task_title !== 'string') {
+        return res.status(400).json({ error: 'task_title must be a string' });
+    }
+
+    const focusMinutes = parseInteger(focus_minutes);
+    const totalRounds = rounds === undefined || rounds === null || rounds === '' ? 1 : parseInteger(rounds);
 
     const today = todayStr();
 
@@ -130,7 +152,7 @@ router.post('/pomodoro', (req, res) => {
         const result = db.prepare(`
             INSERT INTO pomodoro_sessions (assignee, focus_minutes, rounds, task_title, date)
             VALUES (?, ?, ?, ?, ?)
-        `).run(assignee, focus_minutes, rounds || 1, task_title || null, today);
+        `).run(assignee, focusMinutes, totalRounds, task_title || null, today);
 
         const session = db.prepare('SELECT * FROM pomodoro_sessions WHERE id = ?')
             .get(result.lastInsertRowid);

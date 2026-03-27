@@ -5,6 +5,12 @@ const path = require('path');
 const fs = require('fs');
 const db = require('../db');
 const { ensureDir, getJournalUploadDir } = require('../app-data');
+const {
+  isValidAssignee,
+  isValidDateString,
+  isOneOf,
+  parseInteger,
+} = require('../validation');
 
 // Ensure upload directory exists
 const uploadDir = ensureDir(getJournalUploadDir());
@@ -33,6 +39,28 @@ const upload = multer({
   },
 });
 
+function parseOptionalFiniteNumber(value, fieldName, defaultValue) {
+  if (value === undefined || value === null || value === '') {
+    return { value: defaultValue };
+  }
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return { error: `${fieldName} must be a finite number` };
+  }
+  return { value: parsed };
+}
+
+function parseOptionalInteger(value, fieldName, defaultValue) {
+  if (value === undefined || value === null || value === '') {
+    return { value: defaultValue };
+  }
+  const parsed = parseInteger(value);
+  if (parsed === null) {
+    return { error: `${fieldName} must be an integer` };
+  }
+  return { value: parsed };
+}
+
 // Helper: get or create entry for a date
 function getOrCreateEntry(date) {
   let entry = db.prepare('SELECT * FROM journal_entries WHERE date = ?').get(date);
@@ -47,6 +75,7 @@ function getOrCreateEntry(date) {
 router.get('/', (req, res) => {
   const date = req.query.date;
   if (!date) return res.status(400).json({ error: 'date is required' });
+  if (!isValidDateString(date)) return res.status(400).json({ error: 'date must use YYYY-MM-DD' });
 
   const entry = db.prepare('SELECT * FROM journal_entries WHERE date = ?').get(date);
   if (!entry) {
@@ -62,7 +91,14 @@ router.get('/', (req, res) => {
 
 // GET /api/journal/recent?limit=30
 router.get('/recent', (req, res) => {
-  const limit = Math.min(parseInt(req.query.limit) || 30, 100);
+  const requestedLimit = req.query.limit;
+  if (requestedLimit !== undefined && requestedLimit !== null && requestedLimit !== '') {
+    const parsedLimit = parseInteger(requestedLimit);
+    if (parsedLimit === null || parsedLimit <= 0) {
+      return res.status(400).json({ error: 'limit must be a positive integer' });
+    }
+  }
+  const limit = Math.min(parseInteger(requestedLimit) || 30, 100);
 
   const entries = db.prepare(`
     SELECT e.*, COUNT(el.id) as element_count
@@ -82,13 +118,30 @@ router.post('/element', upload.single('photo'), (req, res) => {
   try {
     const { date, author, element_type, content, pos_x, pos_y, width, height, rotation, style_data } = req.body;
     if (!date) return res.status(400).json({ error: 'date is required' });
-    if (!author || !['潘潘', '蒲蒲'].includes(author)) {
+    if (!isValidDateString(date)) return res.status(400).json({ error: 'date must use YYYY-MM-DD' });
+    if (!author || !isValidAssignee(author)) {
       return res.status(400).json({ error: 'invalid author' });
     }
 
     const entry = getOrCreateEntry(date);
     const photoPath = req.file ? req.file.filename : null;
     const type = element_type || (photoPath ? 'photo' : 'text');
+    if (!isOneOf(type, ['text', 'photo'])) {
+      return res.status(400).json({ error: 'element_type must be one of: text, photo' });
+    }
+    if (content !== undefined && content !== null && typeof content !== 'string') {
+      return res.status(400).json({ error: 'content must be a string' });
+    }
+
+    const parsedPosX = parseOptionalFiniteNumber(pos_x, 'pos_x', 50);
+    const parsedPosY = parseOptionalFiniteNumber(pos_y, 'pos_y', 50);
+    const parsedWidth = parseOptionalFiniteNumber(width, 'width', type === 'photo' ? 240 : 200);
+    const parsedHeight = parseOptionalFiniteNumber(height, 'height', type === 'photo' ? 180 : 80);
+    const parsedRotation = parseOptionalFiniteNumber(rotation, 'rotation', 0);
+
+    for (const parsed of [parsedPosX, parsedPosY, parsedWidth, parsedHeight, parsedRotation]) {
+      if (parsed.error) return res.status(400).json({ error: parsed.error });
+    }
 
     // z_index = max + 1
     const maxZ = db.prepare(
@@ -102,10 +155,10 @@ router.post('/element', upload.single('photo'), (req, res) => {
     `).run(
       entry.id, author, type,
       content || '', photoPath,
-      parseFloat(pos_x) || 50, parseFloat(pos_y) || 50,
-      parseFloat(width) || (type === 'photo' ? 240 : 200),
-      parseFloat(height) || (type === 'photo' ? 180 : 80),
-      parseFloat(rotation) || 0,
+      parsedPosX.value, parsedPosY.value,
+      parsedWidth.value,
+      parsedHeight.value,
+      parsedRotation.value,
       zIndex,
       style_data || null
     );
@@ -123,11 +176,26 @@ router.post('/element', upload.single('photo'), (req, res) => {
 
 // PUT /api/journal/element/:id  — update position, size, rotation, content, crop
 router.put('/element/:id', (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = parseInteger(req.params.id);
+  if (id === null || id <= 0) return res.status(400).json({ error: 'id must be a positive integer' });
   const existing = db.prepare('SELECT * FROM journal_elements WHERE id = ?').get(id);
   if (!existing) return res.status(404).json({ error: 'element not found' });
 
   const { pos_x, pos_y, width, height, rotation, content, z_index, crop_data, style_data } = req.body;
+
+  if (content !== undefined && content !== null && typeof content !== 'string') {
+    return res.status(400).json({ error: 'content must be a string' });
+  }
+
+  const parsedPosX = parseOptionalFiniteNumber(pos_x, 'pos_x', existing.pos_x);
+  const parsedPosY = parseOptionalFiniteNumber(pos_y, 'pos_y', existing.pos_y);
+  const parsedWidth = parseOptionalFiniteNumber(width, 'width', existing.width);
+  const parsedHeight = parseOptionalFiniteNumber(height, 'height', existing.height);
+  const parsedRotation = parseOptionalFiniteNumber(rotation, 'rotation', existing.rotation);
+  const parsedZIndex = parseOptionalInteger(z_index, 'z_index', existing.z_index);
+  for (const parsed of [parsedPosX, parsedPosY, parsedWidth, parsedHeight, parsedRotation, parsedZIndex]) {
+    if (parsed.error) return res.status(400).json({ error: parsed.error });
+  }
 
   db.prepare(`
     UPDATE journal_elements SET
@@ -135,13 +203,13 @@ router.put('/element/:id', (req, res) => {
       rotation = ?, content = ?, z_index = ?, crop_data = ?, style_data = ?
     WHERE id = ?
   `).run(
-    pos_x !== undefined ? parseFloat(pos_x) : existing.pos_x,
-    pos_y !== undefined ? parseFloat(pos_y) : existing.pos_y,
-    width !== undefined ? parseFloat(width) : existing.width,
-    height !== undefined ? parseFloat(height) : existing.height,
-    rotation !== undefined ? parseFloat(rotation) : existing.rotation,
+    parsedPosX.value,
+    parsedPosY.value,
+    parsedWidth.value,
+    parsedHeight.value,
+    parsedRotation.value,
     content !== undefined ? content : existing.content,
-    z_index !== undefined ? parseInt(z_index) : existing.z_index,
+    parsedZIndex.value,
     crop_data !== undefined ? crop_data : existing.crop_data,
     style_data !== undefined ? style_data : existing.style_data,
     id
@@ -156,7 +224,8 @@ router.put('/element/:id', (req, res) => {
 
 // DELETE /api/journal/element/:id
 router.delete('/element/:id', (req, res) => {
-  const id = parseInt(req.params.id);
+  const id = parseInteger(req.params.id);
+  if (id === null || id <= 0) return res.status(400).json({ error: 'id must be a positive integer' });
   const existing = db.prepare('SELECT * FROM journal_elements WHERE id = ?').get(id);
   if (!existing) return res.status(404).json({ error: 'element not found' });
 

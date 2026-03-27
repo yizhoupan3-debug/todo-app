@@ -2,13 +2,164 @@ const express = require('express');
 const db = require('../db');
 const { generateRecurringInstances } = require('../services/recurring');
 const { TASK_REWARD } = require('./garden-shared');
+const {
+    VALID_TASK_PRIORITIES,
+    VALID_TASK_STATUSES,
+    VALID_RECURRING_TYPES,
+    isValidAssignee,
+    isValidDateString,
+    isValidMonthString,
+    isValidTimeString,
+    isOneOf,
+    isPositiveInteger,
+    parseBooleanLike,
+    parseInteger,
+} = require('../validation');
 
 const router = express.Router();
 
-// Valid date format: YYYY-MM-DD
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const MONTH_RE = /^\d{4}-\d{2}$/;
-const VALID_ASSIGNEES = ['潘潘', '蒲蒲'];
+function normalizeTaskPayload(input, { partial = false } = {}) {
+    const normalized = {};
+    const hasOwn = (key) => Object.prototype.hasOwnProperty.call(input, key);
+
+    if (!partial || hasOwn('title')) {
+        const title = typeof input.title === 'string' ? input.title.trim() : '';
+        if (!title) return { error: 'title is required' };
+        normalized.title = title;
+    }
+
+    if (!partial || hasOwn('description')) {
+        if (input.description === undefined || input.description === null) {
+            normalized.description = '';
+        } else if (typeof input.description !== 'string') {
+            return { error: 'description must be a string' };
+        } else {
+            normalized.description = input.description;
+        }
+    }
+
+    if (!partial || hasOwn('assignee')) {
+        if (!isValidAssignee(input.assignee)) {
+            return { error: 'assignee must be one of: 潘潘, 蒲蒲' };
+        }
+        normalized.assignee = input.assignee;
+    }
+
+    if (hasOwn('category_id')) {
+        if (input.category_id === null || input.category_id === '') {
+            normalized.category_id = null;
+        } else {
+            const categoryId = parseInteger(input.category_id);
+            if (categoryId === null || categoryId <= 0) {
+                return { error: 'category_id must be a positive integer' };
+            }
+            normalized.category_id = categoryId;
+        }
+    } else if (!partial) {
+        normalized.category_id = null;
+    }
+
+    if (!partial || hasOwn('priority')) {
+        const priority = input.priority === undefined ? 2 : parseInteger(input.priority);
+        if (!VALID_TASK_PRIORITIES.includes(priority)) {
+            return { error: 'priority must be one of: 1, 2, 3' };
+        }
+        normalized.priority = priority;
+    }
+
+    if (hasOwn('due_date')) {
+        if (input.due_date === null || input.due_date === '') {
+            normalized.due_date = null;
+        } else if (!isValidDateString(input.due_date)) {
+            return { error: 'due_date must use YYYY-MM-DD' };
+        } else {
+            normalized.due_date = input.due_date;
+        }
+    } else if (!partial) {
+        normalized.due_date = null;
+    }
+
+    if (hasOwn('due_time')) {
+        if (input.due_time === null || input.due_time === '') {
+            normalized.due_time = null;
+        } else if (!isValidTimeString(input.due_time)) {
+            return { error: 'due_time must use HH:MM' };
+        } else {
+            normalized.due_time = input.due_time;
+        }
+    } else if (!partial) {
+        normalized.due_time = null;
+    }
+
+    if (hasOwn('end_time')) {
+        if (input.end_time === null || input.end_time === '') {
+            normalized.end_time = null;
+        } else if (!isValidTimeString(input.end_time)) {
+            return { error: 'end_time must use HH:MM' };
+        } else {
+            normalized.end_time = input.end_time;
+        }
+    } else if (!partial) {
+        normalized.end_time = null;
+    }
+
+    if (hasOwn('status')) {
+        if (!isOneOf(input.status, VALID_TASK_STATUSES)) {
+            return { error: 'status must be one of: todo, in_progress, done' };
+        }
+        normalized.status = input.status;
+    }
+
+    if (!partial || hasOwn('is_recurring')) {
+        const recurringFlag = input.is_recurring === undefined ? false : parseBooleanLike(input.is_recurring);
+        if (recurringFlag === null) {
+            return { error: 'is_recurring must be a boolean' };
+        }
+        normalized.is_recurring = recurringFlag;
+    }
+
+    if (hasOwn('recurring_type')) {
+        if (input.recurring_type === null || input.recurring_type === '') {
+            normalized.recurring_type = null;
+        } else if (!isOneOf(input.recurring_type, VALID_RECURRING_TYPES)) {
+            return { error: 'recurring_type must be one of: daily, weekly, monthly, custom' };
+        } else {
+            normalized.recurring_type = input.recurring_type;
+        }
+    } else if (!partial) {
+        normalized.recurring_type = null;
+    }
+
+    if (!partial || hasOwn('recurring_interval')) {
+        const recurringInterval = input.recurring_interval === undefined ? 1 : parseInteger(input.recurring_interval);
+        if (recurringInterval === null || recurringInterval <= 0) {
+            return { error: 'recurring_interval must be a positive integer' };
+        }
+        normalized.recurring_interval = recurringInterval;
+    }
+
+    if (hasOwn('recurring_end_date')) {
+        if (input.recurring_end_date === null || input.recurring_end_date === '') {
+            normalized.recurring_end_date = null;
+        } else if (!isValidDateString(input.recurring_end_date)) {
+            return { error: 'recurring_end_date must use YYYY-MM-DD' };
+        } else {
+            normalized.recurring_end_date = input.recurring_end_date;
+        }
+    } else if (!partial) {
+        normalized.recurring_end_date = null;
+    }
+
+    if (hasOwn('auto_complete')) {
+        const autoComplete = parseBooleanLike(input.auto_complete);
+        if (autoComplete === null) {
+            return { error: 'auto_complete must be a boolean' };
+        }
+        normalized.auto_complete = autoComplete;
+    }
+
+    return { value: normalized };
+}
 
 // GET /api/tasks — list tasks with optional filters
 router.get('/', (req, res) => {
@@ -18,12 +169,15 @@ router.get('/', (req, res) => {
     let params = [];
 
     if (assignee && assignee !== 'all') {
+        if (!isValidAssignee(assignee)) {
+            return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲, all' });
+        }
         where.push('t.assignee = ?');
         params.push(assignee);
     }
 
     if (date) {
-        if (!DATE_RE.test(date) || isNaN(new Date(date + 'T00:00:00').getTime())) {
+        if (!isValidDateString(date)) {
             return res.status(400).json({ error: 'invalid date format (YYYY-MM-DD)' });
         }
         // Generate recurring instances for this date range
@@ -33,7 +187,7 @@ router.get('/', (req, res) => {
     }
 
     if (month) {
-        if (!MONTH_RE.test(month)) {
+        if (!isValidMonthString(month)) {
             return res.status(400).json({ error: 'invalid month format (YYYY-MM)' });
         }
         // month is YYYY-MM format
@@ -47,6 +201,9 @@ router.get('/', (req, res) => {
     }
 
     if (status) {
+        if (!isOneOf(status, VALID_TASK_STATUSES)) {
+            return res.status(400).json({ error: 'status must be one of: todo, in_progress, done' });
+        }
         where.push('t.status = ?');
         params.push(status);
     }
@@ -88,6 +245,12 @@ router.get('/', (req, res) => {
 router.get('/month-summary', (req, res) => {
     const { month, assignee } = req.query;
     if (!month) return res.status(400).json({ error: 'month param required (YYYY-MM)' });
+    if (!isValidMonthString(month)) {
+        return res.status(400).json({ error: 'invalid month format (YYYY-MM)' });
+    }
+    if (assignee && assignee !== 'all' && !isValidAssignee(assignee)) {
+        return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲, all' });
+    }
 
     const start = `${month}-01`;
     const [y, m] = month.split('-').map(Number);
@@ -126,6 +289,12 @@ router.get('/month-summary', (req, res) => {
 router.delete('/clear-done', (req, res) => {
     const { date, assignee } = req.query;
     if (!date) return res.status(400).json({ error: 'date param required (YYYY-MM-DD)' });
+    if (!isValidDateString(date)) {
+        return res.status(400).json({ error: 'invalid date format (YYYY-MM-DD)' });
+    }
+    if (assignee && assignee !== 'all' && !isValidAssignee(assignee)) {
+        return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲, all' });
+    }
 
     let where = "status = 'done' AND due_date = ? AND (is_recurring = 0 OR recurring_parent_id IS NOT NULL)";
     let params = [date];
@@ -145,15 +314,11 @@ router.delete('/clear-done', (req, res) => {
 
 // POST /api/tasks — create task
 router.post('/', (req, res) => {
-    const { title, description, assignee, category_id, priority, due_date, due_time, end_time,
-        is_recurring, recurring_type, recurring_interval, recurring_end_date, auto_complete } = req.body;
-
-    if (!title || !assignee) {
-        return res.status(400).json({ error: 'title and assignee are required' });
+    const normalized = normalizeTaskPayload(req.body, { partial: false });
+    if (normalized.error) {
+        return res.status(400).json({ error: normalized.error });
     }
-    if (!VALID_ASSIGNEES.includes(assignee)) {
-        return res.status(400).json({ error: `assignee must be one of: ${VALID_ASSIGNEES.join(', ')}` });
-    }
+    const taskInput = normalized.value;
 
     try {
         const result = db.prepare(`
@@ -161,19 +326,19 @@ router.post('/', (req, res) => {
         is_recurring, recurring_type, recurring_interval, recurring_end_date, auto_complete)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
-            title,
-            description || '',
-            assignee,
-            category_id || null,
-            priority || 2,
-            due_date || null,
-            due_time || null,
-            end_time || null,
-            is_recurring ? 1 : 0,
-            recurring_type || null,
-            recurring_interval || 1,
-            recurring_end_date || null,
-            due_time ? (auto_complete !== undefined ? (auto_complete ? 1 : 0) : 1) : 0
+            taskInput.title,
+            taskInput.description,
+            taskInput.assignee,
+            taskInput.category_id,
+            taskInput.priority,
+            taskInput.due_date,
+            taskInput.due_time,
+            taskInput.end_time,
+            taskInput.is_recurring ? 1 : 0,
+            taskInput.recurring_type,
+            taskInput.recurring_interval,
+            taskInput.recurring_end_date,
+            taskInput.due_time ? (taskInput.auto_complete !== undefined ? (taskInput.auto_complete ? 1 : 0) : 1) : 0
         );
 
         const task = db.prepare(`
@@ -191,20 +356,23 @@ router.post('/', (req, res) => {
 // PUT /api/tasks/:id — update task
 router.put('/:id', (req, res) => {
     const { id } = req.params;
-    const fields = req.body;
+    const taskId = parseInteger(id);
+    if (taskId === null || taskId <= 0) {
+        return res.status(400).json({ error: 'Task id must be a positive integer' });
+    }
 
-    const allowedFields = ['title', 'description', 'assignee', 'category_id', 'priority',
-        'due_date', 'due_time', 'end_time', 'status', 'is_recurring', 'recurring_type',
-        'recurring_interval', 'recurring_end_date', 'auto_complete'];
+    const normalized = normalizeTaskPayload(req.body, { partial: true });
+    if (normalized.error) {
+        return res.status(400).json({ error: normalized.error });
+    }
+    const fields = normalized.value;
 
     const updates = [];
     const values = [];
 
     for (const [key, value] of Object.entries(fields)) {
-        if (allowedFields.includes(key)) {
-            updates.push(`${key} = ?`);
-            values.push(value);
-        }
+        updates.push(`${key} = ?`);
+        values.push(['is_recurring', 'auto_complete'].includes(key) ? (value ? 1 : 0) : value);
     }
 
     if (updates.length === 0) {
@@ -212,10 +380,10 @@ router.put('/:id', (req, res) => {
     }
 
     updates.push("updated_at = datetime('now', 'localtime')");
-    values.push(id);
+    values.push(taskId);
 
     try {
-        const prevTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
+        const prevTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(taskId);
         if (!prevTask) return res.status(404).json({ error: 'Task not found' });
 
         db.prepare(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`).run(...values);
@@ -224,7 +392,7 @@ router.put('/:id', (req, res) => {
       SELECT t.*, c.name as category_name, c.color as category_color, c.icon as category_icon
       FROM tasks t LEFT JOIN categories c ON t.category_id = c.id
       WHERE t.id = ?
-    `).get(id);
+    `).get(taskId);
 
         if (!task) return res.status(404).json({ error: 'Task not found' });
 

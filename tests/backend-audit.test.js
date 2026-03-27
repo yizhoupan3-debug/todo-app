@@ -63,6 +63,25 @@ function request(method, path, body) {
     });
 }
 
+async function requestForm(method, path, fields) {
+    const form = new FormData();
+    for (const [key, value] of Object.entries(fields)) {
+        form.set(key, String(value));
+    }
+
+    const res = await fetch(BASE + path, {
+        method,
+        body: form,
+    });
+
+    const text = await res.text();
+    try {
+        return { status: res.status, body: JSON.parse(text) };
+    } catch {
+        return { status: res.status, body: text };
+    }
+}
+
 async function runTests() {
     console.log('\n🔍 Backend Audit Integration Tests\n');
 
@@ -84,6 +103,11 @@ async function runTests() {
         const r = await request('PUT', '/api/checkin/goal', { assignee: '潘潘', type: 'water', goal: 2200 });
         if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}: ${JSON.stringify(r.body)}`);
         if (!r.body.success) throw new Error(`Expected success=true: ${JSON.stringify(r.body)}`);
+    });
+
+    await test('PUT /api/checkin/goal 负数目标 → 400', async () => {
+        const r = await request('PUT', '/api/checkin/goal', { assignee: '潘潘', type: 'water', goal: -5 });
+        if (r.status !== 400) throw new Error(`Expected 400, got ${r.status}: ${JSON.stringify(r.body)}`);
     });
 
     await test('GET /api/checkin/goal?assignee=潘潘 → 返回更新后的 2200', async () => {
@@ -118,6 +142,14 @@ async function runTests() {
         if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}: ${JSON.stringify(r.body)}`);
     });
 
+    await test('POST /api/import/ics/confirm 非法任务日期 → 400', async () => {
+        const r = await request('POST', '/api/import/ics/confirm', {
+            tasks: [{ title: '坏数据', due_date: '2026-02-31' }],
+            assignee: '潘潘',
+        });
+        if (r.status !== 400) throw new Error(`Expected 400, got ${r.status}: ${JSON.stringify(r.body)}`);
+    });
+
     // ── Tasks 基础 CRUD ──
     console.log('\n📝 Tasks CRUD');
 
@@ -134,6 +166,24 @@ async function runTests() {
         createdTaskId = r.body.id;
     });
 
+    await test('POST /api/tasks 非法 priority → 400', async () => {
+        const r = await request('POST', '/api/tasks', {
+            title: '非法优先级',
+            assignee: '潘潘',
+            priority: 99,
+        });
+        if (r.status !== 400) throw new Error(`Expected 400, got ${r.status}: ${JSON.stringify(r.body)}`);
+    });
+
+    await test('POST /api/tasks 非法 due_date → 400', async () => {
+        const r = await request('POST', '/api/tasks', {
+            title: '非法日期',
+            assignee: '潘潘',
+            due_date: '2026-99-99',
+        });
+        if (r.status !== 400) throw new Error(`Expected 400, got ${r.status}: ${JSON.stringify(r.body)}`);
+    });
+
     await test('GET /api/tasks?assignee=潘潘 返回任务', async () => {
         const r = await request('GET', '/api/tasks?assignee=潘潘');
         if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}`);
@@ -145,6 +195,12 @@ async function runTests() {
         const r = await request('PUT', `/api/tasks/${createdTaskId}`, { status: 'done' });
         if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}: ${JSON.stringify(r.body)}`);
         if (r.body.coinsEarned < 0) throw new Error(`Expected coinsEarned >= 0, got ${r.body.coinsEarned}`);
+    });
+
+    await test('PUT /api/tasks/:id 非法 status → 400', async () => {
+        if (!createdTaskId) return;
+        const r = await request('PUT', `/api/tasks/${createdTaskId}`, { status: 'archived' });
+        if (r.status !== 400) throw new Error(`Expected 400, got ${r.status}: ${JSON.stringify(r.body)}`);
     });
 
     await test('DELETE /api/tasks/:id 删除任务', async () => {
@@ -177,6 +233,16 @@ async function runTests() {
         if (r.status !== 404) throw new Error(`Expected 404, got ${r.status}`);
     });
 
+    await test('PUT /api/categories/:id 重名更新 → 409', async () => {
+        const first = await request('POST', '/api/categories', { name: '后端测试分类A' });
+        const second = await request('POST', '/api/categories', { name: '后端测试分类B' });
+        if (first.status !== 201 || second.status !== 201) {
+            throw new Error(`Expected setup 201, got ${first.status}/${second.status}`);
+        }
+        const r = await request('PUT', `/api/categories/${second.body.id}`, { name: '后端测试分类A' });
+        if (r.status !== 409) throw new Error(`Expected 409, got ${r.status}: ${JSON.stringify(r.body)}`);
+    });
+
     // ── Stats ──
     console.log('\n📊 Stats');
 
@@ -189,6 +255,25 @@ async function runTests() {
     await test('GET /api/stats?range=month&assignee=潘潘 → 200', async () => {
         const r = await request('GET', '/api/stats?range=month&assignee=潘潘');
         if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}`);
+    });
+
+    await test('GET /api/stats?range=year → 400', async () => {
+        const r = await request('GET', '/api/stats?range=year');
+        if (r.status !== 400) throw new Error(`Expected 400, got ${r.status}: ${JSON.stringify(r.body)}`);
+    });
+
+    await test('GET /api/stats?range=week&assignee=陌生人 → 400', async () => {
+        const r = await request('GET', '/api/stats?range=week&assignee=陌生人');
+        if (r.status !== 400) throw new Error(`Expected 400, got ${r.status}: ${JSON.stringify(r.body)}`);
+    });
+
+    await test('POST /api/stats/pomodoro 非法 assignee / focus_minutes → 400', async () => {
+        const r = await request('POST', '/api/stats/pomodoro', {
+            assignee: '陌生人',
+            focus_minutes: -10,
+            rounds: 0,
+        });
+        if (r.status !== 400) throw new Error(`Expected 400, got ${r.status}: ${JSON.stringify(r.body)}`);
     });
 
     // ── Garden Coins ──
@@ -239,6 +324,47 @@ async function runTests() {
         const r = await request('GET', '/api/journal/recent');
         if (r.status !== 200) throw new Error(`Expected 200, got ${r.status}`);
         if (!Array.isArray(r.body)) throw new Error('Expected array');
+    });
+
+    await test('GET /api/journal?date=2026-99-99 → 400', async () => {
+        const r = await request('GET', '/api/journal?date=2026-99-99');
+        if (r.status !== 400) throw new Error(`Expected 400, got ${r.status}: ${JSON.stringify(r.body)}`);
+    });
+
+    await test('GET /api/journal/recent?limit=-5 → 400', async () => {
+        const r = await request('GET', '/api/journal/recent?limit=-5');
+        if (r.status !== 400) throw new Error(`Expected 400, got ${r.status}: ${JSON.stringify(r.body)}`);
+    });
+
+    await test('POST /api/journal/element 显式 0 坐标不应被默认值覆盖', async () => {
+        const created = await requestForm('POST', '/api/journal/element', {
+            date: '2026-03-27',
+            author: '潘潘',
+            element_type: 'text',
+            content: 'zero-position',
+            pos_x: 0,
+            pos_y: 0,
+            width: 0,
+            height: 0,
+            rotation: 0,
+        });
+        if (created.status !== 200) throw new Error(`Expected 200, got ${created.status}: ${JSON.stringify(created.body)}`);
+        if (created.body.element.pos_x !== 0 || created.body.element.pos_y !== 0) {
+            throw new Error(`Expected zero position, got ${JSON.stringify(created.body.element)}`);
+        }
+        if (created.body.element.width !== 0 || created.body.element.height !== 0) {
+            throw new Error(`Expected zero size to be preserved, got ${JSON.stringify(created.body.element)}`);
+        }
+        await request('DELETE', `/api/journal/element/${created.body.element.id}`);
+    });
+
+    await test('POST /api/checkin 无效 assignee → 400', async () => {
+        const r = await request('POST', '/api/checkin', {
+            assignee: '陌生人',
+            amount: 100,
+            type: 'water',
+        });
+        if (r.status !== 400) throw new Error(`Expected 400, got ${r.status}: ${JSON.stringify(r.body)}`);
     });
 
     // ── Garden Islands & Boats ──

@@ -1,6 +1,14 @@
 const express = require('express');
 const db = require('../db');
 const { CHECKIN_DAILY_REWARD, CHECKIN_STREAK_3_BONUS, CHECKIN_STREAK_7_BONUS } = require('./garden-shared');
+const {
+    VALID_CHECKIN_TYPES,
+    isValidAssignee,
+    isValidDateString,
+    isOneOf,
+    isPositiveInteger,
+    parseInteger,
+} = require('../validation');
 
 const router = express.Router();
 const WAKEUP_REWARD_DEADLINE_HOUR = 9;
@@ -44,6 +52,13 @@ function getGoalFor(type, assignee) {
 router.get('/', (req, res) => {
     const { date, assignee, type } = req.query;
     if (!date) return res.status(400).json({ error: 'date is required' });
+    if (!isValidDateString(date)) return res.status(400).json({ error: 'date must use YYYY-MM-DD' });
+    if (assignee && !isValidAssignee(assignee)) {
+        return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲' });
+    }
+    if (type && !isOneOf(type, VALID_CHECKIN_TYPES)) {
+        return res.status(400).json({ error: `type must be one of: ${VALID_CHECKIN_TYPES.join(', ')}` });
+    }
 
     let sql = 'SELECT * FROM checkin_records WHERE date = ?';
     const params = [date];
@@ -78,17 +93,26 @@ router.get('/', (req, res) => {
 // POST /api/checkin — add a check-in record
 router.post('/', (req, res) => {
     const { type, amount, assignee, date } = req.body;
-    if (!assignee || !amount) {
+    if (!assignee || amount === undefined || amount === null || amount === '') {
         return res.status(400).json({ error: 'assignee and amount are required' });
+    }
+    if (!isValidAssignee(assignee)) {
+        return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲' });
+    }
+    if (!isPositiveInteger(amount)) {
+        return res.status(400).json({ error: 'amount must be a positive integer' });
+    }
+    if (date && !isValidDateString(date)) {
+        return res.status(400).json({ error: 'date must use YYYY-MM-DD' });
     }
 
     const now = new Date();
     const today = date || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const checkinType = type || 'water';
+    const normalizedAmount = parseInteger(amount);
 
-    const VALID_TYPES = ['water', 'wakeup', 'goout', 'skincare', 'steps'];
-    if (!VALID_TYPES.includes(checkinType)) {
-        return res.status(400).json({ error: `invalid type: ${checkinType}. Valid: ${VALID_TYPES.join(', ')}` });
+    if (!isOneOf(checkinType, VALID_CHECKIN_TYPES)) {
+        return res.status(400).json({ error: `invalid type: ${checkinType}. Valid: ${VALID_CHECKIN_TYPES.join(', ')}` });
     }
 
     try {
@@ -100,7 +124,7 @@ router.post('/', (req, res) => {
             const result = db.prepare(`
                 INSERT INTO checkin_records (type, amount, assignee, date)
                 VALUES (?, ?, ?, ?)
-            `).run(checkinType, amount, assignee, today);
+            `).run(checkinType, normalizedAmount, assignee, today);
 
             const record = db.prepare('SELECT * FROM checkin_records WHERE id = ?').get(result.lastInsertRowid);
 
@@ -202,6 +226,12 @@ router.post('/', (req, res) => {
 router.get('/goal', (req, res) => {
     const { type, assignee } = req.query;
     if (!assignee) return res.status(400).json({ error: 'assignee is required' });
+    if (!isValidAssignee(assignee)) {
+        return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲' });
+    }
+    if (type && !isOneOf(type, VALID_CHECKIN_TYPES)) {
+        return res.status(400).json({ error: `type must be one of: ${VALID_CHECKIN_TYPES.join(', ')}` });
+    }
     try {
         const t = type || 'water';
         res.json({ goal: getGoalFor(t, assignee) });
@@ -214,13 +244,24 @@ router.get('/goal', (req, res) => {
 // IMPORTANT: Must be registered BEFORE DELETE /:id
 router.put('/goal', (req, res) => {
     const { type, assignee, goal } = req.body;
-    if (!assignee || !goal) return res.status(400).json({ error: 'assignee and goal are required' });
+    if (!assignee || goal === undefined || goal === null || goal === '') {
+        return res.status(400).json({ error: 'assignee and goal are required' });
+    }
+    if (!isValidAssignee(assignee)) {
+        return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲' });
+    }
+    if (type && !isOneOf(type, VALID_CHECKIN_TYPES)) {
+        return res.status(400).json({ error: `type must be one of: ${VALID_CHECKIN_TYPES.join(', ')}` });
+    }
+    if (!isPositiveInteger(goal)) {
+        return res.status(400).json({ error: 'goal must be a positive integer' });
+    }
     try {
         db.prepare(`
             INSERT INTO checkin_goals (type, assignee, goal) VALUES (?, ?, ?)
             ON CONFLICT(type, assignee) DO UPDATE SET goal = excluded.goal
-        `).run(type || 'water', assignee, goal);
-        res.json({ success: true, goal });
+        `).run(type || 'water', assignee, parseInteger(goal));
+        res.json({ success: true, goal: parseInteger(goal) });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -235,6 +276,15 @@ router.put('/goal', (req, res) => {
 router.get('/history-batch', (req, res) => {
     const { assignee, type, days } = req.query;
     if (!assignee || !type) return res.status(400).json({ error: 'assignee and type are required' });
+    if (!isValidAssignee(assignee)) {
+        return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲' });
+    }
+    if (!isOneOf(type, VALID_CHECKIN_TYPES)) {
+        return res.status(400).json({ error: `type must be one of: ${VALID_CHECKIN_TYPES.join(', ')}` });
+    }
+    if (days !== undefined && days !== null && days !== '' && !isPositiveInteger(days)) {
+        return res.status(400).json({ error: 'days must be a positive integer' });
+    }
 
     const numDays = Math.min(30, Math.max(1, parseInt(days || '7', 10)));
     try {
@@ -281,6 +331,9 @@ router.get('/history-batch', (req, res) => {
 router.get('/landing-summary', (req, res) => {
     const { assignee } = req.query;
     if (!assignee) return res.status(400).json({ error: 'assignee is required' });
+    if (!isValidAssignee(assignee)) {
+        return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲' });
+    }
 
     const now = new Date();
     const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -339,12 +392,17 @@ router.get('/landing-summary', (req, res) => {
 // DELETE /api/checkin/:id — undo a check-in (with coin rollback)
 router.delete('/:id', (req, res) => {
     try {
-        const record = db.prepare('SELECT * FROM checkin_records WHERE id = ?').get(req.params.id);
+        const recordId = parseInteger(req.params.id);
+        if (recordId === null || recordId <= 0) {
+            return res.status(400).json({ error: 'id must be a positive integer' });
+        }
+
+        const record = db.prepare('SELECT * FROM checkin_records WHERE id = ?').get(recordId);
         if (!record) return res.status(404).json({ error: 'not found' });
 
         const txResult = db.transaction(() => {
             // Delete the record first
-            db.prepare('DELETE FROM checkin_records WHERE id = ?').run(req.params.id);
+            db.prepare('DELETE FROM checkin_records WHERE id = ?').run(recordId);
 
             // Recalculate total after deletion
             const { total } = db.prepare(
