@@ -479,9 +479,9 @@ const GardenView = {
         if (!vp || !world) return;
         const fitX = vp.clientWidth / world.offsetWidth;
         const fitY = vp.clientHeight / world.offsetHeight;
-        this._state.fitZoom = Math.max(Math.min(fitX, fitY), 0.38);
+        this._state.fitZoom = Math.max(Math.min(fitX, fitY) * 0.9, 0.34);
         this._state.minZoom = this._state.fitZoom;
-        this._state.defaultZoom = Math.max(this._state.minZoom, Math.min(1.15, this._state.fitZoom * 1.45));
+        this._state.defaultZoom = Math.max(this._state.minZoom, Math.min(1.08, this._state.fitZoom * 1.35));
     },
 
     _zoomAtPoint(vp, world, nextZoom, clientX, clientY) {

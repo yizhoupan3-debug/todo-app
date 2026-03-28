@@ -27,9 +27,9 @@
   background: var(--card-bg, rgba(255,255,255,.85));
   backdrop-filter: var(--glass-blur, blur(20px) saturate(1.4));
   -webkit-backdrop-filter: var(--glass-blur, blur(20px) saturate(1.4));
-  border: 1px solid var(--border-color, rgba(0,0,0,.08));
-  border-radius: 24px;
-  box-shadow: 0 4px 20px rgba(0,0,0,.08), 0 1px 3px rgba(0,0,0,.04);
+  border: 1px solid rgba(99, 102, 241, 0.14);
+  border-radius: 22px;
+  box-shadow: 0 14px 32px rgba(99, 102, 241, 0.12), 0 1px 3px rgba(0,0,0,.04);
   z-index: 100;
   width: max-content;
   max-width: calc(100% - 32px);
@@ -104,7 +104,7 @@
   cursor: default;
   -webkit-overflow-scrolling: touch;
   background-color: var(--bg, #f5f3f0); /* The solid desk */
-  padding: 80px 20px 40px; /* Space for the floating toolbar */
+  padding: 92px 20px 40px; /* Space for the floating toolbar */
 }
 
 /* ── Canvas Paper ── */
@@ -115,8 +115,8 @@
   max-width: 1100px;
   min-height: 900px;
   margin: 0 auto;
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg, 0 8px 32px rgba(0,0,0,.12)), 0 0 0 1px var(--border-color, rgba(0,0,0,.04));
+  border-radius: 24px;
+  box-shadow: 0 24px 54px rgba(99, 102, 241, 0.1), 0 0 0 1px rgba(99, 102, 241, 0.08);
   transition: background .4s;
 }
 
@@ -252,17 +252,26 @@
 /* ── Empty state ── */
 .journal-empty {
   position: absolute;
-  top: 40%; left: 50%;
+  top: 44%; left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   color: var(--text-secondary, #94a3b8);
   pointer-events: none;
   animation: journalFadeIn .8s ease both;
+  width: min(420px, calc(100% - 48px));
+  padding: 26px 24px;
+  border-radius: 24px;
+  border: 1px dashed rgba(99, 102, 241, 0.18);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 18px 42px rgba(99, 102, 241, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 @keyframes journalFadeIn { from { opacity:0; transform: translate(-50%,-50%) scale(.9); } to { opacity:1; transform: translate(-50%,-50%) scale(1); } }
 .journal-empty-icon { font-size: 3.5rem; opacity: .45; margin-bottom: 12px; }
+.journal-empty-title { font-size: 1.02rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
 .journal-empty-text { font-size: .88rem; line-height: 1.7; }
-.journal-empty-hint { font-size: .75rem; margin-top: 8px; opacity: .6; }
+.journal-empty-hint { font-size: .78rem; margin-top: 8px; opacity: .74; }
 
 /* ── Canvas element (shared) ── */
 .journal-el {
@@ -619,8 +628,13 @@
   .journal-tool-btn { font-size: .75rem; padding: 5px 8px; }
   .journal-text-toolbar { bottom: 72px; }
   .journal-el-actions { bottom: -32px; }
-  .journal-canvas-wrap { padding: 60px 10px 80px; }
-  .journal-canvas { max-width: 100%; border-radius: 8px; }
+  .journal-canvas-wrap { padding: 72px 10px 80px; }
+  .journal-canvas { max-width: 100%; border-radius: 16px; }
+  .journal-empty {
+    width: calc(100% - 24px);
+    padding: 20px 16px;
+    border-radius: 18px;
+  }
 }
 
 /* Mobile: always show action bar */

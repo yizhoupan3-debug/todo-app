@@ -99,6 +99,7 @@
   transform: translateZ(0);
   /* Soft teal-to-mint gradient like Forest app */
   background:
+    radial-gradient(ellipse 28% 24% at 18% 16%, rgba(255, 252, 228, 0.34) 0%, rgba(255, 252, 228, 0.22) 24%, rgba(255, 252, 228, 0.08) 52%, transparent 76%),
     radial-gradient(ellipse 80% 60% at 50% 40%, rgba(255, 255, 255, 0.06) 0%, transparent 70%),
     linear-gradient(180deg,
       #5bb8a8 0%,
@@ -119,12 +120,24 @@
   pointer-events: none;
   z-index: 60;
   background:
-    radial-gradient(circle 60px at 20% 25%, rgba(255,255,255,0.08) 0%, transparent 100%),
-    radial-gradient(circle 80px at 75% 35%, rgba(255,255,255,0.06) 0%, transparent 100%),
-    radial-gradient(circle 50px at 45% 15%, rgba(255,255,255,0.07) 0%, transparent 100%);
+    radial-gradient(circle 140px at 16% 20%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.10) 28%, transparent 72%),
+    radial-gradient(circle 82px at 77% 28%, rgba(255,255,255,0.10) 0%, transparent 100%),
+    radial-gradient(circle 54px at 89% 43%, rgba(255,255,255,0.14) 0%, transparent 100%),
+    radial-gradient(circle 44px at 9% 56%, rgba(255,255,255,0.12) 0%, transparent 100%),
+    radial-gradient(circle 30px at 4% 39%, rgba(255,255,255,0.18) 0%, transparent 100%);
 }
 
-.island-viewport::before { display: none; }
+.island-viewport::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(circle 5px at 73% 11%, rgba(255,255,255,0.82) 0%, transparent 100%),
+    radial-gradient(circle 4px at 84% 36%, rgba(255,255,255,0.72) 0%, transparent 100%),
+    radial-gradient(circle 3px at 9% 42%, rgba(255,255,255,0.66) 0%, transparent 100%);
+}
 
 /* ═══ World Canvas ═══ */
 .island-world {
@@ -213,10 +226,10 @@
  */
 .island-land {
   position: absolute;
-  left: 380px;
-  top: 200px;
-  width: 880px;
-  height: 560px;
+  left: 0;
+  top: 0;
+  width: 1600px;
+  height: 1100px;
   z-index: 5;
   pointer-events: none;
   overflow: visible;
@@ -282,6 +295,25 @@
   transition: opacity 0.2s cubic-bezier(.34, 1.56, .64, 1);
 }
 
+.iplot-well {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 50px;
+  height: 22px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.08) 34%, transparent 58%),
+    linear-gradient(180deg, rgba(145, 211, 255, 0.96) 0%, rgba(96, 174, 242, 0.98) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.28),
+    0 0 0 3px rgba(255, 255, 255, 0.16);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.54;
+}
+
 
 /* Vivid flat blue water puddle under each planted tree (matches Forest screenshot) */
 .iplot.planted::before {
@@ -289,8 +321,8 @@
   position: absolute;
   left: 50%;
   bottom: 0;
-  width: 80px;
-  height: 40px;
+  width: 72px;
+  height: 34px;
   border-radius: 50%;
   background: #6ebdf2;  /* Flat blue color matching the reference */
   transform: translateX(-50%);
@@ -321,9 +353,15 @@
   transform: translate(-50%, -100%);
 }
 
+.iplot.wasteland .iplot-well {
+  width: 46px;
+  height: 20px;
+  opacity: 0.44;
+}
+
 .iplot.wasteland:hover .iso-tile-base,
 .iplot.wasteland.selected .iso-tile-base {
-  opacity: 1;
+  opacity: 0.92;
 }
 
 /* ── Cleared — bare plot ready for planting ── */
@@ -337,11 +375,11 @@
 }
 
 .iplot.cleared:hover .iso-tile-base {
-  opacity: 1;
+  opacity: 0.88;
 }
 
 .iplot.cleared.plantable .iso-tile-base {
-  opacity: 0.5;
+  opacity: 0.28;
   animation: readyPulse 2s ease-in-out infinite;
 }
 
@@ -825,4 +863,3 @@
 }
 
 .gic-cancel:hover { background: rgba(255, 80, 80, 0.2); color: #ff6b6b; }
-

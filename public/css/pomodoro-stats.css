@@ -319,10 +319,15 @@
 
 /* ===== STATS MODULE ===== */
 .stats-container {
-  max-width: 900px;
+  max-width: 980px;
   margin: 0 auto;
   will-change: transform;
   transform: translateZ(0);
+  padding: 20px 22px 24px;
+  border-radius: 28px;
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.28));
+  box-shadow: 0 16px 36px rgba(99, 102, 241, 0.08);
 }
 
 .stats-toolbar {
@@ -344,8 +349,9 @@
   gap: 4px;
   padding: 3px;
   border-radius: var(--radius-md);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(99, 102, 241, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
 }
 
 .stats-range-btn {
@@ -1048,4 +1054,3 @@
     grid-template-columns: repeat(3, 1fr);
   }
 }
-

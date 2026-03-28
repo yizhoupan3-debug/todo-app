@@ -1,7 +1,12 @@
 /* ===== CHECKIN / WATER TRACKER ===== */
 .checkin-container {
-  max-width: 600px;
+  max-width: 980px;
   margin: 0 auto;
+  padding: 20px 22px 24px;
+  border-radius: 28px;
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.28));
+  box-shadow: 0 16px 36px rgba(99, 102, 241, 0.08);
 }
 
 .checkin-person-toggle {
@@ -41,7 +46,7 @@
 .checkin-items-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 14px;
 }
 
 .checkin-item-card {
@@ -50,13 +55,14 @@
   gap: 16px;
   padding: 20px 24px;
   min-height: 90px;
-  background: var(--card-bg);
-  border: 1.5px solid var(--border);
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(99, 102, 241, 0.1);
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-bounce);
   transform-style: preserve-3d;
   perspective: 600px;
+  box-shadow: 0 12px 24px rgba(99, 102, 241, 0.06);
 }
 
 .checkin-item-card:hover {
@@ -849,7 +855,8 @@
 /* ===== MOBILE OVERRIDES ===== */
 @media (max-width: 768px) {
   .checkin-container {
-    padding-bottom: 12px;
+    padding: 14px 14px 12px;
+    border-radius: 20px;
   }
 
   /* Single column layout on mobile */

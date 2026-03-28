@@ -188,12 +188,35 @@ Object.assign(GardenView, {
         const ptBottomD = `${topX + (gridW - gridH) * cw/2},${topY + (gridW + gridH) * ch/2 + grassH + dirtH}`;
         const ptLeftD = `${topX - gridH * cw/2},${topY + gridH * ch/2 + grassH + dirtH}`;
 
-        // Colors matching Forest exactly
-        const colSand = "#fff6e0";
-        const colGrassL = "#82cd59";
-        const colGrassR = "#6eb847";
-        const colDirtL = "#2d7059";
-        const colDirtR = "#23604b";
+        // Colors tuned closer to the reference poster
+        const colSand = "#fff3d8";
+        const colSandGlow = "#fff9e9";
+        const colGrassL = "#8fd351";
+        const colGrassR = "#73bf3c";
+        const colDirtL = "#2b775f";
+        const colDirtR = "#215e4d";
+
+        const leftFlowers = Array.from({ length: 10 }, (_, i) => {
+            const t = (i + 0.8) / 10.8;
+            const x = (topX - gridH * cw / 2) * (1 - t) + ((topX + (gridW - gridH) * cw / 2) - 14) * t;
+            const y = (topY + gridH * ch / 2 + grassH + 4) * (1 - t) + (topY + (gridW + gridH) * ch / 2 + grassH - 12) * t;
+            const r = i % 3 === 0 ? 5.4 : 4.2;
+            return `<g opacity="0.95">
+                <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="#fdf7d7"/>
+                <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r * 0.34).toFixed(2)}" fill="#ffd763"/>
+            </g>`;
+        }).join('');
+
+        const rightFlowers = Array.from({ length: 9 }, (_, i) => {
+            const t = (i + 0.7) / 9.7;
+            const x = (topX + (gridW - gridH) * cw / 2 + 12) * (1 - t) + (topX + gridW * cw / 2 - 14) * t;
+            const y = (topY + (gridW + gridH) * ch / 2 + grassH - 8) * (1 - t) + (topY + gridW * ch / 2 + grassH + 10) * t;
+            const r = i % 2 === 0 ? 5 : 4;
+            return `<g opacity="0.95">
+                <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="#fdf7d7"/>
+                <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(r * 0.34).toFixed(2)}" fill="#ffd763"/>
+            </g>`;
+        }).join('');
 
         return `
         <svg width="1600" height="1100" style="position:absolute;top:0;left:0;pointer-events:none;z-index:1; overflow:visible;">
@@ -208,7 +231,19 @@ Object.assign(GardenView, {
                 
                 <!-- Top Face (Sand terrain) -->
                 <polygon points="${ptTop} ${ptRight} ${ptBottom} ${ptLeft}" fill="${colSand}" stroke="${colSand}" stroke-width="16"/>
+                <polygon points="${ptTop} ${ptRight} ${ptBottom} ${ptLeft}" fill="url(#islandSoftGlow)" opacity="0.48"/>
+
+                <!-- Front edge flowers -->
+                ${leftFlowers}
+                ${rightFlowers}
             </g>
+            <defs>
+                <radialGradient id="islandSoftGlow" cx="34%" cy="26%" r="82%">
+                    <stop offset="0%" stop-color="${colSandGlow}" stop-opacity="0.95"/>
+                    <stop offset="55%" stop-color="${colSandGlow}" stop-opacity="0.22"/>
+                    <stop offset="100%" stop-color="${colSandGlow}" stop-opacity="0"/>
+                </radialGradient>
+            </defs>
         </svg>
         `;
     },
@@ -228,6 +263,7 @@ Object.assign(GardenView, {
             `z-index:${zIndex ?? 8}`,
         ].join(';');
         const zoneClass = zone ? `zone-${zone}` : '';
+        const showAmbientWell = plot.status !== 'planted' && this._plotNoise(plot, 9) > 0.62;
         
         const baseTileSvg = `
             <div class="iso-tile-base">
@@ -240,6 +276,7 @@ Object.assign(GardenView, {
         if (plot.status === 'wasteland') {
             return `<div class="iplot wasteland ${zoneClass} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
                 ${baseTileSvg}
+                ${showAmbientWell ? '<div class="iplot-well"></div>' : ''}
                 ${isSelected ? `<button class="iplot-action" data-action="clear" title="开荒">⛏️</button>` : ''}
             </div>`;
         }
@@ -247,6 +284,7 @@ Object.assign(GardenView, {
             const sel = this.selectedTree;
             return `<div class="iplot cleared ${zoneClass} ${sel ? 'plantable' : ''} ${isSelected ? 'selected' : ''}" data-zone="${zone || ''}" data-plot-id="${plot.id}" style="${style}" title="">
                 ${baseTileSvg}
+                ${showAmbientWell ? '<div class="iplot-well"></div>' : ''}
                 ${isSelected && sel ? '<button class="iplot-action" data-action="plant" title="">🌱</button>' : ''}
             </div>`;
         }
