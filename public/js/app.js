@@ -5,10 +5,10 @@ const bootState = (() => {
 
 const App = {
     currentView: 'daily',
-    currentAssignee: bootState.persona === 'all' ? 'all' : (bootState.persona || '潘潘'),
+    currentAssignee: bootState.persona || '潘潘',
     activePersona: bootState.persona || '潘潘',
     lastPersona: bootState.lastPersona || '潘潘',
-    scopedPersona: bootState.scopedPersona || (bootState.persona === 'all' ? (bootState.lastPersona || '潘潘') : (bootState.persona || '潘潘')),
+    scopedPersona: bootState.scopedPersona || (bootState.persona || '潘潘'),
     socket: null,
     _initialized: false,
     _socketEventsBound: false,
@@ -157,13 +157,8 @@ const App = {
     },
 
     cyclePersona() {
-        const supportsAll = typeof this._viewSupportsAllAssignee === 'function'
-            ? this._viewSupportsAllAssignee(this.currentView)
-            : (this.currentView === 'daily' || this.currentView === 'monthly');
-        const order = supportsAll ? ['all', '潘潘', '蒲蒲'] : ['潘潘', '蒲蒲'];
-        const current = supportsAll
-            ? (this.activePersona || '潘潘')
-            : (this.scopedPersona || this.lastPersona || '潘潘');
+        const order = ['潘潘', '蒲蒲'];
+        const current = this.activePersona || this.scopedPersona || this.lastPersona || '潘潘';
         const index = Math.max(0, order.indexOf(current));
         const nextPersona = order[(index + 1) % order.length];
 
@@ -173,9 +168,9 @@ const App = {
         }
 
         this.activePersona = nextPersona;
-        this.lastPersona = nextPersona === 'all' ? this.lastPersona : nextPersona;
-        this.scopedPersona = nextPersona === 'all' ? this.lastPersona : nextPersona;
-        this.currentAssignee = nextPersona === 'all' ? 'all' : nextPersona;
+        this.lastPersona = nextPersona;
+        this.scopedPersona = nextPersona;
+        this.currentAssignee = nextPersona;
     },
 
     initSocket() {
@@ -246,7 +241,7 @@ const App = {
             currentAssignee: this.currentAssignee,
             activePersona: this.activePersona,
             lastPersona: this.lastPersona,
-            scopedPersona: this.scopedPersona || (this.activePersona === 'all' ? this.lastPersona : this.activePersona),
+            scopedPersona: this.scopedPersona || this.activePersona,
         };
     },
 

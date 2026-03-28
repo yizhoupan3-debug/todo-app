@@ -61,7 +61,7 @@ if (typeof App === 'undefined') {
         if (this.currentView === 'stats' && typeof StatsView !== 'undefined') {
             return StatsView.currentAssignee;
         }
-        if (this.currentAssignee && this.currentAssignee !== 'all') {
+        if (this.currentAssignee) {
             return this.currentAssignee;
         }
         return '潘潘';

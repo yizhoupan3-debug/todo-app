@@ -27,7 +27,7 @@ const DailyView = {
                 App.showToast('没有已完成的任务', 'info');
                 return;
             }
-            const scope = App.currentAssignee === 'all' ? '（潘潘和蒲蒲的所有）' : `（${App.currentAssignee}的）`;
+            const scope = `（${App.currentAssignee}的）`;
             if (!confirm(`确定要清除 ${doneCount} 个${scope}已完成的任务吗？`)) return;
             try {
                 const dateStr = this.formatDate(this.currentDate);
@@ -161,7 +161,7 @@ const DailyView = {
         try {
             const assignee = App.currentAssignee;
             const params = { date: dateStr };
-            if (assignee !== 'all') params.assignee = assignee;
+            if (assignee) params.assignee = assignee;
 
             const tasks = await API.getTasks(params);
             // Discard stale response if another load was triggered
@@ -348,7 +348,6 @@ const DailyView = {
 
     renderTaskCard(task) {
         const isDone = task.status === 'done';
-        const assigneeImg = `<img class="tag-avatar" src="${Utils.personaAvatarUrl(task.assignee)}" alt="">`;
 
         let metaTags = '';
         if (task.category_name) {
@@ -358,9 +357,6 @@ const DailyView = {
             let timeDisplay = task.due_time;
             if (task.end_time) timeDisplay += ` - ${task.end_time}`;
             metaTags += `<span class="task-tag time"><i data-lucide="clock-3" class="lucide-inline tag-icon"></i> ${timeDisplay}</span>`;
-        }
-        if (App.currentAssignee === 'all') {
-            metaTags += `<span class="task-tag assignee">${assigneeImg} ${task.assignee}</span>`;
         }
         if (task.recurring_parent_id || task.is_recurring) {
             metaTags += `<span class="task-tag recurring"><i data-lucide="repeat" class="lucide-inline tag-icon"></i> 重复</span>`;

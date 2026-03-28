@@ -28,6 +28,7 @@ const io = new Server(server, {
         origin: ioCorsOrigin,
     }
 });
+let autoCompleteTimer = null;
 
 function appendVary(existing, value) {
     if (!existing) return value;
@@ -165,26 +166,21 @@ io.on('connection', (socket) => {
                 socket.leave(room);
             }
         }
-        if (assignee && assignee !== 'all') {
+        if (assignee) {
             socket.join(`assignee:${assignee}`);
         }
-        // Also join a shared room for 'all' listeners
-        socket.join('assignee:all');
     });
 
     socket.on('task:created', (task) => {
-        // Broadcast to the task's assignee room + 'all' viewers
         if (task?.assignee) {
             socket.to(`assignee:${task.assignee}`).emit('task:created', task);
         }
-        socket.to('assignee:all').emit('task:created', task);
     });
 
     socket.on('task:updated', (task) => {
         if (task?.assignee) {
             socket.to(`assignee:${task.assignee}`).emit('task:updated', task);
         }
-        socket.to('assignee:all').emit('task:updated', task);
     });
 
     socket.on('task:deleted', (data) => {
@@ -215,11 +211,10 @@ app.get('*', (req, res) => {
     sendAppShell(res);
 });
 
-// Auto-complete timer — check every 60 seconds
 const db = require('./db');
 const { formatDateStr, formatTimeStr } = require('./utils');
 const { TASK_REWARD } = require('./routes/garden-shared');
-setInterval(() => {
+function runAutoCompleteSweep() {
     try {
         const now = new Date();
         const todayStr = formatDateStr(now);
@@ -254,10 +249,15 @@ setInterval(() => {
     } catch (err) {
         console.error('Auto-complete error:', err.message);
     }
-}, 60000); // every 60 seconds
+}
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, '0.0.0.0', () => {
+function ensureAutoCompleteTimer() {
+    if (!autoCompleteTimer) {
+        autoCompleteTimer = setInterval(runAutoCompleteSweep, 60000);
+    }
+}
+
+function logStartup(port) {
     const os = require('os');
     const interfaces = os.networkInterfaces();
     let localIP = 'localhost';
@@ -276,7 +276,80 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log(`[startup] dataDir=${db.dataDir} dbPath=${db.dbPath}`);
     console.log('');
     console.log('⚔️ 峡谷讨伐日记 已启动!');
-    console.log(`   本机访问: http://localhost:${PORT}`);
-    console.log(`   局域网访问: http://${localIP}:${PORT}`);
+    console.log(`   本机访问: http://localhost:${port}`);
+    console.log(`   局域网访问: http://${localIP}:${port}`);
     console.log('');
-});
+}
+
+function startServer({ port = process.env.PORT || 3000, host = '0.0.0.0' } = {}) {
+    ensureAutoCompleteTimer();
+    return new Promise((resolve, reject) => {
+        if (server.listening) {
+            resolve(server);
+            return;
+        }
+
+        const onError = (err) => {
+            server.off('listening', onListening);
+            reject(err);
+        };
+        const onListening = () => {
+            server.off('error', onError);
+            const address = server.address();
+            const actualPort = typeof address === 'object' && address ? address.port : port;
+            logStartup(actualPort);
+            resolve(server);
+        };
+
+        server.once('error', onError);
+        server.once('listening', onListening);
+        server.listen(port, host);
+    });
+}
+
+function stopServer() {
+    return new Promise((resolve, reject) => {
+        if (autoCompleteTimer) {
+            clearInterval(autoCompleteTimer);
+            autoCompleteTimer = null;
+        }
+        if (!server.listening) {
+            resolve();
+            return;
+        }
+        const finalizeClose = () => {
+            if (!server.listening) {
+                resolve();
+                return;
+            }
+            server.close((err) => {
+                if (err) {
+                    if (err.code === 'ERR_SERVER_NOT_RUNNING') {
+                        resolve();
+                        return;
+                    }
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        };
+
+        io.close(finalizeClose);
+    });
+}
+
+if (require.main === module) {
+    startServer().catch((err) => {
+        console.error('Server failed to start:', err);
+        process.exit(1);
+    });
+}
+
+module.exports = {
+    app,
+    server,
+    io,
+    startServer,
+    stopServer,
+};

@@ -7,7 +7,7 @@ const MonthlyView = {
     currentYear: new Date().getFullYear(),
     currentMonth: new Date().getMonth(),
     monthTasks: {},        // keyed by 'YYYY-MM'
-    localAssignee: 'all',
+    localAssignee: '潘潘',
     statusFilter: 'all',
     visibleYear: null,
     visibleMonth: null,
@@ -100,7 +100,7 @@ const MonthlyView = {
     async _loadMonthTasks(y, m) {
         const key = this._monthKey(y, m);
         const params = { month: key };
-        if (this.localAssignee !== 'all') params.assignee = this.localAssignee;
+        if (this.localAssignee) params.assignee = this.localAssignee;
         try {
             this.monthTasks[key] = await API.getTasks(params);
         } catch (err) {

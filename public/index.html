@@ -31,9 +31,9 @@
         var p = localStorage.getItem('panpu-persona');
         var lp = localStorage.getItem('panpu-last-persona');
         var rawCoinCache = localStorage.getItem('panpu-coin-balance-cache');
-        var validPersona = ['潘潘', '蒲蒲', 'all'].indexOf(p) !== -1 ? p : '潘潘';
         var validLastPersona = ['潘潘', '蒲蒲'].indexOf(lp) !== -1 ? lp : '潘潘';
-        var scopedPersona = validPersona === 'all' ? validLastPersona : validPersona;
+        var validPersona = ['潘潘', '蒲蒲'].indexOf(p) !== -1 ? p : validLastPersona;
+        var scopedPersona = validPersona;
         var coinCache = {};
         var d = document.documentElement;
         if (m) d.setAttribute('data-mode', m);
@@ -276,12 +276,11 @@
           if (!btn || !img || !name) return;
 
           var persona = window.__PANPU_BOOT_PERSONA__;
-          if (!persona || ['潘潘', '蒲蒲', 'all'].indexOf(persona) === -1) persona = '潘潘';
+          if (!persona || ['潘潘', '蒲蒲'].indexOf(persona) === -1) persona = '潘潘';
 
           var map = {
             '潘潘': { src: window.__PANPU_ASSET_URL__('/img/panpan.png'), label: '潘潘', cls: 'persona-panpan' },
-            '蒲蒲': { src: window.__PANPU_ASSET_URL__('/img/pupu.png'), label: '蒲蒲', cls: 'persona-pupu' },
-            'all': { src: window.__PANPU_ASSET_URL__('/img/all.png'), label: '全部', cls: 'persona-all' }
+            '蒲蒲': { src: window.__PANPU_ASSET_URL__('/img/pupu.png'), label: '蒲蒲', cls: 'persona-pupu' }
           };
           var current = map[persona] || map['潘潘'];
           img.src = current.src;
@@ -311,12 +310,6 @@
           }
 
           if (!coinBtn) return;
-          if (boot.persona === 'all') {
-            coinBtn.style.display = 'none';
-            coinBtn.removeAttribute('data-booting');
-            return;
-          }
-
           var cache = boot.coinCache || {};
           var balance = cache[boot.scopedPersona];
           var format = function(value) {
@@ -350,10 +343,7 @@
     <section class="view-container" id="view-daily">
       <div class="daily-toolbar">
         <div class="daily-person-filter">
-          <button class="filter-pill active" data-assignee="all">
-            <img class="filter-avatar" src="/img/all.png?v=__ASSET_VERSION__" alt=""> 全部
-          </button>
-          <button class="filter-pill" data-assignee="潘潘">
+          <button class="filter-pill active" data-assignee="潘潘">
             <img class="filter-avatar" src="/img/panpan.png?v=__ASSET_VERSION__" alt=""> 潘潘
           </button>
           <button class="filter-pill" data-assignee="蒲蒲">
@@ -361,7 +351,7 @@
           </button>
         </div>
         <script>
-          window.__PANPU_APPLY_ASSIGNEE_FILTER__('.daily-person-filter', (window.__PANPU_BOOT_STATE__ || {}).persona || 'all');
+          window.__PANPU_APPLY_ASSIGNEE_FILTER__('.daily-person-filter', (window.__PANPU_BOOT_STATE__ || {}).scopedPersona || '潘潘');
         </script>
       </div>
       <div class="task-columns">
@@ -390,10 +380,7 @@
     <section class="view-container hidden" id="view-monthly">
       <div class="monthly-toolbar">
         <div class="monthly-person-filter">
-          <button class="filter-pill active" data-assignee="all">
-            <img class="filter-avatar" src="/img/all.png?v=__ASSET_VERSION__" alt=""> 全部
-          </button>
-          <button class="filter-pill" data-assignee="潘潘">
+          <button class="filter-pill active" data-assignee="潘潘">
             <img class="filter-avatar" src="/img/panpan.png?v=__ASSET_VERSION__" alt=""> 潘潘
           </button>
           <button class="filter-pill" data-assignee="蒲蒲">
@@ -401,7 +388,7 @@
           </button>
         </div>
         <script>
-          window.__PANPU_APPLY_ASSIGNEE_FILTER__('.monthly-person-filter', (window.__PANPU_BOOT_STATE__ || {}).persona || 'all');
+          window.__PANPU_APPLY_ASSIGNEE_FILTER__('.monthly-person-filter', (window.__PANPU_BOOT_STATE__ || {}).scopedPersona || '潘潘');
         </script>
         <div class="monthly-status-filter">
           <button class="filter-pill small active" data-status="all">全部</button>
@@ -814,7 +801,6 @@
           <div class="form-group">
             <label for="task-assignee">指派给</label>
             <select id="task-assignee">
-              <option value="全部">全部</option>
               <option value="潘潘">潘潘</option>
               <option value="蒲蒲">蒲蒲</option>
             </select>

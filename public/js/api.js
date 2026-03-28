@@ -237,7 +237,7 @@ const API = {
 
     clearDoneTasks(date, assignee) {
         const params = { date };
-        if (assignee && assignee !== 'all') params.assignee = assignee;
+        if (assignee) params.assignee = assignee;
         const qs = new URLSearchParams(params).toString();
         return this.request('/tasks/clear-done?' + qs, { method: 'DELETE' });
     },

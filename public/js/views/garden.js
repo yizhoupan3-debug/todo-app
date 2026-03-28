@@ -297,7 +297,7 @@ const GardenView = {
         if (ui.currentView === 'shop') {
             return { assignee: this.shopAssignee, balance: this.shopBalance };
         }
-        if (ui.currentAssignee && ui.currentAssignee !== 'all') {
+        if (ui.currentAssignee) {
             if (ui.currentAssignee === this.assignee) {
                 return { assignee: this.assignee, balance: this.balance };
             }

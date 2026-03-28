@@ -76,7 +76,7 @@ const JournalView = {
         return `${d.getMonth()+1}月${d.getDate()}日 周${wd[d.getDay()]}`;
     },
     _author() {
-        return App.activePersona === 'all' ? App.lastPersona : App.activePersona;
+        return App.activePersona || App.lastPersona || '潘潘';
     },
     _getStyle(el) {
         if (!el.style_data) return {};

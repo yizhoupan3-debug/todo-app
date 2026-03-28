@@ -38,7 +38,6 @@ const Utils = {
         const map = {
             '潘潘': '/img/panpan.png',
             '蒲蒲': '/img/pupu.png',
-            'all': '/img/all.png',
         };
         return this.assetUrl(map[persona] || map['潘潘']);
     },

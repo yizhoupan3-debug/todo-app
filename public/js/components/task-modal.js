@@ -246,11 +246,7 @@ const TaskModal = {
 
         // Set default assignee based on current filter
         const assigneeSel = document.getElementById('task-assignee');
-        if (App.currentAssignee === 'all') {
-            assigneeSel.value = '全部';
-        } else {
-            assigneeSel.value = App.currentAssignee;
-        }
+        assigneeSel.value = App.currentAssignee || '潘潘';
 
         // Load categories AFTER form.reset() so options don't get wiped
         this.loadCategories().then(() => this.show());
@@ -363,18 +359,9 @@ const TaskModal = {
         try {
             let result;
             if (this.editingTask) {
-                // Editing always targets one specific task
-                if (data.assignee === '全部') data.assignee = this.editingTask.assignee;
                 result = await API.updateTask(this.editingTask.id, data);
                 App.socket.emit('task:updated', result);
                 App.showToast('✏️ 任务已更新', 'success');
-            } else if (data.assignee === '全部') {
-                // Create a task for each person
-                for (const person of ['潘潘', '蒲蒲']) {
-                    result = await API.createTask({ ...data, assignee: person });
-                    App.socket.emit('task:created', result);
-                }
-                App.showToast('✅ 已为全部成员创建任务', 'success');
             } else {
                 result = await API.createTask(data);
                 App.socket.emit('task:created', result);

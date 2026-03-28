@@ -7,26 +7,26 @@ if (typeof App === 'undefined') {
         if (savedLast && ['潘潘', '蒲蒲'].includes(savedLast)) {
             this.lastPersona = savedLast;
         }
-        if (saved && ['潘潘', '蒲蒲', 'all'].includes(saved)) {
+        if (saved && ['潘潘', '蒲蒲'].includes(saved)) {
             this.activePersona = saved;
-            if (saved !== 'all') this.lastPersona = saved;
+            this.lastPersona = saved;
         } else {
-            this.activePersona = '潘潘';
+            this.activePersona = this.lastPersona || '潘潘';
         }
         this._applyPersonaToViews(this.activePersona);
         this._updatePersonaToggleUI();
     },
 
     _viewSupportsAllAssignee(view = this.currentView) {
-        return view === 'daily' || view === 'monthly';
+        return false;
     },
 
     setPersona(persona, { refresh = true } = {}) {
-        const nextPersona = (!this._viewSupportsAllAssignee() && persona === 'all')
-            ? this.lastPersona
-            : persona;
+        const nextPersona = ['潘潘', '蒲蒲'].includes(persona)
+            ? persona
+            : (this.lastPersona || '潘潘');
         this.activePersona = nextPersona;
-        if (nextPersona !== 'all') this.lastPersona = nextPersona;
+        this.lastPersona = nextPersona;
         localStorage.setItem('panpu-persona', this.activePersona);
         localStorage.setItem('panpu-last-persona', this.lastPersona);
 
@@ -54,14 +54,14 @@ if (typeof App === 'undefined') {
 
         // Re-join socket room for the new persona
         if (this.socket?.connected) {
-            this.socket.emit('join:assignee', this.activePersona);
+            this.socket.emit('join:assignee', this.currentAssignee);
         }
     },
 
     _applyPersonaToViews(persona) {
-        const scopedPersona = persona === 'all' ? this.lastPersona : persona;
+        const scopedPersona = ['潘潘', '蒲蒲'].includes(persona) ? persona : (this.lastPersona || '潘潘');
         this.scopedPersona = scopedPersona;
-        this.currentAssignee = persona === 'all' ? 'all' : persona;
+        this.currentAssignee = scopedPersona;
 
         if (typeof CheckinView !== 'undefined') {
             CheckinView.currentAssignee = scopedPersona;
@@ -78,9 +78,7 @@ if (typeof App === 'undefined') {
 
         const coinBtn = document.getElementById('header-coin-btn');
         if (coinBtn) {
-            const hideViews = ['daily', 'monthly'];
-            const shouldHide = hideViews.includes(this.currentView) && persona === 'all';
-            coinBtn.style.display = shouldHide ? 'none' : '';
+            coinBtn.style.display = '';
         }
     },
 
@@ -93,7 +91,6 @@ if (typeof App === 'undefined') {
         const map = {
             '潘潘': { src: Utils.personaAvatarUrl('潘潘'), label: '潘潘', cls: 'persona-panpan' },
             '蒲蒲': { src: Utils.personaAvatarUrl('蒲蒲'), label: '蒲蒲', cls: 'persona-pupu' },
-            'all': { src: Utils.personaAvatarUrl('all'), label: '全部', cls: 'persona-all' },
         };
         const p = map[this.activePersona] || map['潘潘'];
         img.src = p.src;
@@ -219,10 +216,6 @@ if (typeof App === 'undefined') {
 
         this._ensureViewReady?.(view);
 
-        if (!this._viewSupportsAllAssignee(view) && this.activePersona === 'all') {
-            this.setPersona(this.lastPersona, { refresh: false });
-        }
-
         const renderView = () => {
             this.currentView = view;
 
@@ -285,9 +278,7 @@ if (typeof App === 'undefined') {
 
             const coinBtn = document.getElementById('header-coin-btn');
             if (coinBtn) {
-                const hideViews = ['daily', 'monthly'];
-                const shouldHide = hideViews.includes(view) && this.currentAssignee === 'all';
-                coinBtn.style.display = shouldHide ? 'none' : '';
+                coinBtn.style.display = '';
             }
 
             this.syncHeaderCoins?.();
