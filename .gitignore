@@ -11,3 +11,6 @@ NEXT_ACTIONS.json
 EVIDENCE_INDEX.json
 TRACE_METADATA.json
 skills/
+# Local release artifacts
+artifacts/releases/
+.release-tmp/

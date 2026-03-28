@@ -7,41 +7,60 @@ description: 峡谷讨伐日记 — 部署与更新流程
 ## 项目信息
 - **GitHub 仓库**: https://github.com/yizhoupan3-debug/todo-app.git
 - **阿里云服务器**: 43.99.80.200
-- **服务器应用路径**: /opt/todo-app
+- **服务器应用根目录**: /opt/todo-app
+- **当前线上目录链接**: /opt/todo-app/current
 - **服务名称**: todo-app (systemd)
 - **线上端口**: 80
 
-## 每次修改后必须执行
+## 推荐流程：本地一键 release 到阿里云
 
-### 1. 本地 Git 提交推送
-// turbo
+### 发版前
 ```bash
-cd /Users/joe/Documents/todo_list_app && git add -A && git commit -m "<简明描述改动>" && git push
+cd /Users/joe/Documents/todo_list_app
+npm run release:check
 ```
 
-### 2. 给用户阿里云更新指令
-修改完成后，提供以下命令让用户在服务器上执行：
+### 正式发版
 ```bash
-# 先备份数据库
-sudo cp /opt/todo-app/*.db /tmp/ 2>/dev/null || true
-
-# 然后重新 clone
-sudo bash -c 'rm -rf /opt/todo-app && git clone https://github.com/yizhoupan3-debug/todo-app.git /opt/todo-app && cd /opt/todo-app && npm install && systemctl restart todo-app'
-
-# 恢复数据库
-sudo cp /tmp/*.db /opt/todo-app/ 2>/dev/null || true
-sudo systemctl restart todo-app
+cd /Users/joe/Documents/todo_list_app
+npm run release:aliyun
 ```
 
-> **注意**: 每次代码修改完成后必须立刻执行 Git 提交推送，不要等用户提醒。
+### 当前基线测试已知为红时，强制发版
+```bash
+cd /Users/joe/Documents/todo_list_app
+ALLOW_TEST_FAILURE=1 npm run release:aliyun
+```
+
+## 回滚
+
+### 回滚到上一版
+```bash
+cd /Users/joe/Documents/todo_list_app
+npm run release:rollback
+```
+
+### 回滚到指定 release 目录名
+```bash
+cd /Users/joe/Documents/todo_list_app
+bash scripts/release-rollback.sh v1.0.0-20260328T000000Z-abcdef1
+```
+
+## 兼容入口
+旧命令仍可用，但现在等价于正式 release：
+```bash
+cd /Users/joe/Documents/todo_list_app
+bash scripts/deploy.sh
+```
+
+## 首次部署
+在全新服务器上执行仓库根目录的一键初始化脚本：
+```bash
+bash deploy.sh
+```
 
 ## 服务器管理命令
 - 查看状态: `systemctl status todo-app`
 - 查看日志: `journalctl -u todo-app -f`
-- 重启服务: `systemctl restart todo-app`
-
-## 首次部署
-在全新服务器上执行一键部署脚本:
-```bash
-bash deploy.sh
-```
+- 查看当前线上版本: `cat /opt/todo-app/current/RELEASE_INFO.json`
+- 查看 release 列表: `ls -1 /opt/todo-app/releases`

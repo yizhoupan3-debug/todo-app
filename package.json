@@ -6,7 +6,12 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "node server/server.js",
-    "test:backend": "node tests/backend-audit.test.js"
+    "test:backend": "node tests/backend-audit.test.js",
+    "release:check": "bash scripts/release-check.sh",
+    "release:package": "bash scripts/release-package.sh",
+    "release:aliyun": "bash scripts/release-aliyun.sh",
+    "release:rollback": "bash scripts/release-rollback.sh",
+    "deploy": "npm run release:aliyun"
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0",
