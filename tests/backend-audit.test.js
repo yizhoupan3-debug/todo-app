@@ -9,8 +9,11 @@
  */
 
 const http = require('http');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
-const BASE = 'http://localhost:3000';
+let BASE = '';
 
 let passed = 0;
 let failed = 0;
@@ -419,11 +422,36 @@ async function runTests() {
     }
     console.log(`${'─'.repeat(48)}\n`);
 
-    process.exit(failed > 0 ? 1 : 0);
+    return failed === 0;
 }
 
-runTests().catch(err => {
-    console.error('\n💥 Test runner crashed:', err.message);
-    console.error('  Is the server running on port 3000? Run: npm run dev');
-    process.exit(1);
-});
+async function main() {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'todo-backend-audit-'));
+    const customDataDir = path.join(tempRoot, 'data');
+    process.env.TODO_APP_DATA_DIR = customDataDir;
+
+    const { startServer, stopServer } = require('../server/server');
+    const db = require('../server/db');
+
+    try {
+        const listeningServer = await startServer({ port: 0, host: '127.0.0.1' });
+        const address = listeningServer.address();
+        BASE = `http://127.0.0.1:${address.port}`;
+        const ok = await runTests();
+        process.exitCode = ok ? 0 : 1;
+    } catch (err) {
+        console.error('\n💥 Test runner crashed:', err.message);
+        process.exitCode = 1;
+    } finally {
+        try {
+            await stopServer();
+        } catch (err) {
+            console.error('Failed to stop test server:', err.message);
+            process.exitCode = 1;
+        }
+        db.close();
+        fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+}
+
+main();
