@@ -527,7 +527,7 @@ const AmbientSound = (() => {
                 <div class="sound-grid">
                     ${soundMeta.map(s => `
                         <button class="sound-toggle ${active[s.id] ? 'active' : ''}" data-sound="${s.id}" title="${s.name}">
-                            <span class="sound-icon">${s.icon}</span>
+                            <span class="sound-icon"><i data-lucide="${s.lucide}"></i></span>
                             <span class="sound-name">${s.name}</span>
                         </button>
                     `).join('')}
@@ -539,6 +539,7 @@ const AmbientSound = (() => {
                     this.toggle(btn.dataset.sound);
                 });
             });
+            if (window.lucide) window.lucide.createIcons({ attrs: {}, node: container });
         }
     };
 })();

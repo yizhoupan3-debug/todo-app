@@ -325,9 +325,9 @@
   transform: translateZ(0);
   padding: 20px 22px 24px;
   border-radius: 28px;
-  border: 1px solid rgba(99, 102, 241, 0.1);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.28));
-  box-shadow: 0 16px 36px rgba(99, 102, 241, 0.08);
+  border: 1px solid var(--elevated-surface-border, rgba(99, 102, 241, 0.1));
+  background: var(--elevated-surface-bg, linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.28)));
+  box-shadow: var(--elevated-surface-shadow-soft, 0 16px 36px rgba(99, 102, 241, 0.08));
 }
 
 .stats-toolbar {
@@ -349,9 +349,9 @@
   gap: 4px;
   padding: 3px;
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(99, 102, 241, 0.12);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
 }
 
 .stats-range-btn {
@@ -907,23 +907,30 @@
 
 .ambient-badge {
   position: absolute;
-  top: 0;
-  right: 0;
-  font-size: 10px;
+  top: 2px;
+  right: 2px;
+  font-size: 8px;
   font-weight: 700;
-  color: var(--primary);
+  color: white;
+  background: var(--primary);
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
   pointer-events: none;
 }
 
 /* Ambient panel */
 .ambient-panel {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(420px, 90vw);
-  max-height: 80vh;
-  background: var(--card-bg);
+  top: 64px;
+  right: 16px;
+  width: 320px;
+  max-height: calc(100vh - 80px);
+  background: var(--modal-bg);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -931,6 +938,8 @@
   z-index: 1200;
   overflow-y: auto;
   animation: ambientFadeIn 0.25s ease;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .ambient-panel.hidden {
@@ -940,12 +949,12 @@
 @keyframes ambientFadeIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -48%) scale(0.95);
+    transform: translateY(-10px) scale(0.95);
   }
 
   to {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -955,11 +964,14 @@
   justify-content: space-between;
   margin-bottom: 16px;
 }
-
 .ambient-panel-header h3 {
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--text);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .ambient-panel-close {
@@ -988,32 +1000,35 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 14px 8px;
+  gap: 8px;
+  padding: 16px 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: transparent;
+  background: var(--card-bg);
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .sound-toggle:hover {
   border-color: var(--primary);
-  background: var(--primary-glow);
+  background: color-mix(in srgb, var(--primary) 10%, var(--card-bg));
   color: var(--text);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .sound-toggle.active {
   border-color: var(--primary);
-  background: var(--primary-glow);
-  color: var(--primary-light);
-  box-shadow: 0 0 12px var(--primary-glow);
+  background: color-mix(in srgb, var(--primary) 15%, var(--card-bg));
+  color: var(--primary);
+  box-shadow: 0 4px 12px var(--primary-glow);
+  transform: translateY(-2px);
 }
 
 .sound-icon {
-  font-size: 0.9rem;
+  font-size: 1.2rem;
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.01em;
@@ -1021,8 +1036,8 @@
 }
 
 .sound-name {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 /* Pomodoro sound grid compact */
@@ -1045,12 +1060,25 @@
 
 /* Mobile */
 @media (max-width: 768px) {
+  .ambient-panel {
+    top: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    max-height: 60vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    transform: none;
+    animation: sheetSlideUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
   .sound-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
 
   #pomodoro-sounds .sound-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
   }
 }
