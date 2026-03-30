@@ -11,6 +11,8 @@ const { resolveCompletedExpeditions, PLANT_CATALOG, PLANT_TIERS, BOAT_CATALOG, T
 
 /* ── GET: plant/boat catalog for frontend sync ── */
 router.get('/catalog', (_req, res) => {
+    // Catalog is completely static during runtime, safe to cache aggressively.
+    res.set('Cache-Control', 'public, max-age=86400'); // 24 hours
     res.json({ plants: PLANT_CATALOG, tiers: PLANT_TIERS, boats: BOAT_CATALOG, matureMinutes: TREE_MATURE_MINUTES });
 });
 

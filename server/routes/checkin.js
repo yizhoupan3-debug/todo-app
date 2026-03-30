@@ -56,9 +56,6 @@ router.get('/', (req, res) => {
     if (assignee && !isValidAssignee(assignee)) {
         return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲' });
     }
-    if (type && !isOneOf(type, VALID_CHECKIN_TYPES)) {
-        return res.status(400).json({ error: `type must be one of: ${VALID_CHECKIN_TYPES.join(', ')}` });
-    }
 
     let sql = 'SELECT * FROM checkin_records WHERE date = ?';
     const params = [date];
@@ -110,10 +107,6 @@ router.post('/', (req, res) => {
     const today = date || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
     const checkinType = type || 'water';
     const normalizedAmount = parseInteger(amount);
-
-    if (!isOneOf(checkinType, VALID_CHECKIN_TYPES)) {
-        return res.status(400).json({ error: `invalid type: ${checkinType}. Valid: ${VALID_CHECKIN_TYPES.join(', ')}` });
-    }
 
     try {
         const rewardEligible = isRewardEligible(checkinType, now);
@@ -229,9 +222,6 @@ router.get('/goal', (req, res) => {
     if (!isValidAssignee(assignee)) {
         return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲' });
     }
-    if (type && !isOneOf(type, VALID_CHECKIN_TYPES)) {
-        return res.status(400).json({ error: `type must be one of: ${VALID_CHECKIN_TYPES.join(', ')}` });
-    }
     try {
         const t = type || 'water';
         res.json({ goal: getGoalFor(t, assignee) });
@@ -249,9 +239,6 @@ router.put('/goal', (req, res) => {
     }
     if (!isValidAssignee(assignee)) {
         return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲' });
-    }
-    if (type && !isOneOf(type, VALID_CHECKIN_TYPES)) {
-        return res.status(400).json({ error: `type must be one of: ${VALID_CHECKIN_TYPES.join(', ')}` });
     }
     if (!isPositiveInteger(goal)) {
         return res.status(400).json({ error: 'goal must be a positive integer' });
@@ -278,9 +265,6 @@ router.get('/history-batch', (req, res) => {
     if (!assignee || !type) return res.status(400).json({ error: 'assignee and type are required' });
     if (!isValidAssignee(assignee)) {
         return res.status(400).json({ error: 'assignee must be one of: 潘潘, 蒲蒲' });
-    }
-    if (!isOneOf(type, VALID_CHECKIN_TYPES)) {
-        return res.status(400).json({ error: `type must be one of: ${VALID_CHECKIN_TYPES.join(', ')}` });
     }
     if (days !== undefined && days !== null && days !== '' && !isPositiveInteger(days)) {
         return res.status(400).json({ error: 'days must be a positive integer' });
@@ -465,6 +449,43 @@ router.delete('/:id', (req, res) => {
         })();
 
         res.json({ success: true, ...txResult });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
+// GET /api/checkin/types - get custom checkin types
+router.get('/types', (req, res) => {
+    const { assignee } = req.query;
+    if (!assignee) return res.status(400).json({ error: 'assignee is required' });
+    try {
+        const records = db.prepare('SELECT * FROM checkin_types WHERE assignee = ?').all(assignee);
+        res.json(records);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// POST /api/checkin/types - create a custom checkin type
+router.post('/types', (req, res) => {
+    const { assignee, name, icon, unit, target } = req.body;
+    if (!assignee || !name || !icon) return res.status(400).json({ error: 'Missing fields' });
+    try {
+        const result = db.prepare('INSERT INTO checkin_types (assignee, name, icon, unit, target) VALUES (?, ?, ?, ?, ?)')
+                         .run(assignee, name, icon, unit || '', target || 1);
+        const record = db.prepare('SELECT * FROM checkin_types WHERE id = ?').get(result.lastInsertRowid);
+        res.json(record);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// DELETE /api/checkin/types/:id
+router.delete('/types/:id', (req, res) => {
+    try {
+        db.prepare('DELETE FROM checkin_types WHERE id = ?').run(req.params.id);
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

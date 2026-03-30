@@ -143,30 +143,33 @@ router.post('/element', upload.single('photo'), (req, res) => {
       if (parsed.error) return res.status(400).json({ error: parsed.error });
     }
 
-    // z_index = max + 1
-    const maxZ = db.prepare(
-      'SELECT MAX(z_index) as mz FROM journal_elements WHERE entry_id = ?'
-    ).get(entry.id);
-    const zIndex = (maxZ?.mz ?? -1) + 1;
+    const tx = db.transaction(() => {
+      const maxZ = db.prepare(
+        'SELECT MAX(z_index) as mz FROM journal_elements WHERE entry_id = ?'
+      ).get(entry.id);
+      const zIndex = (maxZ?.mz ?? -1) + 1;
 
-    const info = db.prepare(`
-      INSERT INTO journal_elements (entry_id, author, element_type, content, photo_path, pos_x, pos_y, width, height, rotation, z_index, style_data)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      entry.id, author, type,
-      content || '', photoPath,
-      parsedPosX.value, parsedPosY.value,
-      parsedWidth.value,
-      parsedHeight.value,
-      parsedRotation.value,
-      zIndex,
-      style_data || null
-    );
+      const info = db.prepare(`
+        INSERT INTO journal_elements (entry_id, author, element_type, content, photo_path, pos_x, pos_y, width, height, rotation, z_index, style_data)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        entry.id, author, type,
+        content || '', photoPath,
+        parsedPosX.value, parsedPosY.value,
+        parsedWidth.value,
+        parsedHeight.value,
+        parsedRotation.value,
+        zIndex,
+        style_data || null
+      );
 
-    db.prepare("UPDATE journal_entries SET updated_at = datetime('now','localtime') WHERE id = ?")
-      .run(entry.id);
+      db.prepare("UPDATE journal_entries SET updated_at = datetime('now','localtime') WHERE id = ?")
+        .run(entry.id);
 
-    const element = db.prepare('SELECT * FROM journal_elements WHERE id = ?').get(info.lastInsertRowid);
+      return db.prepare('SELECT * FROM journal_elements WHERE id = ?').get(info.lastInsertRowid);
+    });
+
+    const element = tx();
     res.json({ ok: true, element, entry });
   } catch (err) {
     console.error('Journal element create error:', err);

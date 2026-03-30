@@ -163,7 +163,11 @@ if (typeof App === 'undefined') {
                                     backdrop.id = 'sidebar-backdrop';
                                     backdrop.addEventListener('click', () => this.closeSidebar());
                                     document.body.appendChild(backdrop);
+                                    
+                                    // Force reflow
+                                    void backdrop.offsetWidth;
                                 }
+                                backdrop.classList.add('show');
                             }
                             break;
                     }
@@ -387,33 +391,21 @@ if (typeof App === 'undefined') {
         const sidebar = document.getElementById('sidebar');
         const backdrop = document.getElementById('sidebar-backdrop');
         
-        // On mobile, animate the sidebar slide-out
-        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
-            sidebar.style.transition = 'transform 0.25s cubic-bezier(0.4, 0, 1, 1)';
-            sidebar.style.transform = 'translateX(-100%)';
-            
-            if (backdrop) {
-                backdrop.style.transition = 'opacity 0.25s ease';
-                backdrop.style.opacity = '0';
-            }
-            
-            const cleanup = () => {
-                sidebar.classList.remove('open');
-                sidebar.style.transition = '';
-                sidebar.style.transform = '';
-                if (backdrop && backdrop.parentNode) backdrop.remove();
-            };
-            
-            sidebar.addEventListener('transitionend', cleanup, { once: true });
-            setTimeout(cleanup, 300);
-        } else {
+        if (sidebar) {
             sidebar.classList.remove('open');
-            if (backdrop) {
-                backdrop.style.transition = 'opacity 0.25s ease';
-                backdrop.style.opacity = '0';
-                backdrop.addEventListener('transitionend', () => backdrop.remove(), { once: true });
-                setTimeout(() => { if (backdrop.parentNode) backdrop.remove(); }, 300);
-            }
+            // Clean up any old inline styles if they were left over
+            sidebar.style.transition = '';
+            sidebar.style.transform = '';
+        }
+
+        if (backdrop) {
+            backdrop.classList.remove('show');
+            const handleTransitionEnd = () => {
+                if (backdrop.parentNode) backdrop.remove();
+            };
+            backdrop.addEventListener('transitionend', handleTransitionEnd, { once: true });
+            // Fallback in case transitionend doesn't fire
+            setTimeout(handleTransitionEnd, 350);
         }
     },
 });

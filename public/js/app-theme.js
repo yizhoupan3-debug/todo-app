@@ -4,7 +4,7 @@ if (typeof App === 'undefined') {
     themes: ['indigo', 'sakura', 'ocean', 'forest', 'sunset', 'lavender', 'mocha', 'rosegold'],
 
     initTheme() {
-        const savedMode = localStorage.getItem('panpu-mode') || 'light';
+        const savedMode = localStorage.getItem('panpu-mode') || 'auto';
         const savedTheme = localStorage.getItem('panpu-theme') || 'indigo';
         this.applyMode(savedMode);
         this.applyTheme(savedTheme);
@@ -24,16 +24,21 @@ if (typeof App === 'undefined') {
             }
         });
 
-        document.getElementById('mode-toggle').addEventListener('click', () => {
-            const current = document.documentElement.getAttribute('data-mode');
-            this.applyMode(current === 'dark' ? 'light' : 'dark');
-        });
-
-        document.querySelectorAll('.theme-swatch').forEach(swatch => {
-            swatch.addEventListener('click', () => {
-                this.applyTheme(swatch.dataset.theme);
+        // Mode radio group instead of single toggle
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.applyMode(btn.dataset.mode);
             });
         });
+
+        // Listen for system theme changes if in auto mode
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (localStorage.getItem('panpu-mode') === 'auto') {
+                this._updateVisualMode('auto');
+            }
+        });
+
+        this.querySelectorAll = (selector) => document.querySelectorAll(selector); // helper
 
         this.initBackendSettings();
 
@@ -60,18 +65,21 @@ if (typeof App === 'undefined') {
     },
 
     applyMode(mode) {
-        document.documentElement.setAttribute('data-mode', mode);
         localStorage.setItem('panpu-mode', mode);
-        const label = document.getElementById('mode-label');
-        const toggleBtn = document.getElementById('mode-toggle');
-        if (label) label.textContent = mode === 'dark' ? '暗色模式' : '亮色模式';
-        if (toggleBtn) {
-            const icon = toggleBtn.querySelector('i');
-            if (icon) icon.setAttribute('data-lucide', mode === 'dark' ? 'moon' : 'sun');
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons({ attrs: {}, node: toggleBtn });
-            }
+        this._updateVisualMode(mode);
+        
+        // Mark the correct button as active in settings
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.mode === mode);
+        });
+    },
+
+    _updateVisualMode(mode) {
+        let visualMode = mode;
+        if (mode === 'auto') {
+            visualMode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
+        document.documentElement.setAttribute('data-mode', visualMode);
     },
 
     applyTheme(theme) {

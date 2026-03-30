@@ -64,7 +64,7 @@ const MonthlyView = {
                     this.prependMonth();
                 }
             }, 80);
-        });
+        }, { passive: true });
     },
 
     setMonth(year, month) {

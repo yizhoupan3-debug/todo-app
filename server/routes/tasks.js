@@ -212,6 +212,7 @@ router.get('/', (req, res) => {
     where.push('(t.is_recurring = 0 OR t.recurring_parent_id IS NOT NULL)');
 
     const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
+    const limitClause = (!date && !month) ? 'LIMIT 1000' : '';
 
     const sql = `
     SELECT t.*, c.name as category_name, c.color as category_color, c.icon as category_icon
@@ -231,6 +232,7 @@ router.get('/', (req, res) => {
       END,
       t.due_time ASC,
       t.created_at DESC
+    ${limitClause}
   `;
 
     try {
@@ -323,8 +325,8 @@ router.post('/', (req, res) => {
     try {
         const result = db.prepare(`
       INSERT INTO tasks (title, description, assignee, category_id, priority, due_date, due_time, end_time,
-        is_recurring, recurring_type, recurring_interval, recurring_end_date, auto_complete)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             is_recurring, recurring_type, recurring_interval, recurring_end_date, auto_complete, plant_type)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
             taskInput.title,
             taskInput.description,
@@ -338,7 +340,14 @@ router.post('/', (req, res) => {
             taskInput.recurring_type,
             taskInput.recurring_interval,
             taskInput.recurring_end_date,
-            taskInput.due_time ? (taskInput.auto_complete !== undefined ? (taskInput.auto_complete ? 1 : 0) : 1) : 0
+            taskInput.due_time ? (taskInput.auto_complete !== undefined ? (taskInput.auto_complete ? 1 : 0) : 1) : 0,
+            (function(){
+               let t = taskInput.title || '';
+               if (t.includes('运动')) return 'sunflower';
+               if (t.includes('学习') || t.includes('代码')) return 'succulent';
+               if (t.includes('早起') || t.includes('早睡')) return 'cherry';
+               return 'classic';
+            })()
         );
 
         const task = db.prepare(`
@@ -386,7 +395,15 @@ router.put('/:id', (req, res) => {
         const prevTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(taskId);
         if (!prevTask) return res.status(404).json({ error: 'Task not found' });
 
+        
+        // Custom Bloomify Streak Logic
+        if (fields.status === 'done' && prevTask.status !== 'done') {
+            updates.push('streak = streak + 1');
+        } else if (prevTask.status === 'done' && fields.status && fields.status !== 'done') {
+            updates.push('streak = MAX(0, streak - 1)');
+        }
         db.prepare(`UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+
 
         const task = db.prepare(`
       SELECT t.*, c.name as category_name, c.color as category_color, c.icon as category_icon

@@ -19,29 +19,20 @@ function generateRecurringInstances(startDate, endDate) {
     VALUES (?, ?, ?, ?, ?, ?, ?, 'todo', ?)
   `);
 
-    const checkExisting = db.prepare(`
-    SELECT id FROM tasks 
-    WHERE recurring_parent_id = ? AND due_date = ?
-  `);
-
     const generate = db.transaction(() => {
         for (const task of recurringTasks) {
             const dates = getOccurrences(task, startDate, endDate);
             for (const date of dates) {
-                // Skip if instance already exists
-                const existing = checkExisting.get(task.id, date);
-                if (!existing) {
-                    insertInstance.run(
-                        task.title,
-                        task.description,
-                        task.assignee,
-                        task.category_id,
-                        task.priority,
-                        date,
-                        task.due_time,
-                        task.id
-                    );
-                }
+                insertInstance.run(
+                    task.title,
+                    task.description,
+                    task.assignee,
+                    task.category_id,
+                    task.priority,
+                    date,
+                    task.due_time,
+                    task.id
+                );
             }
         }
     });

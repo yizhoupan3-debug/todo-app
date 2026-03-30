@@ -76,6 +76,11 @@ const App = {
                 console.error('Module init failed:', error);
             }
         }
+        
+        if (typeof window.MoodView !== 'undefined') {
+            window.MoodViewInstance = new window.MoodView(this);
+            window.MoodViewInstance.init();
+        }
     },
 
     _bindShellEvents() {

@@ -270,7 +270,7 @@ const Pomodoro = {
                     <span>非常专注</span>
                 </div>
                 <div class="focus-rating-hint">做完评价后，按专注时间奖励 × 系数结算</div>
-                <button class="focus-skip-btn" id="focus-skip-btn" style="margin-top:10px;padding:6px 16px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);cursor:pointer;font-size:12px">跳过评分（不发币）</button>
+                <button class="focus-skip-btn" id="focus-skip-btn">跳过评分（不发币）</button>
             </div>
         `;
         document.body.appendChild(overlay);

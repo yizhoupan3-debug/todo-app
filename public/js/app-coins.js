@@ -251,26 +251,27 @@ if (typeof App === 'undefined') {
                         <span class="coin-history-time">${this._coinTimeAgo(h.created_at)}</span>
                     </span>
                     <span class="coin-history-amount ${h.amount > 0 ? 'positive' : 'negative'}">${h.amount > 0 ? '+' : ''}${h.amount}</span>
-                    ${h.amount > 0 ? '<button class="coin-undo-btn" title="撤销此记录">↩</button>' : '<span style="width:34px;flex-shrink:0"></span>'}
+                    ${h.amount > 0 ? '<button class="coin-undo-btn" title="撤销此记录">↩</button>' : '<span class="coin-history-spacer"></span>'}
                 </div>
-            `).join('') || '<div style="text-align:center;padding:32px;color:#999;font-size:14px">暂无记录</div>';
+            `).join('') || '<div class="coin-history-empty">暂无记录</div>';
 
             const overlay = document.createElement('div');
             overlay.className = 'history-modal-overlay';
-            overlay.innerHTML = `<div class="modal-box history-modal-box" style="width:380px; max-width:92vw; background:#fff; border-radius:24px; box-shadow:0 12px 48px rgba(0,0,0,0.2); overflow:hidden;">
-                <div style="padding:16px 20px; border-bottom:1px solid rgba(0,0,0,0.06); display:flex; justify-content:space-between; align-items:center; background:#fdfdfd;">
-                    <h3 style="margin:0; font-size:16px; font-weight:700;">📊 喵喵币明细 - ${assignee}</h3>
-                    <button class="history-modal-close" style="background:none; border:none; font-size:18px; color:#999; cursor:pointer; padding:4px 8px; border-radius:8px; transition:background 0.15s;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='none'">✕</button>
+            overlay.innerHTML = `<div class="modal-box history-modal-box">
+                <div class="history-modal-header">
+                    <h3 class="history-modal-title">📊 喵喵币明细 - ${assignee}</h3>
+                    <button class="history-modal-close" aria-label="关闭">✕</button>
                 </div>
-                <div class="history-modal-body" style="max-height:60vh; overflow-y:auto; padding:4px 0;">${html}</div>
+                <div class="history-modal-body">${html}</div>
             </div>`;
-            
-            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:2100;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s';
-            
+
             document.body.appendChild(overlay);
-            requestAnimationFrame(() => overlay.style.opacity = '1');
-            
-            const close = () => { overlay.style.opacity = '0'; setTimeout(() => overlay.remove(), 250); };
+            requestAnimationFrame(() => overlay.classList.add('active'));
+
+            const close = () => {
+                overlay.classList.remove('active');
+                setTimeout(() => overlay.remove(), 250);
+            };
             overlay.querySelector('.history-modal-close').addEventListener('click', close);
             overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
 

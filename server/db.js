@@ -10,7 +10,31 @@ const db = new Database(dbPath);
 
 // Enable WAL mode for better concurrent read/write
 db.pragma('journal_mode = WAL');
+db.pragma('synchronous = NORMAL');
+db.pragma('cache_size = -64000'); // 64MB cache
+db.pragma('temp_store = memory');
+db.pragma('mmap_size = 30000000000');
 db.pragma('foreign_keys = ON');
+
+function getTableSql(tableName) {
+  const row = db.prepare(
+    "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?"
+  ).get(tableName);
+  return row?.sql || '';
+}
+
+function tableHasColumn(tableName, columnName) {
+  return db.pragma(`table_info(${tableName})`).some((col) => col.name === columnName);
+}
+
+function runCriticalMigration(name, migrate) {
+  try {
+    migrate();
+  } catch (error) {
+    console.error(`[db] critical migration failed: ${name}`, error);
+    throw error;
+  }
+}
 
 // Initialize tables
 db.exec(`
@@ -38,13 +62,17 @@ db.exec(`
     recurring_end_date TEXT,
     recurring_parent_id INTEGER REFERENCES tasks(id) ON DELETE CASCADE,
     created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
+    updated_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    streak INTEGER NOT NULL DEFAULT 0,
+    plant_type TEXT DEFAULT 'classic'
   );
 
   CREATE INDEX IF NOT EXISTS idx_tasks_assignee ON tasks(assignee);
   CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date);
   CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
+  CREATE INDEX IF NOT EXISTS idx_tasks_due_date_status ON tasks(due_date, status);
   CREATE INDEX IF NOT EXISTS idx_tasks_recurring_parent ON tasks(recurring_parent_id);
+  CREATE UNIQUE INDEX IF NOT EXISTS unq_tasks_recurring_instance ON tasks(recurring_parent_id, due_date) WHERE recurring_parent_id IS NOT NULL;
 
   CREATE TABLE IF NOT EXISTS checkin_records (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -179,6 +207,17 @@ db.exec(`
     db.exec("ALTER TABLE tasks ADD COLUMN end_time TEXT DEFAULT NULL");
   }
 }
+
+// Migrate: add streak and plant_type columns if missing
+{
+  const cols = db.pragma('table_info(tasks)').map(c => c.name);
+  if (!cols.includes('streak')) {
+    db.exec("ALTER TABLE tasks ADD COLUMN streak INTEGER NOT NULL DEFAULT 0");
+  }
+  if (!cols.includes('plant_type')) {
+    db.exec("ALTER TABLE tasks ADD COLUMN plant_type TEXT DEFAULT 'classic'");
+  }
+}
 const catCount = db.prepare('SELECT COUNT(*) as count FROM categories').get();
 if (catCount.count === 0) {
   const insertCat = db.prepare('INSERT INTO categories (name, color, icon, sort_order) VALUES (?, ?, ?, ?)');
@@ -228,6 +267,81 @@ const STARTER_GRID_H = 6;
 // Import pure plot-seeding utilities (no DB dependency — avoids circular require).
 const { isForestPlot, isStarterInitialClearedPlot, pickObstacleForPlot, getPlotSeedState } = require('./garden-utils');
 
+function backfillLegacyPlotIslandIds() {
+  if (!tableHasColumn('garden_plots', 'island_id')) return;
+
+  const starterIslands = db.prepare(
+    "SELECT assignee, id FROM islands WHERE island_type = 'starter' ORDER BY id"
+  ).all();
+
+  if (!starterIslands.length) return;
+
+  const assignIslandId = db.prepare(
+    'UPDATE garden_plots SET island_id = ? WHERE assignee = ? AND island_id IS NULL'
+  );
+
+  const tx = db.transaction(() => {
+    for (const island of starterIslands) {
+      assignIslandId.run(island.id, island.assignee);
+    }
+  });
+
+  tx();
+}
+
+function ensureGardenPlotsMultiIslandSchema() {
+  const gardenPlotsSql = getTableSql('garden_plots');
+  if (gardenPlotsSql.includes('UNIQUE(assignee, x, y, island_id)')) {
+    backfillLegacyPlotIslandIds();
+    return;
+  }
+
+  if (!tableHasColumn('garden_plots', 'island_id')) {
+    db.exec("ALTER TABLE garden_plots ADD COLUMN island_id INTEGER DEFAULT NULL");
+  }
+
+  backfillLegacyPlotIslandIds();
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS garden_plots_new (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      assignee TEXT NOT NULL CHECK(assignee IN ('潘潘','蒲蒲')),
+      x INTEGER NOT NULL,
+      y INTEGER NOT NULL,
+      status TEXT NOT NULL DEFAULT 'wasteland' CHECK(status IN ('wasteland','cleared','planted')),
+      obstacle_type TEXT DEFAULT NULL,
+      tree_id INTEGER DEFAULT NULL,
+      island_id INTEGER DEFAULT NULL,
+      UNIQUE(assignee, x, y, island_id)
+    );
+
+    INSERT INTO garden_plots_new (id, assignee, x, y, status, obstacle_type, tree_id, island_id)
+    SELECT
+      gp.id,
+      gp.assignee,
+      gp.x,
+      gp.y,
+      gp.status,
+      gp.obstacle_type,
+      gp.tree_id,
+      COALESCE(
+        gp.island_id,
+        (
+          SELECT i.id
+          FROM islands i
+          WHERE i.assignee = gp.assignee AND i.island_type = 'starter'
+          ORDER BY i.id
+          LIMIT 1
+        )
+      )
+    FROM garden_plots gp;
+
+    DROP TABLE garden_plots;
+    ALTER TABLE garden_plots_new RENAME TO garden_plots;
+    CREATE INDEX IF NOT EXISTS idx_plots_assignee ON garden_plots(assignee);
+  `);
+}
+
 if (islandCount.count === 0) {
   const ISLAND_NAMES = [
     '骷髅礁', '翡翠湾', '珊瑚岛', '月牙岬', '雷霆岩',
@@ -264,6 +378,10 @@ if (islandCount.count === 0) {
   });
   seedIslands();
 }
+
+runCriticalMigration('garden_plots_multi_island_schema_v2', () => {
+  ensureGardenPlotsMultiIslandSchema();
+});
 
 // Seed garden plots if empty (starter island uses 8x6 = 48 plots per user)
 const plotCount = db.prepare('SELECT COUNT(*) as count FROM garden_plots').get();
@@ -407,51 +525,51 @@ try {
 } catch (e) { /* ignore migration failures */ }
 
 // One-time migration: expand starter/default islands to 8x6 and backfill missing scene plots.
-try {
+runCriticalMigration('garden_scene_grid_v2', () => {
   const migrationKey = 'garden_scene_grid_v2';
   const alreadyDone = db.prepare('SELECT value FROM app_meta WHERE key = ?').get(migrationKey);
-  if (!alreadyDone) {
-    const islands = db.prepare('SELECT id, assignee, island_type, grid_w, grid_h FROM islands').all();
-    const updateIslandGrid = db.prepare('UPDATE islands SET grid_w = ?, grid_h = ? WHERE id = ?');
-    const getIslandPlots = db.prepare('SELECT id, x, y, status FROM garden_plots WHERE island_id = ?');
-    const insertPlot = db.prepare(
-      'INSERT INTO garden_plots (assignee, x, y, status, obstacle_type, island_id) VALUES (?, ?, ?, ?, ?, ?)'
-    );
-    const updateObstacle = db.prepare(
-      'UPDATE garden_plots SET obstacle_type = ? WHERE id = ? AND status = ?'
-    );
+  if (alreadyDone) return;
 
-    const migrateSceneGrid = db.transaction(() => {
-      for (const island of islands) {
-        const gridW = Math.max(STARTER_GRID_W, Number(island.grid_w) || STARTER_GRID_W);
-        const gridH = Math.max(STARTER_GRID_H, Number(island.grid_h) || STARTER_GRID_H);
-        if (gridW !== island.grid_w || gridH !== island.grid_h) {
-          updateIslandGrid.run(gridW, gridH, island.id);
-        }
+  const islands = db.prepare('SELECT id, assignee, island_type, grid_w, grid_h FROM islands').all();
+  const updateIslandGrid = db.prepare('UPDATE islands SET grid_w = ?, grid_h = ? WHERE id = ?');
+  const getIslandPlots = db.prepare('SELECT id, x, y, status FROM garden_plots WHERE island_id = ?');
+  const insertPlot = db.prepare(
+    'INSERT INTO garden_plots (assignee, x, y, status, obstacle_type, island_id) VALUES (?, ?, ?, ?, ?, ?)'
+  );
+  const updateObstacle = db.prepare(
+    'UPDATE garden_plots SET obstacle_type = ? WHERE id = ? AND status = ?'
+  );
 
-        const existingPlots = getIslandPlots.all(island.id);
-        const plotMap = new Map(existingPlots.map(plot => [`${plot.x},${plot.y}`, plot]));
+  const migrateSceneGrid = db.transaction(() => {
+    for (const island of islands) {
+      const gridW = Math.max(STARTER_GRID_W, Number(island.grid_w) || STARTER_GRID_W);
+      const gridH = Math.max(STARTER_GRID_H, Number(island.grid_h) || STARTER_GRID_H);
+      if (gridW !== island.grid_w || gridH !== island.grid_h) {
+        updateIslandGrid.run(gridW, gridH, island.id);
+      }
 
-        for (let y = 0; y < gridH; y++) {
-          for (let x = 0; x < gridW; x++) {
-            const existing = plotMap.get(`${x},${y}`);
-            const seedState = getPlotSeedState(island.island_type, x, y, gridW, gridH);
-            if (!existing) {
-              insertPlot.run(island.assignee, x, y, seedState.status, seedState.obstacle, island.id);
-              continue;
-            }
-            if (existing.status === 'wasteland' && seedState.obstacle) {
-              updateObstacle.run(seedState.obstacle, existing.id, 'wasteland');
-            }
+      const existingPlots = getIslandPlots.all(island.id);
+      const plotMap = new Map(existingPlots.map(plot => [`${plot.x},${plot.y}`, plot]));
+
+      for (let y = 0; y < gridH; y++) {
+        for (let x = 0; x < gridW; x++) {
+          const existing = plotMap.get(`${x},${y}`);
+          const seedState = getPlotSeedState(island.island_type, x, y, gridW, gridH);
+          if (!existing) {
+            insertPlot.run(island.assignee, x, y, seedState.status, seedState.obstacle, island.id);
+            continue;
+          }
+          if (existing.status === 'wasteland' && seedState.obstacle) {
+            updateObstacle.run(seedState.obstacle, existing.id, 'wasteland');
           }
         }
       }
-      db.prepare('INSERT INTO app_meta (key, value) VALUES (?, ?)').run(migrationKey, '1');
-    });
+    }
+    db.prepare('INSERT INTO app_meta (key, value) VALUES (?, ?)').run(migrationKey, '1');
+  });
 
-    migrateSceneGrid();
-  }
-} catch (e) { /* ignore migration failures */ }
+  migrateSceneGrid();
+});
 
 // One-time migration: unlock the starter island's first 3 farm plots for accounts that still have no progress.
 try {
@@ -513,6 +631,18 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
   );
   CREATE INDEX IF NOT EXISTS idx_elements_entry ON journal_elements(entry_id);
+
+  CREATE TABLE IF NOT EXISTS mood_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    assignee TEXT NOT NULL CHECK(assignee IN ('潘潘','è’²è’²')),
+    mood TEXT NOT NULL,
+    note TEXT DEFAULT '',
+    date TEXT NOT NULL DEFAULT (date('now','localtime')),
+    revealed INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    UNIQUE(assignee, date)
+  );
+  CREATE INDEX IF NOT EXISTS idx_mood_date ON mood_records(date);
 `);
 
 // Migrate: add style_data column to journal_elements if missing

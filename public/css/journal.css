@@ -12,6 +12,33 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+  --journal-paper-bg: #fff;
+  --journal-paper-shadow: 0 24px 54px rgba(99, 102, 241, 0.1), 0 0 0 1px rgba(99, 102, 241, 0.08);
+  --journal-toolbar-border: rgba(99, 102, 241, 0.14);
+  --journal-empty-bg: rgba(255, 255, 255, 0.72);
+  --journal-empty-shadow: 0 18px 42px rgba(99, 102, 241, 0.08);
+  --journal-dots-bg: #f8fafc;
+  --journal-dots-pattern: #cbd5e1;
+  --journal-grid-bg: #f8fafc;
+  --journal-grid-line: #e2e8f0;
+  --journal-lines-bg: #fefce8;
+  --journal-lines-line: #fde047;
+  --journal-plain-bg: #fff;
+}
+
+html[data-mode="dark"] .journal-container {
+  --journal-paper-bg: linear-gradient(180deg, rgba(19, 24, 49, 0.96), rgba(11, 15, 33, 0.96));
+  --journal-paper-shadow: 0 24px 54px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(129, 140, 248, 0.14);
+  --journal-toolbar-border: rgba(129, 140, 248, 0.2);
+  --journal-empty-bg: rgba(18, 24, 52, 0.76);
+  --journal-empty-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+  --journal-dots-bg: #151a37;
+  --journal-dots-pattern: rgba(129, 140, 248, 0.26);
+  --journal-grid-bg: #151a37;
+  --journal-grid-line: rgba(139, 143, 176, 0.22);
+  --journal-lines-bg: #191b32;
+  --journal-lines-line: rgba(129, 140, 248, 0.22);
+  --journal-plain-bg: linear-gradient(180deg, rgba(20, 24, 52, 0.98), rgba(12, 15, 34, 0.98));
 }
 
 /* ── Toolbar ── */
@@ -25,20 +52,20 @@
   gap: 8px;
   padding: 8px 16px;
   background: var(--card-bg, rgba(255,255,255,.85));
-  backdrop-filter: var(--glass-blur, blur(20px) saturate(1.4));
-  -webkit-backdrop-filter: var(--glass-blur, blur(20px) saturate(1.4));
-  border: 1px solid rgba(99, 102, 241, 0.14);
-  border-radius: 22px;
-  box-shadow: 0 14px 32px rgba(99, 102, 241, 0.12), 0 1px 3px rgba(0,0,0,.04);
+  backdrop-filter: var(--glass-blur, blur(24px) saturate(1.4));
+  -webkit-backdrop-filter: var(--glass-blur, blur(24px) saturate(1.4));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), 0 1px 0 inset rgba(255, 255, 255, 0.1);
   z-index: 100;
   width: max-content;
   max-width: calc(100% - 32px);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  transition: box-shadow .2s;
+  transition: box-shadow .3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .journal-toolbar:hover {
-  box-shadow: 0 6px 24px rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.04);
+  box-shadow: 0 12px 30px rgba(0,0,0,.15), 0 1px 0 inset rgba(255, 255, 255, 0.15);
 }
 .journal-toolbar::-webkit-scrollbar { display: none; }
 
@@ -110,34 +137,34 @@
 /* ── Canvas Paper ── */
 .journal-canvas {
   position: relative;
-  background: #fff;
+  background: var(--journal-paper-bg);
   width: 100%;
   max-width: 1100px;
   min-height: 900px;
   margin: 0 auto;
   border-radius: 24px;
-  box-shadow: 0 24px 54px rgba(99, 102, 241, 0.1), 0 0 0 1px rgba(99, 102, 241, 0.08);
+  box-shadow: var(--journal-paper-shadow);
   transition: background .4s;
 }
 
 /* Theme: dots (default) */
 .journal-canvas[data-bg="dots"] {
-  background-color: #f8fafc;
-  background-image: radial-gradient(circle, #cbd5e1 .7px, transparent .7px);
+  background-color: var(--journal-dots-bg);
+  background-image: radial-gradient(circle, var(--journal-dots-pattern) .7px, transparent .7px);
   background-size: 20px 20px;
 }
 /* Theme: grid */
 .journal-canvas[data-bg="grid"] {
-  background-color: #f8fafc;
+  background-color: var(--journal-grid-bg);
   background-image:
-    linear-gradient(#e2e8f0 1px, transparent 1px),
-    linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+    linear-gradient(var(--journal-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--journal-grid-line) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 /* Theme: lines */
 .journal-canvas[data-bg="lines"] {
-  background-color: #fefce8;
-  background-image: linear-gradient(#fde047 1px, transparent 1px);
+  background-color: var(--journal-lines-bg);
+  background-image: linear-gradient(var(--journal-lines-line) 1px, transparent 1px);
   background-size: 100% 28px;
 }
 /* Theme: kraft */
@@ -173,7 +200,7 @@
 
 /* Theme: plain */
 .journal-canvas[data-bg="plain"] {
-  background: #fff;
+  background: var(--journal-plain-bg);
 }
 
 /* ── Background picker dropdown ── */
@@ -214,27 +241,27 @@
 .journal-bg-swatch.active { border-color: var(--accent, #6366f1); }
 
 .journal-bg-swatch[data-bg="dots"] {
-  background: #f8fafc;
-  background-image: radial-gradient(circle, #cbd5e1 1px, transparent 1px);
+  background: var(--journal-dots-bg);
+  background-image: radial-gradient(circle, var(--journal-dots-pattern) 1px, transparent 1px);
   background-size: 6px 6px;
 }
 .journal-bg-swatch[data-bg="grid"] {
-  background: #f8fafc;
+  background: var(--journal-grid-bg);
   background-image:
-    linear-gradient(#e2e8f0 1px, transparent 1px),
-    linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+    linear-gradient(var(--journal-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--journal-grid-line) 1px, transparent 1px);
   background-size: 8px 8px;
 }
 .journal-bg-swatch[data-bg="lines"] {
-  background: #fefce8;
-  background-image: linear-gradient(#e2e8f0 1px, transparent 1px);
+  background: var(--journal-lines-bg);
+  background-image: linear-gradient(var(--journal-lines-line) 1px, transparent 1px);
   background-size: 100% 6px;
 }
 .journal-bg-swatch[data-bg="kraft"] { background: #d4a574; }
 .journal-bg-swatch[data-bg="pink"] { background: linear-gradient(135deg, #fce4ec, #f48fb1); }
 .journal-bg-swatch[data-bg="sky"] { background: linear-gradient(180deg, #e3f2fd, #90caf9); }
 .journal-bg-swatch[data-bg="dark"] { background: #1a1a2e; }
-.journal-bg-swatch[data-bg="plain"] { background: #fff; border-color: #e2e8f0; }
+.journal-bg-swatch[data-bg="plain"] { background: var(--journal-plain-bg); border-color: var(--border); }
 
 /* ── Canvas is now handled above ── */
 
@@ -262,8 +289,8 @@
   padding: 26px 24px;
   border-radius: 24px;
   border: 1px dashed rgba(99, 102, 241, 0.18);
-  background: rgba(255, 255, 255, 0.72);
-  box-shadow: 0 18px 42px rgba(99, 102, 241, 0.08);
+  background: var(--journal-empty-bg);
+  box-shadow: var(--journal-empty-shadow);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
@@ -503,12 +530,13 @@
   bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--card-bg, rgba(255,255,255,.96));
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-color, #e2e8f0);
-  border-radius: 16px;
-  padding: 6px 10px;
-  box-shadow: 0 8px 32px rgba(0,0,0,.12);
+  background: var(--card-bg, rgba(255,255,255,.85));
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 8px 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), 0 1px 0 inset rgba(255, 255, 255, 0.1);
   display: none; /* shown via JS */
   align-items: center;
   gap: 2px;

@@ -722,7 +722,7 @@ Object.assign(GardenView, {
         const viewport = document.getElementById('island-viewport');
         document.addEventListener('mousedown', outsideHandler, true);
         window.addEventListener('resize', viewportChangeHandler);
-        viewport?.addEventListener('scroll', viewportChangeHandler, { passive: true });
+        viewport?.addEventListener('scroll', viewportChangeHandler, { passive: true }, { passive: true });
         this._state.plotMenuCleanup = () => {
             document.removeEventListener('mousedown', outsideHandler, true);
             window.removeEventListener('resize', viewportChangeHandler);

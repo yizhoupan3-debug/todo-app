@@ -120,6 +120,7 @@ const checkinRouter = require('./routes/checkin');
 const statsRouter = require('./routes/stats');
 const gardenRouter = require('./routes/garden');
 const journalRouter = require('./routes/journal');
+const moodRouter = require('./routes/mood');
 
 app.use('/api/tasks', tasksRouter);
 app.use('/api/categories', categoriesRouter);
@@ -128,6 +129,7 @@ app.use('/api/checkin', checkinRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/garden', gardenRouter);
 app.use('/api/journal', journalRouter);
+app.use('/api/mood', moodRouter);
 
 // Serve uploaded journal photos
 app.use('/uploads/journal', express.static(getJournalUploadDir(), {
@@ -223,10 +225,10 @@ function runAutoCompleteSweep() {
         // Find tasks to auto-complete: use end_time if set, else due_time
         const tasksToComplete = db.prepare(`
             SELECT id, assignee, title FROM tasks
-            WHERE auto_complete = 1 AND status = 'todo' AND due_date = ?
+            WHERE auto_complete = 1 AND status IN ('todo', 'in_progress') 
               AND (due_time IS NOT NULL OR end_time IS NOT NULL)
-              AND COALESCE(end_time, due_time) <= ?
-        `).all(todayStr, timeStr);
+              AND (due_date < ? OR (due_date = ? AND COALESCE(end_time, due_time) <= ?))
+        `).all(todayStr, todayStr, timeStr);
 
         if (tasksToComplete.length > 0) {
             const completeAndReward = db.transaction(() => {

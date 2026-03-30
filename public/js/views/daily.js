@@ -348,28 +348,38 @@ const DailyView = {
 
     renderTaskCard(task) {
         const isDone = task.status === 'done';
+        const priorityLabel = ['!', '!!', '!!!'][parseInt(task.priority) - 1] || '';
 
         let metaTags = '';
         if (task.category_name) {
-            metaTags += `<span class="task-tag category" style="background:${task.category_color}22;color:${task.category_color}">${task.category_icon || ''} ${task.category_name}</span>`;
+            const catIcon = task.category_icon || '<i data-lucide="tag"></i>';
+            metaTags += `<span class="task-tag category" style="background:${task.category_color}18;color:${task.category_color}">${catIcon} ${task.category_name}</span>`;
         }
         if (task.due_time) {
             let timeDisplay = task.due_time;
             if (task.end_time) timeDisplay += ` - ${task.end_time}`;
-            metaTags += `<span class="task-tag time"><i data-lucide="clock-3" class="lucide-inline tag-icon"></i> ${timeDisplay}</span>`;
+            metaTags += `<span class="task-tag time"><i data-lucide="clock-3"></i> ${timeDisplay}</span>`;
         }
         if (task.recurring_parent_id || task.is_recurring) {
-            metaTags += `<span class="task-tag recurring"><i data-lucide="repeat" class="lucide-inline tag-icon"></i> 重复</span>`;
+            metaTags += `<span class="task-tag recurring"><i data-lucide="repeat"></i> 重复</span>`;
         }
 
         return `
       <div class="task-card ${isDone ? 'done' : ''}" data-task-id="${task.id}" data-priority="${task.priority}">
         <div class="task-card-header">
-          <div class="task-checkbox ${isDone ? 'checked' : ''}"></div>
-          <div class="task-card-title">${this.escapeHtml(task.title)}</div>
-          ${!isDone ? '<button class="task-pomodoro-btn" title="番茄钟"><i data-lucide="timer" class="pomodoro-icon"></i></button>' : ''}
+          <div class="task-checkbox ${isDone ? 'checked' : ''}">
+            ${isDone ? '<i data-lucide="check" class="check-icon"></i>' : ''}
+          </div>
+          <div class="task-card-content">
+            <div class="task-card-title">${this.escapeHtml(task.title)}</div>
+            ${metaTags ? `<div class="task-card-meta">${metaTags}</div>` : ''}
+          </div>
+          ${!isDone ? `
+            <div class="task-card-actions">
+              <button class="task-pomodoro-btn" title="开始专注"><i data-lucide="timer"></i></button>
+            </div>
+          ` : ''}
         </div>
-        ${metaTags ? `<div class="task-card-meta">${metaTags}</div>` : ''}
       </div>
     `;
     },
@@ -431,12 +441,15 @@ const DailyView = {
         }
         const isComplete = pct >= 100;
         wrap.innerHTML = `
+            <div class="daily-progress-label">
+                <span>今日进度</span>
+                <span class="progress-pct">${pct}%</span>
+            </div>
             <div class="daily-progress-bar">
                 <div class="daily-progress-fill${isComplete ? ' complete' : ''}" style="width:${pct}%"></div>
             </div>
-            <div class="daily-progress-label">
-                <span>已完成 ${doneCount}/${total}</span>
-                <span class="progress-pct">${pct}%${isComplete ? ' ✓' : ''}</span>
+            <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-top: 6px; font-weight: 600;">
+                已完成 ${doneCount} / ${total} 个任务${isComplete ? ' — 完美的一天！' : ''}
             </div>
         `;
     },

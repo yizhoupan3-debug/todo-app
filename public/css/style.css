@@ -2,3 +2,143 @@
 @import url('/css/checkin.css');
 @import url('/css/pomodoro-stats.css');
 @import url('/css/garden.css');
+
+/* --- Mood Blind Box --- */
+.mood-cards-wrapper {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.mood-card {
+  flex: 1;
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 15px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+}
+
+.mood-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.mood-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.mood-card-body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40px;
+}
+
+.mood-selected {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg);
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: transform var(--transition);
+}
+
+.mood-selected:hover {
+  transform: scale(1.05);
+}
+
+.mood-emoji {
+  font-size: 1.2rem;
+}
+
+.mood-label {
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.mood-waiting, .mood-locked {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-reveal {
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+  color: #fff;
+  border: none;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Mood Selector Modal */
+.mood-selector-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--surface);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  z-index: 1001;
+  width: 90%;
+  max-width: 320px;
+}
+
+.mood-selector-content h3 {
+  margin: 0 0 15px 0;
+  text-align: center;
+}
+
+.mood-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.mood-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background: var(--bg);
+  transition: all var(--transition);
+}
+
+.mood-option:hover, .mood-option.active {
+  background: var(--primary-glow);
+  color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.mood-option-emoji {
+  font-size: 1.5rem;
+}
+
+.mood-option-label {
+  font-size: 0.8rem;
+}

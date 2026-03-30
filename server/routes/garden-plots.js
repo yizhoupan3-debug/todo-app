@@ -12,8 +12,10 @@ module.exports = function registerGardenPlotRoutes(router, {
             : db.prepare('SELECT * FROM islands WHERE id = ?').get(islandId);
         if (!island) return null;
 
-        const gridW = Math.max(BASE_GRID_W, Number(island.grid_w) || BASE_GRID_W);
-        const gridH = Math.max(BASE_GRID_H, Number(island.grid_h) || BASE_GRID_H);
+        const minGridW = island.island_type === 'starter' ? 8 : BASE_GRID_W;
+        const minGridH = island.island_type === 'starter' ? 6 : BASE_GRID_H;
+        const gridW = Math.max(minGridW, Number(island.grid_w) || minGridW);
+        const gridH = Math.max(minGridH, Number(island.grid_h) || minGridH);
         const expectedCount = gridW * gridH;
 
         // Fast-path: if grid size is unchanged and all plots exist, skip the write transaction entirely.
