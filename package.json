@@ -8,6 +8,8 @@
     "dev": "node server/server.js",
     "test:backend": "node tests/backend-audit.test.js",
     "test:db-migration": "node tests/db-garden-migration.test.js",
+    "codex:tidy": "bash scripts/tidy-codex-artifacts.sh",
+    "clean:local": "bash scripts/clean-local-junk.sh",
     "release:check": "bash scripts/release-check.sh",
     "release:package": "bash scripts/release-package.sh",
     "release:aliyun": "bash scripts/release-aliyun.sh",

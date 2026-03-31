@@ -2,14 +2,23 @@ node_modules/
 data/
 *.db
 .DS_Store
+*.orig
+*.rej
 
 # Local Codex / supervisor artifacts
+.codex/*
+!.codex/.gitkeep
 .supervisor_state.json
 .app_supervisor_state.json
 SESSION_SUMMARY.md
 NEXT_ACTIONS.json
 EVIDENCE_INDEX.json
 TRACE_METADATA.json
+.execution_audit_state.json
+RESUME_PACKET.md
+STATE_DELTA.json
+context_snapshot.json
+audit_report.md
 skills/
 # Local release artifacts
 artifacts/releases/
