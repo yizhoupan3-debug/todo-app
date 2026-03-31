@@ -120,7 +120,6 @@ const checkinRouter = require('./routes/checkin');
 const statsRouter = require('./routes/stats');
 const gardenRouter = require('./routes/garden');
 const journalRouter = require('./routes/journal');
-const moodRouter = require('./routes/mood');
 
 app.use('/api/tasks', tasksRouter);
 app.use('/api/categories', categoriesRouter);
@@ -129,7 +128,6 @@ app.use('/api/checkin', checkinRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/garden', gardenRouter);
 app.use('/api/journal', journalRouter);
-app.use('/api/mood', moodRouter);
 
 // Serve uploaded journal photos
 app.use('/uploads/journal', express.static(getJournalUploadDir(), {
